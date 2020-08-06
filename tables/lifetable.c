@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "/home/doctormartin67/Projects/library/libraryheader.h"
 
-#define MAXLINE 15
+#define MAXLINE 20
 #define MAXAGE 120
 #define HASHSIZE 101
 
@@ -89,9 +89,8 @@ static void makeLifeTable(char *name, int *clt) { //clt = current life table
       vp++;
       lp++;
     }
-    vp--; //get rid of \n
-    *--vp = '\0'; //get rid of \r
-    *clt++ = atoi(value);
+    vp = trim(value);
+    *clt++ = atoi(vp);
     vp = value;
   }
   

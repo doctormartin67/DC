@@ -26,6 +26,8 @@ int main() {
     line[strcspn(line, "\n")] = '\0'; //remove newline character
     test = lx(line, age);
     printf("lx(%s, %d) = %d\n", line, age, test);
+    test = lx(line, age);
+    printf("lx(%s, %d) = %d\n", line, age, test);
   }
   return 0;
 }
