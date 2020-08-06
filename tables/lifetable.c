@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "/home/doctormartin67/Projects/library/libraryheader.h"
 
 #define MAXLINE 15
 #define MAXAGE 120
@@ -76,7 +77,7 @@ static void makeLifeTable(char *name, int *clt) { //clt = current life table
   char *lp = line;
   
   if ((lt = fopen(name, "r")) == NULL) {
-    fprintf(stderr, "can't open %s\n", name);
+    fprintf(stderr, "In function makeLifeTable: can't open %s\n", name);
     exit(1);
   }
   while((fgets(line, MAXLINE, lt))) {
