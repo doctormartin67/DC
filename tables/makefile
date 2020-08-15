@@ -1,0 +1,8 @@
+testTables : test.o lifetable.o /home/doctormartin67/Projects/library/helperfunctions.o
+	cc -g -o testTables test.o lifetable.o /home/doctormartin67/Projects/library/helperfunctions.o
+test.o : test.c
+	cc -g -c test.c
+lifetable.o : lifetable.c
+	cc -g -c -I/home/doctormartin67/Projects/library/ lifetable.c
+helperfunctions.o : /home/doctormartin67/Projects/library/helperfunctions.c
+	cc -g -c /home/doctormartin67/Projects/library/helperfunctions.c

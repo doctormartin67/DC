@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "/home/doctormartin67/Projects/library/libraryheader.h"
+#include "libraryheader.h"
 
 #define MAXLINE 20
 #define MAXAGE 120
 #define HASHSIZE 101
+#define PATH "/home/doctormartin67/Projects/work/tables/tables/"
 
 static struct lifetable *list[HASHSIZE];
 static unsigned hash(char *);
@@ -75,8 +76,10 @@ static void makeLifeTable(char *name, int *clt) { //clt = current life table
   char value[MAXLINE];
   char *vp = value;
   char *lp = line;
+  char path[100] = "";
+  strcat(path, PATH);
   
-  if ((lt = fopen(name, "r")) == NULL) {
+  if ((lt = fopen(strcat(path, name), "r")) == NULL) {
     fprintf(stderr, "In function makeLifeTable: can't open %s\n", name);
     exit(1);
   }
