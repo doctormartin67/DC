@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "libraryheader.h"
+#include "lifetables.h"
 
 #define MAXLINE 20
 #define MAXAGE 120
@@ -12,7 +13,6 @@ static struct lifetable *list[HASHSIZE];
 static unsigned hash(char *);
 static struct lifetable *get(char *);
 static struct lifetable *set(char *);
-int lx(char *, int);
 static void makeLifeTable(char *, int *);
 
 struct lifetable {
