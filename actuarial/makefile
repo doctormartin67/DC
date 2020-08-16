@@ -1,9 +1,9 @@
 libpath = /home/doctormartin67/Projects/library/
 tablepath = /home/doctormartin67/Projects/work/tables/
-objs = test.o ${tablepath}lifetable.o ${libpath}helperfunctions.o actuarialfunctions.o
+objs = test.o ${tablepath}lifetable.o ${libpath}helperfunctions.o actuarialfunctions.o -lm
 debug = #add -g if you want to debug
-testnpx : ${objs}
-	cc ${debug} -o testnpx ${objs}
+actfunc : ${objs}
+	cc ${debug} -o actfunc ${objs}
 test.o : test.c
 	cc ${debug} -c test.c
 lifetable.o : ${tablepath}lifetable.c
