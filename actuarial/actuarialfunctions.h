@@ -17,3 +17,10 @@ double npx(char *lt, double ageX, double ageXn, int corr);
 // nEx is a factor used to give the present value of an amount, taking death chance into
 // account. 
 double nEx(char *lt, double i, double charge, double ageX, double ageXn, int corr);
+// axn is the annuity factor that calculates the present value of investing 1 dollar
+// each year from ageX until ageXn divided up by the term, where term is represented in months,
+// so term = 12 means we pay 1/12 per months, term = 6 means we pay 2/12 every 2 months.
+// prepost determines whether we pay straight away (prepost = 0) or after the first term ends
+// (prepost = 1). 
+double axn(char *lt, double i, double charge, int prepost, int term,
+	   double ageX, double ageXn, int corr);
