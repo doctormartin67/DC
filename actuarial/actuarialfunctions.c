@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include "lifetables.h"
 #include "actuarialfunctions.h"
@@ -30,32 +32,29 @@ double nEx(char *lt, double i, double charge, double ageX, double ageXn, int cor
 
 double axn(char *lt, double i, double charge, int prepost, int term,
 	   double ageX, double ageXn, int corr){
-  //first we subtract the charge from the interest rate i
-  //then we need to determine the term interest rate, mostly monthly.
-  i = (1+i)/(1+charge) - 1;
   if (12 % term != 0) {
-    printf("An incorrect term was chosen, payments are usually monthly (term = 12)");
-    printf("but can also be yearly for example (term = 1). term should be divisible");
-    printf("by 12 but term = %d.\n", term);
+    printf("An incorrect term was chosen, payments are usually monthly (term = 12)\n");
+    printf("but can also be yearly for example (term = 1). term should be divisible\n");
+    printf("by 12 but \nterm = %d.\n", term);
     exit(0);
   }
   else if (ageX > ageXn) {
     printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
-    int temp = prepost - 1;
-    printf("prepost = %d and so axn = %d is taken\n", prepost, temp);
+    double temp = (double)(1 - prepost)/term;
+    printf("prepost = %d and so axn = %.6f is taken\n", prepost, temp);
     return temp;
   }
   else {
-    double im = pow(1 + i, 1.0/term); //=term interest rate (1+i)^(1/12) for monthly for example
+    //    double im = pow(1 + i, 1.0/term) - 1; //=term interest rate (monthly: (1+i)^(1/12) - 1)
+    // charge = pow(1 + charge, 1.0/term) - 1;
     double ageXk = ageX + (double)prepost/term; // current age in while loop
     int payments = (int)((ageXn - ageX) * term + eps);
     double value = 0; //return value;
 
-    while (--payments) {
-      value += nEx(lt, im, ageX, ageXk, corr);
+    while (payments--) {
+      value += nEx(lt, i, charge, ageX, ageXk, corr);
       ageXk += 1.0/term;
     }
-    value += nEx(lt, im, ageXk, ageXn, corr);
-    return value;
+    return value/term;
   }
 }
