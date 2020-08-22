@@ -23,10 +23,14 @@ struct lifetable {
 };
 
 int lx(char *name, int age) {
-  struct lifetable *clt;
-  if (get(name) == NULL)
-    clt = set(name);
-  return clt->lt[age];
+  if (age > MAXAGE)
+    return 0;
+  else {
+    struct lifetable *clt;
+    if (get(name) == NULL)
+      clt = set(name);
+    return clt->lt[age];
+  }
 }
 
 static unsigned hash(char *s) {

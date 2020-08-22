@@ -40,12 +40,11 @@ double axn(char *lt, double i, double charge, int prepost, int term,
   }
   else if (ageX > ageXn) {
     printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
-    double temp = (double)(1 - prepost)/term;
-    printf("prepost = %d and so axn = %.6f is taken\n", prepost, temp);
-    return temp;
+    printf("axn = 0 is taken in this case.\n");
+    return 0;
   }
   else {
-    //    double im = pow(1 + i, 1.0/term) - 1; //=term interest rate (monthly: (1+i)^(1/12) - 1)
+    // double im = pow(1 + i, 1.0/term) - 1; //=term interest rate (monthly: (1+i)^(1/12) - 1)
     // charge = pow(1 + charge, 1.0/term) - 1;
     double ageXk = ageX + (double)prepost/term; // current age in while loop
     int payments = (int)((ageXn - ageX) * term + eps);
@@ -55,6 +54,15 @@ double axn(char *lt, double i, double charge, int prepost, int term,
       value += nEx(lt, i, charge, ageX, ageXk, corr);
       ageXk += 1.0/term;
     }
-    return value/term;
+    /* There is a final portion that needs to be added when the amount of payments don't consider
+       fractions of age, for example if ageX = 40 and ageXn = 40,5 and term = 1. This would give 0 
+       payments but we still need to add nEx/2 in this case.
+       We also need to subtract one term from ageXk because the while loop adds one too many.
+     */    
+    ageXk -= 1.0/term * prepost;
+    value /= term;
+    value += (ageXn - ageXk) * nEx(lt, i, charge, ageX,
+				   (double)((int)(ageXn*term + eps))/term + term*prepost, corr);
+    return value;
   }
 }
