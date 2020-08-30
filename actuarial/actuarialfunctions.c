@@ -16,8 +16,8 @@ double npx(char *lt, double ageX, double ageXn, int corr){ //lt = life table
   ageX += corr;
   ageXn += corr;
 
-  ip1 = lx(lt, ageX) - (ageX - (int)ageX) * (lx(lt, ageX) - lx(lt, ageX+1));
-  ip2 = lx(lt, ageXn) - (ageXn - (int)ageXn) * (lx(lt, ageXn) - lx(lt, ageXn+1));
+  ip1 = lx(lt, ageX) - (ageX - (int)ageX) * (lx(lt, ageX) - lx(lt, ageX + 1));
+  ip2 = lx(lt, ageXn) - (ageXn - (int)ageXn) * (lx(lt, ageXn) - lx(lt, ageXn + 1));
   
   return ip2/ip1;
 }
@@ -58,11 +58,63 @@ double axn(char *lt, double i, double charge, int prepost, int term,
        fractions of age, for example if ageX = 40 and ageXn = 40,5 and term = 1. This would give 0 
        payments but we still need to add nEx/2 in this case.
        We also need to subtract one term from ageXk because the while loop adds one too many.
-     */    
+    */    
     ageXk -= 1.0/term * prepost;
     value /= term;
-    value += (ageXn - ageXk) * nEx(lt, i, charge, ageX,
-				   (double)((int)(ageXn*term + eps))/term + term*prepost, corr);
+    value += (ageXn - ageXk) *
+      nEx(lt, i, charge, ageX,
+	  (double)((int)(ageXn*term + eps))/term + term*prepost, corr);
+    return value;
+  }
+}
+
+double Ax1n(char *lt, double i, double charge, double ageX, double ageXn, int corr){
+  if (ageX > ageXn) {
+    printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
+    printf("Ax1n = 0 is taken in this case.\n");
+    return 0;
+  }
+  else {
+    double im = (1+i)/(1+charge) - 1;
+    double v = 1/(1 + im);
+    int payments = (int)(ageXn - ageX + eps);
+    double value = 0; //return value;
+    int k = 0;
+    // nAx = v^(1/2)*1Qx + v^(1+1/2)*1Px*1q_{x+1} + ... + v^(n-1+1/2)*{n-1}_Px*1Q_{x+n-1}
+    while (payments--) {
+      value += pow(v, k + 1.0/2) *
+	npx(lt, ageX, ageX + k, corr) *
+	(1 - npx(lt, ageX + k, ageX + k + 1, corr));
+      k++;
+    }
+    // below is the final fractional payment, for example 40 until 40.6 years old
+    value += pow(v, k + 1.0/2) *
+      npx(lt, ageX, ageX + k, corr) *
+      (1 - npx(lt, ageX + k, ageXn, corr));
+    return value;
+  }
+}
+
+double IAx1n(char *lt, double i, double charge, double ageX, double ageXn, int corr){
+  if (ageX > ageXn) {
+    printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
+    printf("Ax1n = 0 is taken in this case.\n");
+    return 0;
+  }
+  else {
+    int payments = (int)(ageXn - ageX + eps);
+    double value = 0; //return value;
+    int k = 1;
+    // IAx1n = sum^{n-1}_k=1:k*1A_{x+k}*kEx
+    while (payments--) {
+      value += k * Ax1n(lt, i, charge, ageX + k, ageX + k + 1, corr) *
+	nEx(lt, i, charge, ageX, ageX + k, corr);
+      printf("Ax1n(%d) = %.6f\n", k, Ax1n(lt, i, charge, ageX + k, ageX + k + 1, corr));
+      printf("nEx(%d) = %.6f\n", k, nEx(lt, i, charge, ageX, ageX + k, corr));
+      k++;
+    }
+    // below is the final fractional payment, for example 40 until 40.6 years old
+    value += 0;
     return value;
   }
 }

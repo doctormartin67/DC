@@ -24,3 +24,12 @@ double nEx(char *lt, double i, double charge, double ageX, double ageXn, int cor
 // (prepost = 1). 
 double axn(char *lt, double i, double charge, int prepost, int term,
 	   double ageX, double ageXn, int corr);
+
+// discounted yearly payments in case of death
+double Ax1n(char *lt, double i, double charge, double ageX, double ageXn,
+	    int corr);
+
+// discounted yearly payments in case of death where the payments are cummulative
+// (1 + 2 + 3 + ... + n instead of 1 + 1 + 1 + ... + 1)
+double IAx1n(char *lt, double i, double charge, double ageX, double ageXn,
+	    int corr);

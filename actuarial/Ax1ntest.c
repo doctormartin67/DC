@@ -1,5 +1,3 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,21 +10,23 @@ static double i, charge, ageX, ageXn;
 static int corr;
 
 int main(int argc, char *argv[]){
-  if (argc < 4){
+  if (argc < 6){
     printf("incorrect input\n");
-    printf("syntax: ./npx table ageX ageXn corr\n");
+    printf("syntax: Ax1n table i charge ageX ageXn corr\n");
     printf("If corr is omitted then 0 is taken by default.\n");
   }
   else{
     setvars(argc, argv);
-    printf("%.8f\n", npx(lt, ageX, ageXn, corr));
+    printf("%.8f\n", Ax1n(lt, i, charge, ageX, ageXn, corr));
   }
   return 0;
 }
 
 void setvars(int argc, char *argv[]){
   lt = *(argv+1);
-  ageX = atof(*(argv+2));
-  ageXn = atof(*(argv+3));
-  corr = (argc == 5 ? atoi(*(argv+4)) : 0);
+  i = atof(*(argv+2));
+  charge = atof(*(argv+3));
+  ageX = atof(*(argv+4));
+  ageXn = atof(*(argv+5));
+  corr = (argc == 7 ? atoi(*(argv+6)) : 0);
 }

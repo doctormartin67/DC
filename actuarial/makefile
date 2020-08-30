@@ -1,11 +1,11 @@
 LIBPATH = /home/doctormartin67/Projects/library
 TABLEPATH = /home/doctormartin67/Projects/work/tables
-BINPATH = /usr/local/bin
+BINPATH = /home/doctormartin67/bin
 libs = -lm #libraries to include: -lm is Math.
 objs = ${TABLEPATH}/lifetable.o ${LIBPATH}/helperfunctions.o actuarialfunctions.o ${libs}
-debug = #add -g if you want to debug
-programs = axn nEx npx
-SRCS = axntest.o nExtest.o npxtest.o
+debug = -g #add -g if you want to debug
+programs = axn nEx nPx Ax1n IAx1n
+SRCS = axntest.o nExtest.o nPxtest.o Ax1ntest.o IAx1ntest.o
 
 ${programs} : %: %test.o ${objs}
 	gcc ${debug} -o $@ $< ${objs}

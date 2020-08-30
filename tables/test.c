@@ -6,7 +6,7 @@
 
 extern int lx(char *, int);
 
-int main() {
+int main(int argc, char **argv) {
   int age;
   int test;
   char *tables;
@@ -20,7 +20,7 @@ int main() {
     exit(1);
   }
 
-  age = 40;
+  age = atoi(*(argv+1));
   
   while (fgets(line, MAXLINE, lt)){
     line[strcspn(line, "\n")] = '\0'; //remove newline character
