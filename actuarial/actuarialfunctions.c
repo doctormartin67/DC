@@ -15,6 +15,8 @@ double npx(char *lt, double ageX, double ageXn, int corr){ //lt = life table
 
   ageX += corr;
   ageXn += corr;
+  ageX = fmax(0, ageX);
+  ageXn = fmax(0, ageXn);
 
   ip1 = lx(lt, ageX) - (ageX - (int)ageX) * (lx(lt, ageX) - lx(lt, ageX + 1));
   ip2 = lx(lt, ageXn) - (ageXn - (int)ageXn) * (lx(lt, ageXn) - lx(lt, ageXn + 1));
@@ -107,14 +109,13 @@ double IAx1n(char *lt, double i, double charge, double ageX, double ageXn, int c
     int k = 1;
     // IAx1n = sum^{n-1}_k=1:k*1A_{x+k}*kEx
     while (payments--) {
-      value += k * Ax1n(lt, i, charge, ageX + k, ageX + k + 1, corr) *
-	nEx(lt, i, charge, ageX, ageX + k, corr);
-      printf("Ax1n(%d) = %.6f\n", k, Ax1n(lt, i, charge, ageX + k, ageX + k + 1, corr));
-      printf("nEx(%d) = %.6f\n", k, nEx(lt, i, charge, ageX, ageX + k, corr));
+      value += k * Ax1n(lt, i, charge, ageX + k - 1, ageX + k, corr) *
+	nEx(lt, i, charge, ageX, ageX + k - 1, corr);
       k++;
     }
     // below is the final fractional payment, for example 40 until 40.6 years old
-    value += 0;
+    value += k * Ax1n(lt, i, charge, ageX + k - 1, ageXn, corr) *
+	nEx(lt, i, charge, ageX, ageXn, corr);
     return value;
   }
 }

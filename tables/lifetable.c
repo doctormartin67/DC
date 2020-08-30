@@ -26,7 +26,7 @@ int lx(char *name, int age) {
     return 0;
   else {
     struct lifetable *clt;
-    if (get(name) == NULL)
+    if ((clt = get(name)) == NULL)
       clt = set(name);
     return clt->lt[age];
   }
