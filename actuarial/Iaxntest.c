@@ -12,12 +12,12 @@ static int corr, prepost, temp;
 int main(int argc, char *argv[]){
   if (argc < 8){
     printf("incorrect input\n");
-    printf("syntax: axn table i charge prepost temp ageX ageXn corr\n");
+    printf("syntax: Iaxn table i charge prepost temp ageX ageXn corr\n");
     printf("If corr is omitted then 0 is taken by default.\n");
   }
   else{
     setvars(argc, argv);
-    printf("%.8f\n", axn(lt, i, charge, prepost, temp, ageX, ageXn, corr));
+    printf("%.8f\n", Iaxn(lt, i, charge, prepost, temp, ageX, ageXn, corr));
   }
   return 0;
 }

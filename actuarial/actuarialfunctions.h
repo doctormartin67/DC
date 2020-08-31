@@ -33,3 +33,6 @@ double Ax1n(char *lt, double i, double charge, double ageX, double ageXn,
 // (1 + 2 + 3 + ... + n instead of 1 + 1 + 1 + ... + 1)
 double IAx1n(char *lt, double i, double charge, double ageX, double ageXn,
 	    int corr);
+
+double Iaxn(char *lt, double i, double charge, int prepost, int term,
+	   double ageX, double ageXn, int corr);

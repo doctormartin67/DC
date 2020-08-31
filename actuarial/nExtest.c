@@ -12,7 +12,7 @@ static int corr;
 int main(int argc, char *argv[]){
   if (argc < 6){
     printf("incorrect input\n");
-    printf("syntax: ./nEx table i charge ageX ageXn corr\n");
+    printf("syntax: nEx table i charge ageX ageXn corr\n");
     printf("If corr is omitted then 0 is taken by default.\n");
   }
   else{

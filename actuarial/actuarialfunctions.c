@@ -4,7 +4,8 @@
 #include "lifetables.h"
 #include "actuarialfunctions.h"
 
-static const double eps = 0.0000001;
+const double eps = 0.0000001;
+
 double npx(char *lt, double ageX, double ageXn, int corr){ //lt = life table
   /* generally the rule is npx = lx(ageXn)/lx(ageX) but because lx has
      an integer value as its input we need to interpolate both these
@@ -46,8 +47,6 @@ double axn(char *lt, double i, double charge, int prepost, int term,
     return 0;
   }
   else {
-    // double im = pow(1 + i, 1.0/term) - 1; //=term interest rate (monthly: (1+i)^(1/12) - 1)
-    // charge = pow(1 + charge, 1.0/term) - 1;
     double ageXk = ageX + (double)prepost/term; // current age in while loop
     int payments = (int)((ageXn - ageX) * term + eps);
     double value = 0; //return value;
@@ -116,6 +115,38 @@ double IAx1n(char *lt, double i, double charge, double ageX, double ageXn, int c
     // below is the final fractional payment, for example 40 until 40.6 years old
     value += k * Ax1n(lt, i, charge, ageX + k - 1, ageXn, corr) *
 	nEx(lt, i, charge, ageX, ageXn, corr);
+    return value;
+  }
+}
+
+// This function hasn't been completed because I don't think I need it. At the moment it
+// only works for term = 1
+double Iaxn(char *lt, double i, double charge, int prepost, int term,
+	   double ageX, double ageXn, int corr){
+  if (1 % term != 0) {
+    printf("Iaxn has only been implemented for term = 1. You will need to adjust your \n");
+    printf("input for term, at the moment term = %d.\n", term);
+    exit(0);
+  }
+  else if (ageX > ageXn) {
+    printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
+    printf("Iaxn = 0 is taken in this case.\n");
+    return 0;
+  }
+  else {
+    double ageXk = ageX + (double)prepost/term; // current age in while loop
+    int payments = (int)((ageXn - ageX) * term + eps);
+    double value = 0; //return value;
+    double k = 1;
+    while (payments--) {
+      value += k++ * nEx(lt, i, charge, ageX, ageXk, corr);
+      ageXk += 1.0/term;
+    }
+    ageXk -= 1.0/term * prepost;
+    value /= term;
+    value += (ageXn - ageXk) * k *
+      nEx(lt, i, charge, ageX,
+	  (double)((int)(ageXn*term + eps))/term + term*prepost, corr);
     return value;
   }
 }
