@@ -46,7 +46,13 @@ void createXLzip(char *s) {
   }
   // unzip in directory
   snprintf(command, sizeof command, "%s%s%s%s", "unzip -q ", t, ".zip -d ", t);
-  system(command);
+  if(system(command)) {
+    printf(">>>>>>");
+    printf("THE EXCEL FILE YOU ARE TRYING TO OPEN HAS A PASSWORD.\n");
+    printf(">>>>>>");
+    printf("REMOVE THE PASSWORD FROM THE FILE AND TRY AGAIN.\n");
+    exit(1);
+  }
   free(t);
   free(s);
 }
@@ -91,7 +97,6 @@ char *replace(const char *s, const char *oldW,
 }
 
 // Check if file exists
-
 int FILEexists(const char *fname)
 {
   FILE *file;
