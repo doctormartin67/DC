@@ -26,7 +26,7 @@ void createXLzip(char *s) {
   t = replace(s, " ", "\\ ");
   s = replace(s, " ", "\\ ");
   if ((end = strstr(t, ".xls")) == NULL) {// not an excel file
-    printf("Please select an excel file.\n");
+    printf("Please select an valid excel file.\n");
     printf("Exiting program.\n");
     exit(0);
   }
