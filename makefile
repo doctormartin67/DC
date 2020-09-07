@@ -4,8 +4,8 @@ BINPATH = /home/doctormartin67/bin
 libs = -lm #libraries to include: -lm is Math.
 objs = ${LIBPATH}/helperfunctions.o
 debug = #add -g if you want to debug
-programs = createXLzip
-SRCS = createXLzip.o
+programs = createXLzip readCalc
+SRCS = createXLzip.o readCalc.o
 
 ${programs} : %: %.o ${objs}
 	gcc ${debug} -o $@ $< ${objs}
