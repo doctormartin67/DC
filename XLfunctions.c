@@ -31,6 +31,11 @@ void setXLvals(XLfile *xl, char *s) {
     perror(xl->dirname);
     exit(1);
   }
+   // unzip recently modified excel file
+  if ((xl->fbuf).st_mtime > (xl->dirbuf).st_mtime) {
+    createXLzip(xl);
+  }
+  
 }
 
 // create a zip file of an excel document and extract
@@ -75,7 +80,7 @@ void createXLzip(XLfile *xl) {
    XLfile is a structure for the excel file properties.
    sheet is the number of the sheet to open,
 */
-char *cell(char *s, XLfile *xl, int sheet) {
+char *cell(char *s, XLfile *xl, char *sheet) {
   
   FILE *fp;
   char line[LENGTH];
@@ -85,15 +90,13 @@ char *cell(char *s, XLfile *xl, int sheet) {
   char *begin;
   char *end;
   char *temp;
+  int sheetnr;
   static char value[BUFSIZ]; // value of cell to return (string)
-  
-  // unzip recently modified excel file
-  if ((xl->fbuf).st_mtime > (xl->dirbuf).st_mtime) {
-    createXLzip(xl);
-  }
 
+  if(!(sheetnr = findsheetID(xl, sheet)))
+    exit(0);
   // create the name of the xml file to find the cell value
-  snprintf(sname, sizeof sname, "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheet, ".xml");
+  snprintf(sname, sizeof sname, "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheetnr, ".xml");
 
   if ((fp = fopen(sname, "r")) == NULL) {
     perror(sname);
@@ -105,23 +108,16 @@ char *cell(char *s, XLfile *xl, int sheet) {
     strcat(lookup, "\"");
     begin = line;
     temp = begin;
-    int count = 0;
-    while ((temp = strstr(temp, "r=\"1\"")) != NULL) {
-      count++;
+    /*while ((temp = strstr(temp, "r=\"1\"")) != NULL) {
       begin = temp;
       temp++;
-    }
-    printf("%s\n", line);
+      }*/
     if ((begin = strstr(begin, lookup)) == NULL)
       continue;
-    begin = strstr(begin, "<v>");
-    begin += 3;
-    end = strstr(begin, "</v>");
-    printf("begin = %.*s\n", 100, begin);
-    *end = '\0';
+    begin = strinside(begin, "<v>", "</v>");
     strcpy(value, begin);
-    *end = '<';
-    printf("count = %d\n", count);
+    free(begin);
+    fclose(fp);
     return value;
   }
 
@@ -130,3 +126,67 @@ char *cell(char *s, XLfile *xl, int sheet) {
   return NULL;
 }
 
+int findsheetID(XLfile *xl, char *s) {
+  FILE *fp;
+  char line[BUFSIZ];
+  char sname[BUFSIZ];
+  char *begin;
+  int sheet;
+
+   // create the name of the xml file to find the sheetID
+  snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/xl/workbook.xml");
+  if ((fp = fopen(sname, "r")) == NULL) {
+    perror(sname);
+    exit(1);
+  }
+  while (fgets(line, LENGTH, fp) != NULL) {
+    begin = line;
+    if ((begin = strstr(begin, s)) == NULL)
+      continue;
+    begin = strinside(begin, "sheetId=\"", "\" state="); 
+    sheet = atoi(begin);
+    free(begin);
+    fclose(fp);
+    return sheet;
+  }
+
+  fclose(fp);
+  printf("Sheet name \"%s\" not found.", s);
+  printf("Make sure you spelt it correctly, it is case sensitive.");
+  return 0;
+}
+
+/* the excel zip has an xml file with all the string literals.
+   in the sheet xml files they are listed as a number and so we
+   need to retrieve the strings given this number
+*/
+char *findss(XLfile *xl, int index) {
+  FILE *fp;
+  char line[BUFSIZ];
+  char sname[BUFSIZ];
+  char *begin;
+  int count = 0;
+  static char value[BUFSIZ]; // value of cell to return (string)
+   // create the name of the xml file to find the sheetID
+  snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/xl/sharedStrings.xml");
+  if ((fp = fopen(sname, "r")) == NULL) {
+    perror(sname);
+    exit(1);
+  }
+  while (fgets(line, LENGTH, fp) != NULL) {
+    begin = line;
+    while (count++ < index) {
+      begin = strstr(begin, "=\"preserve\"");
+      begin++;
+    }
+    begin = strinside(begin, "erve\">", "</t>");
+    strcpy(value, begin);
+    free(begin);
+    fclose(fp);
+    return value;
+  }
+
+  fclose(fp);
+  printf("Couldn't find anything in sharedStrings.xml. Returning NULL...\n");
+  return NULL;
+}

@@ -7,10 +7,6 @@
 #include <sys/types.h>
 #include "libraryheader.h"
 
-#define LENGTH BUFSIZ * 1000
-
-static struct stat buf;
-
 char *trim(char *s) {
   char *t;
   t = s;
@@ -89,4 +85,39 @@ int DIRexists(const char *dname) {
     /* opendir() failed for some other reason. */
     return -1;
   }
+}
+
+/* the xml files for excel are often in the form:
+   <v>...<\v> and so we want to value where ...
+   lies. This is a small function to retrieve the
+   ... given begin (<v>) and end (<\v>). 
+   REMEMBER TO FREE THE RETURN VALUE WHEN YOU ARE
+   FINISHED WITH IT!
+ */
+char *strinside(char *s, char *begin, char *end) {
+  char *pb; //pointer to begin in s
+  char *pe; //pointer to end in s
+  char *value; //malloc result that we will return
+  int i, length; 
+  pb = strstr(s, begin);
+  // pe should start looking for end starting at begin
+  pe = pb;
+  pe = strstr(pe, end);
+
+  // move pointer to start of the value we want
+  pb += strlen(begin);
+
+  /* pb is pointing at the character just after
+     the last character of the value we need and
+     so pe - pb is exactly the amount of characters
+     of value, we then need one extra value for '\0'.
+  */
+  length = pe - pb + 1;
+  value = (char *)malloc(length);
+  for (i = 0; i < length; i++) {
+    value[i] = *pb++;
+  }
+  value[i-1] = '\0';
+  return value;
+  
 }
