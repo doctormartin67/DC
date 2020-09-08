@@ -9,9 +9,10 @@ int main(int argc, char **argv) {
     printf("Syntax: readCalc \"Excel file name\" sheetnr cell\n");
     exit(0);
   }
-    
-  printf("%s = %s\n", *(argv+3), cell(*(argv+3), *(argv+1), atoi(*(argv+2))));
-  printf("%s = %s\n", *(argv+3), cell(*(argv+3), *(argv+1), atoi(*(argv+2))));
+  XLfile xl;
+  setXLvals(&xl, argv[1]);
+  printf("%s = %s\n", *(argv+3), cell(*(argv+3), &xl, atoi(*(argv+2))));
+  printf("%s = %s\n", *(argv+3), cell(*(argv+3), &xl, atoi(*(argv+2))));
   
   return 0;
 }

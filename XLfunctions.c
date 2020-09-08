@@ -7,32 +7,53 @@
 #include <sys/types.h>
 #include "libraryheader.h"
 
-#define LENGTH BUFSIZ * 1000
-
-static struct stat buf;
-
-// create a zip file of an excel document and extract
-void createXLzip(char *s) {
-  char *t;
-  char *end;
-  char command[BUFSIZ];
-  t = replace(s, " ", "\\ ");
-  s = replace(s, " ", "\\ ");
-  if ((end = strstr(t, ".xls")) == NULL) {// not an excel file
+// s is the name of the excel file to set the values of
+void setXLvals(XLfile *xl, char *s) {
+  char *temp;
+  strcpy(xl->fname, s);
+  if ((temp = strstr(s, ".xls")) == NULL || !FILEexists(s)) {// not an excel file
     printf("Please select an valid excel file.\n");
     printf("Exiting program.\n");
     exit(0);
   }
-  *end = '\0';
+  *temp = '\0';
+  strcpy(xl->dirname, s);
+
+  // enter the stats into both buffers. for DIR we check if a zip has been created.
+  if (stat(xl->fname, &xl->fbuf) < 0) {
+    perror(xl->fname);
+    exit(1);
+  }
+  if (!DIRexists(xl->dirname))
+    createXLzip(xl);
+  else
+  if (stat(xl->dirname, &xl->dirbuf) < 0) {
+    perror(xl->dirname);
+    exit(1);
+  }
+}
+
+// create a zip file of an excel document and extract
+void createXLzip(XLfile *xl) {
+  char *s;
+  char *t;
+  char *end;
+  char command[BUFSIZ];
+  // we need to replace spaces with "\ " for the command
+  t = replace(xl->dirname, " ", "\\ ");
+  s = replace(xl->fname, " ", "\\ ");
+  
   snprintf(command, sizeof command, "%s%s%s%s%s", "cp ", s, " ", t, ".zip");
   system(command);
 
   // *******unzip zip file*******
   
   // make directory for all files
-  snprintf(command, sizeof command, "%s%s", "mkdir ", t);
-  if (!DIRexists(replace(t, "\\ ", " ")))
+  if (!DIRexists(xl->dirname)) {
+    printf("command = %s\n", command);
+    snprintf(command, sizeof command, "%s%s", "mkdir ", t);
     system(command);
+  }
   else {
     snprintf(command, sizeof command, "%s%s", "rm -rf ", t);
     system(command);
@@ -41,7 +62,7 @@ void createXLzip(char *s) {
   snprintf(command, sizeof command, "%s%s%s%s", "unzip -q ", t, ".zip -d ", t);
   if(system(command)) {
     printf(">>>>>>");
-    printf("THE EXCEL FILE YOU ARE TRYING TO OPEN HAS A PASSWORD.\n");
+    printf("THE EXCEL FILE YOU ARE TRYING TO OPEN MIGHT HAVE A PASSWORD.\n");
     printf(">>>>>>");
     printf("REMOVE THE PASSWORD FROM THE FILE AND TRY AGAIN.\n");
     exit(1);
@@ -51,78 +72,61 @@ void createXLzip(char *s) {
 }
 
 /* s is the name of the cell to retrieve value (for example B11).
-   fname is the name of the excel file with xls* extention.
+   XLfile is a structure for the excel file properties.
    sheet is the number of the sheet to open,
 */
-char *cell(char *s, char *fname, int sheet) {
+char *cell(char *s, XLfile *xl, int sheet) {
   
   FILE *fp;
   char line[LENGTH];
+  char lookup[BUFSIZ]; /* string to lookup in xml file to find cell value.
+			  is of the form r="A3 for cell A3*/
   char sname[BUFSIZ]; // name of the sheet to open (xml file)
   char *begin;
   char *end;
-  long int mtime_XLfile; // time excel file was last modified
-  long int mtime_XLfolder; // time excel folder was last modified
+  char *temp;
   static char value[BUFSIZ]; // value of cell to return (string)
-
-  if (stat(fname, &buf) < 0) {
-    perror(fname);
-    exit(1);
-  }
   
-  mtime_XLfile = buf.st_mtime;
-
-  // here we remove the extension of the excel file from fname
-  if ((end = strstr(fname, ".xls")) == NULL) {// not an excel file
-    printf("Please select an valid excel file.\n");
-    printf("Exiting program.\n");
-    exit(0);
-  }
-  *end = '\0';
-
-  // Check whether the the zip and corresponding directory exist
-  if(!DIRexists(fname)) {
-    *end = '.';
-    createXLzip(fname);
-    *end = '\0';
-  }
-  
-  if (stat(fname, &buf) < 0) {
-    perror(fname);
-    exit(1);
-  }
-  
-  mtime_XLfolder = buf.st_mtime;
-
   // unzip recently modified excel file
-  if (mtime_XLfile > mtime_XLfolder) {
-    *end = '.';
-    createXLzip(fname);
-    *end = '\0';
+  if ((xl->fbuf).st_mtime > (xl->dirbuf).st_mtime) {
+    createXLzip(xl);
   }
 
   // create the name of the xml file to find the cell value
-  snprintf(sname, sizeof sname, "%s%s%d%s", fname, "/xl/worksheets/sheet", sheet, ".xml");
-  // set extension back to where it was
-  *end = '.';
+  snprintf(sname, sizeof sname, "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheet, ".xml");
+
   if ((fp = fopen(sname, "r")) == NULL) {
     perror(sname);
     exit(1);
   }
   while (fgets(line, LENGTH, fp) != NULL) {
-    if ((begin = strstr(line, s)) == NULL)
+    strcpy(lookup, "r=\"");
+    strcat(lookup, s);
+    strcat(lookup, "\"");
+    begin = line;
+    temp = begin;
+    int count = 0;
+    while ((temp = strstr(temp, "r=\"1\"")) != NULL) {
+      count++;
+      begin = temp;
+      temp++;
+    }
+    printf("%s\n", line);
+    if ((begin = strstr(begin, lookup)) == NULL)
       continue;
     begin = strstr(begin, "<v>");
     begin += 3;
     end = strstr(begin, "</v>");
+    printf("begin = %.*s\n", 100, begin);
     *end = '\0';
     strcpy(value, begin);
     *end = '<';
+    printf("count = %d\n", count);
     return value;
   }
 
   fclose(fp);
   printf("No value in cell %s, returning 0\n", s);
-  return "0";
+  return NULL;
 }
 
