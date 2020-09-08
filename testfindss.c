@@ -4,12 +4,14 @@
 
 int main(int argc, char **argv) {
 
-  char test[] = "gerjgr<v>hello</v>dfijdsjf";
-  char *pt;
-  pt = strinside(test, "<v>", "</v>");
+  if (argc < 3) {
+    printf("Syntax: ./a.out \"excel file name\" index\n");
+    exit(0);
+  }
+  XLfile xl;
+  char *test;
+  setXLvals(&xl, *(argv+1)); 
+  test = findss(&xl, atoi(*(argv+2)));
   printf("test = %s\n", test);
-  printf("pt = %s\n", pt);
-  free(pt);
-  
   return 0;
 }

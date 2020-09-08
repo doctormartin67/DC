@@ -162,7 +162,7 @@ int findsheetID(XLfile *xl, char *s) {
 */
 char *findss(XLfile *xl, int index) {
   FILE *fp;
-  char line[BUFSIZ];
+  char line[LENGTH];
   char sname[BUFSIZ];
   char *begin;
   int count = 0;
@@ -174,16 +174,21 @@ char *findss(XLfile *xl, int index) {
     exit(1);
   }
   while (fgets(line, LENGTH, fp) != NULL) {
-    begin = line;
-    while (count++ < index) {
-      begin = strstr(begin, "=\"preserve\"");
+    if ((begin = strstr(line, "=\"preserve\"")) == NULL)
+      continue;
+    while (count != index) {
       begin++;
+      if ((begin = strstr(begin, "=\"preserve\"")) == NULL)
+	break;
+      count++;
     }
-    begin = strinside(begin, "erve\">", "</t>");
-    strcpy(value, begin);
-    free(begin);
-    fclose(fp);
-    return value;
+    if(count == index) {
+      begin = strinside(begin, "erve\">", "</t>");
+      strcpy(value, begin);
+      free(begin);
+      fclose(fp);
+      return value;
+    }
   }
 
   fclose(fp);

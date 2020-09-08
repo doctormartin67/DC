@@ -17,6 +17,7 @@ char *strinside(char *s, char *begin, char *end);
 char *replace(const char *str, const char *orig, const char *rep);
 int FILEexists(const char *fname);
 int DIRexists(const char *dname);
+
 void setXLvals(XLfile *xl, char *s);
 void createXLzip(XLfile *xl);
 char *cell(char *s, XLfile *xl, char *sheet);
