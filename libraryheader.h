@@ -7,6 +7,7 @@
 typedef struct excel {
   char fname[BUFSIZ/2];
   char dirname[BUFSIZ/2];
+  char *sheetname[256];
   struct stat fbuf;
   struct stat dirbuf;
   
@@ -23,3 +24,4 @@ void createXLzip(XLfile *xl);
 char *cell(char *s, XLfile *xl, char *sheet);
 int findsheetID(XLfile *xl, char *s);
 char *findss(XLfile *xl, int index);
+void setsheetnames(XLfile *xl);

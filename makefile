@@ -3,7 +3,7 @@ TABLEPATH = /home/doctormartin67/Projects/work/tables
 BINPATH = /home/doctormartin67/bin
 libs = -lm #libraries to include: -lm is Math.
 objs = ${LIBPATH}/helperfunctions.o ${LIBPATH}/XLfunctions.o
-debug = #add -g if you want to debug
+debug = -g #add -g if you want to debug
 programs = createXLzip readCalc
 SRCS = createXLzip.o readCalc.o
 

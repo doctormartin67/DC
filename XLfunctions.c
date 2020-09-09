@@ -35,7 +35,7 @@ void setXLvals(XLfile *xl, char *s) {
   if ((xl->fbuf).st_mtime > (xl->dirbuf).st_mtime) {
     createXLzip(xl);
   }
-  
+  setsheetnames(xl);
 }
 
 // create a zip file of an excel document and extract
@@ -122,32 +122,26 @@ char *cell(char *s, XLfile *xl, char *sheet) {
 }
 
 int findsheetID(XLfile *xl, char *s) {
-  FILE *fp;
-  char line[BUFSIZ];
-  char sname[BUFSIZ];
-  char *begin;
-  int sheet;
 
-   // create the name of the xml file to find the sheetID
-  snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/xl/workbook.xml");
-  if ((fp = fopen(sname, "r")) == NULL) {
-    perror(sname);
-    exit(1);
+  int sheet = 0;
+  while (*(xl->sheetname + sheet) != NULL) {
+    if (strcmp(*(xl->sheetname + sheet), s) == 0)
+      return sheet + 1;
+    sheet++;
   }
-  while (fgets(line, LENGTH, fp) != NULL) {
-    begin = line;
-    if ((begin = strstr(begin, s)) == NULL)
-      continue;
-    begin = strinside(begin, "sheetId=\"", "\" state="); 
-    sheet = atoi(begin);
-    free(begin);
-    fclose(fp);
-    return sheet;
+  
+  printf("Sheet name \"%s\" not found.\n", s);
+  printf("Make sure you spelt it correctly, it is case sensitive.\n");
+  printf("The following sheets were found:\n");
+  printf("---------------------\n");
+  sheet = 0;
+  while (*(xl->sheetname + sheet) != NULL) {
+    printf(">%s<\n", *(xl->sheetname + sheet));
+    sheet++;
   }
-
-  fclose(fp);
-  printf("Sheet name \"%s\" not found.", s);
-  printf("Make sure you spelt it correctly, it is case sensitive.");
+  printf("---------------------\n");
+  printf("Please select one of the above sheets (excluding > and <).\n");
+  printf("Returning 0...\n");
   return 0;
 }
 
@@ -215,4 +209,30 @@ char *findss(XLfile *xl, int index) {
   fclose(fp);
   printf("Couldn't find anything in sharedStrings.xml. Returning NULL...\n");
   return NULL;
+}
+
+void setsheetnames(XLfile *xl) {
+  FILE *fp;
+  char line[BUFSIZ];
+  char sname[BUFSIZ];
+  char *begin;
+  int sheet = 0;
+
+  // create the name of the xml file to find the sheet names
+  snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/xl/workbook.xml");
+  if ((fp = fopen(sname, "r")) == NULL) {
+    perror(sname);
+    exit(1);
+  }
+  while (fgets(line, LENGTH, fp) != NULL) {
+    begin = line;
+    while ((begin = strstr(begin, "<sheet name=")) != NULL) {
+      *(xl->sheetname + sheet) = strinside(begin, "<sheet name=\"", "\" sheetId");
+      sheet++;
+      begin += strlen("<sheet name=");
+    }
+  }
+  // final pointer is just a null pointer
+  *(xl->sheetname + sheet) = NULL;
+  fclose(fp);
 }
