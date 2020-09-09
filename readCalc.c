@@ -12,8 +12,6 @@ int main(int argc, char **argv) {
   XLfile xl;
   setXLvals(&xl, argv[1]);
   printf("%s = %s\n", *(argv+3), cell(*(argv+3), &xl, *(argv+2)));
-  printf("%s = %s\n", *(argv+3), cell(*(argv+3), &xl, *(argv+2)));
-  
   return 0;
 }
 
