@@ -11,7 +11,7 @@ unsigned hash(char *s) {
   return hashval % HASHSIZE;
 }
 
-Hashtable *get(char *key) {
+Hashtable *get(char *key, Hashtable **list) {
   Hashtable *pht;
   
   for (pht = list[hash(key)]; pht != NULL; pht = pht->next)
@@ -20,11 +20,11 @@ Hashtable *get(char *key) {
   return NULL;
 }
 
-Hashtable *set(char *key, char *value) {
+Hashtable *set(char *key, char *value, Hashtable **list) {
   Hashtable *pht;
   unsigned hashval;
   
-  if ((pht = get(key)) == NULL) {
+  if ((pht = get(key, list)) == NULL) {
     pht = (Hashtable *) malloc(sizeof(*pht));
     if (pht == NULL || (pht->key = strdup(key)) == NULL)
       return NULL;

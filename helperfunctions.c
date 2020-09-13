@@ -104,6 +104,15 @@ char *strinside(char *s, char *begin, char *end) {
   pe = pb;
   pe = strstr(pe, end);
 
+  if (pb == NULL) {
+    printf("Couldn't find %s in %.*s\n", begin, 30, s);
+    return NULL;
+  }
+  else if (pe == NULL) {
+    printf("Couldn't find %s in %.*s\n", end, 30, pb);
+    return NULL;
+  }
+  
   // move pointer to start of the value we want
   pb += strlen(begin);
 

@@ -88,7 +88,7 @@ char *cell(char *s, XLfile *xl, char *sheet) {
 			  is of the form r="A3 for cell A3*/
   char sname[BUFSIZ]; // name of the sheet to open (xml file)
   char *begin;
-  char *end;
+  char *ss; // string to determine whether I need to call findss or not
   int sheetnr;
   static char value[BUFSIZ]; // value of cell to return (string)
 
@@ -109,15 +109,25 @@ char *cell(char *s, XLfile *xl, char *sheet) {
 
     if ((begin = strstr(begin, lookup)) == NULL)
       continue;
+    if ((ss = strinside(begin, "t=\"", "\">")) == NULL) {     
+      ss = "n";
+      printf("warning: Couldn't determine whether cell value is ");
+      printf("string literal or not, just returning whatever was found ");
+      printf("in the xml file\n");
+    }
     begin = strinside(begin, "<v>", "</v>");
-    strcpy(value, begin);
+    if (strcmp(ss, "s") == 0)
+      strcpy(value, findss(xl, atoi(begin)));
+    else
+      strcpy(value, begin);
     free(begin);
+    free(ss);
     fclose(fp);
     return value;
   }
 
   fclose(fp);
-  printf("No value in cell %s, returning 0\n", s);
+  printf("No value in cell %s, returning NULL.\n", s);
   return NULL;
 }
 
@@ -152,7 +162,7 @@ int findsheetID(XLfile *xl, char *s) {
 */
 char *findss(XLfile *xl, int index) {
   FILE *fp;
-  char line[LENGTH];
+  char line[LENGTH/100];
   char sname[BUFSIZ];
   char *begin;
   int count = 0;
@@ -177,6 +187,7 @@ char *findss(XLfile *xl, int index) {
     exit(1);
   }
   while (fgets(line, LENGTH, fp) != NULL) {
+    printf("%s\n", line);
     // check if preserve is in current line
     if ((begin = strstr(line, "=\"preserve\"")) == NULL)
       continue;
