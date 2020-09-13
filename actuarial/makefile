@@ -15,13 +15,13 @@ ${SRCS} : %.o: %.c actuarialfunctions.h
 	gcc ${debug} -c $<
 
 ${TABLEPATH}/lifetable.o : ${TABLEPATH}/lifetable.c
-	gcc ${debug} -c -I${LIBPATH} -I${TABLEPATH} $? -o $@
+	gcc ${debug} -c -I${LIBPATH} -I${TABLEPATH} $< -o $@
 ${TABLEPATH}/lifetable.o : ${LIBPATH}/libraryheader.h ${TABLEPATH}/lifetables.h
 
 ${LIBPATH}/helperfunctions.o : ${LIBPATH}/helperfunctions.c
-	gcc ${debug} -c -I${LIBPATH} $? -o $@
+	gcc ${debug} -c -I${LIBPATH} $< -o $@
 ${LIBPATH}/helperfunctions.o : ${LIBPATH}/libraryheader.h
 
 actuarialfunctions.o : actuarialfunctions.c
-	gcc ${debug} -c -I${TABLEPATH} $?
+	gcc ${debug} -c -I${TABLEPATH} $<
 actuarialfunctions.o : actuarialfunctions.h ${TABLEPATH}/lifetables.h
