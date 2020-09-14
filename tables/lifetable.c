@@ -5,13 +5,13 @@
 #include "lifetables.h"
 
 #define MAXAGE 120
-#define HASHSIZE 101
+#define HASHLTSIZE 101
 #define PATH "/home/doctormartin67/Projects/work/tables/tables/"
 
-static struct lifetable *list[HASHSIZE];
-static unsigned hash(char *);
-static struct lifetable *get(char *);
-static struct lifetable *set(char *);
+static struct lifetable *list[HASHLTSIZE];
+static unsigned hashlt(char *);
+static struct lifetable *getlt(char *);
+static struct lifetable *setlt(char *);
 static void makeLifeTable(char *, int *);
 
 struct lifetable {
@@ -26,40 +26,40 @@ int lx(char *name, int age) {
     return 0;
   else {
     struct lifetable *clt;
-    if ((clt = get(name)) == NULL)
-      clt = set(name);
+    if ((clt = getlt(name)) == NULL)
+      clt = setlt(name);
     return clt->lt[age];
   }
 }
 
-static unsigned hash(char *s) {
-  unsigned hashval;
+static unsigned hashlt(char *s) {
+  unsigned hashltval;
   
-  for (hashval = 0; *s != '\0'; s++)
-    hashval = *s + 31 * hashval;
-  return hashval % HASHSIZE;
+  for (hashltval = 0; *s != '\0'; s++)
+    hashltval = *s + 31 * hashltval;
+  return hashltval % HASHLTSIZE;
 }
 
-static struct lifetable *get(char *s) {
+static struct lifetable *getlt(char *s) {
   struct lifetable *plt;
   
-  for (plt = list[hash(s)]; plt != NULL; plt = plt->next)
+  for (plt = list[hashlt(s)]; plt != NULL; plt = plt->next)
     if (strcmp(s, plt->name) == 0)
       return plt;
   return NULL;
 }
 
-static struct lifetable *set(char *name) {
+static struct lifetable *setlt(char *name) {
   struct lifetable *plt;
-  unsigned hashval;
+  unsigned hashltval;
   
-  if ((plt = get(name)) == NULL) {
+  if ((plt = getlt(name)) == NULL) {
     plt = (struct lifetable *) malloc(sizeof(*plt));
     if (plt == NULL || (plt->name = strdup(name)) == NULL)
       return NULL;
-    hashval = hash(name);
-    plt->next = list[hashval];
-    list[hashval] = plt;
+    hashltval = hashlt(name);
+    plt->next = list[hashltval];
+    list[hashltval] = plt;
     plt->count = 1;
   }
   else {
