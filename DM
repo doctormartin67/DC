@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ $# -ne 1 ]]
+then
+   echo syntax: DM \"Excel sheet.xml\"
+   exit
+fi
+awk -f DM.awk "$1"
+exit

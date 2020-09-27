@@ -10,6 +10,8 @@ SRCS = createXLzip.o readCalc.o
 ${programs} : %: %.o ${objs}
 	gcc ${debug} -o $@ $< ${objs}
 	mv $@ ${BINPATH}
+	cp ${LIBPATH}/DM ${BINPATH}
+	cp ${LIBPATH}/DM.awk ${BINPATH}
 
 ${SRCS} : %.o: %.c
 	gcc ${debug} -c $<

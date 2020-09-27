@@ -9,8 +9,8 @@
 #define LENGTH BUFSIZ * 1000
 
 typedef struct excel {
-  char fname[BUFSIZ/2];
-  char dirname[BUFSIZ/2];
+  char fname[BUFSIZ/8];
+  char dirname[BUFSIZ/8];
   char *sheetname[256];
   struct stat fbuf;
   struct stat dirbuf;

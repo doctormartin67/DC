@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include "libraryheader.h"
 
+#define TEMPPATH "/home/doctormartin67/Projects/library/temp/" /*This should be updated, because it's too dependant
+					    on the library name */
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, char *s) {
   char *temp;
@@ -83,31 +85,39 @@ void createXLzip(XLfile *xl) {
 char *cell(char *s, XLfile *xl, char *sheet) {
   
   FILE *fp;
-  char line[LENGTH];
-  char lookup[BUFSIZ]; /* string to lookup in xml file to find cell value.
-			  is of the form r="A3 for cell A3*/
-  char sname[BUFSIZ]; // name of the sheet to open (xml file)
+  char line[BUFSIZ];
+  char sname[BUFSIZ/4]; // name of the sheet to open (xml file)
   char *begin;
   char *ss; // string to determine whether I need to call findss or not
   int sheetnr;
   static char value[BUFSIZ]; // value of cell to return (string)
-
+  char *t;
+  char *end;
+  char command[BUFSIZ];
+  
   if(!(sheetnr = findsheetID(xl, sheet)))
     exit(0);
   // create the name of the xml file to find the cell value
-  snprintf(sname, sizeof sname, "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheetnr, ".xml");
-
+  snprintf(sname, sizeof(sname), "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheetnr, ".xml");
+  // we need to replace spaces with "\ " for the command
+  t = replace(sname, " ", "\\ ");
+  snprintf(command, sizeof(command), "%s%s%s%s%s", "DM ", t, " > ", TEMPPATH, "DM.txt");
+  system(command);
+  free(t);
+  memset(sname, '\0', sizeof(sname));
+  strcpy(sname, TEMPPATH);
+  strcat(sname, "DM.txt");
   if ((fp = fopen(sname, "r")) == NULL) {
-    perror(sname);
+    perror("DM.txt");
     exit(1);
   }
-  while (fgets(line, LENGTH, fp) != NULL) {
-    strcpy(lookup, "r=\"");
-    strcat(lookup, s);
-    strcat(lookup, "\"");
+  memset(sname, '0', sizeof(sname));
+  strcpy(sname, s);
+  strcat(sname, "\"");
+  
+  while (fgets(line, BUFSIZ, fp) != NULL) {
     begin = line;
-
-    if ((begin = strstr(begin, lookup)) == NULL)
+    if ((begin = strstr(begin, sname)) == NULL)
       continue;
     if ((ss = strinside(begin, "t=\"", "\">")) == NULL) {     
       ss = "n";
@@ -187,7 +197,6 @@ char *findss(XLfile *xl, int index) {
     exit(1);
   }
   while (fgets(line, LENGTH, fp) != NULL) {
-    printf("%s\n", line);
     // check if preserve is in current line
     if ((begin = strstr(line, "=\"preserve\"")) == NULL)
       continue;
