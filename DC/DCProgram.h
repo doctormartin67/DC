@@ -12,7 +12,7 @@ typedef struct currentMember {
 		 
 } CurrentMember;
 
-setCMvals(XLfile *xl, CurrentMember *cm);
+void setCMvals(XLfile *xl, CurrentMember *cm);
 
 /* used to find the row and sheet where the keys lie for the data to be used
    for calculations. If the word KEY isn't found in the data then

@@ -15,7 +15,7 @@ void setCMvals(XLfile *xl, CurrentMember *cm) {
    1 is returned */
 void setkey(XLfile *xl, CurrentMember *cm) {
   FILE *fp;
-  char line[LENGTH];
+  char line[BUFSIZ];
   char lookup[BUFSIZ];
   char sname[BUFSIZ]; // name of the sheet to open (xml file)
   char *begin;
@@ -23,16 +23,13 @@ void setkey(XLfile *xl, CurrentMember *cm) {
   int value = 1; // value to return
   int i = 0;
   while (*(xl->sheetname + i) != NULL) {
-    if(!(sheetnr = findsheetID(xl, *(xl->sheetname + i))))
-      exit(0);
-    // create the name of the xml file to find the cell value
-    snprintf(sname, sizeof sname, "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheetnr, ".xml");
-
+    createDMfile(sname, xl, *(xl->sheetname + i));
+    
     if ((fp = fopen(sname, "r")) == NULL) {
       perror(sname);
       exit(1);
     }
-    while (fgets(line, LENGTH, fp) != NULL) {
+    while (fgets(line, BUFSIZ, fp) != NULL) {
       begin = line;
       strcpy(lookup, "<v>");
     
@@ -40,7 +37,6 @@ void setkey(XLfile *xl, CurrentMember *cm) {
 	continue;
       begin -= 15;
       begin = strinside(begin, "\">", "</f");
-      printf("begin = %.*s\n", 100, begin);
       char *temp = begin;
       while (!isdigit(*temp))
 	temp++;
