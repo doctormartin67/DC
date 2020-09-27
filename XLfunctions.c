@@ -90,23 +90,18 @@ char *cell(char *s, XLfile *xl, char *sheet) {
   char *begin;
   char *ss; // string to determine whether I need to call findss or not
   int sheetnr;
+  struct stat xlbuf;
+  struct stat DMbuf;
   static char value[BUFSIZ]; // value of cell to return (string)
   char *t;
   char *end;
   char command[BUFSIZ];
-  
-  if(!(sheetnr = findsheetID(xl, sheet)))
-    exit(0);
-  // create the name of the xml file to find the cell value
-  snprintf(sname, sizeof(sname), "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheetnr, ".xml");
-  // we need to replace spaces with "\ " for the command
-  t = replace(sname, " ", "\\ ");
-  snprintf(command, sizeof(command), "%s%s%s%s%s", "DM ", t, " > ", TEMPPATH, "DM.txt");
-  system(command);
-  free(t);
-  memset(sname, '\0', sizeof(sname));
-  strcpy(sname, TEMPPATH);
-  strcat(sname, "DM.txt");
+
+  /* awk is used to create a text file with all the cell values printed per line.
+     createDMfile will check whether that text file has been created and also when
+     it was created and will create it if neccessary and assign sname with the correct
+     name of the file. */
+  createDMfile(sname, xl, sheet);
   if ((fp = fopen(sname, "r")) == NULL) {
     perror("DM.txt");
     exit(1);
@@ -236,6 +231,9 @@ void setsheetnames(XLfile *xl) {
   char line[BUFSIZ];
   char sname[BUFSIZ];
   char *begin;
+  char *temp;
+  char *temp1; // used to replace "&" with ""
+  char *temp2; // used to replace ";" with ""
   int sheet = 0;
 
   // create the name of the xml file to find the sheet names
@@ -244,15 +242,60 @@ void setsheetnames(XLfile *xl) {
     perror(sname);
     exit(1);
   }
-  while (fgets(line, LENGTH, fp) != NULL) {
+  while (fgets(line, BUFSIZ, fp) != NULL) {
     begin = line;
     while ((begin = strstr(begin, "<sheet name=")) != NULL) {
-      *(xl->sheetname + sheet) = strinside(begin, "<sheet name=\"", "\" sheetId");
+      temp = strinside(begin, "<sheet name=\"", "\" sheetId");
+      temp1 = replace(temp, "&", "");
+      temp2 = replace(temp1, ";", "");
+      *(xl->sheetname + sheet) = temp2;
       sheet++;
       begin += strlen("<sheet name=");
+      free(temp);
+      free(temp1);
     }
   }
   // final pointer is just a null pointer
   *(xl->sheetname + sheet) = NULL;
   fclose(fp);
+}
+
+/* this function creates the DM file if its not already been created of if it's outdated and also
+   sets the DMname of the DM file
+*/
+void createDMfile(char *DMname, XLfile *xl, char *sheet) {
+  int sheetnr;
+  struct stat xlbuf;
+  struct stat DMbuf;
+  char *s, *t;
+  char command[BUFSIZ];
+
+  if(!(sheetnr = findsheetID(xl, sheet)))
+    exit(0);
+  // create the name of the xml file to find the cell value
+  snprintf(DMname, BUFSIZ, "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheetnr, ".xml");
+  // we need to replace spaces with "\ " for the command
+  t = replace(DMname, " ", "\\ ");
+
+  // this is used to retrieve st_mtime
+  if (stat(DMname, &xlbuf) < 0) {
+    perror(DMname);
+    exit(1);
+  }
+  memset(DMname, '\0', BUFSIZ);
+  snprintf(DMname, BUFSIZ, "%s%s%s%s", TEMPPATH, "DM", sheet, ".txt");
+  s = replace(DMname, " ", "\\ ");
+  if(!FILEexists(DMname)) {
+    snprintf(command, sizeof(command), "%s%s%s%s", "DM ", t, " > ", s);
+    system(command);
+  }
+  if (stat(DMname, &DMbuf) < 0) {
+    perror(DMname);
+    exit(1);
+  }
+  if (xlbuf.st_mtime > DMbuf.st_mtime) {
+    snprintf(command, sizeof(command), "%s%s%s%s", "DM ", t, " > ", s);
+    system(command);
+  }
+  free(t);
 }

@@ -5,5 +5,5 @@ then
    echo syntax: DM \"Excel sheet.xml\"
    exit
 fi
-awk -f DM.awk "$1"
+awk -f "$(dirname $(readlink -f $0))/DM.awk" "$1"
 exit

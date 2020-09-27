@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><sheetPr filterMode="false"><pageSetUpPr fitToPage="false"/></sheetPr><dimension ref="B4:E31"/><sheetViews><sheetView showFormulas="false" showGridLines="false" showRowColHeaders="true" showZeros="true" rightToLeft="false" tabSelected="false" showOutlineSymbols="true" defaultGridColor="true" view="normal" topLeftCell="A10" colorId="64" zoomScale="85" zoomScaleNormal="85" zoomScalePageLayoutView="100" workbookViewId="0"><selection pane="topLeft" activeCell="C31" activeCellId="0" sqref="C31"/></sheetView></sheetViews><sheetFormatPr defaultColWidth="8.59375" defaultRowHeight="12.75" zeroHeight="false" outlineLevelRow="0" outlineLevelCol="0"></sheetFormatPr><cols><col collapsed="false" customWidth="true" hidden="false" outlineLevel="0" max="2" min="2" style="0" width="29.43"/><col collapsed="false" customWidth="true" hidden="false" outlineLevel="0" max="3" min="3" style="0" width="16.86"/><col collapsed="false" customWidth="true" hidden="false" outlineLevel="0" max="5" min="5" style="0" width="10.29"/></cols><sheetData><row r="4" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v><?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><sheetPr filterMode="false"><pageSetUpPr fitToPage="false"/></sheetPr><dimension ref="B4:E31"/><sheetViews><sheetView showFormulas="false" showGridLines="false" showRowColHeaders="true" showZeros="true" rightToLeft="false" tabSelected="false" showOutlineSymbols="true" defaultGridColor="true" view="normal" topLeftCell="A10" colorId="64" zoomScale="85" zoomScaleNormal="85" zoomScalePageLayoutView="100" workbookViewId="0"><selection pane="topLeft" activeCell="C31" activeCellId="0" sqref="C31"/></sheetView></sheetViews><sheetFormatPr defaultColWidth="8.59375" defaultRowHeight="12.75" zeroHeight="false" outlineLevelRow="0" outlineLevelCol="0"></sheetFormatPr><cols><col collapsed="false" customWidth="true" hidden="false" outlineLevel="0" max="2" min="2" style="0" width="29.43"/><col collapsed="false" customWidth="true" hidden="false" outlineLevel="0" max="3" min="3" style="0" width="16.86"/><col collapsed="false" customWidth="true" hidden="false" outlineLevel="0" max="5" min="5" style="0" width="10.29"/></cols><sheetData><row r="4" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B4" s="6"/></row><row r="5" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v>B4" s="6"/></row><row r="5" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B5" s="6"/><v>B5" s="6"/></v>
+C5" s="36"/></row><row r="6" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v>C5" s="36"/></row><row r="6" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B6" s="6"/></row><row r="7" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v>B6" s="6"/></row><row r="7" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B7" s="6"/></row><row r="8" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v>B7" s="6"/></row><row r="8" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B8" s="0" t="s"><v>53</v>
+<v></v>
+C8" s="37" t="n"><v>0</v>
+<v></v>
+E8" s="38" t="s"><v>54</v>
+</row><row r="9" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="9" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B9" s="6"/></row><row r="10" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v>B9" s="6"/></row><row r="10" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B10" s="6"/></row><row r="12" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v>B10" s="6"/></row><row r="12" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B12" s="39" t="s"><v>55</v>
+<v></v>
+C12" s="40" t="str"><f aca="false">&quot;As at &quot;&amp;TEXT(Calcul!B39-1,&quot;dd/mm/jjjj&quot;)</f><v>As at 30/11/jjjj</v>
+</row><row r="13" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="13" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B13" s="0" t="s"><v>56</v>
+<v></v>
+C13" s="41" t="n"><f aca="false">-IF(Calcul!B54=&quot;RESERVES&quot;,IF(Calcul!B56=&quot;PUC&quot;,Data!KL7,Data!KN7),IF(Calcul!B56=&quot;PUC&quot;,Data!KF7,Data!KH7))*IF(Calcul!B53=&quot;IAS&quot;,1.1326,1)+C14*IF(Calcul!B53=&quot;IAS&quot;,0.1326,0)</f><v>-3664538.96531028</v>
+</row><row r="14" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="14" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B14" s="42" t="s"><v>57</v>
+<v></v>
+C14" s="43" t="n"><f aca="false">(IF(Calcul!B54=&quot;RESERVES&quot;,Data!KP7,IF(Calcul!B55=&quot;PAR 115&quot;,Data!KJ7,Data!KK7))+C8)</f><v>3582913.93746473</v>
+</row><row r="15" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="15" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B15" s="44" t="s"><v>58</v>
+<v></v>
+C15" s="45" t="n"><f aca="false">C13+C14</f><v>-81625.0278455415</v>
+</row><row r="16" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="16" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+C16" s="46"/></row><row r="17" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v>C16" s="46"/></row><row r="17" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B17" s="47" t="s"><v>59</v>
+<v></v>
+C17" s="45" t="n"><f aca="false">-IF(Calcul!B54=&quot;RESERVES&quot;,IF(Calcul!B56=&quot;PUC&quot;,Data!KL6,Data!KN6),IF(Calcul!B56=&quot;PUC&quot;,Data!KF6,Data!KH6))+C8*IF(Calcul!B53=&quot;IAS&quot;,1.1326,1)</f><v>-81625.0278455415</v>
+</row><row r="20" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="20" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+E20" s="48"/></row><row r="21" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v>E20" s="48"/></row><row r="21" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B21" s="0" t="s"><v>60</v>
+<v></v>
+C21" s="41" t="n"><f aca="false">IF(Calcul!B54=&quot;RESERVES&quot;,IF(Calcul!B56=&quot;PUC&quot;,Data!KM7,Data!KO7),IF(Calcul!B56=&quot;PUC&quot;,Data!KG7,Data!KI7))*IF(Calcul!B53=&quot;IAS&quot;,1.1326,1)+C29*IF(Calcul!B53=&quot;IAS&quot;,0.044,0)</f><v>482810.690983744</v>
+</row><row r="22" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="22" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B22" s="0" t="s"><v>61</v>
+<v></v>
+C22" s="41" t="n"><f aca="false">-C13*Calcul!$B$40-(C30+C31)*Calcul!$B$40/2</f><v>45570.430403098</v>
+</row><row r="23" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="23" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B23" s="0" t="s"><v>62</v>
+<v></v>
+C23" s="41" t="n"><f aca="false">-(C14+(C28+C29-C30-C31-C24)/2)*Calcul!$B$40</f><v>-48163.7038024106</v>
+</row><row r="24" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="24" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B24" s="42" t="s"><v>63</v>
+<v></v>
+C24" s="43" t="n"><f aca="false">Data!JR7*Calcul!$B$26*(Calcul!B53=&quot;IAS&quot;)</f><v>0</v>
+</row><row r="25" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="25" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B25" s="1" t="str"><f aca="false">&quot;Pension Expense &quot; &amp; YEAR(Calcul!B39)</f><v>Pension Expense 2016</v>
+<v></v>
+C25" s="45" t="n"><f aca="false">SUM(C21:C24)</f><v>480217.417584431</v>
+</row><row r="28" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="28" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B28" s="0" t="s"><v>64</v>
+<v></v>
+C28" s="41" t="n"><f aca="false">Data!JR7*IF(Calcul!B53=&quot;IAS&quot;,1.1326,1)+C29*IF(Calcul!B53=&quot;IAS&quot;,0.044,0)</f><v>441315.002074324</v>
+<v></v>
+E28" s="46" t="n"><f aca="false">Data!JR7+C31</f><v>441315.002074324</v>
+</row><row r="29" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="29" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B29" s="0" t="s"><v>65</v>
+<v></v>
+C29" s="41" t="n"><f aca="false">Data!JS7</f><v>136858.797506768</v>
+</row><row r="30" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="30" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B30" s="0" t="s"><v>66</v>
+<v></v>
+C30" s="41" t="n"><f aca="false">Data!LV7</f><v>37809.0661248664</v>
+</row><row r="31" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"><v></row><row r="31" customFormat="false" ht="12.75" hidden="false" customHeight="false" outlineLevel="0" collapsed="false"></v>
+B31" s="0" t="s"><v>67</v>
+<v></v>
+C31" s="41" t="n"><f aca="false">Data!JR7*IF(Calcul!B53=&quot;IAS&quot;,0.1326,0)+C29*IF(Calcul!B53=&quot;IAS&quot;,0.044,0)</f><v>0</v>
+</row></sheetData><printOptions headings="false" gridLines="false" gridLinesSet="true" horizontalCentered="false" verticalCentered="false"/><pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.511805555555555" footer="0.511805555555555"/><pageSetup paperSize="9" scale="100" firstPageNumber="0" fitToWidth="1" fitToHeight="1" pageOrder="downThenOver" orientation="portrait" blackAndWhite="false" draft="false" cellComments="none" useFirstPageNumber="false" horizontalDpi="300" verticalDpi="300" copies="1"/><headerFooter differentFirst="false" differentOddEven="false"><oddHeader></oddHeader><oddFooter></oddFooter></headerFooter></worksheet><v></row></sheetData><printOptions headings="false" gridLines="false" gridLinesSet="true" horizontalCentered="false" verticalCentered="false"/><pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.511805555555555" footer="0.511805555555555"/><pageSetup paperSize="9" scale="100" firstPageNumber="0" fitToWidth="1" fitToHeight="1" pageOrder="downThenOver" orientation="portrait" blackAndWhite="false" draft="false" cellComments="none" useFirstPageNumber="false" horizontalDpi="300" verticalDpi="300" copies="1"/><headerFooter differentFirst="false" differentOddEven="false"><oddHeader></oddHeader><oddFooter></oddFooter></headerFooter></worksheet></v>

@@ -42,4 +42,10 @@ int findsheetID(XLfile *xl, char *s);
 char *findss(XLfile *xl, int index);
 void setsheetnames(XLfile *xl);
 
+/* awk is used to create a text file with all the cell values printed per line.
+   createDMfile will check whether that text file has been created and also when
+   it was created and will create it if neccessary and assign sname with the correct
+   name of the file. */
+void createDMfile(char *DMname, XLfile *xl, char *sheet);
+
 #endif
