@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
   
   setXLvals(&xl, argv[1]);
   setkey(&xl, &cm);
-  printf("keyrow = %d and datasheet = %s\n", cm.keyrow, cm.datasheet);
+  printf("keyrow = %d, keycolumn = %s and datasheet = %s\n",
+	 cm.keyrow, cm.keycolumn, cm.datasheet);
   return 0;
 }

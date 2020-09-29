@@ -7,6 +7,7 @@
 typedef struct currentMember {
   int keyrow; /* find the row in the excel file where 
 		 the keys are to use in the hashtable */
+  char keycolumn[3];
   char datasheet[256]; // This is the sheet where the data lies
   Hashtable **Data;
 		 

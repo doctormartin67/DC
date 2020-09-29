@@ -21,7 +21,7 @@ void setkey(XLfile *xl, CurrentMember *cm) {
   char *begin;
   int sheetnr;
   int value = 1; // value to return
-  int i = 0;
+  int i,j = 0;
   while (*(xl->sheetname + i) != NULL) {
     createDMfile(sname, xl, *(xl->sheetname + i));
     
@@ -38,8 +38,10 @@ void setkey(XLfile *xl, CurrentMember *cm) {
       begin -= 15;
       begin = strinside(begin, "\">", "</f");
       char *temp = begin;
-      while (!isdigit(*temp))
+      while (!isdigit(*temp)) {
+	cm->keycolumn[j++] = *temp;
 	temp++;
+      }
       value = atoi(temp);
       free(begin);
       fclose(fp);
@@ -51,8 +53,10 @@ void setkey(XLfile *xl, CurrentMember *cm) {
   }
   fclose(fp);
   printf("warning: KEY was not found anywhere, ");
-  printf("row 1 is therefore assumed for the key row and ");
+  printf("row 1 is therefore assumed for the key row, ");
+  printf("column A is assumed as key column and ");
   printf("\"sheet1\" is assumed as the data sheet name\n");
   strcpy(cm->datasheet, *xl->sheetname);
   cm->keyrow = 1;
+  cm->keycolumn[0] = 'A';
 }
