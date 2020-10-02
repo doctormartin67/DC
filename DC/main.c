@@ -11,11 +11,11 @@ int main(int argc, char **argv) {
   }
     
   XLfile xl;
-  CurrentMember cm;
+  DataSet ds;
   
   setXLvals(&xl, argv[1]);
-  setkey(&xl, &cm);
-  printf("keyrow = %d, keycolumn = %s and datasheet = %s\n",
-	 cm.keyrow, cm.keycolumn, cm.datasheet);
+  setDSvals(&xl, &ds);
+  printf("keyrow = %d, keycolumn = %s, fawk = %s and datasheet = %s\n",
+	 ds.keyrow, ds.keycolumn, ds.fawk, ds.datasheet);
   return 0;
 }
