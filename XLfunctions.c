@@ -253,6 +253,7 @@ void setsheetnames(XLfile *xl) {
       begin += strlen("<sheet name=");
       free(temp);
       free(temp1);
+      // we don't free(temp2) because we need it "alive" for xl to point to
     }
   }
   // final pointer is just a null pointer
@@ -261,9 +262,9 @@ void setsheetnames(XLfile *xl) {
 }
 
 /* this function creates the DM file if its not already been created of if it's outdated and also
-   sets the DMname of the DM file
+   sets the fawk of the DM file
 */
-void createDMfile(char *DMname, XLfile *xl, char *sheet) {
+void createDMfile(char *fawk, XLfile *xl, char *sheet) {
   int sheetnr;
   struct stat xlbuf;
   struct stat DMbuf;
@@ -273,24 +274,24 @@ void createDMfile(char *DMname, XLfile *xl, char *sheet) {
   if(!(sheetnr = findsheetID(xl, sheet)))
     exit(0);
   // create the name of the xml file to find the cell value
-  snprintf(DMname, BUFSIZ, "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheetnr, ".xml");
+  snprintf(fawk, BUFSIZ, "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheetnr, ".xml");
   // we need to replace spaces with "\ " for the command
-  t = replace(DMname, " ", "\\ ");
+  t = replace(fawk, " ", "\\ ");
 
   // this is used to retrieve st_mtime
-  if (stat(DMname, &xlbuf) < 0) {
-    perror(DMname);
+  if (stat(fawk, &xlbuf) < 0) {
+    perror(fawk);
     exit(1);
   }
-  memset(DMname, '\0', BUFSIZ);
-  snprintf(DMname, BUFSIZ, "%s%s%s%s", TEMPPATH, "DM", sheet, ".txt");
-  s = replace(DMname, " ", "\\ ");
-  if(!FILEexists(DMname)) {
+  memset(fawk, '\0', BUFSIZ);
+  snprintf(fawk, BUFSIZ, "%s%s%s%s", TEMPPATH, "DM", sheet, ".txt");
+  s = replace(fawk, " ", "\\ ");
+  if(!FILEexists(fawk)) {
     snprintf(command, sizeof(command), "%s%s%s%s", "DM ", t, " > ", s);
     system(command);
   }
-  if (stat(DMname, &DMbuf) < 0) {
-    perror(DMname);
+  if (stat(fawk, &DMbuf) < 0) {
+    perror(fawk);
     exit(1);
   }
   if (xlbuf.st_mtime > DMbuf.st_mtime) {

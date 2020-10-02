@@ -29,7 +29,8 @@ void createXLzip(XLfile *xl);
 
 /* s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
-   sheet is the number of the sheet to open,
+   sheet is the number of the sheet to open. Returns NULL when no
+   value in cell.
 */
 char *cell(char *s, XLfile *xl, char *sheet);
 
@@ -46,6 +47,6 @@ void setsheetnames(XLfile *xl);
    createDMfile will check whether that text file has been created and also when
    it was created and will create it if neccessary and assign sname with the correct
    name of the file. */
-void createDMfile(char *DMname, XLfile *xl, char *sheet);
+void createDMfile(char *fawk, XLfile *xl, char *sheet);
 
 #endif
