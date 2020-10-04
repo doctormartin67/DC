@@ -102,6 +102,7 @@ char *cell(char *s, XLfile *xl, char *sheet) {
      it was created and will create it if neccessary and assign sname with the correct
      name of the file. */
   createDMfile(sname, xl, sheet);
+  // TODO: change this so that it doesnt open and close the FILE everytime cell is called
   if ((fp = fopen(sname, "r")) == NULL) {
     perror("DM.txt");
     exit(1);
