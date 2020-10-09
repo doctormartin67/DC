@@ -48,7 +48,11 @@ void setkey(DataSet *ds) {
       free(begin);
       fclose(fp);
       strcpy(ds->datasheet, *(xl->sheetname + i));
-       ds->keyrow = value;
+      ds->keyrow = value;
+      printf("Found KEY in\nsheet: %s\ncell: %s%d\n",
+	     ds->datasheet, ds->keycolumn, ds->keyrow);
+      printf("Setting datasheet to: %s\n", ds->datasheet);
+      printf("Data starts at cell: %s%d\n", ds->keycolumn, ds->keyrow);
       return;
     }
     i++;
@@ -86,4 +90,5 @@ void countMembers(DataSet *ds) {
     strcat(currentCell, srow);    
   }
   ds->membercnt = irow - 1 - ds->keyrow;
+  printf("Amount of affiliates in data: %d\n", ds->membercnt);
 }
