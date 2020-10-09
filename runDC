@@ -63,6 +63,11 @@ do
     awk -f "${lib}/DM.awk" "${XLdir}/xl/worksheets/sheet${i}.xml" > "${XLdir}/${sheet}.txt"
     ((i++))
 done
+
+#Start the program run
+
+main "${1}"
+
 #After the evaluation has been completed, we delete the zip file and zip folder
 #created to hold extracted zip files.
 

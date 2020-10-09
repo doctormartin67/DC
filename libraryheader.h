@@ -29,7 +29,7 @@ void setXLvals(XLfile *xl, char *s);
    sheet is the number of the sheet to open. Returns NULL when no
    value in cell.
 */
-char *cell(char *s, XLfile *xl, char *sheet);
+char *cell(FILE *fp, char *s, XLfile *xl);
 
 /* the excel zip has an xml file with all the string literals
    called sharedStrings.

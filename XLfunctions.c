@@ -21,29 +21,18 @@ void setXLvals(XLfile *xl, char *s) {
   setsheetnames(xl);
 }
 
-/* s is the name of the cell to retrieve value (for example B11).
+/* fp is an open sheet, usually the sheet containing the data to evaluate 
+   s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
-   sheet is the number of the sheet to open,
 */
-char *cell(char *s, XLfile *xl, char *sheet) {
+char *cell(FILE *fp, char *s, XLfile *xl) {
   
-  FILE *fp;
   char line[BUFSIZ];
-  char sname[BUFSIZ/4]; // name of the sheet to open (xml file)
+  char sname[BUFSIZ/4];
   char *begin;
   char *ss; // string to determine whether I need to call findss or not
   static char value[BUFSIZ]; // value of cell to return (string)
 
-  /* The ${sheet}.txt files are created in the bash script before C is run. It
-     uses a simple awk program to separate the cell values per line.*/
-
-  snprintf(sname, sizeof sname, "%s%s%s%s", xl->dirname, "/", sheet, ".txt");
-  // TODO: change this so that it doesnt open and close the FILE everytime cell is called
-  if ((fp = fopen(sname, "r")) == NULL) {
-    printf("Error in function cell:\n");
-    perror(sname);
-    exit(1);
-  }
   memset(sname, '0', sizeof(sname));
   strcpy(sname, s);
   strcat(sname, "\"");
@@ -65,11 +54,9 @@ char *cell(char *s, XLfile *xl, char *sheet) {
       strcpy(value, begin);
     free(begin);
     free(ss);
-    fclose(fp);
     return value;
   }
 
-  fclose(fp);
   printf("No value in cell %s, returning NULL.\n", s);
   return NULL;
 }
