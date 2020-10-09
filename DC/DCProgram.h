@@ -9,7 +9,6 @@ typedef struct dataset {
 		 the keys are to use in the hashtable */
   char keycolumn[3];
   char datasheet[256]; // This is the sheet where the data lies
-  char fawk[BUFSIZ/8]; // name of the file after awk
   XLfile *xl;
   Hashtable **Data;
   int membercnt;

@@ -19,7 +19,6 @@ void setkey(DataSet *ds) {
   FILE *fp;
   XLfile *xl;
   char line[BUFSIZ];
-  char lookup[BUFSIZ];
   char sname[BUFSIZ]; // name of the sheet to open (xml file)
   char *begin;
   int sheetnr;
@@ -27,14 +26,14 @@ void setkey(DataSet *ds) {
   int i,j = 0;
   xl = ds->xl;
   while (*(xl->sheetname + i) != NULL) {
-    createDMfile(sname, xl, *(xl->sheetname + i));
+    snprintf(sname, sizeof(sname), "%s%s%s%s", xl->dirname, "/", *(xl->sheetname + i), ".txt");
     if ((fp = fopen(sname, "r")) == NULL) {
+      fprintf(stderr, "Error in function setkey:\n");
       perror(sname);
       exit(1);
     }
     while (fgets(line, BUFSIZ, fp) != NULL) {
       begin = line;
-      strcpy(lookup, "<v>");
     
       if ((begin = strcasestr(begin, "KEY")) == NULL)
 	continue;
@@ -49,8 +48,7 @@ void setkey(DataSet *ds) {
       free(begin);
       fclose(fp);
       strcpy(ds->datasheet, *(xl->sheetname + i));
-      strcpy(ds->fawk, sname);
-      ds->keyrow = value;
+       ds->keyrow = value;
       return;
     }
     i++;
