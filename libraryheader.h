@@ -12,8 +12,6 @@ typedef struct excel {
   char fname[BUFSIZ/8];
   char dirname[BUFSIZ/8];
   char *sheetname[256];
-  struct stat fbuf;
-  struct stat dirbuf;
   Hashtable **cells;
 } XLfile;
 
@@ -25,7 +23,6 @@ int DIRexists(const char *dname);
 
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, char *s);
-void createXLzip(XLfile *xl);
 
 /* s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
@@ -42,11 +39,5 @@ char *cell(char *s, XLfile *xl, char *sheet);
 int findsheetID(XLfile *xl, char *s);
 char *findss(XLfile *xl, int index);
 void setsheetnames(XLfile *xl);
-
-/* awk is used to create a text file with all the cell values printed per line.
-   createDMfile will check whether that text file has been created and also when
-   it was created and will create it if neccessary and assign sname with the correct
-   name of the file. */
-void createDMfile(char *fawk, XLfile *xl, char *sheet);
 
 #endif

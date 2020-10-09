@@ -7,8 +7,6 @@
 #include <sys/types.h>
 #include "libraryheader.h"
 
-#define TEMPPATH "/home/doctormartin67/Projects/library/temp/" /*This should be updated, because it's too dependant
-					    on the library name */
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, char *s) {
   char *temp;
@@ -20,62 +18,7 @@ void setXLvals(XLfile *xl, char *s) {
   }
   *temp = '\0';
   strcpy(xl->dirname, s);
-
-  // enter the stats into both buffers. for DIR we check if a zip has been created.
-  if (stat(xl->fname, &xl->fbuf) < 0) {
-    perror(xl->fname);
-    exit(1);
-  }
-  if (!DIRexists(xl->dirname))
-    createXLzip(xl);
-  else
-  if (stat(xl->dirname, &xl->dirbuf) < 0) {
-    perror(xl->dirname);
-    exit(1);
-  }
-   // unzip recently modified excel file
-  if ((xl->fbuf).st_mtime > (xl->dirbuf).st_mtime) {
-    createXLzip(xl);
-  }
   setsheetnames(xl);
-}
-
-// create a zip file of an excel document and extract
-void createXLzip(XLfile *xl) {
-  char *s;
-  char *t;
-  char *end;
-  char command[BUFSIZ];
-  // we need to replace spaces with "\ " for the command
-  t = replace(xl->dirname, " ", "\\ ");
-  s = replace(xl->fname, " ", "\\ ");
-  
-  snprintf(command, sizeof command, "%s%s%s%s%s", "cp ", s, " ", t, ".zip");
-  system(command);
-
-  // *******unzip zip file*******
-  
-  // make directory for all files
-  if (!DIRexists(xl->dirname)) {
-    printf("command = %s\n", command);
-    snprintf(command, sizeof command, "%s%s", "mkdir ", t);
-    system(command);
-  }
-  else {
-    snprintf(command, sizeof command, "%s%s", "rm -rf ", t);
-    system(command);
-  }
-  // unzip in directory
-  snprintf(command, sizeof command, "%s%s%s%s", "unzip -q ", t, ".zip -d ", t);
-  if(system(command)) {
-    printf(">>>>>>");
-    printf("THE EXCEL FILE YOU ARE TRYING TO OPEN MIGHT HAVE A PASSWORD.\n");
-    printf(">>>>>>");
-    printf("REMOVE THE PASSWORD FROM THE FILE AND TRY AGAIN.\n");
-    exit(1);
-  }
-  free(t);
-  free(s);
 }
 
 /* s is the name of the cell to retrieve value (for example B11).
@@ -89,22 +32,16 @@ char *cell(char *s, XLfile *xl, char *sheet) {
   char sname[BUFSIZ/4]; // name of the sheet to open (xml file)
   char *begin;
   char *ss; // string to determine whether I need to call findss or not
-  int sheetnr;
-  struct stat xlbuf;
-  struct stat DMbuf;
   static char value[BUFSIZ]; // value of cell to return (string)
-  char *t;
-  char *end;
-  char command[BUFSIZ];
 
-  /* awk is used to create a text file with all the cell values printed per line.
-     createDMfile will check whether that text file has been created and also when
-     it was created and will create it if neccessary and assign sname with the correct
-     name of the file. */
-  createDMfile(sname, xl, sheet);
+  /* The ${sheet}.txt files are created in the bash script before C is run. It
+     uses a simple awk program to separate the cell values per line.*/
+
+  snprintf(sname, sizeof sname, "%s%s%s%s", xl->dirname, "/", sheet, ".txt");
   // TODO: change this so that it doesnt open and close the FILE everytime cell is called
   if ((fp = fopen(sname, "r")) == NULL) {
-    perror("DM.txt");
+    printf("Error in function cell:\n");
+    perror(sname);
     exit(1);
   }
   memset(sname, '0', sizeof(sname));
@@ -186,9 +123,10 @@ char *findss(XLfile *xl, int index) {
 		  */
   char *pdcount;
   static char value[BUFSIZ]; // value of cell to return (string)
-   // create the name of the xml file to find the sheetID
+  // create the name of the xml file to find the sheetID
   snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/xl/sharedStrings.xml");
   if ((fp = fopen(sname, "r")) == NULL) {
+    printf("Error in function findss:\n");
     perror(sname);
     exit(1);
   }
@@ -231,73 +169,32 @@ void setsheetnames(XLfile *xl) {
   FILE *fp;
   char line[BUFSIZ];
   char sname[BUFSIZ];
-  char *begin;
+  int i, sheet = 0;
   char *temp;
-  char *temp1; // used to replace "&" with ""
-  char *temp2; // used to replace ";" with ""
-  int sheet = 0;
 
-  // create the name of the xml file to find the sheet names
-  snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/xl/workbook.xml");
+  /* sheets.txt is a file that is created in the bash script before C is run. It
+     uses a simple awk program to list the sheets.*/
+
+  snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/sheets.txt");
   if ((fp = fopen(sname, "r")) == NULL) {
+    printf("Error in function setsheetnames:\n");
     perror(sname);
     exit(1);
   }
   while (fgets(line, BUFSIZ, fp) != NULL) {
-    begin = line;
-    while ((begin = strstr(begin, "<sheet name=")) != NULL) {
-      temp = strinside(begin, "<sheet name=\"", "\" sheetId");
-      temp1 = replace(temp, "&", "");
-      temp2 = replace(temp1, ";", "");
-      *(xl->sheetname + sheet) = temp2;
-      sheet++;
-      begin += strlen("<sheet name=");
-      free(temp);
-      free(temp1);
-      // we don't free(temp2) because we need it "alive" for xl to point to
-    }
+    i = 0;
+    // Remove the '\n' character at the end of the sheet name.
+    while (line[i++] != '\n')
+      ;
+    line[i-1] = '\0';
+    /* set memory aside for xl->sheetname to point at. This will stay "alive"
+       until the end of the program. */
+    temp = (char *)malloc(sizeof(line));
+    strcpy(temp, line);
+    *(xl->sheetname + sheet) = temp;
+    sheet++;
   }
   // final pointer is just a null pointer
   *(xl->sheetname + sheet) = NULL;
   fclose(fp);
-}
-
-/* this function creates the DM file if its not already been created of if it's outdated and also
-   sets the fawk of the DM file
-*/
-void createDMfile(char *fawk, XLfile *xl, char *sheet) {
-  int sheetnr;
-  struct stat xlbuf;
-  struct stat DMbuf;
-  char *s, *t;
-  char command[BUFSIZ];
-
-  if(!(sheetnr = findsheetID(xl, sheet)))
-    exit(0);
-  // create the name of the xml file to find the cell value
-  snprintf(fawk, BUFSIZ, "%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", sheetnr, ".xml");
-  // we need to replace spaces with "\ " for the command
-  t = replace(fawk, " ", "\\ ");
-
-  // this is used to retrieve st_mtime
-  if (stat(fawk, &xlbuf) < 0) {
-    perror(fawk);
-    exit(1);
-  }
-  memset(fawk, '\0', BUFSIZ);
-  snprintf(fawk, BUFSIZ, "%s%s%s%s", TEMPPATH, "DM", sheet, ".txt");
-  s = replace(fawk, " ", "\\ ");
-  if(!FILEexists(fawk)) {
-    snprintf(command, sizeof(command), "%s%s%s%s", "DM ", t, " > ", s);
-    system(command);
-  }
-  if (stat(fawk, &DMbuf) < 0) {
-    perror(fawk);
-    exit(1);
-  }
-  if (xlbuf.st_mtime > DMbuf.st_mtime) {
-    snprintf(command, sizeof(command), "%s%s%s%s", "DM ", t, " > ", s);
-    system(command);
-  }
-  free(t);
 }
