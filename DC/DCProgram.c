@@ -68,11 +68,20 @@ void setkey(DataSet *ds) {
 }
 
 void countMembers(DataSet *ds) {
+  FILE *fp;
   int count = 0;
   char column[3];
   int irow;
   char srow[6];
   char currentCell[10];
+  char sname[BUFSIZ/4];
+  
+  snprintf(sname, sizeof sname, "%s%s%s%s", ds->xl->dirname, "/", ds->datasheet, ".txt");
+  if ((fp = fopen(sname, "r")) == NULL) {
+    printf("Error in function countMembers:\n");
+    perror(sname);
+    exit(1);
+  }
 
   if (strlen(ds->keycolumn) > 3) {
     printf("the key column: %s has a length larger than 3 which should not be ", ds->keycolumn);
@@ -84,11 +93,12 @@ void countMembers(DataSet *ds) {
   snprintf(srow, sizeof(srow), "%d", irow);
   strcpy(currentCell, column);
   strcat(currentCell, srow);
-  while (cell(currentCell, ds->xl, ds->datasheet) != NULL) {
+  while (cell(fp, currentCell, ds->xl) != NULL) {
     snprintf(srow, sizeof(srow), "%d", ++irow);
     strcpy(currentCell, column);
     strcat(currentCell, srow);    
   }
   ds->membercnt = irow - 1 - ds->keyrow;
   printf("Amount of affiliates in data: %d\n", ds->membercnt);
+  fclose(fp);
 }

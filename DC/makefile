@@ -13,6 +13,7 @@ SRCS = main.o
 ${programs} : %: %.o ${miscOBJS} ${libOBJS} ${libs}
 	gcc ${debug} -o $@ $< ${miscOBJS} ${libOBJS} ${libs}
 	mv $@ ${BINPATH}
+	cp ${LIBPATH}/runDC ${BINPATH}
 
 ${SRCS} : %.o: %.c ${ACTPATH}/actuarialfunctions.h ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h DCProgram.h
 	gcc ${debug} -c $< -I${LIBPATH} -I${ACTPATH}
