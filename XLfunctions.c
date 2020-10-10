@@ -37,18 +37,24 @@ char *cell(FILE *fp, char *s, XLfile *xl) {
   memset(sname, '0', sizeof(sname));
   strcpy(sname, s);
   strcat(sname, "\"");
-  
+
+  printf("in cell\n");
+  fseek(fp, 0, SEEK_SET);
   while (fgets(line, BUFSIZ, fp) != NULL) {
     begin = line;
     if ((begin = strstr(begin, sname)) == NULL)
       continue;
+    printf("in cell after found\n");
     if ((ss = strinside(begin, "t=\"", "\">")) == NULL) {     
       ss = "n";
       printf("warning: Couldn't determine whether cell value is ");
       printf("string literal or not, just returning whatever was found ");
       printf("in the xml file\n");
     }
+    printf("just before strinside\n");
+    printf("begin = %s\n", begin);
     begin = strinside(begin, "<v>", "</v>");
+    printf("just before strcmp\n");
     if (strcmp(ss, "s") == 0)
       strcpy(value, findss(xl, atoi(begin)));
     else
@@ -218,7 +224,7 @@ void nextcol(char *next) {
      finalindex is the last index of the whole string*/
 
   // Find the final letter of the column.
-  while (!isdigit(*(next + i))) {
+  while (!isdigit(*(next + i)) && *(next + i) != '\0') {
     // Check if next is capital letters, if not then exit.
     if (*(next + i) <= 'z' && *(next + i) >= 'a') {
       printf("Error: In excel columns always have capital letters and %s ", next);
