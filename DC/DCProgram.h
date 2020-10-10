@@ -10,7 +10,7 @@ typedef struct dataset {
   char keycolumn[3];
   char datasheet[256]; // This is the sheet where the data lies
   XLfile *xl;
-  Hashtable *Data;
+  Hashtable ***Data;
   int membercnt;
 		 
 } DataSet;

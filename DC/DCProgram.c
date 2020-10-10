@@ -10,6 +10,7 @@ void setDSvals(XLfile *xl, DataSet *ds) {
   ds->xl = xl;
   setkey(ds);
   countMembers(ds);
+  createData(ds);
 }
 
 /* used to find the row where the keys lie for the data to be used
@@ -45,6 +46,13 @@ void setkey(DataSet *ds) {
       fclose(fp);
       strcpy(ds->datasheet, *(xl->sheetname + i));
       ds->keyrow = value;
+      
+      if (strlen(ds->keycolumn) > 3) {
+	printf("the key column: %s has a length larger than 3 which should not be ",
+	       ds->keycolumn);
+	printf("possible in excel, exiting program.\n");
+	exit(1);
+      }
       printf("Found KEY in\nsheet: %s\ncell: %s%d\n",
 	     ds->datasheet, ds->keycolumn, ds->keyrow);
       printf("Setting datasheet to: %s\n", ds->datasheet);
@@ -70,15 +78,9 @@ void countMembers(DataSet *ds) {
   int irow;
   char srow[6];
   char currentCell[10];
-  char sname[BUFSIZ/4];
-
+  
   fp = opensheet(ds->xl, ds->datasheet);
 
-  if (strlen(ds->keycolumn) > 3) {
-    printf("the key column: %s has a length larger than 3 which should not be ", ds->keycolumn);
-    printf("possible in excel, exiting program.\n");
-    exit(1);
-  }
   strcpy(column, ds->keycolumn);
   irow = ds->keyrow;
   snprintf(srow, sizeof(srow), "%d", irow);
@@ -95,8 +97,27 @@ void countMembers(DataSet *ds) {
 }
 
 void createData(DataSet *ds) {
+  FILE *fp;
+  char column[4];
+  int irow;
+  char srow[6];
+  char keyCell[10];
+  char dataCell[10];
 
+  // Allocate memory for data matrix.
+  ds->Data = (Hashtable ***)malloc(sizeof(Hashtable[HASHSIZE][ds->membercnt]));
+  fp = opensheet(ds->xl, ds->datasheet);
 
-  ds->Data = (Hashtable *)malloc(sizeof(Hashtable[ds->membercnt]));
+  strcpy(column, ds->keycolumn);
+  irow = ds->keyrow;
+  snprintf(srow, sizeof(srow), "%d", irow);
+  strcpy(keyCell, column);
+  strcat(keyCell, srow);
   
+  while (cell(fp, keyCell, ds->xl) != NULL) {
+    set(keyCell, cell(fp, keyCell, ds->xl), ds->Data);
+    
+  }
+
+  fclose(fp);
 }
