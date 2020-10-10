@@ -26,12 +26,8 @@ void setkey(DataSet *ds) {
   int i,j = 0;
   xl = ds->xl;
   while (*(xl->sheetname + i) != NULL) {
-    snprintf(sname, sizeof(sname), "%s%s%s%s", xl->dirname, "/", *(xl->sheetname + i), ".txt");
-    if ((fp = fopen(sname, "r")) == NULL) {
-      fprintf(stderr, "Error in function setkey:\n");
-      perror(sname);
-      exit(1);
-    }
+    fp = opensheet(xl, *(xl->sheetname + i));
+  
     while (fgets(line, BUFSIZ, fp) != NULL) {
       begin = line;
     
@@ -75,13 +71,8 @@ void countMembers(DataSet *ds) {
   char srow[6];
   char currentCell[10];
   char sname[BUFSIZ/4];
-  
-  snprintf(sname, sizeof sname, "%s%s%s%s", ds->xl->dirname, "/", ds->datasheet, ".txt");
-  if ((fp = fopen(sname, "r")) == NULL) {
-    printf("Error in function countMembers:\n");
-    perror(sname);
-    exit(1);
-  }
+
+  fp = opensheet(ds->xl, ds->datasheet);
 
   if (strlen(ds->keycolumn) > 3) {
     printf("the key column: %s has a length larger than 3 which should not be ", ds->keycolumn);
@@ -101,4 +92,11 @@ void countMembers(DataSet *ds) {
   ds->membercnt = irow - 1 - ds->keyrow;
   printf("Amount of affiliates in data: %d\n", ds->membercnt);
   fclose(fp);
+}
+
+void createData(DataSet *ds) {
+
+
+  ds->Data = (Hashtable *)malloc(sizeof(Hashtable[ds->membercnt]));
+  
 }

@@ -10,12 +10,16 @@ typedef struct dataset {
   char keycolumn[3];
   char datasheet[256]; // This is the sheet where the data lies
   XLfile *xl;
-  Hashtable **Data;
+  Hashtable *Data;
   int membercnt;
 		 
 } DataSet;
 
 void setDSvals(XLfile *xl, DataSet *ds);
+
+/* This function will allocate memory based on membercnt for the underlying
+   Hashtable used for the data.*/
+void createData(DataSet *ds);
 
 /* used to find the row and sheet where the keys lie for the data to be used
    for calculations. If the word KEY isn't found in the data then
