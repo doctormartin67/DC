@@ -12,7 +12,6 @@ typedef struct excel {
   char fname[BUFSIZ/8];
   char dirname[BUFSIZ/8];
   char *sheetname[256];
-  Hashtable **cells;
 } XLfile;
 
 char *trim(char *);
@@ -40,5 +39,6 @@ int findsheetID(XLfile *xl, char *s);
 char *findss(XLfile *xl, int index);
 void setsheetnames(XLfile *xl);
 FILE *opensheet(XLfile *xl, char *sheet);
+void nextcol(char *next);
 
 #endif

@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <ctype.h>
 #include "libraryheader.h"
 
 // s is the name of the excel file to set the values of
@@ -208,4 +209,37 @@ FILE *opensheet(XLfile *xl, char *sheet) {
     exit(1);
   }
   return fp;
+}
+
+void nextcol(char *next) {
+  char *npt;
+  int i = 0, j = 0, endindex = 0, finalindex = 0;
+  /* endindex is the last index of the letters
+     finalindex is the last index of the whole string*/
+
+  // Find the final letter of the column.
+  while (!isdigit(*(next + i))) {
+    // Check if next is capital letters, if not then exit.
+    if (*(next + i) <= 'z' && *(next + i) >= 'a') {
+      printf("Error: In excel columns always have capital letters and %s ", next);
+      printf("are not all capital letters. Exiting...\n");
+      exit(0);
+    }
+    npt = next + i++;
+  }
+  endindex = i--; // used to set last letter to A if all others are Z.
+  while (*(next + i++))
+    ;
+  finalindex = i; // used to shift all numbers to fit A at the end of letters
+  i = endindex - 1;
+  while (*npt == 'Z') {
+    if (i-- == 0) {
+      while (finalindex - j++ > endindex)
+	*(next + finalindex - j + 1) = *(next + finalindex - j);
+      *(next + endindex) = 'A';
+    }
+    *npt-- = 'A';
+  }
+  if (i >= 0)
+    (*npt)++;
 }
