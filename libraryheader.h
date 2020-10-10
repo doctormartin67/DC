@@ -39,5 +39,6 @@ char *cell(FILE *fp, char *s, XLfile *xl);
 int findsheetID(XLfile *xl, char *s);
 char *findss(XLfile *xl, int index);
 void setsheetnames(XLfile *xl);
+FILE *opensheet(XLfile *xl, char *sheet);
 
 #endif

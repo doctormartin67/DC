@@ -1,7 +1,7 @@
 #ifndef HASHTABLE
 #define HASHTABLE
 
-#define HASHSIZE 8192003 // I took BUFSIZ * 1000 and then the next prime number
+#define HASHSIZE 32771 // I took BUFSIZ * 4 and then the next prime number
 
 typedef struct hashtable {
   struct hashtable *next;

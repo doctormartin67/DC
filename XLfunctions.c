@@ -185,3 +185,27 @@ void setsheetnames(XLfile *xl) {
   *(xl->sheetname + sheet) = NULL;
   fclose(fp);
 }
+
+FILE *opensheet(XLfile *xl, char *sheet) {
+  char sname[BUFSIZ];
+  FILE *fp;
+  int check;
+  int i = 0;
+  
+  while (*(xl->sheetname + i) != NULL && (check = strcmp(sheet, *(xl->sheetname + i)) != 0))
+    i++;
+  if (check) {
+    printf("warning in function opensheet: the given sheet \"%s\" ", sheet);
+    printf("does not match any of the known sheets:\n");
+    i = 0;
+    while ( *(xl->sheetname + i) != NULL)
+      printf("%s\n", *(xl->sheetname + i++));
+  }
+  snprintf(sname, sizeof sname, "%s%s%s%s", xl->dirname, "/", sheet, ".txt");
+  if ((fp = fopen(sname, "r")) == NULL) {
+    printf("Error in function setsheetnames:\n");
+    perror(sname);
+    exit(1);
+  }
+  return fp;
+}
