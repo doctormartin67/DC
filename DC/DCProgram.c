@@ -99,7 +99,7 @@ void countMembers(DataSet *ds) {
 void createData(DataSet *ds) {
   FILE *fp;
   char column[4];
-  int irow;
+  int irow, i = 0;
   char srow[6];
   char keyCell[10];
   char dataCell[10];
@@ -114,10 +114,22 @@ void createData(DataSet *ds) {
   strcpy(keyCell, column);
   strcat(keyCell, srow);
   
-  while (cell(fp, keyCell, ds->xl) != NULL) {
-    set(keyCell, cell(fp, keyCell, ds->xl), ds->Data);
-    
-  }
+  irow++;
+  memset(srow, '\0', sizeof(srow));
+  snprintf(srow, sizeof(srow), "%d", irow);
+  strcpy(dataCell, column);
+  strcat(dataCell, srow);
+
+  /*while (cell(fp, keyCell, ds->xl) != NULL) {
+    printf("keyCell = %s\n", keyCell);
+    printf("dataCell = %s\n", dataCell);
+    printf("%s = %s\n", keyCell, cell(fp, keyCell, ds->xl));
+    printf("%s = %s\n", dataCell, cell(fp, dataCell, ds->xl));
+    //set(cell(fp, keyCell, ds->xl), cell(fp, dataCell, ds->xl), (ds->Data)[0]);
+    nextcol(keyCell);
+    nextcol(dataCell);
+    }*/
+  printf("%s\n", cell(fp, "F12", ds->xl));
 
   fclose(fp);
 }
