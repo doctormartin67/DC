@@ -4,4 +4,4 @@ BEGIN {
     RS = "(<c r=\")|(</v></c>)";
     FS = "<v>";
 }
-{print $1 "<v>" $NF "</v>"}
+NF > 1 {print $1 "<v>" $NF "</v>"}
