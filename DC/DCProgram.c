@@ -120,16 +120,18 @@ void createData(DataSet *ds) {
   strcpy(dataCell, column);
   strcat(dataCell, srow);
 
-  /*while (cell(fp, keyCell, ds->xl) != NULL) {
+  while (cell(fp, keyCell, ds->xl) != NULL) {
     printf("keyCell = %s\n", keyCell);
     printf("dataCell = %s\n", dataCell);
     printf("%s = %s\n", keyCell, cell(fp, keyCell, ds->xl));
     printf("%s = %s\n", dataCell, cell(fp, dataCell, ds->xl));
-    //set(cell(fp, keyCell, ds->xl), cell(fp, dataCell, ds->xl), (ds->Data)[0]);
+    //set(cell(fp, keyCell, ds->xl), cell(fp, dataCell, ds->xl), *(ds->Data));
     nextcol(keyCell);
     nextcol(dataCell);
-    }*/
-  printf("%s\n", cell(fp, "F12", ds->xl));
+  }
+  Hashtable *test[HASHSIZE];
+  set("hello", "world", test);
+  printf("%s\n", get("hello", test)->value);
 
   fclose(fp);
 }
