@@ -32,7 +32,8 @@ char *cell(FILE *fp, char *s, XLfile *xl) {
   char sname[BUFSIZ/4];
   char *begin;
   char *ss; // string to determine whether I need to call findss or not
-  static char value[BUFSIZ]; // value of cell to return (string)
+  char *value; // value of cell to return (string)
+  char *temp; // used to free allocated memory after findss is called
 
   memset(sname, '0', sizeof(sname));
   strcpy(sname, s);
@@ -50,16 +51,21 @@ char *cell(FILE *fp, char *s, XLfile *xl) {
       printf("in the xml file\n");
     }
     begin = strinside(begin, "<v>", "</v>");
-    if (strcmp(ss, "s") == 0)
-      strcpy(value, findss(xl, atoi(begin)));
-    else
+    if (strcmp(ss, "s") == 0) {
+      temp = findss(xl, atoi(begin));
+      value = (char *)malloc((strlen(temp) + 1) * sizeof(char));
+      strcpy(value, temp);
+      free(temp);
+    }
+    else {
+      value = (char *)malloc((strlen(begin) + 1) * sizeof(char));
       strcpy(value, begin);
+    }
     free(begin);
     free(ss);
     return value;
   }
 
-  printf("No value in cell %s, returning NULL.\n", s);
   return NULL;
 }
 
@@ -111,7 +117,7 @@ char *findss(XLfile *xl, int index) {
 		     </rPr>
 		  */
   char *pdcount;
-  static char value[BUFSIZ]; // value of cell to return (string)
+  char *value; // value of cell to return (string)
   // create the name of the xml file to find the sheetID
   snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/xl/sharedStrings.xml");
   if ((fp = fopen(sname, "r")) == NULL) {
@@ -142,6 +148,7 @@ char *findss(XLfile *xl, int index) {
     }
     if(count == index) {
       begin = strinside(begin, "erve\">", "</t>");
+      value = (char *)malloc((strlen(begin) + 1) * sizeof(char));
       strcpy(value, begin);
       free(begin);
       fclose(fp);
