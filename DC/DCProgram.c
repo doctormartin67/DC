@@ -78,6 +78,7 @@ void countMembers(DataSet *ds) {
   int irow;
   char srow[6];
   char currentCell[10];
+  char *temp;
   
   fp = opensheet(ds->xl, ds->datasheet);
 
@@ -86,52 +87,97 @@ void countMembers(DataSet *ds) {
   snprintf(srow, sizeof(srow), "%d", irow);
   strcpy(currentCell, column);
   strcat(currentCell, srow);
-  while (cell(fp, currentCell, ds->xl) != NULL) {
+  while ((temp = cell(fp, currentCell, ds->xl)) != NULL) {
     snprintf(srow, sizeof(srow), "%d", ++irow);
     strcpy(currentCell, column);
     strcat(currentCell, srow);    
   }
   ds->membercnt = irow - 1 - ds->keyrow;
   printf("Amount of affiliates in data: %d\n", ds->membercnt);
+  free(temp);
   fclose(fp);
 }
 
+/* Excel is just a bunch of cells of the form O11, DC103, ...
+   This function will create a pointer to an array of arrays of pointers to 
+   hashtables, where we will store all the cells for our data. We will 
+   reference cell O11 as an example going further.*/
+
 void createData(DataSet *ds) {
   FILE *fp;
-  char column[4];
-  int irow, i = 0;
-  char srow[6];
-  char keyCell[10];
-  char dataCell[10];
+  char column[4]; // This holds the column of the beginning of our data cell, for example O
+  int irow; // This holds the row of the beginning of our data cell, for example 11
+  char srow[6]; /* This holds the row in string form of the beginning of our data cell, 
+		   for example "11" */
+  char keyCell[10]; // This will hold the cell of a key for the hashtable, for example O11
+  char dataCell[10]; /* This will hold the cell of data corresponding to a key
+			for the hashtable, for example O12.*/
+  char *key; // This will hold the key for the hashtable, for example SAL (for salary).
+  char *data; // This will hold the value of the data, for example 2.391,30.
 
-  // Allocate memory for data matrix.
-  ds->Data = (Hashtable ***)malloc(sizeof(Hashtable[HASHSIZE][ds->membercnt]));
+  // This opens the data sheet (made with awk).
   fp = opensheet(ds->xl, ds->datasheet);
 
+  // Here we set the initial key cell, for example B11
   strcpy(column, ds->keycolumn);
   irow = ds->keyrow;
   snprintf(srow, sizeof(srow), "%d", irow);
   strcpy(keyCell, column);
   strcat(keyCell, srow);
-  
+
+  // Here we set the initial data cell, for example B12
   irow++;
   memset(srow, '\0', sizeof(srow));
   snprintf(srow, sizeof(srow), "%d", irow);
   strcpy(dataCell, column);
   strcat(dataCell, srow);
-
-  while (cell(fp, keyCell, ds->xl) != NULL) {
-    printf("keyCell = %s\n", keyCell);
-    printf("dataCell = %s\n", dataCell);
-    printf("%s = %s\n", keyCell, cell(fp, keyCell, ds->xl));
-    printf("%s = %s\n", dataCell, cell(fp, dataCell, ds->xl));
-    //set(cell(fp, keyCell, ds->xl), cell(fp, dataCell, ds->xl), *(ds->Data));
-    nextcol(keyCell);
-    nextcol(dataCell);
+  
+  // Allocate memory for data matrix and initialise to NULL pointer
+  ds->Data = (Hashtable ***)malloc(ds->membercnt * sizeof(Hashtable **));
+  for (int k = 0; k < ds->membercnt; k++) {
+    *(ds->Data + k) = (Hashtable **)malloc(HASHSIZE * sizeof(Hashtable *));
+    for (int l = 0; l < HASHSIZE; l++)
+      *(*(ds->Data + k) + l) = NULL;
   }
-  Hashtable *test[HASHSIZE];
-  set("hello", "world", test);
-  printf("%s\n", get("hello", test)->value);
 
+  // start populating Hashtable
+  for (int i = 0; i < ds->membercnt; i++) {
+  
+    // Set the initial key and corresponding data
+    key = cell(fp, keyCell, ds->xl);
+    data = cell(fp, dataCell, ds->xl);
+
+    while (key != NULL) {
+    
+      if (data == NULL)
+	set(cell(fp, keyCell, ds->xl), "0", *(ds->Data + i));
+      else {
+	set(cell(fp, keyCell, ds->xl), cell(fp, dataCell, ds->xl), *(ds->Data + i));
+      }
+
+      // Here we update cell for loop, for example O11 becomes P11
+      nextcol(keyCell);
+      nextcol(dataCell);
+      key = cell(fp, keyCell, ds->xl);
+      data = cell(fp, dataCell, ds->xl);
+    }
+
+    printf("NAAM %d = %s\n", i + 1, get("NAAM", *(ds->Data + i))->value);
+
+    // Iterate through all affiliates by updating keyCell
+    memset(srow, '\0', sizeof(srow));
+    memset(keyCell, '\0', sizeof(keyCell));
+    snprintf(srow, sizeof(srow), "%d", ds->keyrow);
+    strcpy(keyCell, column);
+    strcat(keyCell, srow);
+    // Iterate through all affiliates by updating dataCell
+    irow++;
+    memset(srow, '\0', sizeof(srow));
+    memset(dataCell, '\0', sizeof(dataCell));
+    snprintf(srow, sizeof(srow), "%d", irow);
+    strcpy(dataCell, column);
+    strcat(dataCell, srow);
+    
+  }
   fclose(fp);
 }
