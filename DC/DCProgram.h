@@ -8,6 +8,7 @@ typedef struct dataset {
   int keyrow; /* find the row in the excel file where 
 		 the keys are to use in the hashtable */
   char keycolumn[3];
+  char **keys; //This points to the array of keys in excel
   char datasheet[256]; // This is the sheet where the data lies
   XLfile *xl;
   Hashtable ***Data;
