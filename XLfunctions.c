@@ -29,40 +29,15 @@ void setXLvals(XLfile *xl, char *s) {
 char *cell(FILE *fp, char *s, XLfile *xl) {
   
   char line[BUFSIZ];
-  char sname[BUFSIZ/4];
   char *begin;
   char *ss; // string to determine whether I need to call findss or not
   char *value; // value of cell to return (string)
   char *temp; // used to free allocated memory after findss is called
 
-  memset(sname, '0', sizeof(sname));
-  strcpy(sname, s);
-  strcat(sname, "\"");
-
   fseek(fp, 0, SEEK_SET);
   while (fgets(line, BUFSIZ, fp) != NULL) {
-    begin = line;
-    if ((begin = strstr(begin, sname)) == NULL)
+    if ((value = valueincell(xl, line, s)) == NULL)
       continue;
-    if ((ss = strinside(begin, "t=\"", "\">")) == NULL) {     
-      ss = "n";
-      printf("warning: Couldn't determine whether cell value is ");
-      printf("string literal or not, just returning whatever was found ");
-      printf("in the xml file\n");
-    }
-    begin = strinside(begin, "<v>", "</v>");
-    if (strcmp(ss, "s") == 0) {
-      temp = findss(xl, atoi(begin));
-      value = (char *)malloc((strlen(temp) + 1) * sizeof(char));
-      strcpy(value, temp);
-      free(temp);
-    }
-    else {
-      value = (char *)malloc((strlen(begin) + 1) * sizeof(char));
-      strcpy(value, begin);
-    }
-    free(begin);
-    free(ss);
     return value;
   }
 
@@ -250,4 +225,40 @@ void nextcol(char *next) {
   }
   if (i >= 0)
     (*npt)++;
+}
+
+char *valueincell(XLfile *xl, char *line, char *find) {
+  char *begin;
+  char *ss; // string to determine whether I need to call findss or not
+  char *value; // value of cell to return (string)
+  char *temp; // used to free allocated memory after findss is called
+  char sname[BUFSIZ/4];
+
+  memset(sname, '0', sizeof(sname));
+  strcpy(sname, find);
+  strcat(sname, "\"");
+
+  begin = line;
+  if ((begin = strstr(begin, sname)) == NULL)
+    return NULL;
+  if ((ss = strinside(begin, "t=\"", "\">")) == NULL) {     
+    ss = "n";
+    printf("warning: Couldn't determine whether cell value is ");
+    printf("string literal or not, just returning whatever was found ");
+    printf("in the xml file\n");
+  }
+  begin = strinside(begin, "<v>", "</v>");
+  if (strcmp(ss, "s") == 0) {
+    temp = findss(xl, atoi(begin));
+    value = (char *)malloc((strlen(temp) + 1) * sizeof(char));
+    strcpy(value, temp);
+    free(temp);
+  }
+  else {
+    value = (char *)malloc((strlen(begin) + 1) * sizeof(char));
+    strcpy(value, begin);
+  }
+  free(begin);
+  free(ss);
+  return value;
 }
