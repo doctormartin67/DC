@@ -113,6 +113,7 @@ void createData(DataSet *ds) {
   char dataCell[10]; /* This will hold the cell of data corresponding to a key
 			for the hashtable, for example O12.*/
   char *data; // This will hold the value of the data, for example 2.391,30.
+  char line[BUFSIZ];
 
   // This opens the data sheet (made with awk).
   fp = opensheet(ds->xl, ds->datasheet);
@@ -143,6 +144,7 @@ void createData(DataSet *ds) {
   int countkeys = 0;
   ds->keys = (char **)malloc(BUFSIZ/8 * sizeof(char *));
   *ds->keys = cell(fp, keyCell, ds->xl);
+  
   while (*(ds->keys + countkeys) != NULL || (countkeys > BUFSIZ/8 - 1)) {
     
     // Here we update cell for loop, for example O11 becomes P11
@@ -151,28 +153,31 @@ void createData(DataSet *ds) {
     *(ds->keys + countkeys) = cell(fp, keyCell, ds->xl);
   }
   
-  
   // start populating Hashtable
+  printf("Creating Data...\n");
   for (int i = 0; i < ds->membercnt; i++) {
   
     // Set the initial data
     data = cell(fp, dataCell, ds->xl);
     countkeys = 0;
     while (*(ds->keys + countkeys) != NULL) {
-    
-      if (data == NULL)
+      
+      fgets(line, sizeof(line), fp);
+      while ((data = valueincell(ds->xl, line, dataCell)) == NULL) {
+	
 	set(*(ds->keys + countkeys), "0", *(ds->Data + i));
-      else {
-	set(*(ds->keys + countkeys), data, *(ds->Data + i));
+	
+	// Here we update cell for loop, for example O11 becomes P11
+	countkeys++;
+	nextcol(dataCell);
       }
-
+      
+      set(*(ds->keys + countkeys), data, *(ds->Data + i));
+      
       // Here we update cell for loop, for example O11 becomes P11
       countkeys++;
       nextcol(dataCell);
-      data = cell(fp, dataCell, ds->xl);
     }
-
-    printf("NAAM %d = %s\n", i + 1, get("NAAM", *(ds->Data + i))->value);
 
     countkeys = 0;
     // Iterate through all affiliates by updating dataCell
@@ -184,5 +189,6 @@ void createData(DataSet *ds) {
     strcat(dataCell, srow);
     
   }
+  printf("Creation complete\n");
   fclose(fp);
 }
