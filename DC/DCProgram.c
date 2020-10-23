@@ -159,9 +159,15 @@ void createData(DataSet *ds) {
   
     // Set the initial data
     data = cell(fp, dataCell, ds->xl);
+    
+    // Set index of keys to 0 at the start of loop
     countkeys = 0;
     while (*(ds->keys + countkeys) != NULL) {
-      
+
+      /* get a line from data file, if the data cell we are looking
+       for is not found (== NULL) then there is nothing in the cell 
+       in the excel file. We therefore set the data to 0 and go to
+       next data cell.*/
       fgets(line, sizeof(line), fp);
       while ((data = valueincell(ds->xl, line, dataCell)) == NULL) {
 	
@@ -179,7 +185,8 @@ void createData(DataSet *ds) {
       nextcol(dataCell);
     }
 
-    countkeys = 0;
+    //printf("%s\n", get("NAAM", *(ds->Data + i))->value);
+
     // Iterate through all affiliates by updating dataCell
     irow++;
     memset(srow, '\0', sizeof(srow));
