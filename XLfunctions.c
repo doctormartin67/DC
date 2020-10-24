@@ -27,7 +27,6 @@ void setXLvals(XLfile *xl, char *s) {
    XLfile is a structure for the excel file properties.
 */
 char *cell(FILE *fp, char *s, XLfile *xl) {
-  
   char line[BUFSIZ];
   char *begin;
   char *ss; // string to determine whether I need to call findss or not
@@ -40,7 +39,6 @@ char *cell(FILE *fp, char *s, XLfile *xl) {
       continue;
     return value;
   }
-
   return NULL;
 }
 
@@ -75,7 +73,7 @@ int findsheetID(XLfile *xl, char *s) {
 */
 char *findss(XLfile *xl, int index) {
   FILE *fp;
-  char line[LENGTH/100];
+  char line[BUFSIZ * 1000];
   char sname[BUFSIZ];
   char *begin;
   int count = 0;
@@ -100,29 +98,18 @@ char *findss(XLfile *xl, int index) {
     perror(sname);
     exit(1);
   }
-  while (fgets(line, LENGTH, fp) != NULL) {
-    // check if preserve is in current line
-    if ((begin = strstr(line, "=\"preserve\"")) == NULL)
+  while (fgets(line, sizeof(line), fp) != NULL) {
+
+    if ((begin = strstr(line, "<si>")) == NULL)
       continue;
-    // skip through all the preserves
     while (count != index) {
       begin++;
-      pdcount = begin;
-      if ((begin = strstr(begin, "=\"preserve\"")) == NULL)
+      if ((begin = strstr(begin, "<si>")) == NULL)
 	break;
       count++;
-      // temporarily set null character to see if we have a double count
-      *begin = '\0';
-      if (strstr(pdcount, "<rPr>") != NULL)
-	dcount++;
-      *begin = '=';
-      if (dcount > 0 && dcount % 2 == 0) {
-	count--;
-	dcount = 0;
-      }
     }
     if(count == index) {
-      begin = strinside(begin, "erve\">", "</t>");
+      begin = strinside(begin, "<t>", "</t>");
       value = (char *)malloc((strlen(begin) + 1) * sizeof(char));
       strcpy(value, begin);
       free(begin);
@@ -130,9 +117,8 @@ char *findss(XLfile *xl, int index) {
       return value;
     }
   }
-
   fclose(fp);
-  printf("Couldn't find anything in sharedStrings.xml. Returning NULL...\n");
+  printf("Sadly, didn't find the correct string, returning NULL.\n");
   return NULL;
 }
 
@@ -233,22 +219,26 @@ char *valueincell(XLfile *xl, char *line, char *find) {
   char *value; // value of cell to return (string)
   char *temp; // used to free allocated memory after findss is called
   char sname[BUFSIZ/4];
+  int i = 0, j = 0;
 
   memset(sname, '0', sizeof(sname));
   strcpy(sname, find);
   strcat(sname, "\"");
 
   begin = line;
-  if ((begin = strstr(begin, sname)) == NULL)
-    return NULL;
-  if ((ss = strinside(begin, "t=\"", "\">")) == NULL) {     
-    ss = "n";
-    printf("warning: Couldn't determine whether cell value is ");
-    printf("string literal or not, just returning whatever was found ");
-    printf("in the xml file\n");
+
+  // the line should contain the cell at the start
+  while (i < strlen(find)) {
+    if (begin[i] == find[i])
+      j++;
+    i++;
   }
+  
+  if (i != j)
+    return NULL;
+  ss = strinside(begin, "t=\"", "\">");
   begin = strinside(begin, "<v>", "</v>");
-  if (strcmp(ss, "s") == 0) {
+  if (ss != NULL && strcmp(ss, "s") == 0) {
     temp = findss(xl, atoi(begin));
     value = (char *)malloc((strlen(temp) + 1) * sizeof(char));
     strcpy(value, temp);

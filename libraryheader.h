@@ -6,8 +6,6 @@
 #include <sys/types.h>
 #include "hashtable.h"
 
-#define LENGTH BUFSIZ * 1000
-
 typedef struct excel {
   char fname[BUFSIZ/8];
   char dirname[BUFSIZ/8];

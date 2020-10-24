@@ -93,26 +93,21 @@ int DIRexists(const char *dname) {
    ... given begin (<v>) and end (<\v>). 
    REMEMBER TO FREE THE RETURN VALUE WHEN YOU ARE
    FINISHED WITH IT!
- */
+*/
 char *strinside(char *s, char *begin, char *end) {
   char *pb; //pointer to begin in s
   char *pe; //pointer to end in s
   char *value; //malloc result that we will return
   int i, length; 
-  pb = strstr(s, begin);
+  if ((pb = strstr(s, begin)) == NULL) {
+    return NULL;
+  }
   // pe should start looking for end starting at begin
   pe = pb;
-  pe = strstr(pe, end);
+  if ((pe = strstr(pe, end)) == NULL) {
+    return NULL;
+  }
 
-  if (pb == NULL) {
-    printf("Couldn't find %s in %.*s\n", begin, 30, s);
-    return NULL;
-  }
-  else if (pe == NULL) {
-    printf("Couldn't find %s in %.*s\n", end, 30, pb);
-    return NULL;
-  }
-  
   // move pointer to start of the value we want
   pb += strlen(begin);
 
