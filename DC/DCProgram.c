@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "DCProgram.h"
 #include "libraryheader.h"
+#include "xlsxwriter.h"
 
 void setDSvals(XLfile *xl, DataSet *ds) {
   ds->xl = xl;
@@ -34,8 +35,7 @@ void setkey(DataSet *ds) {
     
       if ((begin = strcasestr(begin, "KEY")) == NULL)
 	continue;
-      begin -= 15;
-      begin = strinside(begin, "\">", "</f");
+      begin = strinside(line, "<f>", "</f");
       char *temp = begin;
       while (!isdigit(*temp)) {
 	ds->keycolumn[j++] = *temp;
@@ -81,7 +81,7 @@ void countMembers(DataSet *ds) {
   char *temp;
   
   fp = opensheet(ds->xl, ds->datasheet);
-
+  
   strcpy(column, ds->keycolumn);
   irow = ds->keyrow;
   snprintf(srow, sizeof(srow), "%d", irow);
@@ -152,16 +152,36 @@ void createData(DataSet *ds) {
     nextcol(keyCell);
     *(ds->keys + countkeys) = cell(fp, keyCell, ds->xl);
   }
+
+  // Check for double keys
+  int k = 0;
+  int l = k + 1;
+  int cntdouble = 0;
+  while (*(ds->keys + k) != NULL) {
+    while (*(ds->keys + l) != NULL) {
+      if (strcmp(*(ds->keys + k), *(ds->keys + l)) == 0) {
+	char temp[BUFSIZ/256];
+	printf("Warning: %s is a double\n", *(ds->keys + l));
+	snprintf(temp, sizeof(temp), "%s%d", *(ds->keys + l), ++cntdouble + 1);
+	memset(*(ds->keys + l), '\0', sizeof(*(ds->keys + l)));
+	strcpy(*(ds->keys + l), temp);
+	printf("Changed it to %s\n",  *(ds->keys + l));
+      }
+      l++;
+    }
+    l = ++k + 1;
+  }
   
   // start populating Hashtable
   printf("Creating Data...\n");
   for (int i = 0; i < ds->membercnt; i++) {
   
-    // Set the initial data
+    // Set the initial data (KEY)
     data = cell(fp, dataCell, ds->xl);
-    
-    // Set index of keys to 0 at the start of loop
-    countkeys = 0;
+    set(*(ds->keys), data, *(ds->Data + i));
+    nextcol(dataCell);
+    // Set index of keys to 1 at the start of loop
+    countkeys = 1;
     while (*(ds->keys + countkeys) != NULL) {
 
       /* get a line from data file, if the data cell we are looking
@@ -170,9 +190,8 @@ void createData(DataSet *ds) {
        next data cell.*/
       fgets(line, sizeof(line), fp);
       while ((data = valueincell(ds->xl, line, dataCell)) == NULL) {
-	
+
 	set(*(ds->keys + countkeys), "0", *(ds->Data + i));
-	
 	// Here we update cell for loop, for example O11 becomes P11
 	countkeys++;
 	nextcol(dataCell);
@@ -184,8 +203,6 @@ void createData(DataSet *ds) {
       countkeys++;
       nextcol(dataCell);
     }
-
-    //printf("%s\n", get("NAAM", *(ds->Data + i))->value);
 
     // Iterate through all affiliates by updating dataCell
     irow++;
@@ -199,3 +216,28 @@ void createData(DataSet *ds) {
   printf("Creation complete\n");
   fclose(fp);
 }
+
+int printresults(DataSet *ds) {
+  char results[BUFSIZ/4];
+  int row = 0;
+  int col = 0;  
+  
+  snprintf(results, sizeof(results), "%s%s", ds->xl->dirname, "/results.xlsx");
+  lxw_workbook  *workbook  = workbook_new(results);
+  lxw_worksheet *worksheet = workbook_add_worksheet(workbook, NULL);
+  printf("Printing Data...\n");
+  while (*(ds->keys + col) != NULL) {
+    worksheet_write_string(worksheet, row, col, *(ds->keys + col), NULL);
+    while (row < ds->membercnt) {
+      worksheet_write_string(worksheet, row+1, col,
+			     get(*(ds->keys + col), *(ds->Data + row))->value, NULL);
+      row++;
+    }
+    col++;
+    row = 0;
+  }
+  printf("Printing complete.\n");
+  return workbook_close(workbook);
+}
+
+
