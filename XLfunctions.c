@@ -252,3 +252,43 @@ char *valueincell(XLfile *xl, char *line, char *find) {
   free(ss);
   return value;
 }
+
+int isleapyear(int year) {
+  if (!(year%4 == 0))
+    return 0;
+  else if (!(year%25 == 0))
+    return 1;
+  else if (!(year%16 == 0))
+    return 0;
+  else return 1;
+}
+
+int month(int day) {
+  static const int commondays[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  static const int leapdays[] = {1, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  static int daytomonth[BUFSIZ * 16]; // We save the searched days in this array
+  int countday = 1;
+  int countyear = 1900; // excel starts counting at 00/00/1900
+  int currentmonth = 0;
+
+  // If the day has already been called and saved, then we just take it from the
+  // array where we save it, otherwise calculate it.
+  if (!(daytomonth[day] == 0))
+    return daytomonth[day];
+  else
+  while (countday < day) {
+    currentmonth = currentmonth%12;
+    currentmonth++;
+
+    if (isleapyear(countyear))
+      countday+=leapdays[currentmonth];
+    else
+      countday+=commondays[currentmonth];
+    
+    if (currentmonth == DEC)
+      countyear++;
+  }
+  
+  daytomonth[day] = currentmonth;
+  return daytomonth[day];
+}
