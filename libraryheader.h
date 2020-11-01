@@ -12,8 +12,19 @@ typedef struct excel {
   char *sheetname[256];
 } XLfile;
 
-enum months {JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
+//---This section is for Date functionality---
+typedef struct date {
+  unsigned int XLday; // excel starts counting at 31/12/1899
+  int year;
+  int month;
+  int day;
+} Date;
+enum months {JAN = 1, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
+int isleapyear(int year);
+void setdate(Date *date);
+Date *newDate(int day, int month, int year);
 
+//---Library Functions---
 char *trim(char *);
 char *strinside(char *s, char *begin, char *end);
 char *replace(const char *str, const char *orig, const char *rep);
@@ -41,7 +52,5 @@ void setsheetnames(XLfile *xl);
 FILE *opensheet(XLfile *xl, char *sheet);
 void nextcol(char *next);
 char *valueincell(XLfile *xl, char *line, char *find);
-int isleapyear(int year);
-int month(int day);
 
 #endif
