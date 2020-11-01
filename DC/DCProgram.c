@@ -14,6 +14,15 @@ void setDSvals(XLfile *xl, DataSet *ds) {
   createData(ds);
 }
 
+void setCMvals(DataSet *ds, CurrentMember *cm) {
+  printf("Setting all the values for the affiliates...\n");
+  for (int i = 0; i < ds->membercnt; i++) {
+    cm[i].Data = *(ds->Data + i);
+
+    
+  }
+  printf("Setting values completed.\n");
+}
 /* used to find the row where the keys lie for the data to be used
    for calculations. If the word KEY isn't found in the data then
    1 is returned */
@@ -225,6 +234,7 @@ int printresults(DataSet *ds) {
   snprintf(results, sizeof(results), "%s%s", ds->xl->dirname, "/results.xlsx");
   lxw_workbook  *workbook  = workbook_new(results);
   lxw_worksheet *worksheet = workbook_add_worksheet(workbook, NULL);
+  // ***Print Data***
   printf("Printing Data...\n");
   while (*(ds->keys + col) != NULL) {
     worksheet_write_string(worksheet, row, col, *(ds->keys + col), NULL);
@@ -237,7 +247,17 @@ int printresults(DataSet *ds) {
     row = 0;
   }
   printf("Printing complete.\n");
+  // ***End Print Data***
   return workbook_close(workbook);
 }
 
-
+char *getcmval(CurrentMember *cm, char *value) {
+  if (get(value, cm->Data) == NULL) {
+    printf("warning: '%s' not found in the set of keys given, ", value);
+    printf("make sure your column name is correct\n");
+    printf("Using 0 by default.\n");
+    return "0";
+  }
+  else
+    return get(value, cm->Data)->value;
+}
