@@ -73,26 +73,15 @@ int findsheetID(XLfile *xl, char *s) {
 */
 char *findss(XLfile *xl, int index) {
   FILE *fp;
-  char line[BUFSIZ * 1000];
+  char line[BUFSIZ];
   char sname[BUFSIZ];
+  char sindex[BUFSIZ/32]; //used to convert int to string
   char *begin;
   int count = 0;
-  int dcount = 0; /* in the file sharedStrings there are "preserve" tags
-		     that are counted double because they are actually
-		     in one cell but are there twice. you can recognise
-		     this as:
-		     <rPr>
-		     <sz val="10"/>
-		     <color rgb="FF000000"/>
-		     <rFont val="Calibri"/>
-		     <family val="2"/>
-		     <charset val="1"/>
-		     </rPr>
-		  */
-  char *pdcount;
   char *value; // value of cell to return (string)
-  // create the name of the xml file to find the sheetID
-  snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/xl/sharedStrings.xml");
+  // create the name of the txt file to find the string
+  snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/ss.txt");
+  snprintf(sindex, sizeof sindex, "%d:\t", index);
   if ((fp = fopen(sname, "r")) == NULL) {
     printf("Error in function findss:\n");
     perror(sname);
@@ -100,16 +89,13 @@ char *findss(XLfile *xl, int index) {
   }
   while (fgets(line, sizeof(line), fp) != NULL) {
 
-    if ((begin = strstr(line, "<si>")) == NULL)
-      continue;
-    while (count != index) {
-      begin++;
-      if ((begin = strstr(begin, "<si>")) == NULL)
-	break;
+    if (strstr(line, sindex) == NULL) {
       count++;
+      continue;
     }
     if(count == index) {
-      begin = strinside(begin, "<t>", "</t>");
+      begin = line;
+      begin = strinside(begin, "\t", "\n");
       value = (char *)malloc((strlen(begin) + 1) * sizeof(char));
       strcpy(value, begin);
       free(begin);
@@ -233,7 +219,6 @@ char *valueincell(XLfile *xl, char *line, char *find) {
       j++;
     i++;
   }
-  
   if (i != j)
     return NULL;
   ss = strinside(begin, "t=\"", "\">");

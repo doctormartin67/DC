@@ -53,6 +53,15 @@ else
     echo "${lib} does not exist."
 fi
 
+#Create a .txt file with the strings of the excel file received from the sharedStrings.xml file
+
+if [[ -e ${lib} ]]
+then
+    awk -f "${lib}/ss.awk" "${XLdir}/xl/sharedStrings.xml" > "${XLdir}/ss.txt"
+else
+    echo "${lib} does not exist."
+fi
+
 #Create a more readable txt file for C to extract excel cells
 
 i=1
