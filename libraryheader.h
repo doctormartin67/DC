@@ -22,10 +22,11 @@ typedef struct date {
 enum months {JAN = 1, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
 int isleapyear(int year);
 void setdate(Date *date);
-Date *newDate(int day, int month, int year);
+Date *newDate(unsigned int XLday, int day, int month, int year);
 
 //---Library Functions---
 char *trim(char *);
+char *upper(const char *);
 char *strinside(char *s, char *begin, char *end);
 char *replace(const char *str, const char *orig, const char *rep);
 int FILEexists(const char *fname);

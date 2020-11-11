@@ -297,10 +297,18 @@ void setdate(Date *date) {
   }
 }
 
-Date *newDate(int day, int month, int year) {
+/* if XLday is NULL then this will create a date with the given day, month and year. Otherwise it
+   will create it with the given XLday.*/
+Date *newDate(unsigned int XLday, int day, int month, int year) {
   Date *temp = (Date *)malloc(sizeof(Date));
-  temp->day = day;
-  temp->month = month;
-  temp->year = year;
+  if (XLday == 0) {
+    temp->day = day;
+    temp->month = month;
+    temp->year = year;
+  }
+  else {
+    temp->XLday = XLday;
+    setdate(temp);
+  }
   return temp;
 }
