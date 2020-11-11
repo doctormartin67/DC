@@ -14,12 +14,132 @@ void setDSvals(XLfile *xl, DataSet *ds) {
   createData(ds);
 }
 
+// initialise all variables from data (hashtable)
 void setCMvals(DataSet *ds, CurrentMember *cm) {
   printf("Setting all the values for the affiliates...\n");
   for (int i = 0; i < ds->membercnt; i++) {
     cm[i].Data = *(ds->Data + i);
+    cm[i].key = getcmval(&cm[i], "KEY");
+    cm[i].regl = getcmval(&cm[i], "NO REGLEMENT");
+    cm[i].name = getcmval(&cm[i], "NAAM");
+    cm[i].contract = getcmval(&cm[i], "CONTRACT");
+    cm[i].status = 0;
+    if (strcmp(getcmval(&cm[i], "STATUS"), "ACT") == 0)  cm[i].status += ACT;
+    if (strcmp(getcmval(&cm[i], "ACTIVE CONTRACT"), "1") == 0)  cm[i].status += ACTCON;
+    if (strcmp(getcmval(&cm[i], "SEX"), "1") == 0)  cm[i].status += SEX;
+    if (strcmp(getcmval(&cm[i], "MS"), "M") == 0)  cm[i].status += MS;
+    cm[i].DOB = newDate((unsigned short)atoi(getcmval(&cm[i], "DOB")), 0, 0, 0);
+    cm[i].DOE = newDate((unsigned short)atoi(getcmval(&cm[i], "DOE")), 0, 0, 0);
+    cm[i].DOL = newDate((unsigned short)atoi(getcmval(&cm[i], "DOL")), 0, 0, 0);
+    cm[i].DOS = newDate((unsigned short)atoi(getcmval(&cm[i], "DOS")), 0, 0, 0);
+    cm[i].DOA = newDate((unsigned short)atoi(getcmval(&cm[i], "DOA")), 0, 0, 0);
+    cm[i].DOR = newDate((unsigned short)atoi(getcmval(&cm[i], "DOR")), 0, 0, 0);
+    cm[i].category = getcmval(&cm[i], "CATEGORIE");
+    cm[i].sal = atof(getcmval(&cm[i], "SAL"));
+    cm[i].PG = atof(getcmval(&cm[i], "PG"));
+    cm[i].PT = atof(getcmval(&cm[i], "PT"));
+    cm[i].NRA = (unsigned short)atoi(getcmval(&cm[i], "NRA"));
+    cm[i].kids = (unsigned short)atoi(getcmval(&cm[i], "# ENF"));
+    cm[i].tariff = 0;
+    if (strcmp(getcmval(&cm[i], "TARIEF"), "UKMS") == 0)  cm[i].tariff = UKMS;
+    if (strcmp(getcmval(&cm[i], "TARIEF"), "UKZT") == 0)  cm[i].tariff = UKZT;
+    if (strcmp(getcmval(&cm[i], "TARIEF"), "UKMT") == 0)  cm[i].tariff = UKMT;
+    if (strcmp(getcmval(&cm[i], "TARIEF"), "MIXED") == 0)  cm[i].tariff = MIXED;
+    if (cm[i].tariff == 0) {
+      printf("ERROR, there was no 'TARIEF' (UKMS, UKZT, ...) found, exiting program.");
+      exit(0);
+    }
+    cm[i].KO = atof(getcmval(&cm[i], "KO"));
+    cm[i].annINV = atof(getcmval(&cm[i], "Rent INV"));
+    cm[i].contrINV = atof(getcmval(&cm[i], "Contr INV"));
 
-    
+    cm[i].ART24_A_GEN1 = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].ART24_C_GEN1 = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].ART24_A_GEN2 = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].ART24_C_GEN2 = (double *)malloc(sizeof(double) * MAXPROJ);
+    *cm[i].ART24_A_GEN1 = atof(getcmval(&cm[i], "ART24_A_GEN1"));
+    *cm[i].ART24_C_GEN1 = atof(getcmval(&cm[i], "ART24_C_GEN1"));
+    *cm[i].ART24_A_GEN2 = atof(getcmval(&cm[i], "ART24_A_GEN2"));
+    *cm[i].ART24_C_GEN2 = atof(getcmval(&cm[i], "ART24_C_GEN2"));
+
+    // all variables that have generations, employer and employee
+    for (int j = 0; j < MAXGEN; j++) {
+      char tempER[32];
+      char tempEE[32];      
+      snprintf(tempER, sizeof(tempER), "%s%d", "CAP_A_GEN", j + 1);
+      snprintf(tempEE, sizeof(tempEE), "%s%d", "CAP_C_GEN", j + 1);
+      cm[i].CAP[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      cm[i].CAP[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].CAP[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].CAP[EE][j] = atof(getcmval(&cm[i], tempEE));      
+      memset(tempER, '\0', sizeof(tempER));
+      memset(tempEE, '\0', sizeof(tempEE));
+      snprintf(tempER, sizeof(tempER), "%s%d", "CAPPS_A_GEN", j + 1);
+      snprintf(tempEE, sizeof(tempEE), "%s%d", "CAPPS_C_GEN", j + 1);
+      cm[i].CAPPS[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      cm[i].CAPPS[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].CAPPS[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].CAPPS[EE][j] = atof(getcmval(&cm[i], tempEE));      
+      memset(tempER, '\0', sizeof(tempER));
+      memset(tempEE, '\0', sizeof(tempEE));
+      snprintf(tempER, sizeof(tempER), "%s%d", "CAPRED_A_GEN", j + 1);
+      snprintf(tempEE, sizeof(tempEE), "%s%d", "CAPRED_C_GEN", j + 1);
+      cm[i].REDCAP[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      cm[i].REDCAP[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].REDCAP[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].REDCAP[EE][j] = atof(getcmval(&cm[i], tempEE));      
+      memset(tempER, '\0', sizeof(tempER));
+      memset(tempEE, '\0', sizeof(tempEE));
+      snprintf(tempER, sizeof(tempER), "%s%d", "TAUX_A_GEN", j + 1);
+      snprintf(tempEE, sizeof(tempEE), "%s%d", "TAUX_C_GEN", j + 1);
+      cm[i].TAUX[ER][j] = atof(getcmval(&cm[i], tempER));
+      cm[i].TAUX[EE][j] = atof(getcmval(&cm[i], tempEE));      
+      memset(tempER, '\0', sizeof(tempER));
+      memset(tempEE, '\0', sizeof(tempEE));
+      snprintf(tempER, sizeof(tempER), "%s%d", "PREMIUM_A_GEN", j + 1);
+      snprintf(tempEE, sizeof(tempEE), "%s%d", "PREMIUM_C_GEN", j + 1);
+      cm[i].PREMIUM[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      cm[i].PREMIUM[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].PREMIUM[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].PREMIUM[EE][j] = atof(getcmval(&cm[i], tempEE));      
+      memset(tempER, '\0', sizeof(tempER));
+      memset(tempEE, '\0', sizeof(tempEE));
+      snprintf(tempER, sizeof(tempER), "%s%d", "RES_A_GEN", j + 1);
+      snprintf(tempEE, sizeof(tempEE), "%s%d", "RES_C_GEN", j + 1);
+      cm[i].RES[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      cm[i].RES[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].RES[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].RES[EE][j] = atof(getcmval(&cm[i], tempEE));      
+      memset(tempER, '\0', sizeof(tempER));
+      memset(tempEE, '\0', sizeof(tempEE));
+      snprintf(tempER, sizeof(tempER), "%s%d", "CAPDTH_A_GEN", j + 1);
+      snprintf(tempEE, sizeof(tempEE), "%s%d", "CAPDTH_C_GEN", j + 1);
+      cm[i].CAPDTH[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      cm[i].CAPDTH[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].CAPDTH[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].CAPDTH[EE][j] = atof(getcmval(&cm[i], tempEE));      
+      memset(tempER, '\0', sizeof(tempER));
+      memset(tempEE, '\0', sizeof(tempEE));
+    }
+    cm[i].DELTACAP[ER] = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].DELTACAP[EE] = (double *)malloc(sizeof(double) * MAXPROJ);
+    *cm[i].DELTACAP[ER] = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
+    *cm[i].DELTACAP[EE] = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
+    cm[i].X10 = atof(getcmval(&cm[i], "X/10"));
+    cm[i].CAO = atof(getcmval(&cm[i], "CAO"));
+    cm[i].ORU = getcmval(&cm[i], "ORU");
+    cm[i].CHOICEDTH = getcmval(&cm[i], "CHOICE DTH");
+    cm[i].CHOICEINVS = getcmval(&cm[i], "CHOICE INV SICKNESS");
+    cm[i].CHOICEINVW = getcmval(&cm[i], "CHOICE INV WORK");
+    cm[i].contrDTH = atof(getcmval(&cm[i], "Contr_D"));
+    cm[i].percSALKO = atof(getcmval(&cm[i], "%ofSALforKO"));
+    cm[i].indexINV = getcmval(&cm[i], "INV INDEXATION");
+    cm[i].GRDGR = getcmval(&cm[i], "GR/DGR");
+    cm[i].plan = getcmval(&cm[i], "plan");
+    cm[i].baranc = atof(getcmval(&cm[i], "Baremische ancienniteit"));
+    cm[i].extra = 0;
+    if (strcmp(getcmval(&cm[i], "increaseSalFirstYear"), "1") == 0)  cm[i].extra += INCSAL;
+    if (strcmp(getcmval(&cm[i], "CCRA"), "1") == 0)  cm[i].extra += CCRA;
   }
   printf("Setting values completed.\n");
 }
@@ -41,10 +161,14 @@ void setkey(DataSet *ds) {
   
     while (fgets(line, BUFSIZ, fp) != NULL) {
       begin = line;
-    
+
       if ((begin = strcasestr(begin, "KEY")) == NULL)
 	continue;
-      begin = strinside(line, "<f>", "</f");
+      if ((begin = strinside(line, "<f>", "</f")) == NULL) {
+	printf("ERROR in setkey: awk program didn't manipulate data correctly, ");
+	printf("needs checked and updated immediately, exiting program...\n");
+	exit(1);
+      }
       char *temp = begin;
       while (!isdigit(*temp)) {
 	ds->keycolumn[j++] = *temp;

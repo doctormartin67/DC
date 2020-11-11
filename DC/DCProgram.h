@@ -48,18 +48,19 @@ typedef struct currentmember {
   char *name; // NAME
   char *contract; // CONTRACT number
   unsigned short status; // 0000 0000 0000 0111 means male active member and active contract
-  Date DOB; // date of birth
-  Date DOE; // date of entry
-  Date DOL; // date of leaving
-  Date DOS; // date of situation
-  Date DOA; // date of affiliation
-  Date DOR; // date of retirement
+  Date *DOB; // date of birth
+  Date *DOE; // date of entry
+  Date *DOL; // date of leaving
+  Date *DOS; // date of situation
+  Date *DOA; // date of affiliation
+  Date *DOR; // date of retirement
   char *category; // for example blue collar, white collar, management, ...
   double sal; // salary
   double PG; // pensioengrondslag ( I have never needed this)
   double PT; // part time
   unsigned short NRA; // normal retirement age
   unsigned short kids; // amount of kids
+  unsigned short tariff; // UKMS, UKZT, UKMT, MIXED
   double KO; // death lump sum (kapitaal overlijden)
   double annINV; // annuity in case of invalidity
   double contrINV; // contribution for invalidity insurance
@@ -75,7 +76,7 @@ typedef struct currentmember {
   				      (Employer-Employee, generations, loops)*/
   double *PREMIUM[2][MAXGEN]; // Contribution (Employer-Employee, generations, loops)
   double *RES[2][MAXGEN]; // Reserves (Employer-Employee, generations, loops)
-  double *DELTACAP[2][MAXGEN]; // Delta Cap (AXA) (Employer-Employee, generations, loops)
+  double *DELTACAP[2]; // Delta Cap (AXA) (Employer-Employee, generations, loops)
   double X10; // MIXED combination
   double *CAPDTH[2][MAXGEN]; /* Death lump sum (used for UKMT)
   					(Employer-Employee, generations, loops)*/

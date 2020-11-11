@@ -17,7 +17,6 @@ int main(int argc, char **argv) {
   setDSvals(&xl, &ds);
 
   CurrentMember cm[ds.membercnt];
-  printf("before settting cm\n");
   setCMvals(&ds, cm);
 
   // create excel file to print results
