@@ -15,10 +15,16 @@ int main(int argc, char **argv) {
 
   setXLvals(&xl, argv[1]);
   setDSvals(&xl, &ds);
+  setCMvals(&ds);
 
-  CurrentMember cm[ds.membercnt];
-  setCMvals(&ds, cm);
+  // Here the loop of all affiliates will start
+  setassumptions(ds.cm);
 
+  //---BEGIN LOOP---
+  // This loops through all the years of an affiliate and makes the calculations
+  for (int k; k < MAXPROJ; k++) {
+    ;
+  }
   // create excel file to print results
   printresults(&ds);
   return 0;

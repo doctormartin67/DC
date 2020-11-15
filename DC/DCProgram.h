@@ -4,29 +4,12 @@
 #include "libraryheader.h"
 #include "hashtable.h"
 
-typedef struct dataset {
-  int keyrow; /* find the row in the excel file where 
-		 the keys are to use in the hashtable */
-  char keycolumn[3];
-  char **keys; // This points to the array of keys in excel
-  char datasheet[256]; // This is the sheet where the data lies
-  XLfile *xl;
-  Hashtable ***Data; // This will be set using createData function below
-  int membercnt;
-		 
-} DataSet;
-
 //---Define BIT constants---
 //-  status BITS  -
 #define ACT 0x1 // used to set ACT bit on if active member
 #define ACTCON 0x2// used to set ACTCON bit on if it is an active contract
 #define SEX 0x4 // used to set SEX bit on if it is a male
 #define MS 0x8 // used to set MS bit on if it is married
-//-  tariff BITS  -
-#define UKMS 0x1
-#define UKZT 0x2
-#define UKMT 0x4
-#define MIXED 0x8
 
 //-  extra BITS  -
 #define INCSAL 01; // put this bit on when we increase the salary in the first line
@@ -38,6 +21,16 @@ typedef struct dataset {
 #define MAXGEN 8 // amount of generations of insurer
 #define ER 0 // Employer index
 #define EE 1 // Employee index
+#define ART24GEN1 0 // article 24 index (3,75% for employee contributions and 3,25% for employee)
+#define ART24GEN2 1 // article 24 index (1,75%)
+#define UKMS 0
+#define UKZT 1
+#define UKMT 2
+#define MIXED 3
+#define PUC 0 // projected unit credit with future premiums
+#define TUC 1 // projected unit credit without future premiums
+#define TUCPS_1 2 /* projected unit credit with future premiums,
+		       one year later (for service cost)*/
 
 typedef struct currentmember {
   Hashtable **Data; //Data for an affiliate is in the form of a hashtable
@@ -54,8 +47,9 @@ typedef struct currentmember {
   Date *DOS; // date of situation
   Date *DOA; // date of affiliation
   Date *DOR; // date of retirement
+  Date **DOC; // date of calculation (will be an array)
   char *category; // for example blue collar, white collar, management, ...
-  double sal; // salary
+  double *sal; // salary (array)
   double PG; // pensioengrondslag ( I have never needed this)
   double PT; // part time
   unsigned short NRA; // normal retirement age
@@ -64,10 +58,9 @@ typedef struct currentmember {
   double KO; // death lump sum (kapitaal overlijden)
   double annINV; // annuity in case of invalidity
   double contrINV; // contribution for invalidity insurance
-  double *ART24_A_GEN1; // WAP: art24 reserves exployer part before 01/01/2016
-  double *ART24_C_GEN1; // WAP: art24 reserves exployer part before 01/01/2016
-  double *ART24_A_GEN2; // WAP: art24 reserves exployer part before 01/01/2016
-  double *ART24_C_GEN2; // WAP: art24 reserves exployer part before 01/01/2016
+  double *ART24[2][ART24GEN2 + 1][TUCPS_1 + 1]; /* WAP: art24 reserves 
+						   (Exployer-Employee, generation, Method, loops)*/
+  // Currently there are 2 generations for article 24 and 3 methods needed
   double *CAP[2][MAXGEN]; // Pension lump sum (Employer-Employee, generations, loops)
   double *CAPPS[2][MAXGEN]; /* Pension lump sum profit sharing 
   				       (Employer-Employee, generations, loops)*/
@@ -75,7 +68,9 @@ typedef struct currentmember {
   double TAUX[2][MAXGEN]; /* return guarentee insurer
   				      (Employer-Employee, generations, loops)*/
   double *PREMIUM[2][MAXGEN]; // Contribution (Employer-Employee, generations, loops)
+  double *PREMIUMTOT[2]; // Total premium of an affiliate (Employer-Employee)
   double *RES[2][MAXGEN]; // Reserves (Employer-Employee, generations, loops)
+  double *RESTOT[2]; // Total reserves of an affiliate (Employer-Employee)
   double *DELTACAP[2]; // Delta Cap (AXA) (Employer-Employee, generations, loops)
   double X10; // MIXED combination
   double *CAPDTH[2][MAXGEN]; /* Death lump sum (used for UKMT)
@@ -94,10 +89,50 @@ typedef struct currentmember {
   unsigned short extra; /* 0000 0000 0000 0011
 			   means prepensioner whose salary we increase at k = -1*/
   
+  //---Variable definitions---    
+  double *age; // age of affiliate
+  double *nDOE; // years since date of entry
+  double *nDOA; // years since date of affiliation
+
+  //---Variables that are used to distinguish between clients---
+  
 } CurrentMember;
 
+typedef struct dataset {
+  int keyrow; /* find the row in the excel file where 
+		 the keys are to use in the hashtable */
+  char keycolumn[3];
+  char **keys; // This points to the array of keys in excel
+  char datasheet[256]; // This is the sheet where the data lies
+  XLfile *xl;
+  Hashtable ***Data; // This will be set using createData function below
+  int membercnt;
+  CurrentMember *cm; // This is a pointer to the affiliates	 
+} DataSet;
+
+//---Assumptions declarations---
+typedef struct assumptions {
+  Date *DOC; /* This is DOC[1] which is the start of the run through affiliates.
+	       DOC[0] is date of situation.*/
+  double DR; // Discount Rate
+  double DR113; // Discount Rate under $113 of IAS19  
+  short agecorr; // Age Correction
+  double (*SS)(CurrentMember *cm);
+  double infl; // Inflation
+  unsigned short (*NRA)(CurrentMember *cm);
+  double (*wxdef)(CurrentMember *cm); // Turnover rate with deferred payment
+  double (*wximm)(CurrentMember *cm); // Turnover rate with immediate payment  
+} Assumptions;
+
+void setassumptions(CurrentMember *cm);
+double salaryscale(CurrentMember *cm);
+unsigned short NRA(CurrentMember *cm);
+double wxdef(CurrentMember *cm);
+double wximm(CurrentMember *cm);
+
+//---Setter declarations---
 void setDSvals(XLfile *xl, DataSet *ds);
-void setCMvals(DataSet *ds, CurrentMember *cm);
+void setCMvals(DataSet *ds);
 char *getcmval(CurrentMember *cm, char *value);
 
 /* This function will allocate memory based on membercnt for the underlying
@@ -110,4 +145,5 @@ void createData(DataSet *ds);
 void setkey(DataSet *ds);
 void countMembers(DataSet *ds);
 int printresults(DataSet *ds);
+
 #endif
