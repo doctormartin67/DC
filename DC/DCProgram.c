@@ -39,7 +39,7 @@ void setCMvals(DataSet *ds) {
     cm[i].DOR = newDate((unsigned short)atoi(getcmval(&cm[i], "DOR")), 0, 0, 0);
     cm[i].category = getcmval(&cm[i], "CATEGORIE");
     cm[i].sal = (double *)malloc(sizeof(double) * MAXPROJ);
-    *cm[i].sal++ = atof(getcmval(&cm[i], "SAL"));
+    *cm[i].sal = atof(getcmval(&cm[i], "SAL"));
     cm[i].PG = atof(getcmval(&cm[i], "PG"));
     cm[i].PT = atof(getcmval(&cm[i], "PT"));
     cm[i].NRA = (unsigned short)atoi(getcmval(&cm[i], "NRA"));
@@ -56,13 +56,13 @@ void setCMvals(DataSet *ds) {
     // define article 24 from data
     for (int j = 0; j < TUCPS_1 + 1; j++) {
       cm[i].ART24[ER][ART24GEN1][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].ART24[ER][ART24GEN1][j]++ = atof(getcmval(&cm[i], "ART24_A_GEN1"));
+      *cm[i].ART24[ER][ART24GEN1][j] = atof(getcmval(&cm[i], "ART24_A_GEN1"));
       cm[i].ART24[ER][ART24GEN2][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].ART24[ER][ART24GEN2][j]++ = atof(getcmval(&cm[i], "ART24_A_GEN2"));
+      *cm[i].ART24[ER][ART24GEN2][j] = atof(getcmval(&cm[i], "ART24_A_GEN2"));
       cm[i].ART24[EE][ART24GEN1][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].ART24[EE][ART24GEN1][j]++ = atof(getcmval(&cm[i], "ART24_C_GEN1"));
+      *cm[i].ART24[EE][ART24GEN1][j] = atof(getcmval(&cm[i], "ART24_C_GEN1"));
       cm[i].ART24[EE][ART24GEN2][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].ART24[EE][ART24GEN2][j]++ = atof(getcmval(&cm[i], "ART24_C_GEN2"));
+      *cm[i].ART24[EE][ART24GEN2][j] = atof(getcmval(&cm[i], "ART24_C_GEN2"));
     }
 
     // all variables that have generations, employer and employee
@@ -73,24 +73,24 @@ void setCMvals(DataSet *ds) {
       snprintf(tempEE, sizeof(tempEE), "%s%d", "CAP_C_GEN", j + 1);
       cm[i].CAP[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
       cm[i].CAP[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].CAP[ER][j]++ = atof(getcmval(&cm[i], tempER));
-      *cm[i].CAP[EE][j]++ = atof(getcmval(&cm[i], tempEE));      
+      *cm[i].CAP[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].CAP[EE][j] = atof(getcmval(&cm[i], tempEE));      
       memset(tempER, '\0', sizeof(tempER));
       memset(tempEE, '\0', sizeof(tempEE));
       snprintf(tempER, sizeof(tempER), "%s%d", "CAPPS_A_GEN", j + 1);
       snprintf(tempEE, sizeof(tempEE), "%s%d", "CAPPS_C_GEN", j + 1);
       cm[i].CAPPS[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
       cm[i].CAPPS[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].CAPPS[ER][j]++ = atof(getcmval(&cm[i], tempER));
-      *cm[i].CAPPS[EE][j]++ = atof(getcmval(&cm[i], tempEE));      
+      *cm[i].CAPPS[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].CAPPS[EE][j] = atof(getcmval(&cm[i], tempEE));      
       memset(tempER, '\0', sizeof(tempER));
       memset(tempEE, '\0', sizeof(tempEE));
       snprintf(tempER, sizeof(tempER), "%s%d", "CAPRED_A_GEN", j + 1);
       snprintf(tempEE, sizeof(tempEE), "%s%d", "CAPRED_C_GEN", j + 1);
       cm[i].REDCAP[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
       cm[i].REDCAP[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].REDCAP[ER][j]++ = atof(getcmval(&cm[i], tempER));
-      *cm[i].REDCAP[EE][j]++ = atof(getcmval(&cm[i], tempEE));      
+      *cm[i].REDCAP[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].REDCAP[EE][j] = atof(getcmval(&cm[i], tempEE));      
       memset(tempER, '\0', sizeof(tempER));
       memset(tempEE, '\0', sizeof(tempEE));
       snprintf(tempER, sizeof(tempER), "%s%d", "TAUX_A_GEN", j + 1);
@@ -119,15 +119,15 @@ void setCMvals(DataSet *ds) {
       snprintf(tempEE, sizeof(tempEE), "%s%d", "CAPDTH_C_GEN", j + 1);
       cm[i].CAPDTH[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
       cm[i].CAPDTH[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].CAPDTH[ER][j]++ = atof(getcmval(&cm[i], tempER));
-      *cm[i].CAPDTH[EE][j]++ = atof(getcmval(&cm[i], tempEE));      
+      *cm[i].CAPDTH[ER][j] = atof(getcmval(&cm[i], tempER));
+      *cm[i].CAPDTH[EE][j] = atof(getcmval(&cm[i], tempEE));      
       memset(tempER, '\0', sizeof(tempER));
       memset(tempEE, '\0', sizeof(tempEE));
     }
     cm[i].DELTACAP[ER] = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].DELTACAP[EE] = (double *)malloc(sizeof(double) * MAXPROJ);
-    *cm[i].DELTACAP[ER]++ = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
-    *cm[i].DELTACAP[EE]++ = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
+    *cm[i].DELTACAP[ER] = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
+    *cm[i].DELTACAP[EE] = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
     cm[i].X10 = atof(getcmval(&cm[i], "X/10"));
     cm[i].CAO = atof(getcmval(&cm[i], "CAO"));
     cm[i].ORU = getcmval(&cm[i], "ORU");
@@ -145,10 +145,10 @@ void setCMvals(DataSet *ds) {
     if (strcmp(getcmval(&cm[i], "CCRA"), "1") == 0)  cm[i].extra += CCRA;
 
     // Here we define variables for first loop
-    cm[i].DOC = (Date **)malloc(sizeof(Date) * MAXPROJ);
+    cm[i].DOC = (Date **)malloc(sizeof(Date *) * MAXPROJ);
     *cm[i].DOC = cm[i].DOS;
     cm[i].age = (double *)malloc(sizeof(double) * MAXPROJ);
-    *cm[i].age++ = (*cm[i].DOC)->year - cm[i].DOB->year +
+    *cm[i].age = (*cm[i].DOC)->year - cm[i].DOB->year +
       (double)((*cm[i].DOC)->month - cm[i].DOB->month - 1)/12;
     cm[i].nDOE = (double *)malloc(sizeof(double) * MAXPROJ);
     *cm[i].nDOE = (*cm[i].DOC)->year - cm[i].DOE->year +
@@ -156,7 +156,6 @@ void setCMvals(DataSet *ds) {
     cm[i].nDOA = (double *)malloc(sizeof(double) * MAXPROJ);
     *cm[i].nDOA = (*cm[i].DOC)->year - cm[i].DOA->year +
       (double)((*cm[i].DOC)->month - cm[i].DOA->month - (cm[i].DOA->month == 1 ? 0 : 1))/12;
-    (*cm[i].DOC)++;
     cm[i].RESTOT[ER] = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].RESTOT[EE] = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].PREMIUMTOT[ER] = (double *)malloc(sizeof(double) * MAXPROJ);
@@ -166,15 +165,15 @@ void setCMvals(DataSet *ds) {
     *cm[i].PREMIUMTOT[ER] = 0;
     *cm[i].PREMIUMTOT[EE] = 0;    
     for (int j = 0; j < MAXGEN; j++) {
-      *cm[i].RESTOT[ER] += *cm[i].RES[ER][j]++;
-      *cm[i].RESTOT[EE] += *cm[i].RES[EE][j]++;
-      *cm[i].PREMIUMTOT[ER] += *cm[i].PREMIUM[ER][j]++;
-      *cm[i].PREMIUMTOT[EE] += *cm[i].PREMIUM[EE][j]++;
+      *cm[i].RESTOT[ER] += *cm[i].RES[ER][j];
+      *cm[i].RESTOT[EE] += *cm[i].RES[EE][j];
+      *cm[i].PREMIUMTOT[ER] += *cm[i].PREMIUM[ER][j];
+      *cm[i].PREMIUMTOT[EE] += *cm[i].PREMIUM[EE][j];
     }
-    cm[i].RESTOT[ER]++;
-    cm[i].RESTOT[EE]++;
-    cm[i].PREMIUMTOT[ER]++;
-    cm[i].PREMIUMTOT[EE]++;    
+    cm[i].RESTOT[ER];
+    cm[i].RESTOT[EE];
+    cm[i].PREMIUMTOT[ER];
+    cm[i].PREMIUMTOT[EE];    
     
   }
   printf("Setting values completed.\n");
@@ -393,8 +392,29 @@ int printresults(DataSet *ds) {
   
   snprintf(results, sizeof(results), "%s%s", ds->xl->dirname, "/results.xlsx");
   lxw_workbook  *workbook  = workbook_new(results);
-  lxw_worksheet *worksheet = workbook_add_worksheet(workbook, "dataTY");
+  lxw_worksheet *worksheet = workbook_add_worksheet(workbook, "Testcases");
+  // ***Print Testcases***
+  printf("Printing Testcases...\n");
+  // at the moment the first member is considered the sole testcase
+  worksheet_write_string(worksheet, row, col, "KEY", NULL);
+  worksheet_write_string(worksheet, row, col+1, "DOC", NULL);
+  lxw_datetime DOC;
+  lxw_format *format = workbook_add_format(workbook);
+  char DOCformat[] = "dd/mm/yyyy";
+  format_set_num_format(format, DOCformat);
+  worksheet_set_column(worksheet, 0, 100, 15, NULL);
+  while (row < MAXPROJ) {
+    DOC.year = ds->cm[0].DOC[row]->year;
+    DOC.month = ds->cm[0].DOC[row]->month;
+    DOC.day = ds->cm[0].DOC[row]->day;
+    worksheet_write_string(worksheet, row+1, col, ds->cm[0].key, NULL);
+    worksheet_write_datetime(worksheet, row+1, col+1, &DOC, format);
+    row++;
+  }
+  // ***End Print Testcases***
   // ***Print Data***
+  row = col = 0;
+  worksheet = workbook_add_worksheet(workbook, "dataTY");
   printf("Printing Data...\n");
   while (*(ds->keys + col) != NULL) {
     worksheet_write_string(worksheet, row, col, *(ds->keys + col), NULL);

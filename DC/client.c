@@ -5,7 +5,7 @@ Assumptions assTY;
 
 void setassumptions(CurrentMember *cm) {
   assTY.DOC = newDate(0, 2016, 12, 1);
-  *cm->DOC = assTY.DOC;
+  cm->DOC[1] = assTY.DOC;
   assTY.DR = 0.0125;
   assTY.DR113 = 0.0185;
   assTY.agecorr = -3;

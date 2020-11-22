@@ -13,17 +13,24 @@ int main(int argc, char **argv) {
   XLfile xl;
   DataSet ds;
 
+  // These functions set all the necessary values of all the variables needed for the calculations.
   setXLvals(&xl, argv[1]);
   setDSvals(&xl, &ds);
   setCMvals(&ds);
 
-  // Here the loop of all affiliates will start
+  // Here the loop of all affiliates will start.
   setassumptions(ds.cm);
 
   //---BEGIN LOOP---
-  // This loops through all the years of an affiliate and makes the calculations
-  for (int k; k < MAXPROJ; k++) {
-    ;
+  // This loops through all the years of an affiliate and makes the calculations.
+  CurrentMember *cm = ds.cm;
+  for (int k = 0; k < MAXPROJ; k++) {
+    if (k > 1)
+      cm->DOC[k] = minDate(3,
+			   newDate(0, cm->DOB->year + NRA(cm), cm->DOB->month + 1, 1),
+			   newDate(0, cm->DOC[k-1]->year + 1, cm->DOC[k-1]->month, 1),
+			   cm->DOR);
+
   }
   // create excel file to print results
   printresults(&ds);
