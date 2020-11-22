@@ -2,6 +2,7 @@
 #define LIBRARY_HEADER
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "hashtable.h"
@@ -22,7 +23,8 @@ typedef struct date {
 enum months {JAN = 1, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
 int isleapyear(int year);
 void setdate(Date *date);
-Date *newDate(unsigned int XLday, int day, int month, int year);
+Date *newDate(unsigned int XLday, int year, int month, int day);
+Date *minDate(int, ...);
 
 //---Library Functions---
 char *trim(char *);

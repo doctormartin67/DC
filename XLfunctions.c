@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <dirent.h>
 #include <errno.h>
 #include <sys/stat.h>
@@ -299,7 +300,7 @@ void setdate(Date *date) {
 
 /* if XLday is NULL then this will create a date with the given day, month and year. Otherwise it
    will create it with the given XLday.*/
-Date *newDate(unsigned int XLday, int day, int month, int year) {
+Date *newDate(unsigned int XLday, int year, int month, int day) {
   Date *temp = (Date *)malloc(sizeof(Date));
   if (XLday == 0) {
     temp->day = day;
@@ -311,4 +312,26 @@ Date *newDate(unsigned int XLday, int day, int month, int year) {
     setdate(temp);
   }
   return temp;
+}
+
+Date *minDate(int argc, ...) {
+  Date *min; // minimum to return
+  Date *currmin; // current minimum
+  va_list dates;
+
+  va_start(dates, argc);
+  min = va_arg(dates, Date *);
+
+  for (int i = 1; i < argc; i++) {
+    currmin = va_arg(dates, Date *);
+    if (min->year > currmin->year)
+      min = currmin;
+    else if (min->year == currmin->year)
+      if (min->month > currmin->month)
+	min = currmin;
+      else if (min->month == currmin->month)
+	if (min->day > currmin->day)
+	  min = currmin;
+  }
+  return min;
 }
