@@ -109,10 +109,22 @@ void setCMvals(DataSet *ds) {
       memset(tempEE, '\0', sizeof(tempEE));
       snprintf(tempER, sizeof(tempER), "%s%d", "RES_A_GEN", j + 1);
       snprintf(tempEE, sizeof(tempEE), "%s%d", "RES_C_GEN", j + 1);
-      cm[i].RES[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      cm[i].RES[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].RES[ER][j] = atof(getcmval(&cm[i], tempER));
-      *cm[i].RES[EE][j] = atof(getcmval(&cm[i], tempEE));      
+      for (int k = 0; k < TUCPS_1 + 1; k++) {
+	cm[i].RES[ER][j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].RES[EE][j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
+	*cm[i].RES[ER][j][k] = atof(getcmval(&cm[i], tempER));
+	*cm[i].RES[EE][j][k] = atof(getcmval(&cm[i], tempEE));
+      }
+      memset(tempER, '\0', sizeof(tempER));
+      memset(tempEE, '\0', sizeof(tempEE));
+      snprintf(tempER, sizeof(tempER), "%s%d", "RESPS_A_GEN", j + 1);
+      snprintf(tempEE, sizeof(tempEE), "%s%d", "RESPS_C_GEN", j + 1);
+      for (int k = 0; k < TUCPS_1 + 1; k++) {
+	cm[i].RESPS[ER][j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].RESPS[EE][j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
+	*cm[i].RESPS[ER][j][k] = atof(getcmval(&cm[i], tempER));
+	*cm[i].RESPS[EE][j][k] = atof(getcmval(&cm[i], tempEE));
+      }
       memset(tempER, '\0', sizeof(tempER));
       memset(tempEE, '\0', sizeof(tempEE));
       snprintf(tempER, sizeof(tempER), "%s%d", "CAPDTH_A_GEN", j + 1);
@@ -156,25 +168,24 @@ void setCMvals(DataSet *ds) {
     cm[i].nDOA = (double *)malloc(sizeof(double) * MAXPROJ);
     *cm[i].nDOA = (*cm[i].DOC)->year - cm[i].DOA->year +
       (double)((*cm[i].DOC)->month - cm[i].DOA->month - (cm[i].DOA->month == 1 ? 0 : 1))/12;
-    cm[i].RESTOT[ER] = (double *)malloc(sizeof(double) * MAXPROJ);
-    cm[i].RESTOT[EE] = (double *)malloc(sizeof(double) * MAXPROJ);
+    for (int k = 0; k < TUCPS_1 + 1; k++) {
+      cm[i].RESTOT[ER][k] = (double *)malloc(sizeof(double) * MAXPROJ);
+      cm[i].RESTOT[EE][k] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].RESTOT[ER][k] = 0;
+      *cm[i].RESTOT[EE][k] = 0;
+    }
     cm[i].PREMIUMTOT[ER] = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].PREMIUMTOT[EE] = (double *)malloc(sizeof(double) * MAXPROJ);
-    *cm[i].RESTOT[ER] = 0;
-    *cm[i].RESTOT[EE] = 0;
     *cm[i].PREMIUMTOT[ER] = 0;
     *cm[i].PREMIUMTOT[EE] = 0;    
     for (int j = 0; j < MAXGEN; j++) {
-      *cm[i].RESTOT[ER] += *cm[i].RES[ER][j];
-      *cm[i].RESTOT[EE] += *cm[i].RES[EE][j];
+      for (int k = 0; k < TUCPS_1 + 1; k++) {
+	*cm[i].RESTOT[ER][k] += *cm[i].RES[ER][j][k] + *cm[i].RESPS[ER][j][k];
+	*cm[i].RESTOT[EE][k] += *cm[i].RES[EE][j][k] + *cm[i].RESPS[EE][j][k];
+      }
       *cm[i].PREMIUMTOT[ER] += *cm[i].PREMIUM[ER][j];
       *cm[i].PREMIUMTOT[EE] += *cm[i].PREMIUM[EE][j];
     }
-    cm[i].RESTOT[ER];
-    cm[i].RESTOT[EE];
-    cm[i].PREMIUMTOT[ER];
-    cm[i].PREMIUMTOT[EE];    
-    
   }
   printf("Setting values completed.\n");
 }

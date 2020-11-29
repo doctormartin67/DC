@@ -69,8 +69,10 @@ typedef struct currentmember {
   				      (Employer-Employee, generations, loops)*/
   double *PREMIUM[2][MAXGEN]; // Contribution (Employer-Employee, generations, loops)
   double *PREMIUMTOT[2]; // Total premium of an affiliate (Employer-Employee)
-  double *RES[2][MAXGEN]; // Reserves (Employer-Employee, generations, loops)
-  double *RESTOT[2]; // Total reserves of an affiliate (Employer-Employee)
+  double *RES[2][MAXGEN][TUCPS_1 + 1]; // Reserves (Employer-Employee, generations, Method, loops)
+  double *RESPS[2][MAXGEN][TUCPS_1 + 1]; /* Profit Sharing Reserves 
+					    (Employer-Employee, generations, Method, loops)*/
+  double *RESTOT[2][TUCPS_1 + 1]; // Total reserves of an affiliate (Employer-Employee, Method)
   double *DELTACAP[2]; // Delta Cap (AXA) (Employer-Employee, generations, loops)
   double X10; // MIXED combination
   double *CAPDTH[2][MAXGEN]; /* Death lump sum (used for UKMT)
