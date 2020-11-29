@@ -1,5 +1,0 @@
-#ifndef CLIENT
-#define CLIENT
-#include "assumptions.h"
-
-#endif
