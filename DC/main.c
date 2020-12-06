@@ -24,7 +24,8 @@ int main(int argc, char **argv) {
   //---BEGIN LOOP---
   // This loops through all the years of an affiliate and makes the calculations.
   CurrentMember *cm = ds.cm;
-  for (int k = 0; k < MAXPROJ; k++) {
+  // start at k = 1 because k = 0 should have been initialised with setCMvals(&ds)
+  for (int k = 1; k < MAXPROJ; k++) {
     if (k > 1)
       cm->DOC[k] = minDate(3,
 			   newDate(0, cm->DOB->year + NRA(cm), cm->DOB->month + 1, 1),
@@ -51,12 +52,33 @@ int main(int argc, char **argv) {
 				     ((cm->DOC[k]->month >= cm->DOC[1]->month) ? 1 : 0),
 				     cm->DOC[1]->month, 1));
       // Set Prolongation values
+      // All values get put in last generation (MAXGEN)
       if (k == MAXPROJBEFOREPROL + 1) {
-	;// to be continued: row 505 in access
+	int j;
+	for (int EREE = 0; EREE < EE + 1; EREE++) {
+	  cm->PREMIUM[EREE][MAXGEN-1][k-1] = gensum(cm->PREMIUM, EREE, k-1);
+	  cm->CAPDTH[EREE][MAXGEN-1][k-1] = gensum(cm->CAPDTH, EREE, k-1);
+	  for (j = 0; j < TUCPS_1 + 1; j++) {
+	    cm->RES[j][EREE][MAXGEN-1][k-1] = gensum(cm->RES[j], EREE, k-1);
+	    cm->RESPS[j][EREE][MAXGEN-1][k-1] = gensum(cm->RESPS[j], EREE, k-1);	    
+	  }
+	  cm->DELTACAP[EREE][k-1] = 0;
+	  for (j = 0; j < MAXGEN-1; j++) {
+	    cm->PREMIUM[EREE][j][k-1] = 0;
+	    cm->CAPDTH[EREE][j][k-1] = 0;
+	    for (int l = 0; j < TUCPS_1 + 1; j++) {
+	      cm->RES[l][EREE][j][k-1] = 0;
+	      cm->RESPS[l][EREE][j][k-1] = 0;
+	    } 
+	  }
+	}
       }
     }
 
     //***END PROLONGATION***
+    
+    cm->age[k] = cm->DOC[k]->year - cm->DOB->year +
+      (double)(cm->DOC[k]->month - cm->DOB->month - 1)/12;
     
   }
   // create excel file to print results

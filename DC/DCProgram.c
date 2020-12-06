@@ -110,20 +110,20 @@ void setCMvals(DataSet *ds) {
       snprintf(tempER, sizeof(tempER), "%s%d", "RES_A_GEN", j + 1);
       snprintf(tempEE, sizeof(tempEE), "%s%d", "RES_C_GEN", j + 1);
       for (int k = 0; k < TUCPS_1 + 1; k++) {
-	cm[i].RES[ER][j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].RES[EE][j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
-	*cm[i].RES[ER][j][k] = atof(getcmval(&cm[i], tempER));
-	*cm[i].RES[EE][j][k] = atof(getcmval(&cm[i], tempEE));
+	cm[i].RES[k][ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].RES[k][EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+	*cm[i].RES[k][ER][j] = atof(getcmval(&cm[i], tempER));
+	*cm[i].RES[k][EE][j] = atof(getcmval(&cm[i], tempEE));
       }
       memset(tempER, '\0', sizeof(tempER));
       memset(tempEE, '\0', sizeof(tempEE));
       snprintf(tempER, sizeof(tempER), "%s%d", "RESPS_A_GEN", j + 1);
       snprintf(tempEE, sizeof(tempEE), "%s%d", "RESPS_C_GEN", j + 1);
       for (int k = 0; k < TUCPS_1 + 1; k++) {
-	cm[i].RESPS[ER][j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].RESPS[EE][j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
-	*cm[i].RESPS[ER][j][k] = atof(getcmval(&cm[i], tempER));
-	*cm[i].RESPS[EE][j][k] = atof(getcmval(&cm[i], tempEE));
+	cm[i].RESPS[k][ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].RESPS[k][EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+	*cm[i].RESPS[k][ER][j] = atof(getcmval(&cm[i], tempER));
+	*cm[i].RESPS[k][EE][j] = atof(getcmval(&cm[i], tempEE));
       }
       memset(tempER, '\0', sizeof(tempER));
       memset(tempEE, '\0', sizeof(tempEE));
@@ -168,26 +168,17 @@ void setCMvals(DataSet *ds) {
     cm[i].nDOA = (double *)malloc(sizeof(double) * MAXPROJ);
     *cm[i].nDOA = (*cm[i].DOC)->year - cm[i].DOA->year +
       (double)((*cm[i].DOC)->month - cm[i].DOA->month - (cm[i].DOA->month == 1 ? 0 : 1))/12;
-    for (int k = 0; k < TUCPS_1 + 1; k++) {
-      cm[i].RESTOT[ER][k] = (double *)malloc(sizeof(double) * MAXPROJ);
-      cm[i].RESTOT[EE][k] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].RESTOT[ER][k] = 0;
-      *cm[i].RESTOT[EE][k] = 0;
-    }
-    cm[i].PREMIUMTOT[ER] = (double *)malloc(sizeof(double) * MAXPROJ);
-    cm[i].PREMIUMTOT[EE] = (double *)malloc(sizeof(double) * MAXPROJ);
-    *cm[i].PREMIUMTOT[ER] = 0;
-    *cm[i].PREMIUMTOT[EE] = 0;    
-    for (int j = 0; j < MAXGEN; j++) {
-      for (int k = 0; k < TUCPS_1 + 1; k++) {
-	*cm[i].RESTOT[ER][k] += *cm[i].RES[ER][j][k] + *cm[i].RESPS[ER][j][k];
-	*cm[i].RESTOT[EE][k] += *cm[i].RES[EE][j][k] + *cm[i].RESPS[EE][j][k];
-      }
-      *cm[i].PREMIUMTOT[ER] += *cm[i].PREMIUM[ER][j];
-      *cm[i].PREMIUMTOT[EE] += *cm[i].PREMIUM[EE][j];
-    }
   }
   printf("Setting values completed.\n");
+}
+
+double gensum(double *amount[][MAXGEN], unsigned short EREE, int loop) {
+  double sum = 0;
+  
+  for (int i = 0; i < MAXGEN; i++) {
+    sum += amount[EREE][i][loop];
+  }
+  return sum;
 }
 /* used to find the row where the keys lie for the data to be used
    for calculations. If the word KEY isn't found in the data then
@@ -409,6 +400,7 @@ int printresults(DataSet *ds) {
   // at the moment the first member is considered the sole testcase
   worksheet_write_string(worksheet, row, col, "KEY", NULL);
   worksheet_write_string(worksheet, row, col+1, "DOC", NULL);
+  worksheet_write_string(worksheet, row, col+2, "Age", NULL);
   lxw_datetime DOC;
   lxw_format *format = workbook_add_format(workbook);
   char DOCformat[] = "dd/mm/yyyy";
@@ -420,6 +412,7 @@ int printresults(DataSet *ds) {
     DOC.day = ds->cm[0].DOC[row]->day;
     worksheet_write_string(worksheet, row+1, col, ds->cm[0].key, NULL);
     worksheet_write_datetime(worksheet, row+1, col+1, &DOC, format);
+    worksheet_write_number(worksheet, row+1, col+2, ds->cm[0].age[row], NULL);
     row++;
   }
   // ***End Print Testcases***
