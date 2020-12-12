@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "libraryheader.h"
 #include "hashtable.h"
 #include "DCProgram.h"
@@ -31,6 +32,11 @@ int main(int argc, char **argv) {
 			   newDate(0, cm->DOB->year + NRA(cm), cm->DOB->month + 1, 1),
 			   newDate(0, cm->DOC[k-1]->year + 1, cm->DOC[k-1]->month, 1),
 			   cm->DOR);
+    cm->DOC[k+1] = minDate(3,
+			   newDate(0, cm->DOB->year + NRA(cm), cm->DOB->month + 1, 1),
+			   newDate(0, cm->DOC[k]->year + 1, cm->DOC[k]->month, 1),
+			   cm->DOR);
+    
 
     //***PROLONGATION***
     // Determining the DOC
@@ -79,7 +85,16 @@ int main(int argc, char **argv) {
     
     cm->age[k] = cm->DOC[k]->year - cm->DOB->year +
       (double)(cm->DOC[k]->month - cm->DOB->month - 1)/12;
-    
+    cm->age[k+1] = cm->DOC[k+1]->year - cm->DOB->year +
+      (double)(cm->DOC[k+1]->month - cm->DOB->month - 1)/12;
+    cm->nDOA[k] = cm->DOC[k]->year - cm->DOA->year +
+      (double)(cm->DOC[k]->month - cm->DOA->month - (cm->DOA->day == 1 ? 0 : 1))/12;
+    cm->nDOE[k] = cm->DOC[k]->year - cm->DOE->year +
+      (double)(cm->DOC[k]->month - cm->DOE->month - (cm->DOE->day == 1 ? 0 : 1))/12;
+
+    /*    cm->sal[k] = cm->sal[k-1] *
+      pow((1 + salaryscale(cm, k)), cm->DOC[k]->year - cm->DOC[k-1]->year);
+    */
   }
   // create excel file to print results
   printresults(&ds);

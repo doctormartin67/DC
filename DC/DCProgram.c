@@ -164,10 +164,10 @@ void setCMvals(DataSet *ds) {
       (double)((*cm[i].DOC)->month - cm[i].DOB->month - 1)/12;
     cm[i].nDOE = (double *)malloc(sizeof(double) * MAXPROJ);
     *cm[i].nDOE = (*cm[i].DOC)->year - cm[i].DOE->year +
-      (double)((*cm[i].DOC)->month - cm[i].DOE->month - (cm[i].DOE->month == 1 ? 0 : 1))/12;
+      (double)((*cm[i].DOC)->month - cm[i].DOE->month - (cm[i].DOE->day == 1 ? 0 : 1))/12;
     cm[i].nDOA = (double *)malloc(sizeof(double) * MAXPROJ);
     *cm[i].nDOA = (*cm[i].DOC)->year - cm[i].DOA->year +
-      (double)((*cm[i].DOC)->month - cm[i].DOA->month - (cm[i].DOA->month == 1 ? 0 : 1))/12;
+      (double)((*cm[i].DOC)->month - cm[i].DOA->month - (cm[i].DOA->day == 1 ? 0 : 1))/12;
   }
   printf("Setting values completed.\n");
 }

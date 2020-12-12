@@ -123,14 +123,14 @@ typedef struct assumptions {
   double (*SS)(CurrentMember *cm);
   double infl; // Inflation
   unsigned short (*NRA)(CurrentMember *cm);
-  double (*wxdef)(CurrentMember *cm); // Turnover rate with deferred payment
+  double (*wxdef)(CurrentMember *cm, int k); // Turnover rate with deferred payment
   double (*wximm)(CurrentMember *cm); // Turnover rate with immediate payment  
 } Assumptions;
 
 void setassumptions(CurrentMember *cm);
 double salaryscale(CurrentMember *cm);
 unsigned short NRA(CurrentMember *cm);
-double wxdef(CurrentMember *cm);
+double wxdef(CurrentMember *cm, int k);
 double wximm(CurrentMember *cm);
 
 //---Setter declarations---
