@@ -401,6 +401,7 @@ int printresults(DataSet *ds) {
   worksheet_write_string(worksheet, row, col, "KEY", NULL);
   worksheet_write_string(worksheet, row, col+1, "DOC", NULL);
   worksheet_write_string(worksheet, row, col+2, "Age", NULL);
+  worksheet_write_string(worksheet, row, col+4, "Salary", NULL);
   lxw_datetime DOC;
   lxw_format *format = workbook_add_format(workbook);
   char DOCformat[] = "dd/mm/yyyy";
@@ -413,6 +414,7 @@ int printresults(DataSet *ds) {
     worksheet_write_string(worksheet, row+1, col, ds->cm[0].key, NULL);
     worksheet_write_datetime(worksheet, row+1, col+1, &DOC, format);
     worksheet_write_number(worksheet, row+1, col+2, ds->cm[0].age[row], NULL);
+    worksheet_write_number(worksheet, row+1, col+4, ds->cm[0].sal[row], NULL);    
     row++;
   }
   // ***End Print Testcases***

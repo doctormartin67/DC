@@ -120,18 +120,48 @@ typedef struct assumptions {
   double DR; // Discount Rate
   double DR113; // Discount Rate under $113 of IAS19  
   short agecorr; // Age Correction
-  double (*SS)(CurrentMember *cm);
+  double (*SS)(CurrentMember *cm, int k);
   double infl; // Inflation
-  unsigned short (*NRA)(CurrentMember *cm);
+  unsigned short (*NRA)(CurrentMember *cm, int k);
   double (*wxdef)(CurrentMember *cm, int k); // Turnover rate with deferred payment
-  double (*wximm)(CurrentMember *cm); // Turnover rate with immediate payment  
+  double (*wximm)(CurrentMember *cm, int k); // Turnover rate with immediate payment
+
+  //Assumptions that usually won't change from year to year
+  unsigned short incrSalk1; // determine whether sal gets increased at k = 1 
 } Assumptions;
 
+Assumptions ass; // Assumptions
+
+//---Reconciliation declarations---
+enum runs {runLY, runUpdateInflation, runUpdateDR, runRF,
+	   runNewData, runNewMethodology, runNewMortality,
+	   runNewTurnover, runNewNRA, runNewInflation, runNewSS,
+	   runNewDR, runNewRF, runSensitivities};
+enum sensruns {runsensDRminus = 21, runsensDRplus, runsensInflationminus,
+	       runsensInflationplus, runsensSSminus, runsensSSplus,
+	       runsensAgeCorrminus, runsensAgeCorrplus, runsensDuration};
+unsigned short currrun; // Current run
 void setassumptions(CurrentMember *cm);
-double salaryscale(CurrentMember *cm);
-unsigned short NRA(CurrentMember *cm);
+double salaryscale(CurrentMember *cm, int k);
+unsigned short NRA(CurrentMember *cm, int k);
 double wxdef(CurrentMember *cm, int k);
-double wximm(CurrentMember *cm);
+double wximm(CurrentMember *cm, int k);
+
+//---Tariff Structure---
+
+typedef struct tariff {
+  char *lt; // Life Table
+  double costRES; // Cost on reserves
+  int prepost; // Pre-numerando or post-numerando
+  int term; // Monthly payment, yearly payment, ... (12 means monthly)
+  double WDDTH; // Profit sharing death (winstdeelname)
+  double costKO; // cost on Death lump sum (kapitaal overlijden)
+  double admincost; // Administration cost
+  double MIXEDPS;
+} Tariff;
+
+Tariff tffTY; // Tariff structure this year
+Tariff tffLY; // Tariff structure last year
 
 //---Setter declarations---
 void setDSvals(XLfile *xl, DataSet *ds);

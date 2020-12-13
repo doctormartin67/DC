@@ -20,20 +20,20 @@ int main(int argc, char **argv) {
   setCMvals(&ds);
 
   // Here the loop of all affiliates will start.
-  setassumptions(ds.cm);
-
+  currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
   //---BEGIN LOOP---
   // This loops through all the years of an affiliate and makes the calculations.
   CurrentMember *cm = ds.cm;
+  setassumptions(cm); // This defines the assumptions
   // start at k = 1 because k = 0 should have been initialised with setCMvals(&ds)
   for (int k = 1; k < MAXPROJ; k++) {
     if (k > 1)
       cm->DOC[k] = minDate(3,
-			   newDate(0, cm->DOB->year + NRA(cm), cm->DOB->month + 1, 1),
+			   newDate(0, cm->DOB->year + NRA(cm, k-1), cm->DOB->month + 1, 1),
 			   newDate(0, cm->DOC[k-1]->year + 1, cm->DOC[k-1]->month, 1),
 			   cm->DOR);
     cm->DOC[k+1] = minDate(3,
-			   newDate(0, cm->DOB->year + NRA(cm), cm->DOB->month + 1, 1),
+			   newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1),
 			   newDate(0, cm->DOC[k]->year + 1, cm->DOC[k]->month, 1),
 			   cm->DOR);
     
@@ -42,18 +42,18 @@ int main(int argc, char **argv) {
     // Determining the DOC
     if (k == MAXPROJBEFOREPROL)
       cm->DOC[k+1] = minDate(2,
-			     newDate(0, cm->DOB->year + NRA(cm), cm->DOB->month + 1, 1),
+			     newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1),
 			     newDate(0, cm->DOC[k]->year +
 				     ((cm->DOC[k]->month >= cm->DOC[1]->month) ? 1 : 0),
 				     cm->DOC[1]->month, 1));
     if (k > MAXPROJBEFOREPROL) {
       cm->DOC[k] = minDate(2,
-			   newDate(0, cm->DOB->year + NRA(cm), cm->DOB->month + 1, 1),
+			   newDate(0, cm->DOB->year + NRA(cm, k-1), cm->DOB->month + 1, 1),
 			   newDate(0, cm->DOC[k-1]->year +
 				   ((cm->DOC[k-1]->month >= cm->DOC[1]->month) ? 1 : 0),
 				   cm->DOC[1]->month, 1));
       cm->DOC[k+1] = minDate(2,
-			     newDate(0, cm->DOB->year + NRA(cm), cm->DOB->month + 1, 1),
+			     newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1),
 			     newDate(0, cm->DOC[k]->year +
 				     ((cm->DOC[k]->month >= cm->DOC[1]->month) ? 1 : 0),
 				     cm->DOC[1]->month, 1));
@@ -92,9 +92,10 @@ int main(int argc, char **argv) {
     cm->nDOE[k] = cm->DOC[k]->year - cm->DOE->year +
       (double)(cm->DOC[k]->month - cm->DOE->month - (cm->DOE->day == 1 ? 0 : 1))/12;
 
-    /*    cm->sal[k] = cm->sal[k-1] *
-      pow((1 + salaryscale(cm, k)), cm->DOC[k]->year - cm->DOC[k-1]->year);
-    */
+    cm->sal[k] = cm->sal[k-1] *
+      pow((1 + salaryscale(cm, k)),
+	  cm->DOC[k]->year - cm->DOC[k-1]->year + (k == 1 ? ass.incrSalk1 : 0));
+    
   }
   // create excel file to print results
   printresults(&ds);
