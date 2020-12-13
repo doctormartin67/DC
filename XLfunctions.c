@@ -298,19 +298,47 @@ void setdate(Date *date) {
   }
 }
 
-/* if XLday is NULL then this will create a date with the given day, month and year. Otherwise it
+/* if XLday is 0 then this will create a date with the given day, month and year. Otherwise it
    will create it with the given XLday.*/
 Date *newDate(unsigned int XLday, int year, int month, int day) {
+  int tday = day;
+  int tmonth = month;
+  int tyear = year;
+
   Date *temp = (Date *)malloc(sizeof(Date));
+
+  if (tday > (isleapyear(tyear) ? leapdays[tmonth] : commondays[tmonth])) {
+    tmonth++;
+    tday = 1;
+  }
+  if (tmonth > DEC) {
+    tyear++;
+    tmonth = JAN;
+  }
+  
   if (XLday == 0) {
-    temp->day = day;
-    temp->month = month;
-    temp->year = year;
+    temp->day = tday;
+    temp->month = tmonth;
+    temp->year = tyear;
   }
   else {
     temp->XLday = XLday;
     setdate(temp);
   }
+
+  // Error checking
+  if (temp->day > (isleapyear(temp->year) ? leapdays[temp->month] : commondays[temp->month])) {
+    printf("Error in newDate: %d is not a valid day of month %d\n",
+	   temp->day, temp->month);
+    printf("Exiting program\n");
+    exit(1);
+  }
+  if (temp->month > DEC) {
+    printf("Error in newDate: there are no %d months\n", temp->month);
+    printf("Exiting program\n");
+    exit(1);
+  }
+  
   return temp;
 }
 
@@ -333,5 +361,18 @@ Date *minDate(int argc, ...) {
 	if (min->day > currmin->day)
 	  min = currmin;
   }
+  // Error checking
+  if (min->day > (isleapyear(min->year) ? leapdays[min->month] : commondays[min->month])) {
+    printf("Error in newDate: %d is not a valid day of month %d\n",
+	   min->day, min->month);
+    printf("Exiting program\n");
+    exit(1);
+  }
+  if (min->month > DEC) {
+    printf("Error in newDate: there are no %d months\n", min->month);
+    printf("Exiting program\n");
+    exit(1);
+  }
+
   return min;
 }
