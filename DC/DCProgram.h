@@ -8,8 +8,8 @@
 //-  status BITS  -
 #define ACT 0x1 // used to set ACT bit on if active member
 #define ACTCON 0x2// used to set ACTCON bit on if it is an active contract
-#define SEX 0x4 // used to set SEX bit on if it is a male
-#define MS 0x8 // used to set MS bit on if it is married
+#define MALE 0x4 // used to set MALE bit on if it is a male
+#define MARRIED 0x8 // used to set MARRIED bit on if it is married
 
 //-  extra BITS  -
 #define INCSAL 01; // put this bit on when we increase the salary in the first line
@@ -150,18 +150,25 @@ double wximm(CurrentMember *cm, int k);
 //---Tariff Structure---
 
 typedef struct tariff {
-  char *lt; // Life Table
+  char *ltINS; // Life Table Insurer
+  char *ltAfterTRM; // Life Table after termination
   double costRES; // Cost on reserves
-  int prepost; // Pre-numerando or post-numerando
-  int term; // Monthly payment, yearly payment, ... (12 means monthly)
   double WDDTH; // Profit sharing death (winstdeelname)
   double costKO; // cost on Death lump sum (kapitaal overlijden)
   double admincost; // Administration cost
   double MIXEDPS;
 } Tariff;
 
-Tariff tffTY; // Tariff structure this year
-Tariff tffLY; // Tariff structure last year
+Tariff tff; // Tariff structure
+
+static char *lifetables[6] =
+  {"LXMR", "LXFR", "LXMK", "LXFK", "LXFK'", "Lxnihil"};
+#define LXMR 0
+#define LXFR 1
+#define LXMK 2
+#define LXFK 3
+#define LXFKP 4
+#define LXNIHIL 5
 
 //---Setter declarations---
 void setDSvals(XLfile *xl, DataSet *ds);

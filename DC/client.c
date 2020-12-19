@@ -22,9 +22,44 @@ void setassumptions(CurrentMember *cm) {
   ass.wxdef = (currrun >= runNewTurnover ? wxdefTY : wxdefLY);
   ass.wximm = (currrun >= runNewTurnover ? wximmTY : wximmLY);
 
-  //Assumptions that usually won't change from year to year
+  // Assumptions that usually won't change from year to year
   ass.incrSalk1 = 1; // determine whether sal gets increased at k = 1
 
+  //---Tariff Structure---
+  //-  Life Tables  -
+
+  switch(cm->tariff) {
+  case UKMS :
+    tff.ltINS = lifetables[LXNIHIL];
+    tff.ltAfterTRM = lifetables[LXNIHIL];    
+    break;
+  case UKZT :
+    if (cm->status & ACT) {
+      tff.ltINS = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
+      tff.ltAfterTRM = (cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]);
+    }
+    else {
+      tff.ltINS = (cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]);
+      tff.ltAfterTRM = tff.ltINS;
+    }
+    break;
+  case UKMT :
+    tff.ltINS = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
+    tff.ltAfterTRM = tff.ltINS;
+    break;
+  case MIXED :
+    tff.ltINS = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
+    tff.ltAfterTRM = tff.ltINS;
+    break;
+  }
+
+  //-  Remaining Tariffs  -
+  tff.costRES = (currrun >= runNewData ? 0.001 : 0.001);
+  tff.WDDTH = (currrun >= runNewData ? 0.3 : 0.3);
+  tff.costKO = (currrun >= runNewData ? 0.0008 : 0.0008);
+  tff.admincost = (currrun >= runNewData ? 0.05 : 0.05);
+  tff.MIXEDPS = (currrun >= runNewData ? 1 : 1);
+  
 }
 
 static double salaryscaleTY(CurrentMember *cm, int k) {
@@ -65,22 +100,6 @@ static double wximmTY(CurrentMember *cm, int k) {
 static double wximmLY(CurrentMember *cm, int k) {
   // Percentage of people who take their reserves with them at turnover is assumed to be 0
   return 0;
-}
-
-double salaryscale(CurrentMember *cm, int k) {
-  return (*ass.SS)(cm, k);
-}
-
-unsigned short NRA(CurrentMember *cm, int k) {
-  return (*ass.NRA)(cm, k);
-}
-
-double wxdef(CurrentMember *cm, int k) {
-  return (*ass.wxdef)(cm, k);
-}
-
-double wximm(CurrentMember *cm, int k) {
-  return (*ass.wximm)(cm, k);
 }
 
 

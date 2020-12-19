@@ -29,8 +29,8 @@ void setCMvals(DataSet *ds) {
     cm[i].status = 0;
     if (strcmp(getcmval(&cm[i], "STATUS"), "ACT") == 0)  cm[i].status += ACT;
     if (strcmp(getcmval(&cm[i], "ACTIVE CONTRACT"), "1") == 0)  cm[i].status += ACTCON;
-    if (strcmp(getcmval(&cm[i], "SEX"), "1") == 0)  cm[i].status += SEX;
-    if (strcmp(getcmval(&cm[i], "MS"), "M") == 0)  cm[i].status += MS;
+    if (strcmp(getcmval(&cm[i], "SEX"), "1") == 0)  cm[i].status += MALE;
+    if (strcmp(getcmval(&cm[i], "MS"), "M") == 0)  cm[i].status += MARRIED;
     cm[i].DOB = newDate((unsigned short)atoi(getcmval(&cm[i], "DOB")), 0, 0, 0);
     cm[i].DOE = newDate((unsigned short)atoi(getcmval(&cm[i], "DOE")), 0, 0, 0);
     cm[i].DOL = newDate((unsigned short)atoi(getcmval(&cm[i], "DOL")), 0, 0, 0);
@@ -458,4 +458,20 @@ char *getcmval(CurrentMember *cm, char *value) {
   }
   else
     return get(value, cm->Data)->value;
+}
+
+double salaryscale(CurrentMember *cm, int k) {
+  return (*ass.SS)(cm, k);
+}
+
+unsigned short NRA(CurrentMember *cm, int k) {
+  return (*ass.NRA)(cm, k);
+}
+
+double wxdef(CurrentMember *cm, int k) {
+  return (*ass.wxdef)(cm, k);
+}
+
+double wximm(CurrentMember *cm, int k) {
+  return (*ass.wximm)(cm, k);
 }
