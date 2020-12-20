@@ -52,7 +52,7 @@ typedef struct currentmember {
   double *sal; // salary (array)
   double PG; // pensioengrondslag ( I have never needed this)
   double PT; // part time
-  unsigned short NRA; // normal retirement age
+  double NRA; // normal retirement age
   unsigned short kids; // amount of kids
   unsigned short tariff; // UKMS, UKZT, UKMT, MIXED
   double KO; // death lump sum (kapitaal overlijden)
@@ -122,7 +122,7 @@ typedef struct assumptions {
   short agecorr; // Age Correction
   double (*SS)(CurrentMember *cm, int k);
   double infl; // Inflation
-  unsigned short (*NRA)(CurrentMember *cm, int k);
+  double (*NRA)(CurrentMember *cm, int k);
   double (*wxdef)(CurrentMember *cm, int k); // Turnover rate with deferred payment
   double (*wximm)(CurrentMember *cm, int k); // Turnover rate with immediate payment
 
@@ -143,7 +143,7 @@ enum sensruns {runsensDRminus = 21, runsensDRplus, runsensInflationminus,
 unsigned short currrun; // Current run
 void setassumptions(CurrentMember *cm);
 double salaryscale(CurrentMember *cm, int k);
-unsigned short NRA(CurrentMember *cm, int k);
+double NRA(CurrentMember *cm, int k);
 double wxdef(CurrentMember *cm, int k);
 double wximm(CurrentMember *cm, int k);
 

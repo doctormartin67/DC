@@ -42,7 +42,7 @@ void setCMvals(DataSet *ds) {
     *cm[i].sal = atof(getcmval(&cm[i], "SAL"));
     cm[i].PG = atof(getcmval(&cm[i], "PG"));
     cm[i].PT = atof(getcmval(&cm[i], "PT"));
-    cm[i].NRA = (unsigned short)atoi(getcmval(&cm[i], "NRA"));
+    cm[i].NRA = atof(getcmval(&cm[i], "NRA"));
     cm[i].kids = (unsigned short)atoi(getcmval(&cm[i], "# ENF"));
     cm[i].tariff = 0;
     if (strcmp(getcmval(&cm[i], "TARIEF"), "UKMS") == 0)  cm[i].tariff = UKMS;
@@ -464,7 +464,7 @@ double salaryscale(CurrentMember *cm, int k) {
   return (*ass.SS)(cm, k);
 }
 
-unsigned short NRA(CurrentMember *cm, int k) {
+double NRA(CurrentMember *cm, int k) {
   return (*ass.NRA)(cm, k);
 }
 

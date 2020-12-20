@@ -2,8 +2,8 @@
 
 static double salaryscaleTY(CurrentMember *cm, int k);
 static double salaryscaleLY(CurrentMember *cm, int k);
-static unsigned short NRATY(CurrentMember *cm, int k);
-static unsigned short NRALY(CurrentMember *cm, int k);
+static double NRATY(CurrentMember *cm, int k);
+static double NRALY(CurrentMember *cm, int k);
 static double wxdefTY(CurrentMember *cm, int k);
 static double wxdefLY(CurrentMember *cm, int k);
 static double wximmTY(CurrentMember *cm, int k);
@@ -71,11 +71,11 @@ static double salaryscaleLY(CurrentMember *cm, int k) {
   return ass.infl + 0.011;
 }
 
-static unsigned short NRATY(CurrentMember *cm, int k) {
+static double NRATY(CurrentMember *cm, int k) {
   return 65;
 }
 
-static unsigned short NRALY(CurrentMember *cm, int k) {
+static double NRALY(CurrentMember *cm, int k) {
   return 65;
 }
 

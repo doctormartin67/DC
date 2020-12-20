@@ -172,9 +172,9 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 					 cm->age[k+1], tff.ltINS);
 
   //---TUC RESERVES---
-  RA = min(3, (double)NRA(cm, k), (double)cm->NRA, cm->age[k+1]);
+  RA = min(3, NRA(cm, k), cm->NRA, cm->age[k+1]);
   i = cm->TAUX[EREE][gen];
-  Ex = nEx(tff.ltINS, i, tff.costRES, RA, min(2, (double)NRA(cm, k), (double)cm->NRA), 0);
+  Ex = nEx(tff.ltINS, i, tff.costRES, RA, min(2, NRA(cm, k), cm->NRA), 0);
 
   cap = calcCAP(cm, EREE, gen, k,
 		cm->RES[PUC][EREE][gen][1],
