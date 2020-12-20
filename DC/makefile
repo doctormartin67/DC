@@ -20,15 +20,15 @@ ${programs} : %: %.o ${miscOBJS} ${libOBJS}
 	cp ${LIBPATH}/runDC ${BINPATH}
 
 ${SRCS} : %.o: %.c ${ACTPATH}/actuarialfunctions.h ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h DCProgram.h
-	gcc ${debug} -c -I${LIBPATH} -I${ACTPATH} $<
+	gcc ${debug} -c -I${LIBPATH} -I${ACTPATH} -I${TABLEPATH} -I. $<
 
 ${TABLEPATH}/lifetable.o : ${TABLEPATH}/lifetable.c
 	gcc ${debug} -c -I${LIBPATH} -I${TABLEPATH} $< -o $@
 ${TABLEPATH}/lifetable.o : ${LIBPATH}/libraryheader.h ${TABLEPATH}/lifetables.h
 
 ${ACTPATH}/actuarialfunctions.o : ${ACTPATH}/actuarialfunctions.c
-	gcc ${debug} -c -I${TABLEPATH} $< -o $@
-${ACTPATH}/actuarialfunctions.o : ${ACTPATH}/actuarialfunctions.h ${TABLEPATH}/lifetables.h
+	gcc ${debug} -c -I. -I${TABLEPATH} -I${LIBPATH} $< -o $@
+${ACTPATH}/actuarialfunctions.o : ${ACTPATH}/actuarialfunctions.h ${TABLEPATH}/lifetables.h DCProgram.h
 
 ${libOBJS} : %.o: %.c ${LIBPATH}/libraryheader.h
 	gcc ${debug} -c -I${LIBPATH} $< -o $@

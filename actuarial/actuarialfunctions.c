@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include "lifetables.h"
 #include "actuarialfunctions.h"
 
 const double eps = 0.0000001;
@@ -149,4 +145,162 @@ double Iaxn(char *lt, double i, double charge, int prepost, int term,
 	  (double)((int)(ageXn*term + eps))/term + term*prepost, corr);
     return value;
   }
+}
+
+void evolCAPDTH(CurrentMember *cm, int EREE, int gen, int k) {
+  cm->CAPDTH[EREE][gen][k+1] = cm->CAPDTH[EREE][gen][k] +
+    cm->PREMIUM[EREE][gen][k] * (1 - tff.admincost) * (cm->age[k+1] - cm->age[k]);
+}
+
+void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
+  double cap;
+  double RA;
+  double i;
+  double Ex;
+
+  //---PUC RESERVES---
+  RA = (k > MAXPROJBEFOREPROL ? NRA(cm, k) : cm->NRA);
+
+  cap = calcCAP(cm, EREE, gen, k,
+		cm->RES[PUC][EREE][gen][k],
+		cm->PREMIUM[EREE][gen][k],
+		cm->CAPDTH[EREE][gen][k], cm->age[k], RA, tff.ltINS);
+  cm->RES[PUC][EREE][gen][k+1] = calcRES(cm, EREE, gen, k,
+					 cap,
+					 cm->PREMIUM[EREE][gen][k],
+					 cm->CAPDTH[EREE][gen][k+1],
+					 cm->age[k+1], tff.ltINS);
+
+  //---TUC RESERVES---
+  RA = min(3, (double)NRA(cm, k), (double)cm->NRA, cm->age[k+1]);
+  i = cm->TAUX[EREE][gen];
+  Ex = nEx(tff.ltINS, i, tff.costRES, RA, min(2, (double)NRA(cm, k), (double)cm->NRA), 0);
+
+  cap = calcCAP(cm, EREE, gen, k,
+		cm->RES[PUC][EREE][gen][1],
+		0,
+		cm->CAPDTH[EREE][gen][1], cm->age[1], RA, tff.ltINS) +
+    cm->DELTACAP[EREE][0] * (RA - cm->age[1]) * 12 * Ex;
+  cm->RES[TUC][EREE][gen][k+1] = calcCAP(cm, EREE, gen, k,
+					 cap,
+					 0,
+					 cm->CAPDTH[EREE][gen][1],
+					 cm->age[k+1], RA, tff.ltAfterTRM);
+
+  //---TUCPS_1 RESERVES---
+  cap = calcCAP(cm, EREE, gen, k,
+		cm->RES[PUC][EREE][gen][1],
+		0,
+		cm->CAPDTH[EREE][gen][1], cm->age[1], RA, tff.ltINS) +
+    cm->DELTACAP[EREE][0] * (RA - cm->age[1]) * 12 * Ex;
+  cm->RES[TUC][EREE][gen][k+1] = calcCAP(cm, EREE, gen, k,
+					 cap,
+					 0,
+					 cm->CAPDTH[EREE][gen][1],
+					 cm->age[k+1], RA, tff.ltAfterTRM);
+  
+  
+}
+
+double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
+	       double res, double prem, double capdth,
+	       double age, double RA, char *lt) {
+
+  double i;
+  double Ex;
+  double ax;
+  
+  // These are used for UKMT and MIXED
+  double axcost; 
+  double Ax1;
+
+  // These are used for UKMT
+  double IAx1;
+  double Iax;
+  
+  double value;
+
+  i = cm->TAUX[EREE][gen];
+  Ex = nEx(lt, i, tff.costRES, age, RA, 0);
+  ax = axn(lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
+  axcost = axn(lt, i, tff.costRES, 0, 1, age, RA, 0);
+  Ax1 = Ax1n(lt, i, tff.costRES, age, RA, 0);
+  IAx1 = IAx1n(lt, i, tff.costRES, age, RA, 0);
+  Iax = Iaxn(lt, i, tff.costRES, 0, 1, age, RA, 0);
+  
+  switch(cm->tariff) {
+  case UKMS :
+    value = (res + prem * (1 - tff.admincost) * ax) / Ex +
+      cm->DELTACAP[EREE][k] * (RA - age) * 12;
+    break;
+    // same as UKMS
+  case UKZT :
+    value = (res + prem * (1 - tff.admincost) * ax) / Ex +
+      cm->DELTACAP[EREE][k] * (RA - age) * 12;
+    break;
+  case UKMT :
+    value = (res + prem * (1 - tff.admincost) * ax -
+	     capdth * (Ax1 + tff.costKO * axcost) -
+	     prem * (1 - tff.admincost) * (IAx1 + tff.costKO * Iax)) / Ex;
+    break;
+  case MIXED :
+    value = (res + prem * (1 - tff.admincost) * ax) /
+      (Ex + 1.0/cm->X10 * tff.MIXEDPS * (Ax1 + tff.costKO * axcost));
+    break;
+  }
+  
+  return value;
+}
+
+double calcRES(CurrentMember *cm, int EREE, int gen, int k,
+	       double cap, double prem, double capdth,
+	       double age, char *lt) {
+  
+  unsigned short RA;
+  double i;
+  double Ex;
+  double ax;
+  
+  // These are used for UKMT and MIXED
+  double axcost; 
+  double Ax1;
+
+  // These are used for UKMT
+  double IAx1;
+  double Iax;
+  
+  double value;
+
+  RA = (k > MAXPROJBEFOREPROL ? NRA(cm, k) : cm->NRA);
+  i = cm->TAUX[EREE][gen];
+  Ex = nEx(lt, i, tff.costRES, age, RA, 0);
+  ax = axn(lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
+  axcost = axn(lt, i, tff.costRES, 0, 1, age, RA, 0);
+  Ax1 = Ax1n(lt, i, tff.costRES, age, RA, 0);
+  IAx1 = IAx1n(lt, i, tff.costRES, age, RA, 0);
+  Iax = Iaxn(lt, i, tff.costRES, 0, 1, age, RA, 0);
+
+  switch(cm->tariff) {
+  case UKMS :
+    value = (cap - cm->DELTACAP[EREE][k] * (RA - age) * 12) * Ex -
+      prem * (1 - tff.admincost) * ax;
+    break;
+    // same as UKMS
+  case UKZT :
+    value = (cap - cm->DELTACAP[EREE][k] * (RA - age) * 12) * Ex -
+      prem * (1 - tff.admincost) * ax;
+    break;
+  case UKMT :
+    value = cap * Ex - prem * (1 - tff.admincost) * ax +
+      capdth * (Ax1 + tff.costKO * axcost) +
+      prem * (1 - tff.admincost) * (IAx1 + tff.costKO * Iax);
+    break;
+  case MIXED :
+    value = cap * (Ex + 1.0/cm->X10 * tff.MIXEDPS * (Ax1 + tff.costKO * axcost)) -
+      prem * (1 - tff.admincost) * ax;
+    break;
+  }
+  
+  return value;
+
 }

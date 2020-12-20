@@ -1,3 +1,11 @@
+#ifndef ACTUARIALFUNCTIONS
+#define ACTUARIALFUNCTIONS
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include "lifetables.h"
+#include "DCProgram.h"
+
 /*
 Definitions:
 - lt is the name of a life table that gets put in a hashtable to be called.
@@ -36,3 +44,22 @@ double IAx1n(char *lt, double i, double charge, double ageX, double ageXn,
 
 double Iaxn(char *lt, double i, double charge, int prepost, int term,
 	   double ageX, double ageXn, int corr);
+
+// Update the current iteration (k) of death lump sum, employer-employee, generation
+void evolCAPDTH(CurrentMember *cm, int EREE, int gen, int k);
+
+/* Update the current iteration (k) of Reserves and profit sharing reserves, 
+   employer-employee, generation */
+void evolRES(CurrentMember *cm, int EREE, int gen, int k);
+
+// calculate the capital life (lump sum) given reserves and contributions
+double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
+	       double res, double prem, double capdth,
+	       double age, double RA, char *lt);
+
+// calculate the reserves given capital life (lump sum) and contributions
+double calcRES(CurrentMember *cm, int EREE, int gen, int k,
+	       double cap, double prem, double capdth,
+	       double age, char *lt);
+
+#endif

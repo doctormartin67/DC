@@ -157,6 +157,8 @@ typedef struct tariff {
   double costKO; // cost on Death lump sum (kapitaal overlijden)
   double admincost; // Administration cost
   double MIXEDPS;
+  int prepost; // prenumerando-postnumerando
+  int term; // term of payments
 } Tariff;
 
 Tariff tff; // Tariff structure

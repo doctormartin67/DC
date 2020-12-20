@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "libraryheader.h"
-#include "hashtable.h"
 #include "DCProgram.h"
+#include "actuarialfunctions.h"
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -95,7 +94,18 @@ int main(int argc, char **argv) {
     cm->sal[k] = cm->sal[k-1] *
       pow((1 + salaryscale(cm, k)),
 	  cm->DOC[k]->year - cm->DOC[k-1]->year + (k == 1 ? ass.incrSalk1 : 0));
-    
+
+    //***RESERVES EVOLUTION***
+    // Employer-Employee
+    for (int EREE = ER; EREE < EE + 1; EREE++) {
+      for (int gen = 0; gen < MAXGEN; gen++) {
+	/* here all the functions will use the k-1 value to calculate the kth value and  */
+	cm->DELTACAP[EREE][k] = cm->DELTACAP[EREE][k-1];
+	evolCAPDTH(cm, EREE, gen, k-1);
+	evolRES(cm, EREE, gen, k-1);
+	
+      }
+    }
   }
   // create excel file to print results
   printresults(&ds);

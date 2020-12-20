@@ -52,14 +52,15 @@ void setassumptions(CurrentMember *cm) {
     tff.ltAfterTRM = tff.ltINS;
     break;
   }
-
+  
   //-  Remaining Tariffs  -
   tff.costRES = (currrun >= runNewData ? 0.001 : 0.001);
   tff.WDDTH = (currrun >= runNewData ? 0.3 : 0.3);
   tff.costKO = (currrun >= runNewData ? 0.0008 : 0.0008);
   tff.admincost = (currrun >= runNewData ? 0.05 : 0.05);
   tff.MIXEDPS = (currrun >= runNewData ? 1 : 1);
-  
+  tff.prepost = (currrun >= runNewData ? 1 : 1);
+  tff.term = (currrun >= runNewData ? 12 : 12);
 }
 
 static double salaryscaleTY(CurrentMember *cm, int k) {
