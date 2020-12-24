@@ -389,6 +389,7 @@ void createData(DataSet *ds) {
 
 int printresults(DataSet *ds) {
   char results[BUFSIZ/4];
+  char temp[64]; // to store temporary strings for field names and such.
   int row = 0;
   int col = 0;  
   
@@ -402,6 +403,23 @@ int printresults(DataSet *ds) {
   worksheet_write_string(worksheet, row, col+1, "DOC", NULL);
   worksheet_write_string(worksheet, row, col+2, "Age", NULL);
   worksheet_write_string(worksheet, row, col+4, "Salary", NULL);
+  worksheet_write_string(worksheet, row, col+8, "Contr A", NULL);
+  for (int i = 0; i < MAXGEN; i++) {
+    for (int EREE = 0; EREE < EE + 1; EREE++) { 
+      snprintf(temp, sizeof(temp), "CAP GEN %d %c", i + 1, (EREE == ER ? 'A' : 'C'));
+      worksheet_write_string(worksheet, row, col+15 + 4*i + 32*EREE, temp, NULL);
+      memset(temp, '\0', sizeof(temp));
+      snprintf(temp, sizeof(temp), "PREMIUM GEN %d %c", i + 1, (EREE == ER ? 'A' : 'C'));
+      worksheet_write_string(worksheet, row, col+16 + 4*i + 32*EREE, temp, NULL);
+      memset(temp, '\0', sizeof(temp));
+      snprintf(temp, sizeof(temp), "RESERVES PS GEN %d %c", i + 1, (EREE == ER ? 'A' : 'C'));
+      worksheet_write_string(worksheet, row, col+17 + 4*i + 32*EREE, temp, NULL);
+      memset(temp, '\0', sizeof(temp));
+      snprintf(temp, sizeof(temp), "RESERVES GEN %d %c", i + 1, (EREE == ER ? 'A' : 'C'));
+      worksheet_write_string(worksheet, row, col+18 + 4*i + 32*EREE, temp, NULL);
+      memset(temp, '\0', sizeof(temp));
+    }
+  }
   lxw_datetime DOC;
   lxw_format *format = workbook_add_format(workbook);
   char DOCformat[] = "dd/mm/yyyy";
@@ -414,7 +432,20 @@ int printresults(DataSet *ds) {
     worksheet_write_string(worksheet, row+1, col, ds->cm[0].key, NULL);
     worksheet_write_datetime(worksheet, row+1, col+1, &DOC, format);
     worksheet_write_number(worksheet, row+1, col+2, ds->cm[0].age[row], NULL);
-    worksheet_write_number(worksheet, row+1, col+4, ds->cm[0].sal[row], NULL);    
+    worksheet_write_number(worksheet, row+1, col+4, ds->cm[0].sal[row], NULL);
+    worksheet_write_number(worksheet, row+1, col+8, gensum(ds->cm[0].PREMIUM, ER, row), NULL);
+    for (int i = 0; i < MAXGEN; i++) {
+      for (int EREE = 0; EREE < EE + 1; EREE++) { 
+	worksheet_write_number(worksheet, row+1, col+15 + 4*i + 32*EREE,
+			       ds->cm[0].CAP[EREE][i][row], NULL);
+	worksheet_write_number(worksheet, row+1, col+16 + 4*i + 32*EREE,
+			       ds->cm[0].PREMIUM[EREE][i][row], NULL);
+	worksheet_write_number(worksheet, row+1, col+17 + 4*i + 32*EREE,
+			       ds->cm[0].RESPS[PUC][EREE][i][row], NULL);
+	worksheet_write_number(worksheet, row+1, col+18 + 4*i + 32*EREE,
+			       ds->cm[0].RES[PUC][EREE][i][row], NULL);
+      }
+    }
     row++;
   }
   // ***End Print Testcases***

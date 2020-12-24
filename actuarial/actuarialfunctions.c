@@ -164,13 +164,27 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
   cap = calcCAP(cm, EREE, gen, k,
 		cm->RES[PUC][EREE][gen][k],
 		cm->PREMIUM[EREE][gen][k],
+		cm->DELTACAP[EREE][k],
 		cm->CAPDTH[EREE][gen][k], cm->age[k], RA, tff.ltINS);
   cm->RES[PUC][EREE][gen][k+1] = calcRES(cm, EREE, gen, k,
 					 cap,
 					 cm->PREMIUM[EREE][gen][k],
+					 cm->DELTACAP[EREE][k],
 					 cm->CAPDTH[EREE][gen][k+1],
 					 cm->age[k+1], tff.ltINS);
-
+  cm->CAP[EREE][gen][k] = cap;
+  
+  //-  RESERVES PROFIT SHARING  -
+  cap = calcCAP(cm, EREE, gen, k,
+		cm->RESPS[PUC][EREE][gen][k],
+		0, 0, 0,
+		cm->age[k], RA, tff.ltINS);
+  cm->RESPS[PUC][EREE][gen][k+1] = calcRES(cm, EREE, gen, k,
+					   cap,
+					   0, 0, 0,
+					   cm->age[k+1], tff.ltINS);
+  cm->CAPPS[EREE][gen][k] = cap;
+  
   //---TUC RESERVES---
   RA = min(3, NRA(cm, k), cm->NRA, cm->age[k+1]);
   i = cm->TAUX[EREE][gen];
@@ -178,32 +192,37 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 
   cap = calcCAP(cm, EREE, gen, k,
 		cm->RES[PUC][EREE][gen][1],
-		0,
+		0, 0,
 		cm->CAPDTH[EREE][gen][1], cm->age[1], RA, tff.ltINS) +
     cm->DELTACAP[EREE][0] * (RA - cm->age[1]) * 12 * Ex;
   cm->RES[TUC][EREE][gen][k+1] = calcCAP(cm, EREE, gen, k,
 					 cap,
-					 0,
+					 0, 0,
 					 cm->CAPDTH[EREE][gen][1],
 					 cm->age[k+1], RA, tff.ltAfterTRM);
 
+  //-  RESERVES PROFIT SHARING  -
+  cm->RESPS[TUC][EREE][gen][k+1] = cm->RESPS[PUC][EREE][gen][k+1];
+    
   //---TUCPS_1 RESERVES---
   cap = calcCAP(cm, EREE, gen, k,
-		cm->RES[PUC][EREE][gen][1],
-		0,
-		cm->CAPDTH[EREE][gen][1], cm->age[1], RA, tff.ltINS) +
-    cm->DELTACAP[EREE][0] * (RA - cm->age[1]) * 12 * Ex;
-  cm->RES[TUC][EREE][gen][k+1] = calcCAP(cm, EREE, gen, k,
-					 cap,
-					 0,
-					 cm->CAPDTH[EREE][gen][1],
-					 cm->age[k+1], RA, tff.ltAfterTRM);
-  
-  
+		cm->RES[PUC][EREE][gen][(int)min(2, (double)k, 2.0)],
+		0, 0,
+		cm->CAPDTH[EREE][gen][(int)min(2, (double)k, 2.0)],
+		cm->age[(int)min(2, (double)k, 2.0)], RA, tff.ltINS) +
+    cm->DELTACAP[EREE][0] * (RA - cm->age[(int)min(2, (double)k, 2.0)]) * 12 * Ex;
+  cm->RES[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, EREE, gen, k,
+					     cap,
+					     0, 0,
+					     cm->CAPDTH[EREE][gen][(int)min(2, (double)k, 2.0)],
+					     cm->age[k+1], RA, tff.ltAfterTRM);
+
+  //-  RESERVES PROFIT SHARING  -
+  cm->RESPS[TUCPS_1][EREE][gen][k+1] = cm->RESPS[PUC][EREE][gen][k+1];
 }
 
 double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
-	       double res, double prem, double capdth,
+	       double res, double prem, double deltacap, double capdth,
 	       double age, double RA, char *lt) {
 
   double i;
@@ -231,12 +250,12 @@ double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
   switch(cm->tariff) {
   case UKMS :
     value = (res + prem * (1 - tff.admincost) * ax) / Ex +
-      cm->DELTACAP[EREE][k] * (RA - age) * 12;
+      deltacap * (RA - age) * 12;
     break;
     // same as UKMS
   case UKZT :
     value = (res + prem * (1 - tff.admincost) * ax) / Ex +
-      cm->DELTACAP[EREE][k] * (RA - age) * 12;
+      deltacap * (RA - age) * 12;
     break;
   case UKMT :
     value = (res + prem * (1 - tff.admincost) * ax -
@@ -253,7 +272,7 @@ double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
 }
 
 double calcRES(CurrentMember *cm, int EREE, int gen, int k,
-	       double cap, double prem, double capdth,
+	       double cap, double prem, double deltacap, double capdth,
 	       double age, char *lt) {
   
   unsigned short RA;
@@ -282,12 +301,12 @@ double calcRES(CurrentMember *cm, int EREE, int gen, int k,
 
   switch(cm->tariff) {
   case UKMS :
-    value = (cap - cm->DELTACAP[EREE][k] * (RA - age) * 12) * Ex -
+    value = (cap - deltacap * (RA - age) * 12) * Ex -
       prem * (1 - tff.admincost) * ax;
     break;
     // same as UKMS
   case UKZT :
-    value = (cap - cm->DELTACAP[EREE][k] * (RA - age) * 12) * Ex -
+    value = (cap - deltacap * (RA - age) * 12) * Ex -
       prem * (1 - tff.admincost) * ax;
     break;
   case UKMT :

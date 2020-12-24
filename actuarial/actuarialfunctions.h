@@ -54,12 +54,12 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k);
 
 // calculate the capital life (lump sum) given reserves and contributions
 double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
-	       double res, double prem, double capdth,
+	       double res, double prem, double deltacap, double capdth,
 	       double age, double RA, char *lt);
 
 // calculate the reserves given capital life (lump sum) and contributions
 double calcRES(CurrentMember *cm, int EREE, int gen, int k,
-	       double cap, double prem, double capdth,
+	       double cap, double prem, double deltacap, double capdth,
 	       double age, char *lt);
 
 #endif

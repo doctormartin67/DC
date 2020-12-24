@@ -64,7 +64,8 @@ typedef struct currentmember {
   double *CAP[2][MAXGEN]; // Pension lump sum (Employer-Employee, generations, loops)
   double *CAPPS[2][MAXGEN]; /* Pension lump sum profit sharing 
   				       (Employer-Employee, generations, loops)*/
-  double *REDCAP[2][MAXGEN]; // Reduced lump sum (Employer-Employee, generations, loops)
+  double *REDCAP[TUCPS_1][2][MAXGEN]; /* Reduced lump sum 
+					 (Employer-Employee, generations, Method, loops)*/
   double TAUX[2][MAXGEN]; /* return guarentee insurer
   				      (Employer-Employee, generations, loops)*/
   double *PREMIUM[2][MAXGEN]; // Contribution (Employer-Employee, generations, loops)
