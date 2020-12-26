@@ -109,6 +109,7 @@ void setCMvals(DataSet *ds) {
     if (strcmp(getcmval(&cm[i], "CCRA"), "1") == 0)  cm[i].extra += CCRA;
 
     // Here we define variables for first loop
+    //-  Dates and age  -
     cm[i].DOC = (Date **)malloc(sizeof(Date *) * MAXPROJ);
     *cm[i].DOC = cm[i].DOS;
     cm[i].age = (double *)malloc(sizeof(double) * MAXPROJ);
@@ -120,6 +121,16 @@ void setCMvals(DataSet *ds) {
     cm[i].nDOA = (double *)malloc(sizeof(double) * MAXPROJ);
     *cm[i].nDOA = (*cm[i].DOC)->year - cm[i].DOA->year +
       (double)((*cm[i].DOC)->month - cm[i].DOA->month - (cm[i].DOA->day == 1 ? 0 : 1))/12;
+
+    setassumptions(&cm[i]);
+    //-  Premium  -
+    for (int EREE = 0; EREE < EE + 1; EREE++) {
+      *cm[i].PREMIUM[EREE][MAXGEN-1] = (EREE == ER ? calcA(&cm[i], 0) : calcC(&cm[i], 0));
+      for (int j = 0; j < MAXGEN-1; j++) {
+	*cm[i].PREMIUM[EREE][MAXGEN-1] =
+	  max(2, 0, *cm[i].PREMIUM[EREE][MAXGEN-1] - *cm[i].PREMIUM[EREE][j]);
+      }
+    }
   }
   printf("Setting values completed.\n");
 }
@@ -351,6 +362,7 @@ int printresults(DataSet *ds) {
   // ***Print Testcases***
   printf("Printing Testcases...\n");
   // at the moment the first member is considered the sole testcase
+  //-  Titles of variables  -
   worksheet_write_string(worksheet, row, col, "KEY", NULL);
   worksheet_write_string(worksheet, row, col+1, "DOC", NULL);
   worksheet_write_string(worksheet, row, col+2, "Age", NULL);
@@ -372,6 +384,7 @@ int printresults(DataSet *ds) {
       memset(temp, '\0', sizeof(temp));
     }
   }
+  //-  Variables  -
   lxw_datetime DOC;
   lxw_format *format = workbook_add_format(workbook);
   char DOCformat[] = "dd/mm/yyyy";
@@ -473,4 +486,12 @@ double wxdef(CurrentMember *cm, int k) {
 
 double wximm(CurrentMember *cm, int k) {
   return (*ass.wximm)(cm, k);
+}
+
+double calcA(CurrentMember *cm, int k) {
+  return (*ass.calcA)(cm, k);
+}
+
+double calcC(CurrentMember *cm, int k) {
+  return (*ass.calcC)(cm, k);
 }

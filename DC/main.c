@@ -102,10 +102,24 @@ int main(int argc, char **argv) {
 	/* here all the functions will use the k-1 value to calculate the kth value and  */
 	cm->DELTACAP[EREE][k] = cm->DELTACAP[EREE][k-1];
 	evolCAPDTH(cm, EREE, gen, k-1);
-	evolRES(cm, EREE, gen, k-1);
-	cm->PREMIUM[EREE][gen][k] = cm->PREMIUM[EREE][gen][k-1];
+	evolRES(cm, EREE, gen, k-1); // This will also set the CAP values
       }
     }
+
+        //-  Premium  -
+    for (int EREE = 0; EREE < EE + 1; EREE++) {
+      for (int j = 0; j < MAXGEN; j++) {
+	cm->PREMIUM[EREE][j][k] = (EREE == ER ? calcA(cm, k) : calcC(cm, k));
+	for (int l = 0; l < MAXGEN-1; l++) {
+	  cm->PREMIUM[EREE][j][k] = cm->PREMIUM[EREE][j][k] - cm->PREMIUM[EREE][l][k];
+	}
+	cm->PREMIUM[EREE][j][k] =
+	  (j < MAXGEN-1 ? min(2,
+			      cm->PREMIUM[EREE][j][k-1],
+			      cm->PREMIUM[EREE][j][k]) :  cm->PREMIUM[EREE][j][k]);
+      }
+    }
+
 
   }
   // create excel file to print results

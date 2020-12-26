@@ -8,6 +8,10 @@ static double wxdefTY(CurrentMember *cm, int k);
 static double wxdefLY(CurrentMember *cm, int k);
 static double wximmTY(CurrentMember *cm, int k);
 static double wximmLY(CurrentMember *cm, int k);
+static double calcATY(CurrentMember *cm, int k);
+static double calcALY(CurrentMember *cm, int k);
+static double calcCTY(CurrentMember *cm, int k);
+static double calcCLY(CurrentMember *cm, int k);
 
 void setassumptions(CurrentMember *cm) {
   ass.DOC = (currrun >= runRF ? newDate(0, 2016, 12, 1) : newDate(0, 2015, 12, 1));
@@ -21,6 +25,8 @@ void setassumptions(CurrentMember *cm) {
   ass.NRA = (currrun >= runNewNRA ? NRATY : NRALY);
   ass.wxdef = (currrun >= runNewTurnover ? wxdefTY : wxdefLY);
   ass.wximm = (currrun >= runNewTurnover ? wximmTY : wximmLY);
+  ass.calcA = (currrun >= runNewMethodology ? calcATY : calcALY);
+  ass.calcC = (currrun >= runNewMethodology ? calcCTY : calcCLY);    
 
   // Assumptions that usually won't change from year to year
   ass.incrSalk1 = 1; // determine whether sal gets increased at k = 1
@@ -103,4 +109,21 @@ static double wximmLY(CurrentMember *cm, int k) {
   return 0;
 }
 
+static double calcATY(CurrentMember *cm, int k) {
+  // This needs updating! just took insurer premium for testing
+  return gensum(cm->PREMIUM, ER, k);
+}
 
+static double calcALY(CurrentMember *cm, int k) {
+  // This needs updating! just took insurer premium for testing
+  return gensum(cm->PREMIUM, ER, k);
+}
+
+static double calcCTY(CurrentMember *cm, int k) {
+  // This needs updating! just took insurer premium for testing
+  return gensum(cm->PREMIUM, EE, k);
+}
+static double calcCLY(CurrentMember *cm, int k) {
+  // This needs updating! just took insurer premium for testing
+  return gensum(cm->PREMIUM, EE, k);
+}

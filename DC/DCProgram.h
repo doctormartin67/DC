@@ -121,7 +121,9 @@ typedef struct assumptions {
   double DR; // Discount Rate
   double DR113; // Discount Rate under $113 of IAS19  
   short agecorr; // Age Correction
-  double (*SS)(CurrentMember *cm, int k);
+  double (*SS)(CurrentMember *cm, int k); // Salary Scale
+  double (*calcA)(CurrentMember *cm, int k); // Formula for Employer retirement contribution
+  double (*calcC)(CurrentMember *cm, int k); // Formula for Employee retirement contribution  
   double infl; // Inflation
   double (*NRA)(CurrentMember *cm, int k);
   double (*wxdef)(CurrentMember *cm, int k); // Turnover rate with deferred payment
@@ -147,6 +149,8 @@ double salaryscale(CurrentMember *cm, int k);
 double NRA(CurrentMember *cm, int k);
 double wxdef(CurrentMember *cm, int k);
 double wximm(CurrentMember *cm, int k);
+double calcA(CurrentMember *cm, int k);
+double calcC(CurrentMember *cm, int k);
 
 //---Tariff Structure---
 
