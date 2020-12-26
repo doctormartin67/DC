@@ -103,9 +103,10 @@ int main(int argc, char **argv) {
 	cm->DELTACAP[EREE][k] = cm->DELTACAP[EREE][k-1];
 	evolCAPDTH(cm, EREE, gen, k-1);
 	evolRES(cm, EREE, gen, k-1);
-	
+	cm->PREMIUM[EREE][gen][k] = cm->PREMIUM[EREE][gen][k-1];
       }
     }
+
   }
   // create excel file to print results
   printresults(&ds);

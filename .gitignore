@@ -1,3 +1,4 @@
-lifetable.c~
-main.c~
-test.c~
+#emacs backup files
+*~
+#C object files
+*.o

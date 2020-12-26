@@ -66,76 +66,28 @@ void setCMvals(DataSet *ds) {
     }
 
     // all variables that have generations, employer and employee
+    //-  VARIABLES WITH MAXGEN  -
+    allocvar(&cm[i], cm[i].PREMIUM, "PREMIUM");
+    allocvar(&cm[i], cm[i].CAP, "CAP");
+    allocvar(&cm[i], cm[i].CAPPS, "CAPPS");
+    allocvar(&cm[i], cm[i].CAPDTH, "CAPDTH");
+    for (int k = 0; k < TUCPS_1 + 1; k++) {
+      allocvar(&cm[i], cm[i].RES[k], "RES");
+      allocvar(&cm[i], cm[i].RESPS[k], "RESPS");
+      allocvar(&cm[i], cm[i].REDCAP[k], "CAPRED");
+    }
     for (int j = 0; j < MAXGEN; j++) {
       char tempER[32];
       char tempEE[32];      
-      snprintf(tempER, sizeof(tempER), "%s%d", "CAP_A_GEN", j + 1);
-      snprintf(tempEE, sizeof(tempEE), "%s%d", "CAP_C_GEN", j + 1);
-      cm[i].CAP[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      cm[i].CAP[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].CAP[ER][j] = atof(getcmval(&cm[i], tempER));
-      *cm[i].CAP[EE][j] = atof(getcmval(&cm[i], tempEE));      
-      memset(tempER, '\0', sizeof(tempER));
-      memset(tempEE, '\0', sizeof(tempEE));
-      snprintf(tempER, sizeof(tempER), "%s%d", "CAPPS_A_GEN", j + 1);
-      snprintf(tempEE, sizeof(tempEE), "%s%d", "CAPPS_C_GEN", j + 1);
-      cm[i].CAPPS[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      cm[i].CAPPS[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].CAPPS[ER][j] = atof(getcmval(&cm[i], tempER));
-      *cm[i].CAPPS[EE][j] = atof(getcmval(&cm[i], tempEE));      
-      memset(tempER, '\0', sizeof(tempER));
-      memset(tempEE, '\0', sizeof(tempEE));
-      snprintf(tempER, sizeof(tempER), "%s%d", "CAPRED_A_GEN", j + 1);
-      snprintf(tempEE, sizeof(tempEE), "%s%d", "CAPRED_C_GEN", j + 1);
-      cm[i].REDCAP[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      cm[i].REDCAP[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].REDCAP[ER][j] = atof(getcmval(&cm[i], tempER));
-      *cm[i].REDCAP[EE][j] = atof(getcmval(&cm[i], tempEE));      
-      memset(tempER, '\0', sizeof(tempER));
-      memset(tempEE, '\0', sizeof(tempEE));
       snprintf(tempER, sizeof(tempER), "%s%d", "TAUX_A_GEN", j + 1);
       snprintf(tempEE, sizeof(tempEE), "%s%d", "TAUX_C_GEN", j + 1);
       cm[i].TAUX[ER][j] = atof(getcmval(&cm[i], tempER));
       cm[i].TAUX[EE][j] = atof(getcmval(&cm[i], tempEE));      
       memset(tempER, '\0', sizeof(tempER));
       memset(tempEE, '\0', sizeof(tempEE));
-      snprintf(tempER, sizeof(tempER), "%s%d", "PREMIUM_A_GEN", j + 1);
-      snprintf(tempEE, sizeof(tempEE), "%s%d", "PREMIUM_C_GEN", j + 1);
-      cm[i].PREMIUM[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      cm[i].PREMIUM[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].PREMIUM[ER][j] = atof(getcmval(&cm[i], tempER));
-      *cm[i].PREMIUM[EE][j] = atof(getcmval(&cm[i], tempEE));      
-      memset(tempER, '\0', sizeof(tempER));
-      memset(tempEE, '\0', sizeof(tempEE));
-      snprintf(tempER, sizeof(tempER), "%s%d", "RES_A_GEN", j + 1);
-      snprintf(tempEE, sizeof(tempEE), "%s%d", "RES_C_GEN", j + 1);
-      for (int k = 0; k < TUCPS_1 + 1; k++) {
-	cm[i].RES[k][ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].RES[k][EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-	*cm[i].RES[k][ER][j] = atof(getcmval(&cm[i], tempER));
-	*cm[i].RES[k][EE][j] = atof(getcmval(&cm[i], tempEE));
-      }
-      memset(tempER, '\0', sizeof(tempER));
-      memset(tempEE, '\0', sizeof(tempEE));
-      snprintf(tempER, sizeof(tempER), "%s%d", "RESPS_A_GEN", j + 1);
-      snprintf(tempEE, sizeof(tempEE), "%s%d", "RESPS_C_GEN", j + 1);
-      for (int k = 0; k < TUCPS_1 + 1; k++) {
-	cm[i].RESPS[k][ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].RESPS[k][EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-	*cm[i].RESPS[k][ER][j] = atof(getcmval(&cm[i], tempER));
-	*cm[i].RESPS[k][EE][j] = atof(getcmval(&cm[i], tempEE));
-      }
-      memset(tempER, '\0', sizeof(tempER));
-      memset(tempEE, '\0', sizeof(tempEE));
-      snprintf(tempER, sizeof(tempER), "%s%d", "CAPDTH_A_GEN", j + 1);
-      snprintf(tempEE, sizeof(tempEE), "%s%d", "CAPDTH_C_GEN", j + 1);
-      cm[i].CAPDTH[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      cm[i].CAPDTH[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].CAPDTH[ER][j] = atof(getcmval(&cm[i], tempER));
-      *cm[i].CAPDTH[EE][j] = atof(getcmval(&cm[i], tempEE));      
-      memset(tempER, '\0', sizeof(tempER));
-      memset(tempEE, '\0', sizeof(tempEE));
     }
+
+    //-  MISCELLANEOUS  -
     cm[i].DELTACAP[ER] = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].DELTACAP[EE] = (double *)malloc(sizeof(double) * MAXPROJ);
     *cm[i].DELTACAP[ER] = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
@@ -429,6 +381,7 @@ int printresults(DataSet *ds) {
     DOC.year = ds->cm[0].DOC[row]->year;
     DOC.month = ds->cm[0].DOC[row]->month;
     DOC.day = ds->cm[0].DOC[row]->day;
+    DOC.hour = DOC.min = DOC.sec = 0;
     worksheet_write_string(worksheet, row+1, col, ds->cm[0].key, NULL);
     worksheet_write_datetime(worksheet, row+1, col+1, &DOC, format);
     worksheet_write_number(worksheet, row+1, col+2, ds->cm[0].age[row], NULL);
@@ -489,6 +442,21 @@ char *getcmval(CurrentMember *cm, char *value) {
   }
   else
     return get(value, cm->Data)->value;
+}
+
+// Example if cm->PREMIUM then s = PREMIUM and we loop through PREMIUM_EREE_GENj
+void allocvar(CurrentMember *cm, double *var[][MAXGEN], char *s) {
+  char temp[32];
+  
+  for (int j = 0; j < MAXGEN; j++) {
+    for (int EREE = 0; EREE < EE + 1; EREE++) {
+      snprintf(temp, sizeof(temp), "%s%c%c%s%d",
+	       s, '_', (EREE == ER ? 'A' : 'C'), "_GEN", j + 1);
+      var[EREE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *var[EREE][j] = atof(getcmval(cm, temp));
+      memset(temp, '\0', sizeof(temp));
+    }
+  }
 }
 
 double salaryscale(CurrentMember *cm, int k) {

@@ -177,7 +177,7 @@ static char *lifetables[6] =
 void setDSvals(XLfile *xl, DataSet *ds);
 void setCMvals(DataSet *ds);
 char *getcmval(CurrentMember *cm, char *value);
-
+void allocvar(CurrentMember *cm, double *var[][MAXGEN], char *s);
 /* This function will allocate memory based on membercnt for the underlying
    Hashtable used for the data.*/
 void createData(DataSet *ds);
