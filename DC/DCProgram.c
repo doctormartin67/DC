@@ -124,11 +124,11 @@ void setCMvals(DataSet *ds) {
 
     setassumptions(&cm[i]);
     //-  Premium  -
-    for (int EREE = 0; EREE < EE + 1; EREE++) {
+    for (int EREE = 0; EREE < 2; EREE++) {
       *cm[i].PREMIUM[EREE][MAXGEN-1] = (EREE == ER ? calcA(&cm[i], 0) : calcC(&cm[i], 0));
       for (int j = 0; j < MAXGEN-1; j++) {
 	*cm[i].PREMIUM[EREE][MAXGEN-1] =
-	  max(2, 0, *cm[i].PREMIUM[EREE][MAXGEN-1] - *cm[i].PREMIUM[EREE][j]);
+	  max(2, 0.0, *cm[i].PREMIUM[EREE][MAXGEN-1] - *cm[i].PREMIUM[EREE][j]);
       }
     }
   }
@@ -462,7 +462,7 @@ void allocvar(CurrentMember *cm, double *var[][MAXGEN], char *s) {
   char temp[32];
   
   for (int j = 0; j < MAXGEN; j++) {
-    for (int EREE = 0; EREE < EE + 1; EREE++) {
+    for (int EREE = 0; EREE < 2; EREE++) {
       snprintf(temp, sizeof(temp), "%s%c%c%s%d",
 	       s, '_', (EREE == ER ? 'A' : 'C'), "_GEN", j + 1);
       var[EREE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
