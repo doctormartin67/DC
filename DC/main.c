@@ -20,11 +20,30 @@ int main(int argc, char **argv) {
 
   // Here the loop of all affiliates will start.
   currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
-  //---BEGIN LOOP---
-  // This loops through all the years of an affiliate and makes the calculations.
   CurrentMember *cm = ds.cm;
   setassumptions(cm); // This defines the assumptions
-  // start at k = 1 because k = 0 should have been initialised with setCMvals(&ds)
+
+  //***INITIALISE VARIABLES (k = 0)***
+  //-  Dates and age  -
+  *cm->DOC = cm->DOS;
+  *cm->age = (*cm->DOC)->year - cm->DOB->year +
+    (double)((*cm->DOC)->month - cm->DOB->month - 1)/12;
+  *cm->nDOE = (*cm->DOC)->year - cm->DOE->year +
+    (double)((*cm->DOC)->month - cm->DOE->month - (cm->DOE->day == 1 ? 0 : 1))/12;
+  *cm->nDOA = (*cm->DOC)->year - cm->DOA->year +
+    (double)((*cm->DOC)->month - cm->DOA->month - (cm->DOA->day == 1 ? 0 : 1))/12;
+
+  //-  Premium  -
+  for (int EREE = 0; EREE < 2; EREE++) {
+    *cm->PREMIUM[EREE][MAXGEN-1] = (EREE == ER ? calcA(cm, 0) : calcC(cm, 0));
+    for (int j = 0; j < MAXGEN-1; j++) {
+      *cm->PREMIUM[EREE][MAXGEN-1] =
+	max(2, 0.0, *cm->PREMIUM[EREE][MAXGEN-1] - *cm->PREMIUM[EREE][j]);
+    }
+  }
+  //***END INITIALISATION***  
+  //---BEGIN LOOP---
+  // This loops through all the years of an affiliate and makes the calculations.
   for (int k = 1; k < MAXPROJ; k++) {
     if (k > 1)
       cm->DOC[k] = minDate(3,
@@ -35,7 +54,6 @@ int main(int argc, char **argv) {
 			   newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1),
 			   newDate(0, cm->DOC[k]->year + 1, cm->DOC[k]->month, 1),
 			   cm->DOR);
-    
 
     //***PROLONGATION***
     // Determining the DOC
@@ -106,7 +124,7 @@ int main(int argc, char **argv) {
       }
     }
 
-    //***PREMIUMS***
+    //***PREMIUMS EVOLUTION***
     //-  Retirement Premium
     // These variables are needed for Risk Premiums
     double Ax1;
@@ -136,6 +154,9 @@ int main(int argc, char **argv) {
 	}			     
       }
     }
+
+    //***ART24 EVOLUTION***
+    
   }
   // create excel file to print results
   printresults(&ds);

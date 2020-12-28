@@ -110,29 +110,11 @@ void setCMvals(DataSet *ds) {
     if (strcmp(getcmval(&cm[i], "increaseSalFirstYear"), "1") == 0)  cm[i].extra += INCSAL;
     if (strcmp(getcmval(&cm[i], "CCRA"), "1") == 0)  cm[i].extra += CCRA;
 
-    // Here we define variables for first loop
-    //-  Dates and age  -
+    // The following get initialised in main loop
     cm[i].DOC = (Date **)malloc(sizeof(Date *) * MAXPROJ);
-    *cm[i].DOC = cm[i].DOS;
     cm[i].age = (double *)malloc(sizeof(double) * MAXPROJ);
-    *cm[i].age = (*cm[i].DOC)->year - cm[i].DOB->year +
-      (double)((*cm[i].DOC)->month - cm[i].DOB->month - 1)/12;
     cm[i].nDOE = (double *)malloc(sizeof(double) * MAXPROJ);
-    *cm[i].nDOE = (*cm[i].DOC)->year - cm[i].DOE->year +
-      (double)((*cm[i].DOC)->month - cm[i].DOE->month - (cm[i].DOE->day == 1 ? 0 : 1))/12;
     cm[i].nDOA = (double *)malloc(sizeof(double) * MAXPROJ);
-    *cm[i].nDOA = (*cm[i].DOC)->year - cm[i].DOA->year +
-      (double)((*cm[i].DOC)->month - cm[i].DOA->month - (cm[i].DOA->day == 1 ? 0 : 1))/12;
-
-    setassumptions(&cm[i]);
-    //-  Premium  -
-    for (int EREE = 0; EREE < 2; EREE++) {
-      *cm[i].PREMIUM[EREE][MAXGEN-1] = (EREE == ER ? calcA(&cm[i], 0) : calcC(&cm[i], 0));
-      for (int j = 0; j < MAXGEN-1; j++) {
-	*cm[i].PREMIUM[EREE][MAXGEN-1] =
-	  max(2, 0.0, *cm[i].PREMIUM[EREE][MAXGEN-1] - *cm[i].PREMIUM[EREE][j]);
-      }
-    }
   }
   printf("Setting values completed.\n");
 }
