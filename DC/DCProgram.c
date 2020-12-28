@@ -85,6 +85,8 @@ void setCMvals(DataSet *ds) {
       cm[i].TAUX[EE][j] = atof(getcmval(&cm[i], tempEE));      
       memset(tempER, '\0', sizeof(tempER));
       memset(tempEE, '\0', sizeof(tempEE));
+      cm[i].RP[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+      cm[i].RP[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
     }
 
     //-  MISCELLANEOUS  -

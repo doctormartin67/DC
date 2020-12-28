@@ -111,19 +111,19 @@ static double wximmLY(CurrentMember *cm, int k) {
 
 static double calcATY(CurrentMember *cm, int k) {
   // This needs updating! just took insurer premium for testing
-  return gensum(cm->PREMIUM, ER, k);
+  return gensum(cm->PREMIUM, ER, 0);
 }
 
 static double calcALY(CurrentMember *cm, int k) {
   // This needs updating! just took insurer premium for testing
-  return gensum(cm->PREMIUM, ER, k);
+  return gensum(cm->PREMIUM, ER, 0);
 }
 
 static double calcCTY(CurrentMember *cm, int k) {
   // This needs updating! just took insurer premium for testing
-  return gensum(cm->PREMIUM, EE, k);
+  return gensum(cm->PREMIUM, EE, 0);
 }
 static double calcCLY(CurrentMember *cm, int k) {
   // This needs updating! just took insurer premium for testing
-  return gensum(cm->PREMIUM, EE, k);
+  return gensum(cm->PREMIUM, EE, 0);
 }

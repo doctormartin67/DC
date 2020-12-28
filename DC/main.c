@@ -59,19 +59,19 @@ int main(int argc, char **argv) {
       // Set Prolongation values
       // All values get put in last generation (MAXGEN)
       if (k == MAXPROJBEFOREPROL + 1) {
-	int j;
-	for (int EREE = 0; EREE < EE + 1; EREE++) {
+	int l; // Method
+	for (int EREE = 0; EREE < 2; EREE++) {
 	  cm->PREMIUM[EREE][MAXGEN-1][k-1] = gensum(cm->PREMIUM, EREE, k-1);
 	  cm->CAPDTH[EREE][MAXGEN-1][k-1] = gensum(cm->CAPDTH, EREE, k-1);
-	  for (j = 0; j < TUCPS_1 + 1; j++) {
-	    cm->RES[j][EREE][MAXGEN-1][k-1] = gensum(cm->RES[j], EREE, k-1);
-	    cm->RESPS[j][EREE][MAXGEN-1][k-1] = gensum(cm->RESPS[j], EREE, k-1);	    
+	  for (l = 0; l < TUCPS_1 + 1; l++) {
+	    cm->RES[l][EREE][MAXGEN-1][k-1] = gensum(cm->RES[l], EREE, k-1);
+	    cm->RESPS[l][EREE][MAXGEN-1][k-1] = gensum(cm->RESPS[l], EREE, k-1);	    
 	  }
 	  cm->DELTACAP[EREE][k-1] = 0;
-	  for (j = 0; j < MAXGEN-1; j++) {
+	  for (int j = 0; j < MAXGEN-1; j++) {
 	    cm->PREMIUM[EREE][j][k-1] = 0;
 	    cm->CAPDTH[EREE][j][k-1] = 0;
-	    for (int l = 0; j < TUCPS_1 + 1; j++) {
+	    for (l = 0; l < TUCPS_1 + 1; l++) {
 	      cm->RES[l][EREE][j][k-1] = 0;
 	      cm->RESPS[l][EREE][j][k-1] = 0;
 	    } 
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 	}
       }
     }
-
+    
     //***END PROLONGATION***
     
     cm->age[k] = cm->DOC[k]->year - cm->DOB->year +
@@ -106,21 +106,36 @@ int main(int argc, char **argv) {
       }
     }
 
-        //-  Premium  -
+    //***PREMIUMS***
+    //-  Retirement Premium
+    // These variables are needed for Risk Premiums
+    double Ax1;
+    double ax;
+    double axcost;
     for (int EREE = 0; EREE < EE + 1; EREE++) {
       for (int j = 0; j < MAXGEN; j++) {
 	cm->PREMIUM[EREE][j][k] = (EREE == ER ? calcA(cm, k) : calcC(cm, k));
-	for (int l = 0; l < MAXGEN-1; l++) {
+	for (int l = 0; l < j; l++) {
 	  cm->PREMIUM[EREE][j][k] = cm->PREMIUM[EREE][j][k] - cm->PREMIUM[EREE][l][k];
 	}
 	cm->PREMIUM[EREE][j][k] =
-	  (j < MAXGEN-1 ? min(2,
-			      cm->PREMIUM[EREE][j][k-1],
-			      cm->PREMIUM[EREE][j][k]) :  cm->PREMIUM[EREE][j][k]);
+	  (j < MAXGEN-1 ? min(2, cm->PREMIUM[EREE][j][k-1], cm->PREMIUM[EREE][j][k]) :
+	   cm->PREMIUM[EREE][j][k]);
+	//-  Risk Premium  -
+	if (cm->age[k] == cm->age[k-1])
+	  cm->RP[EREE][j][k-1] = 0;
+	else {
+	  Ax1 = Ax1n(tff.ltINS, cm->TAUX[EREE][j], tff.costRES, cm->age[k-1], cm->age[k], 0);
+	  ax = axn(tff.ltINS, cm->TAUX[EREE][j], tff.costRES,
+		   tff.prepost, tff.term, cm->age[k-1], cm->age[k], 0);
+	  axcost = axn(tff.ltINS, cm->TAUX[EREE][j], tff.costRES,
+		       0, 1, cm->age[k-1], cm->age[k], 0);
+	  cm->RP[EREE][j][k-1] =
+	    max(2, 0.0, (cm->CAP[EREE][j][k-1]/cm->X10 - cm->RES[PUC][EREE][j][k-1]) * Ax1/ax) +
+	    cm->CAP[EREE][j][k-1]/cm->X10 * tff.costKO * axcost;
+	}			     
       }
     }
-
-
   }
   // create excel file to print results
   printresults(&ds);

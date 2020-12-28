@@ -64,7 +64,7 @@ typedef struct currentmember {
   double *CAP[2][MAXGEN]; // Pension lump sum (Employer-Employee, generations, loops)
   double *CAPPS[2][MAXGEN]; /* Pension lump sum profit sharing 
   				       (Employer-Employee, generations, loops)*/
-  double *REDCAP[TUCPS_1][2][MAXGEN]; /* Reduced lump sum 
+  double *REDCAP[TUCPS_1 + 1][2][MAXGEN]; /* Reduced lump sum 
 					 (Employer-Employee, generations, Method, loops)*/
   double TAUX[2][MAXGEN]; /* return guarentee insurer
   				      (Employer-Employee, generations, loops)*/
@@ -76,6 +76,7 @@ typedef struct currentmember {
   double X10; // MIXED combination
   double *CAPDTH[2][MAXGEN]; /* Death lump sum (used for UKMT)
   					(Employer-Employee, generations, loops)*/
+  double *RP[2][MAXGEN]; // Risk Premium
   double CAO; // collectieve arbeidsovereenkomst
   char *ORU;
   char *CHOICEDTH; // Choice of death insurance
