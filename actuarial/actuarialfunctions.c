@@ -221,6 +221,61 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
   cm->RESPS[TUCPS_1][EREE][gen][k+1] = cm->RESPS[PUC][EREE][gen][k+1];
 }
 
+void evolART24(CurrentMember *cm, int k) {
+
+  double i;
+  double im;
+  double admincost;
+  double premium;
+  double value; // value to return
+
+  // active member
+  if (cm->status & ACT) {
+    for (int l = 0; l < 2; l++) { // Employer-Employee
+      for (int m = 0; m < ART24GEN2 + 1; m++) { // generation
+	i = ART24TAUX[l][m];
+	im = pow(1 + i, 1.0/tff.term) - 1; // term interest rate
+	admincost = (l == ER ? min(2, ART24admincost, tff.admincost) : 0);
+	/* maximum of insurance admin cost and
+	   maximum admin cost according to ART24. (Currently 0.05)*/
+
+	for (int j = 0; j < TUCPS_1 + 1; j++) {
+	  switch(j) {
+	  case PUC :
+	    premium = gensum(cm->PREMIUM, l, k);
+	    break;
+	  case TUC :
+	    premium = (k > 0 ? 0 : gensum(cm->PREMIUM, l, k));
+	    break;
+	  case TUCPS_1 :
+	    premium = (k > 1 ? 0 : gensum(cm->PREMIUM, l, k));
+	    break;
+	  }
+	  cm->ART24[j][l][m][k+1] =
+	    cm->ART24[j][l][m][k] * pow(1 + i, cm->age[k+1] - cm->age[k]) +
+	    (m == ART24GEN1 ? 0 :
+	     max(2, 0.0,
+		 premium * (1 - admincost) -
+		 gensum(cm->RP, l, k)) / tff.term *
+	     (pow(1 + im, tff.term * (cm->age[k+1] - cm->age[k]) + (tff.prepost == 0 ? 1 : 0)) -
+	      1 - im * (tff.prepost == 0 ? 1 : 0)) / im);
+	  if (j == PUC && m == ART24GEN2)
+	    printf("premium * (1 - admincost) = %f * (1 - %f) = %f\n",
+		   premium, admincost, premium * (1 - admincost));
+	}
+      }
+    }
+  }
+  // deferred member
+    else {
+      for (int j = 0; j < TUCPS_1 + 1; j++) // Method
+	for (int l = 0; l < 2; l++) // Employer-Employee
+	  for (int m = 0; m < ART24GEN2 + 1; m++) // generation
+	    // ART24 doesn't increase for deferred member
+	    cm->ART24[j][l][m][k+1] = cm->ART24[j][l][m][k]; 
+    }
+  }
+
 double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
 	       double res, double prem, double deltacap, double capdth,
 	       double age, double RA, char *lt) {
@@ -323,3 +378,5 @@ double calcRES(CurrentMember *cm, int EREE, int gen, int k,
   return value;
 
 }
+
+

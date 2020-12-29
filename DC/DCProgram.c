@@ -55,14 +55,14 @@ void setCMvals(DataSet *ds) {
 
     // define article 24 from data
     for (int j = 0; j < TUCPS_1 + 1; j++) {
-      cm[i].ART24[ER][ART24GEN1][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].ART24[ER][ART24GEN1][j] = atof(getcmval(&cm[i], "ART24_A_GEN1"));
-      cm[i].ART24[ER][ART24GEN2][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].ART24[ER][ART24GEN2][j] = atof(getcmval(&cm[i], "ART24_A_GEN2"));
-      cm[i].ART24[EE][ART24GEN1][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].ART24[EE][ART24GEN1][j] = atof(getcmval(&cm[i], "ART24_C_GEN1"));
-      cm[i].ART24[EE][ART24GEN2][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-      *cm[i].ART24[EE][ART24GEN2][j] = atof(getcmval(&cm[i], "ART24_C_GEN2"));
+      cm[i].ART24[j][ER][ART24GEN1] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].ART24[j][ER][ART24GEN1] = atof(getcmval(&cm[i], "ART24_A_GEN1"));
+      cm[i].ART24[j][ER][ART24GEN2] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].ART24[j][ER][ART24GEN2] = atof(getcmval(&cm[i], "ART24_A_GEN2"));
+      cm[i].ART24[j][EE][ART24GEN1] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].ART24[j][EE][ART24GEN1] = atof(getcmval(&cm[i], "ART24_C_GEN1"));
+      cm[i].ART24[j][EE][ART24GEN2] = (double *)malloc(sizeof(double) * MAXPROJ);
+      *cm[i].ART24[j][EE][ART24GEN2] = atof(getcmval(&cm[i], "ART24_C_GEN2"));
     }
 
     // all variables that have generations, employer and employee
@@ -95,6 +95,11 @@ void setCMvals(DataSet *ds) {
     *cm[i].DELTACAP[ER] = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
     *cm[i].DELTACAP[EE] = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
     cm[i].X10 = atof(getcmval(&cm[i], "X/10"));
+    if (cm[i].tariff == MIXED && cm[i].X10 == 0) {
+      printf("ERROR: X/10 equals zero for %s but he has a MIXED contract\n", cm[i].key);
+      printf("Fix this and try again.\n Exiting...");
+      exit(0);
+    }
     cm[i].CAO = atof(getcmval(&cm[i], "CAO"));
     cm[i].ORU = getcmval(&cm[i], "ORU");
     cm[i].CHOICEDTH = getcmval(&cm[i], "CHOICE DTH");
@@ -352,6 +357,8 @@ int printresults(DataSet *ds) {
   worksheet_write_string(worksheet, row, col+2, "Age", NULL);
   worksheet_write_string(worksheet, row, col+4, "Salary", NULL);
   worksheet_write_string(worksheet, row, col+8, "Contr A", NULL);
+  worksheet_write_string(worksheet, row, col+14, "Contr C", NULL);
+
   for (int i = 0; i < MAXGEN; i++) {
     for (int EREE = 0; EREE < EE + 1; EREE++) { 
       snprintf(temp, sizeof(temp), "CAP GEN %d %c", i + 1, (EREE == ER ? 'A' : 'C'));
@@ -366,6 +373,18 @@ int printresults(DataSet *ds) {
       snprintf(temp, sizeof(temp), "RESERVES GEN %d %c", i + 1, (EREE == ER ? 'A' : 'C'));
       worksheet_write_string(worksheet, row, col+18 + 4*i + 32*EREE, temp, NULL);
       memset(temp, '\0', sizeof(temp));
+    }
+  }
+  // Article 24
+  for (int j = 0; j < TUCPS_1 + 1; j++) {
+    for (int i = 0; i < 2; i++) { // generation
+      for (int EREE = 0; EREE < EE + 1; EREE++) { 
+	snprintf(temp, sizeof(temp), "ART24 GEN %d %c %s",
+		 i + 1, (EREE == ER ? 'A' : 'C'),
+		 (j == PUC ? "PUC" : (j == TUC ? "TUC" : "TUC PS + 1")));
+	worksheet_write_string(worksheet, row, col+89 + 2*j + i + 6*EREE, temp, NULL);
+	memset(temp, '\0', sizeof(temp));
+      }
     }
   }
   //-  Variables  -
@@ -384,6 +403,7 @@ int printresults(DataSet *ds) {
     worksheet_write_number(worksheet, row+1, col+2, ds->cm[0].age[row], NULL);
     worksheet_write_number(worksheet, row+1, col+4, ds->cm[0].sal[row], NULL);
     worksheet_write_number(worksheet, row+1, col+8, gensum(ds->cm[0].PREMIUM, ER, row), NULL);
+    worksheet_write_number(worksheet, row+1, col+14, gensum(ds->cm[0].PREMIUM, EE, row), NULL);
     for (int i = 0; i < MAXGEN; i++) {
       for (int EREE = 0; EREE < EE + 1; EREE++) { 
 	worksheet_write_number(worksheet, row+1, col+15 + 4*i + 32*EREE,
@@ -396,6 +416,16 @@ int printresults(DataSet *ds) {
 			       ds->cm[0].RES[PUC][EREE][i][row], NULL);
       }
     }
+    // Article 24
+    for (int j = 0; j < TUCPS_1 + 1; j++) {
+      for (int i = 0; i < 2; i++) { // generation
+	for (int EREE = 0; EREE < EE + 1; EREE++) { 
+	  worksheet_write_number(worksheet, row+1, col+89 + 2*j + i + 6*EREE,
+				 ds->cm[0].ART24[j][EREE][i][row], NULL);
+	}
+      }
+    }
+    
     row++;
   }
   // ***End Print Testcases***

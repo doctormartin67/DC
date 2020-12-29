@@ -23,6 +23,7 @@
 #define EE 1 // Employee index
 #define ART24GEN1 0 // article 24 index (3,75% for employee contributions and 3,25% for employee)
 #define ART24GEN2 1 // article 24 index (1,75%)
+#define ART24admincost 0.05 // Maximum admin cost that may be applied to Employer contribution
 #define UKMS 0
 #define UKZT 1
 #define UKMT 2
@@ -32,6 +33,10 @@
 #define TUCPS_1 2 /* projected unit credit with future premiums,
 		       one year later (for service cost)*/
 
+static const double ART24TAUX[2][2] = {{0.0325, 0.0175}, {0.0375, 0.0175}};
+/* Current guarenteed rates that the employers need to guarentee on the 
+   reserves of their employees by Belgian law (Employer-Employee, generation)*/
+
 typedef struct currentmember {
   Hashtable **Data; //Data for an affiliate is in the form of a hashtable
 
@@ -40,7 +45,7 @@ typedef struct currentmember {
   char *regl; // REGLEMENT
   char *name; // NAME
   char *contract; // CONTRACT number
-  unsigned short status; // 0000 0000 0000 0111 means male active member and active contract
+  unsigned short status; // 0000 0000 0000 0111 means single male active member and active contract
   Date *DOB; // date of birth
   Date *DOE; // date of entry
   Date *DOL; // date of leaving
@@ -58,8 +63,8 @@ typedef struct currentmember {
   double KO; // death lump sum (kapitaal overlijden)
   double annINV; // annuity in case of invalidity
   double contrINV; // contribution for invalidity insurance
-  double *ART24[2][ART24GEN2 + 1][TUCPS_1 + 1]; /* WAP: art24 reserves 
-						   (Exployer-Employee, generation, Method, loops)*/
+  double *ART24[TUCPS_1 + 1][2][2]; /* WAP: art24 reserves 
+						   (Method, Exployer-Employee, generation, loops)*/
   // Currently there are 2 generations for article 24 and 3 methods needed
   double *CAP[2][MAXGEN]; // Pension lump sum (Employer-Employee, generations, loops)
   double *CAPPS[2][MAXGEN]; /* Pension lump sum profit sharing 

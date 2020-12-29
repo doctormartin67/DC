@@ -52,6 +52,10 @@ void evolCAPDTH(CurrentMember *cm, int EREE, int gen, int k);
    employer-employee, generation */
 void evolRES(CurrentMember *cm, int EREE, int gen, int k);
 
+/* Update the current iteration (k) of ART24, 
+   employer-employee, generation */
+void evolART24(CurrentMember *cm, int k);
+
 // calculate the capital life (lump sum) given reserves and contributions
 double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
 	       double res, double prem, double deltacap, double capdth,

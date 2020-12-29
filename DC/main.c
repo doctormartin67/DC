@@ -139,8 +139,8 @@ int main(int argc, char **argv) {
 	cm->PREMIUM[EREE][j][k] =
 	  (j < MAXGEN-1 ? min(2, cm->PREMIUM[EREE][j][k-1], cm->PREMIUM[EREE][j][k]) :
 	   cm->PREMIUM[EREE][j][k]);
-	//-  Risk Premium  -
-	if (cm->age[k] == cm->age[k-1])
+	//-  Risk Premium (only for MIXED)  -
+	if (cm->age[k] == cm->age[k-1] || (cm->tariff != MIXED))
 	  cm->RP[EREE][j][k-1] = 0;
 	else {
 	  Ax1 = Ax1n(tff.ltINS, cm->TAUX[EREE][j], tff.costRES, cm->age[k-1], cm->age[k], 0);
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
     }
 
     //***ART24 EVOLUTION***
-    
+    evolART24(cm, k-1);
   }
   // create excel file to print results
   printresults(&ds);
