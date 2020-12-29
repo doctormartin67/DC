@@ -259,9 +259,6 @@ void evolART24(CurrentMember *cm, int k) {
 		 gensum(cm->RP, l, k)) / tff.term *
 	     (pow(1 + im, tff.term * (cm->age[k+1] - cm->age[k]) + (tff.prepost == 0 ? 1 : 0)) -
 	      1 - im * (tff.prepost == 0 ? 1 : 0)) / im);
-	  if (j == PUC && m == ART24GEN2)
-	    printf("premium * (1 - admincost) = %f * (1 - %f) = %f\n",
-		   premium, admincost, premium * (1 - admincost));
 	}
       }
     }
