@@ -33,6 +33,8 @@ char *strinside(char *s, char *begin, char *end);
 char *replace(const char *str, const char *orig, const char *rep);
 int FILEexists(const char *fname);
 int DIRexists(const char *dname);
+double min(int, ...);
+double max(int, ...);
 
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, char *s);
