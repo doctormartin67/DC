@@ -62,8 +62,6 @@ void setassumptions(CurrentMember *cm) {
       }
       tff.ltINS[EREE][j].i = cm->TAUX[EREE][j];
       tff.ltAfterTRM[EREE][j].i = cm->TAUX[EREE][j];
-      printf("TAUX %c GEN %d = %f\n", (EREE == ER ? 'A' : 'C'), j+1, tff.ltINS[EREE][j].i);
-      printf("TAUX %c GEN %d = %f\n", (EREE == ER ? 'A' : 'C'), j+1, cm->TAUX[EREE][j]);
     }
     tff.ltProlong[EREE].lt = tff.ltINS[EREE][0].lt; // Any generation would be ok, I chose 0.
     tff.ltProlongAfterTRM[EREE].lt = tff.ltAfterTRM[EREE][0].lt;

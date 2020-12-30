@@ -384,7 +384,12 @@ int printresults(DataSet *ds) {
   worksheet_write_string(worksheet, row, col+82, "RED CAP - PUC", NULL);
   worksheet_write_string(worksheet, row, col+83, "RED CAP - TUC", NULL);
   worksheet_write_string(worksheet, row, col+84, "RED CAP - TUC PS+1", NULL);
-  
+
+  // RESERVES
+  worksheet_write_string(worksheet, row, col+85, "RES - PUC", NULL);
+  worksheet_write_string(worksheet, row, col+86, "RES - TUC", NULL);
+  worksheet_write_string(worksheet, row, col+87, "RES - TUC PS+1", NULL);
+
   // Article 24
   for (int j = 0; j < TUCPS_1 + 1; j++) {
     for (int i = 0; i < 2; i++) { // generation
@@ -444,6 +449,23 @@ int printresults(DataSet *ds) {
     worksheet_write_number(worksheet, row+1, col+84,
 			   gensum(ds->cm[0].REDCAP[TUCPS_1], ER, row) +
 			   gensum(ds->cm[0].REDCAP[TUCPS_1], EE, row), NULL);
+
+    // RESERVES
+    worksheet_write_number(worksheet, row+1, col+85,
+			   gensum(ds->cm[0].RES[PUC], ER, row) +
+			   gensum(ds->cm[0].RES[PUC], EE, row) +
+			   gensum(ds->cm[0].RESPS[PUC], ER, row) +
+			   gensum(ds->cm[0].RESPS[PUC], EE, row), NULL);
+    worksheet_write_number(worksheet, row+1, col+86,
+			   gensum(ds->cm[0].RES[TUC], ER, row) +
+			   gensum(ds->cm[0].RES[TUC], EE, row) +
+			   gensum(ds->cm[0].RESPS[TUC], ER, row) +
+			   gensum(ds->cm[0].RESPS[TUC], EE, row), NULL);
+    worksheet_write_number(worksheet, row+1, col+87,
+			   gensum(ds->cm[0].RES[TUCPS_1], ER, row) +
+			   gensum(ds->cm[0].RES[TUCPS_1], EE, row) +
+			   gensum(ds->cm[0].RESPS[TUCPS_1], ER, row) +
+			   gensum(ds->cm[0].RESPS[TUCPS_1], EE, row), NULL);
 
     // Article 24
     for (int j = 0; j < TUCPS_1 + 1; j++) {

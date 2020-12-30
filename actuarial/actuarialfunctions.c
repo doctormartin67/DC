@@ -293,15 +293,15 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
   }
   //---TUCPS_1 RESERVES---
   cap = calcCAP(cm, EREE, gen,
-		cm->RES[PUC][EREE][gen][(int)min(2, (double)k, 2.0)],
+		cm->RES[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)],
 		0, 0,
-		cm->CAPDTH[EREE][gen][(int)min(2, (double)k, 2.0)],
-		cm->age[(int)min(2, (double)k, 2.0)], RA, &tff.ltINS[EREE][gen]) +
-    cm->DELTACAP[EREE][0] * (RA - cm->age[(int)min(2, (double)k, 2.0)]) * 12 * Ex;
+		cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
+		cm->age[(int)min(2, (double)k+1, 2.0)], RA, &tff.ltINS[EREE][gen]) +
+    cm->DELTACAP[EREE][0] * (RA - cm->age[(int)min(2, (double)k+1, 2.0)]) * 12 * Ex;
   cm->RES[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, EREE, gen,
 					     cap,
 					     0, 0,
-					     cm->CAPDTH[EREE][gen][(int)min(2, (double)k, 2.0)],
+					     cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
 					     cm->age[k+1], RA, &tff.ltProlong[EREE]);
 
   //-  RESERVES PROFIT SHARING  -
@@ -316,7 +316,7 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 		  cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
 		  cm->age[(int)min(2, (double)k+1, 2.0)], RA, &tff.ltAfterTRM[EREE][gen]) +
       cm->DELTACAP[EREE][0] * (cm->NRA - cm->age[(int)min(2, (double)k+1, 2.0)]) * 12;
-    cm->REDCAP[TUC][EREE][gen][k+1] = calcCAP(cm, EREE, gen,
+    cm->REDCAP[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, EREE, gen,
 					   cap,
 					   0, 0,
 					      cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
@@ -325,7 +325,7 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
     cap = calcCAP(cm, EREE, gen,
 		  cm->RESPS[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)],
 		  0, 0, 0, cm->age[(int)min(2, (double)k+1, 2.0)], RA, &tff.ltAfterTRM[EREE][gen]);
-    cm->REDCAP[TUC][EREE][gen][k+1] += calcCAP(cm, EREE, gen,
+    cm->REDCAP[TUCPS_1][EREE][gen][k+1] += calcCAP(cm, EREE, gen,
 					       cap,
 					       0, 0, 0,
 					       RA, cm->NRA, &tff.ltProlongAfterTRM[EREE]);    
@@ -349,7 +349,7 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 		  min(2, NRA(cm, k+1), cm->NRA),
 		  max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
 		  &tff.ltProlong[EREE]);
-    cm->REDCAP[TUC][EREE][gen][k+1] = calcCAP(cm, EREE, gen,
+    cm->REDCAP[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, EREE, gen,
 					      cap,
 					      0, 0,
 					      cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
@@ -369,7 +369,7 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 		  min(2, NRA(cm, k+1), cm->NRA),
 		  max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
 		  &tff.ltProlong[EREE]);
-    cm->REDCAP[TUC][EREE][gen][k+1] += calcCAP(cm, EREE, gen,
+    cm->REDCAP[TUCPS_1][EREE][gen][k+1] += calcCAP(cm, EREE, gen,
 					       cap,
 					       0, 0, 0,
 					       max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
