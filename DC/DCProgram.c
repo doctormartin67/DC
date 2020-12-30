@@ -435,6 +435,15 @@ int printresults(DataSet *ds) {
 			   gensum(ds->cm[0].RESPS[PUC], EE, row), NULL);
     
     // REDCAP
+    worksheet_write_number(worksheet, row+1, col+82,
+			   gensum(ds->cm[0].REDCAP[PUC], ER, row) +
+			   gensum(ds->cm[0].REDCAP[PUC], EE, row), NULL);
+    worksheet_write_number(worksheet, row+1, col+83,
+			   gensum(ds->cm[0].REDCAP[TUC], ER, row) +
+			   gensum(ds->cm[0].REDCAP[TUC], EE, row), NULL);
+    worksheet_write_number(worksheet, row+1, col+84,
+			   gensum(ds->cm[0].REDCAP[TUCPS_1], ER, row) +
+			   gensum(ds->cm[0].REDCAP[TUCPS_1], EE, row), NULL);
 
     // Article 24
     for (int j = 0; j < TUCPS_1 + 1; j++) {

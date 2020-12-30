@@ -166,10 +166,10 @@ typedef struct lifetable {
 } LifeTable;
 
 typedef struct tariff {
-  LifeTable (*ltINS)[2][MAXGEN]; // Life Table Insurer
-  LifeTable (*ltAfterTRM)[2][MAXGEN]; // Life Table after termination
-  LifeTable (*ltProlong)[2]; // Life Table Prolongation (i = last generation of insurer)
-  LifeTable (*ltProlongAfterTRM)[2]; // Life Table Prolongation (i = last generation of insurer)  
+  LifeTable ltINS[2][MAXGEN]; // Life Table Insurer
+  LifeTable ltAfterTRM[2][MAXGEN]; // Life Table after termination
+  LifeTable ltProlong[2]; // Life Table Prolongation (i = last generation of insurer)
+  LifeTable ltProlongAfterTRM[2]; // Life Table Prolongation (i = last generation of insurer)  
   double costRES; // Cost on reserves
   double WDDTH; // Profit sharing death (winstdeelname)
   double costKO; // cost on Death lump sum (kapitaal overlijden)

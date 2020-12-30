@@ -143,11 +143,11 @@ int main(int argc, char **argv) {
 	if (cm->age[k] == cm->age[k-1] || (cm->tariff != MIXED))
 	  cm->RP[EREE][j][k-1] = 0;
 	else {
-	  Ax1 = Ax1n(tff.ltINS[EREE][j]->lt, cm->TAUX[EREE][j], tff.costRES,
+	  Ax1 = Ax1n(tff.ltINS[EREE][j].lt, cm->TAUX[EREE][j], tff.costRES,
 		     cm->age[k-1], cm->age[k], 0);
-	  ax = axn(tff.ltINS[EREE][j]->lt, cm->TAUX[EREE][j], tff.costRES,
+	  ax = axn(tff.ltINS[EREE][j].lt, cm->TAUX[EREE][j], tff.costRES,
 		   tff.prepost, tff.term, cm->age[k-1], cm->age[k], 0);
-	  axcost = axn(tff.ltINS[EREE][j]->lt, cm->TAUX[EREE][j], tff.costRES,
+	  axcost = axn(tff.ltINS[EREE][j].lt, cm->TAUX[EREE][j], tff.costRES,
 		       0, 1, cm->age[k-1], cm->age[k], 0);
 	  cm->RP[EREE][j][k-1] =
 	    max(2, 0.0, (cm->CAP[EREE][j][k-1]/cm->X10 - cm->RES[PUC][EREE][j][k-1]) * Ax1/ax) +

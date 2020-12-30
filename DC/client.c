@@ -13,11 +13,6 @@ static double calcALY(CurrentMember *cm, int k);
 static double calcCTY(CurrentMember *cm, int k);
 static double calcCLY(CurrentMember *cm, int k);
 
-static LifeTable ltINS[2][MAXGEN];
-static LifeTable ltAfterTRM[2][MAXGEN];
-static LifeTable ltProlong[2];
-static LifeTable ltProlongAfterTRM[2];
-
 void setassumptions(CurrentMember *cm) {
   ass.DOC = (currrun >= runRF ? newDate(0, 2016, 12, 1) : newDate(0, 2015, 12, 1));
   // DOC[0] = DOS so we start here with defining DOC[1]
@@ -38,44 +33,42 @@ void setassumptions(CurrentMember *cm) {
 
   //---Tariff Structure---
   //-  Life Tables  -
-  tff.ltINS = &ltINS;
-  tff.ltAfterTRM = &ltAfterTRM;
-  tff.ltProlong = &ltProlong;
-  tff.ltProlongAfterTRM = &ltProlongAfterTRM;
 
   for (int EREE = 0; EREE < 2; EREE++) {
     for (int j = 0; j < MAXGEN; j++) {
       switch(cm->tariff) {
       case UKMS :
-	tff.ltINS[EREE][j]->lt = lifetables[LXNIHIL];
-	tff.ltAfterTRM[EREE][j]->lt = lifetables[LXNIHIL];
+	tff.ltINS[EREE][j].lt = lifetables[LXNIHIL];
+	tff.ltAfterTRM[EREE][j].lt = lifetables[LXNIHIL];
 	break;
       case UKZT :
 	if (cm->status & ACT) {
-	  tff.ltINS[EREE][j]->lt = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
-	  tff.ltAfterTRM[EREE][j]->lt = (cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]);
+	  tff.ltINS[EREE][j].lt = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
+	  tff.ltAfterTRM[EREE][j].lt = (cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]);
 	}
 	else {
-	  tff.ltINS[EREE][j]->lt = (cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]);
-	  tff.ltAfterTRM[EREE][j]->lt = tff.ltINS[EREE][j]->lt;
+	  tff.ltINS[EREE][j].lt = (cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]);
+	  tff.ltAfterTRM[EREE][j].lt = tff.ltINS[EREE][j].lt;
 	}
 	break;
       case UKMT :
-	tff.ltINS[EREE][j]->lt = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
-	tff.ltAfterTRM[EREE][j]->lt = tff.ltINS[EREE][j]->lt;
+	tff.ltINS[EREE][j].lt = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
+	tff.ltAfterTRM[EREE][j].lt = tff.ltINS[EREE][j].lt;
 	break;
       case MIXED :
-	tff.ltINS[EREE][j]->lt = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
-	tff.ltAfterTRM[EREE][j]->lt = tff.ltINS[EREE][j]->lt;
+	tff.ltINS[EREE][j].lt = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
+	tff.ltAfterTRM[EREE][j].lt = tff.ltINS[EREE][j].lt;
 	break;
       }
-      tff.ltINS[EREE][j]->i = cm->TAUX[EREE][j];
-      tff.ltAfterTRM[EREE][j]->i = cm->TAUX[EREE][j];
+      tff.ltINS[EREE][j].i = cm->TAUX[EREE][j];
+      tff.ltAfterTRM[EREE][j].i = cm->TAUX[EREE][j];
+      printf("TAUX %c GEN %d = %f\n", (EREE == ER ? 'A' : 'C'), j+1, tff.ltINS[EREE][j].i);
+      printf("TAUX %c GEN %d = %f\n", (EREE == ER ? 'A' : 'C'), j+1, cm->TAUX[EREE][j]);
     }
-    tff.ltProlong[EREE]->lt = tff.ltINS[EREE][0]->lt; // Any generation would be ok, I chose 0.
-    tff.ltProlongAfterTRM[EREE]->lt = tff.ltAfterTRM[EREE][0]->lt;
-    tff.ltProlong[EREE]->i = tff.ltINS[EREE][MAXGEN-1]->i;
-    tff.ltProlongAfterTRM[EREE]->i = tff.ltAfterTRM[EREE][MAXGEN-1]->i;    
+    tff.ltProlong[EREE].lt = tff.ltINS[EREE][0].lt; // Any generation would be ok, I chose 0.
+    tff.ltProlongAfterTRM[EREE].lt = tff.ltAfterTRM[EREE][0].lt;
+    tff.ltProlong[EREE].i = tff.ltINS[EREE][MAXGEN-1].i;
+    tff.ltProlongAfterTRM[EREE].i = tff.ltAfterTRM[EREE][MAXGEN-1].i;    
   }
   //-  Remaining Tariffs  -
   tff.costRES = (currrun >= runNewData ? 0.001 : 0.001);
