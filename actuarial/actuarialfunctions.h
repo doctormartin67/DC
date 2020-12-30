@@ -59,11 +59,11 @@ void evolART24(CurrentMember *cm, int k);
 // calculate the capital life (lump sum) given reserves and contributions
 double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
 	       double res, double prem, double deltacap, double capdth,
-	       double age, double RA, char *lt);
+	       double age, double RA, LifeTable *lt);
 
 // calculate the reserves given capital life (lump sum) and contributions
 double calcRES(CurrentMember *cm, int EREE, int gen, int k,
 	       double cap, double prem, double deltacap, double capdth,
-	       double age, char *lt);
+	       double age, LifeTable *lt);
 
 #endif

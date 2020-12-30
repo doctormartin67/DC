@@ -165,13 +165,13 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 		cm->RES[PUC][EREE][gen][k],
 		cm->PREMIUM[EREE][gen][k],
 		cm->DELTACAP[EREE][k],
-		cm->CAPDTH[EREE][gen][k], cm->age[k], RA, tff.ltINS);
+		cm->CAPDTH[EREE][gen][k], cm->age[k], RA, tff.ltINS[EREE][gen]);
   cm->RES[PUC][EREE][gen][k+1] = calcRES(cm, EREE, gen, k,
 					 cap,
 					 cm->PREMIUM[EREE][gen][k],
 					 cm->DELTACAP[EREE][k],
 					 cm->CAPDTH[EREE][gen][k+1],
-					 cm->age[k+1], tff.ltINS);
+					 cm->age[k+1], tff.ltINS[EREE][gen]);
   //-  Capital life  -
   cm->CAP[EREE][gen][k] = cap;
 
@@ -180,40 +180,40 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 		cm->RES[PUC][EREE][gen][k+1],
 		0,
 		cm->DELTACAP[EREE][k+1],
-		cm->CAPDTH[EREE][gen][k+1], cm->age[k+1], RA, tff.ltAfterTRM);
+		cm->CAPDTH[EREE][gen][k+1], cm->age[k+1], RA, tff.ltAfterTRM[EREE][gen]);
   cm->REDCAP[PUC][EREE][gen][k+1] = calcCAP(cm, EREE, gen, k+1,
 					    cap,
 					    0, 0,
 					    cm->CAPDTH[EREE][gen][k+1],
-					    RA, NRA(cm, k), tff.ltAfterTRM);
+					    RA, NRA(cm, k), tff.ltAfterTRM[EREE][gen]);
 
   
   //-  RESERVES PROFIT SHARING  -
   cap = calcCAP(cm, EREE, gen, k,
 		cm->RESPS[PUC][EREE][gen][k],
 		0, 0, 0,
-		cm->age[k], RA, tff.ltINS);
+		cm->age[k], RA, tff.ltINS[EREE][gen]);
   cm->RESPS[PUC][EREE][gen][k+1] = calcRES(cm, EREE, gen, k,
 					   cap,
 					   0, 0, 0,
-					   cm->age[k+1], tff.ltINS);
+					   cm->age[k+1], tff.ltINS[EREE][gen]);
   cm->CAPPS[EREE][gen][k] = cap;
   
   //---TUC RESERVES---
   RA = min(3, NRA(cm, k), cm->NRA, cm->age[k+1]);
   i = cm->TAUX[EREE][gen];
-  Ex = nEx(tff.ltINS, i, tff.costRES, RA, min(2, NRA(cm, k), cm->NRA), 0);
+  Ex = nEx(tff.ltINS[EREE][gen]->lt, i, tff.costRES, RA, min(2, NRA(cm, k), cm->NRA), 0);
 
   cap = calcCAP(cm, EREE, gen, k,
 		cm->RES[PUC][EREE][gen][1],
 		0, 0,
-		cm->CAPDTH[EREE][gen][1], cm->age[1], RA, tff.ltINS) +
+		cm->CAPDTH[EREE][gen][1], cm->age[1], RA, tff.ltINS[EREE][gen]) +
     cm->DELTACAP[EREE][0] * (RA - cm->age[1]) * 12 * Ex;
   cm->RES[TUC][EREE][gen][k+1] = calcCAP(cm, EREE, gen, k,
 					 cap,
 					 0, 0,
 					 cm->CAPDTH[EREE][gen][1],
-					 cm->age[k+1], RA, tff.ltAfterTRM);
+					 cm->age[k+1], RA, tff.ltAfterTRM[EREE][gen]);
 
   //-  RESERVES PROFIT SHARING  -
   cm->RESPS[TUC][EREE][gen][k+1] = cm->RESPS[PUC][EREE][gen][k+1];
@@ -223,13 +223,13 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 		cm->RES[PUC][EREE][gen][(int)min(2, (double)k, 2.0)],
 		0, 0,
 		cm->CAPDTH[EREE][gen][(int)min(2, (double)k, 2.0)],
-		cm->age[(int)min(2, (double)k, 2.0)], RA, tff.ltINS) +
+		cm->age[(int)min(2, (double)k, 2.0)], RA, tff.ltINS[EREE][gen]) +
     cm->DELTACAP[EREE][0] * (RA - cm->age[(int)min(2, (double)k, 2.0)]) * 12 * Ex;
   cm->RES[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, EREE, gen, k,
 					     cap,
 					     0, 0,
 					     cm->CAPDTH[EREE][gen][(int)min(2, (double)k, 2.0)],
-					     cm->age[k+1], RA, tff.ltAfterTRM);
+					     cm->age[k+1], RA, tff.ltAfterTRM[EREE][gen]);
 
   //-  RESERVES PROFIT SHARING  -
   cm->RESPS[TUCPS_1][EREE][gen][k+1] = cm->RESPS[PUC][EREE][gen][k+1];
@@ -289,7 +289,7 @@ void evolART24(CurrentMember *cm, int k) {
 
 double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
 	       double res, double prem, double deltacap, double capdth,
-	       double age, double RA, char *lt) {
+	       double age, double RA, LifeTable *lt) {
 
   double i;
   double Ex;
@@ -305,13 +305,13 @@ double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
   
   double value;
 
-  i = cm->TAUX[EREE][gen];
-  Ex = nEx(lt, i, tff.costRES, age, RA, 0);
-  ax = axn(lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
-  axcost = axn(lt, i, tff.costRES, 0, 1, age, RA, 0);
-  Ax1 = Ax1n(lt, i, tff.costRES, age, RA, 0);
-  IAx1 = IAx1n(lt, i, tff.costRES, age, RA, 0);
-  Iax = Iaxn(lt, i, tff.costRES, 0, 1, age, RA, 0);
+  i = lt->i;
+  Ex = nEx(lt->lt, i, tff.costRES, age, RA, 0);
+  ax = axn(lt->lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
+  axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+  Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
+  IAx1 = IAx1n(lt->lt, i, tff.costRES, age, RA, 0);
+  Iax = Iaxn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
   
   switch(cm->tariff) {
   case UKMS :
@@ -339,7 +339,7 @@ double calcCAP(CurrentMember *cm, int EREE, int gen, int k,
 
 double calcRES(CurrentMember *cm, int EREE, int gen, int k,
 	       double cap, double prem, double deltacap, double capdth,
-	       double age, char *lt) {
+	       double age, LifeTable *lt) {
   
   unsigned short RA;
   double i;
@@ -357,13 +357,13 @@ double calcRES(CurrentMember *cm, int EREE, int gen, int k,
   double value;
 
   RA = (k > MAXPROJBEFOREPROL ? NRA(cm, k) : cm->NRA);
-  i = cm->TAUX[EREE][gen];
-  Ex = nEx(lt, i, tff.costRES, age, RA, 0);
-  ax = axn(lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
-  axcost = axn(lt, i, tff.costRES, 0, 1, age, RA, 0);
-  Ax1 = Ax1n(lt, i, tff.costRES, age, RA, 0);
-  IAx1 = IAx1n(lt, i, tff.costRES, age, RA, 0);
-  Iax = Iaxn(lt, i, tff.costRES, 0, 1, age, RA, 0);
+  i = lt->i;
+  Ex = nEx(lt->lt, i, tff.costRES, age, RA, 0);
+  ax = axn(lt->lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
+  axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+  Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
+  IAx1 = IAx1n(lt->lt, i, tff.costRES, age, RA, 0);
+  Iax = Iaxn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
 
   switch(cm->tariff) {
   case UKMS :

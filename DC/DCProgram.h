@@ -160,9 +160,16 @@ double calcC(CurrentMember *cm, int k);
 
 //---Tariff Structure---
 
+typedef struct lifetable {
+  char *lt; // This will point to one of the lifetables
+  double i; // Insurance rate (This changes for prolongation table for example)
+} LifeTable;
+
 typedef struct tariff {
-  char *ltINS; // Life Table Insurer
-  char *ltAfterTRM; // Life Table after termination
+  LifeTable (*ltINS)[2][MAXGEN]; // Life Table Insurer
+  LifeTable (*ltAfterTRM)[2][MAXGEN]; // Life Table after termination
+  LifeTable (*ltProlong)[2]; // Life Table Prolongation (i = last generation of insurer)
+  LifeTable (*ltProlongAfterTRM)[2]; // Life Table Prolongation (i = last generation of insurer)  
   double costRES; // Cost on reserves
   double WDDTH; // Profit sharing death (winstdeelname)
   double costKO; // cost on Death lump sum (kapitaal overlijden)
