@@ -172,7 +172,21 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 					 cm->DELTACAP[EREE][k],
 					 cm->CAPDTH[EREE][gen][k+1],
 					 cm->age[k+1], tff.ltINS);
+  //-  Capital life  -
   cm->CAP[EREE][gen][k] = cap;
+
+  //-  Reduced Capital  -
+  cap = calcCAP(cm, EREE, gen, k+1,
+		cm->RES[PUC][EREE][gen][k+1],
+		0,
+		cm->DELTACAP[EREE][k+1],
+		cm->CAPDTH[EREE][gen][k+1], cm->age[k+1], RA, tff.ltAfterTRM);
+  cm->REDCAP[PUC][EREE][gen][k+1] = calcCAP(cm, EREE, gen, k+1,
+					    cap,
+					    0, 0,
+					    cm->CAPDTH[EREE][gen][k+1],
+					    RA, NRA(cm, k), tff.ltAfterTRM);
+
   
   //-  RESERVES PROFIT SHARING  -
   cap = calcCAP(cm, EREE, gen, k,
