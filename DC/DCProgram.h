@@ -101,7 +101,19 @@ typedef struct currentmember {
   double *nDOE; // years since date of entry
   double *nDOA; // years since date of affiliation
 
-  //---Variables that are used to distinguish between clients---
+  //---Variables that are used for DBO calculation---
+  // For k = 0 these will all be undefined!!
+  double *FF; // Funding Factor
+  double *FFSC; // Funding Factor Service Cost
+  double *qx; // Chance to die within 1 year
+  double *wxdef; // Turnover rate within 1 year (deferred payment)
+  double *wximm; // Turnover rate within 1 year (immediate payment)
+  double *retx; // Chance to retire within 1 year (usually 100% at 65)
+  double *nPk; // Chance to live from now until retirement
+  double *vk; // 1/(1+DR)^k with DR = discount rate
+  double *vn; // 1/(1+DR)^n with DR = discount rate
+  double *vk113; // 1/(1+DR)^k with DR = discount rate according to IAS19 $113
+  double *vn113; // 1/(1+DR)^n with DR = discount rate according to IAS19 $113
   
 } CurrentMember;
 
@@ -124,19 +136,21 @@ typedef struct dataset {
 typedef struct assumptions {
   Date *DOC; /* This is DOC[1] which is the start of the run through affiliates.
 	       DOC[0] is date of situation.*/
+  double infl; // Inflation
   double DR; // Discount Rate
   double DR113; // Discount Rate under $113 of IAS19  
   short agecorr; // Age Correction
   double (*SS)(CurrentMember *cm, int k); // Salary Scale
   double (*calcA)(CurrentMember *cm, int k); // Formula for Employer retirement contribution
   double (*calcC)(CurrentMember *cm, int k); // Formula for Employee retirement contribution  
-  double infl; // Inflation
   double (*NRA)(CurrentMember *cm, int k);
   double (*wxdef)(CurrentMember *cm, int k); // Turnover rate with deferred payment
-  double (*wximm)(CurrentMember *cm, int k); // Turnover rate with immediate payment
+  double (*retx)(CurrentMember *cm, int k); // Turnover rate with deferred payment
 
   //Assumptions that usually won't change from year to year
   unsigned short incrSalk1; // determine whether sal gets increased at k = 1 
+  double TRM_PercDef; /* Percentage of deferred members that will keep their
+			 reserves with the current employer at termination (usually equals 1)*/
 } Assumptions;
 
 Assumptions ass; // Assumptions
@@ -152,11 +166,11 @@ enum sensruns {runsensDRminus = 21, runsensDRplus, runsensInflationminus,
 unsigned short currrun; // Current run
 void setassumptions(CurrentMember *cm);
 double salaryscale(CurrentMember *cm, int k);
-double NRA(CurrentMember *cm, int k);
-double wxdef(CurrentMember *cm, int k);
-double wximm(CurrentMember *cm, int k);
 double calcA(CurrentMember *cm, int k);
 double calcC(CurrentMember *cm, int k);
+double NRA(CurrentMember *cm, int k);
+double wxdef(CurrentMember *cm, int k);
+double retx(CurrentMember *cm, int k);
 
 //---Tariff Structure---
 

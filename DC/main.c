@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
     // Employer-Employee
     for (int EREE = ER; EREE < EE + 1; EREE++) {
       for (int gen = 0; gen < MAXGEN; gen++) {
-	/* here all the functions will use the k-1 value to calculate the kth value and  */
+	/* here all the functions will use the k-1 value to calculate the kth value*/
 	cm->DELTACAP[EREE][k] = cm->DELTACAP[EREE][k-1];
 	evolCAPDTH(cm, EREE, gen, k-1);
 	evolRES(cm, EREE, gen, k-1); // This will also set the CAP values
@@ -157,8 +157,39 @@ int main(int argc, char **argv) {
     }
 
     //***ART24 EVOLUTION***
+    // the function will use the k-1 value to calculate the kth value
     evolART24(cm, k-1);
-  }
+
+    //***DBO CALCULATION - RETIREMENT***
+    // Funding factors
+    if (!(cm->status & ACT) || gensum(cm->PREMIUM, ER, 1) + gensum(cm->PREMIUM, EE, 1) == 0) {
+      cm->FF[k] = 1;
+      cm->FFSC[k] = 0;
+    }
+    else {
+      cm->FF[k] = cm->nDOA[1] / (cm->nDOA[k] == 0 ? 1 : cm->nDOA[k]);
+      cm->FFSC[k] = (k == 1 ? 0 : (cm->age[2] - cm->age[1]) /
+		     (cm->nDOA[k] == 0 ? 1 : cm->nDOA[k]));
+      
+    }
+    // Turnover rates
+    cm->wxdef[k] = wxdef(cm, k) * (cm->age[k+1] - cm->age[k]) * ass.TRM_PercDef;
+    cm->wximm[k] = wxdef(cm, k) * (cm->age[k+1] - cm->age[k]) * (1 - ass.TRM_PercDef);
+
+    // Life and Death rates
+    cm->qx[k] = 1 - npx((cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]),
+		    cm->age[k], cm->age[k+1], ass.agecorr);
+    cm->retx[k] = retx(cm, k) * (k > 1 && cm->age[k] == cm->age[k-1] ? 0 : 1);
+    cm->nPk[k] = npx((cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]),
+		     cm->age[k], NRA(cm, k), ass.agecorr);
+
+    // Financial variables (discount rate)
+    cm->vk[k] = pow(1 + ass.DR, -(cm->age[k] - cm->age[1]));
+    cm->vn[k] = pow(1 + ass.DR, -(NRA(cm, k) - cm->age[1]));    
+    cm->vk113[k] = pow(1 + ass.DR113, -(cm->age[k] - cm->age[1]));
+    cm->vn113[k] = pow(1 + ass.DR113, -(NRA(cm, k) - cm->age[1]));    
+    
+  }     
   // create excel file to print results
   printresults(&ds);
   return 0;

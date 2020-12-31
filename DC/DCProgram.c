@@ -120,6 +120,21 @@ void setCMvals(DataSet *ds) {
     cm[i].age = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].nDOE = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].nDOA = (double *)malloc(sizeof(double) * MAXPROJ);
+
+    //---Variables that are used for DBO calculation---
+    // For k = 0 these will all be undefined!!
+    cm[i].FF = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].FFSC = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].qx = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].wxdef = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].wximm = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].retx = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].nPk = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].vk = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].vn = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].vk113 = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].vn113 = (double *)malloc(sizeof(double) * MAXPROJ);
+
   }
   printf("Setting values completed.\n");
 }
@@ -402,6 +417,18 @@ int printresults(DataSet *ds) {
       }
     }
   }
+
+  // DBO calculation
+  worksheet_write_string(worksheet, row, col+110, "FF", NULL);
+  worksheet_write_string(worksheet, row, col+111, "qx", NULL);
+  worksheet_write_string(worksheet, row, col+112, "wx (Deferred)", NULL);
+  worksheet_write_string(worksheet, row, col+113, "wx (Immediate)", NULL);
+  worksheet_write_string(worksheet, row, col+114, "retx", NULL);
+  worksheet_write_string(worksheet, row, col+115, "kPx", NULL);
+  worksheet_write_string(worksheet, row, col+116, "nPk", NULL);
+  worksheet_write_string(worksheet, row, col+117, "v^k", NULL);
+  worksheet_write_string(worksheet, row, col+118, "v^n", NULL);
+  
   //-  Variables  -
   lxw_datetime DOC;
   lxw_format *format = workbook_add_format(workbook);
@@ -477,6 +504,19 @@ int printresults(DataSet *ds) {
       }
     }
     
+    // DBO calculation
+    // These variables are shifted one row down because the first row is not used
+    if (row+1 < MAXPROJ) {
+      worksheet_write_number(worksheet, row+2, col+110, ds->cm[0].FF[row+1], NULL);
+      worksheet_write_number(worksheet, row+2, col+111, ds->cm[0].qx[row+1], NULL);
+      worksheet_write_number(worksheet, row+2, col+112, ds->cm[0].wxdef[row+1], NULL);
+      worksheet_write_number(worksheet, row+2, col+113, ds->cm[0].wximm[row+1], NULL);
+      worksheet_write_number(worksheet, row+2, col+114, ds->cm[0].retx[row+1], NULL);
+      worksheet_write_string(worksheet, row+2, col+115, "kPx not done yet", NULL);
+      worksheet_write_number(worksheet, row+2, col+116, ds->cm[0].nPk[row+1], NULL);
+      worksheet_write_number(worksheet, row+2, col+117, ds->cm[0].vk[row+1], NULL);
+      worksheet_write_number(worksheet, row+2, col+118, ds->cm[0].vn[row+1], NULL);
+    }
     row++;
   }
   // ***End Print Testcases***
@@ -541,6 +581,14 @@ double salaryscale(CurrentMember *cm, int k) {
   return (*ass.SS)(cm, k);
 }
 
+double calcA(CurrentMember *cm, int k) {
+  return (*ass.calcA)(cm, k);
+}
+
+double calcC(CurrentMember *cm, int k) {
+  return (*ass.calcC)(cm, k);
+}
+
 double NRA(CurrentMember *cm, int k) {
   return (*ass.NRA)(cm, k);
 }
@@ -549,14 +597,8 @@ double wxdef(CurrentMember *cm, int k) {
   return (*ass.wxdef)(cm, k);
 }
 
-double wximm(CurrentMember *cm, int k) {
-  return (*ass.wximm)(cm, k);
+double retx(CurrentMember *cm, int k) {
+  return (*ass.retx)(cm, k);
 }
 
-double calcA(CurrentMember *cm, int k) {
-  return (*ass.calcA)(cm, k);
-}
 
-double calcC(CurrentMember *cm, int k) {
-  return (*ass.calcC)(cm, k);
-}
