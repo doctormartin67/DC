@@ -32,7 +32,9 @@
 #define TUC 1 // projected unit credit without future premiums
 #define TUCPS_1 2 /* projected unit credit with future premiums,
 		       one year later (for service cost)*/
-
+#define PAR115 0 // Assets $115
+#define MATHRES 1 // Assets Mathematical Reserves
+#define PAR113 2 // Assets $113
 static const double ART24TAUX[2][2] = {{0.0325, 0.0175}, {0.0375, 0.0175}};
 /* Current guarenteed rates that the employers need to guarentee on the 
    reserves of their employees by Belgian law (Employer-Employee, generation)*/
@@ -110,10 +112,14 @@ typedef struct currentmember {
   double *wximm; // Turnover rate within 1 year (immediate payment)
   double *retx; // Chance to retire within 1 year (usually 100% at 65)
   double *nPk; // Chance to live from now until retirement
+  double *kPx; // Chance to live from the start until now
   double *vk; // 1/(1+DR)^k with DR = discount rate
   double *vn; // 1/(1+DR)^n with DR = discount rate
   double *vk113; // 1/(1+DR)^k with DR = discount rate according to IAS19 $113
   double *vn113; // 1/(1+DR)^n with DR = discount rate according to IAS19 $113
+
+  double *DBORET[2][3]; // DBO Retirement (PUC - TUC, Method Assets, loops)
+  double *NCRET[2][3]; // Normal Cost Retirement (PUC - TUC, Method Assets, loops)
   
 } CurrentMember;
 

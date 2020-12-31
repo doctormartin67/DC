@@ -33,6 +33,8 @@ int main(int argc, char **argv) {
   *cm->nDOA = (*cm->DOC)->year - cm->DOA->year +
     (double)((*cm->DOC)->month - cm->DOA->month - (cm->DOA->day == 1 ? 0 : 1))/12;
 
+  cm->kPx[1] = 1;
+  
   //-  Premium  -
   for (int EREE = 0; EREE < 2; EREE++) {
     *cm->PREMIUM[EREE][MAXGEN-1] = (EREE == ER ? calcA(cm, 0) : calcC(cm, 0));
@@ -158,7 +160,11 @@ int main(int argc, char **argv) {
 
     //***ART24 EVOLUTION***
     // the function will use the k-1 value to calculate the kth value
+    double ART24TOT[TUCPS_1 + 1];
     evolART24(cm, k-1);
+    for (int j = 0; j < TUCPS_1 + 1; j++)
+      ART24TOT[j] = cm->ART24[j][ER][ART24GEN1][k] + cm->ART24[j][ER][ART24GEN2][k] +
+	cm->ART24[j][EE][ART24GEN1][k] + cm->ART24[j][EE][ART24GEN2][k];
 
     //***DBO CALCULATION - RETIREMENT***
     // Funding factors
@@ -188,7 +194,42 @@ int main(int argc, char **argv) {
     cm->vn[k] = pow(1 + ass.DR, -(NRA(cm, k) - cm->age[1]));    
     cm->vk113[k] = pow(1 + ass.DR113, -(cm->age[k] - cm->age[1]));
     cm->vn113[k] = pow(1 + ass.DR113, -(NRA(cm, k) - cm->age[1]));    
-    
+
+    // Calculation
+    // DBO PUC
+    cm->DBORET[PUC][PAR115][k] =
+      max(2, ART24TOT[PUC] * cm->FF[k],
+	  gensum(cm->REDCAP[TUC], ER, k) + gensum(cm->REDCAP[TUC], EE, k)) *
+      cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
+      max(2, ART24TOT[PUC] * cm->FF[k],
+	  gensum(cm->RES[TUC], ER, k) + gensum(cm->RES[TUC], EE, k)) *
+      (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
+
+    cm->DBORET[PUC][MATHRES][k] =
+      ART24TOT[PUC] * cm->FF[k] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
+      ART24TOT[PUC] * cm->FF[k] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
+
+    cm->DBORET[PUC][PAR113][k] = cm->DBORET[PUC][PAR115][k];
+
+    //DBO TUC
+    cm->DBORET[TUC][PAR115][k] =
+      max(2, ART24TOT[TUC],
+	  gensum(cm->REDCAP[TUC], ER, k) + gensum(cm->REDCAP[TUC], EE, k)) *
+      cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
+      max(2, ART24TOT[TUC],
+	  gensum(cm->RES[TUC], ER, k) + gensum(cm->RES[TUC], EE, k)) *
+      (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
+
+    cm->DBORET[TUC][MATHRES][k] =
+      ART24TOT[TUC] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
+      ART24TOT[TUC] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
+
+    cm->DBORET[TUC][PAR113][k] = cm->DBORET[TUC][PAR115][k];
+
+    // kPx is defined after first loop
+    if (k+1 < MAXPROJ)
+      cm->kPx[k+1] =
+	cm->kPx[k] * (1 - cm->qx[k]) * (1 - cm->wxdef[k] - cm->wximm[k]) * (1 - cm->retx[k]);
   }     
   // create excel file to print results
   printresults(&ds);

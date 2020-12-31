@@ -130,11 +130,17 @@ void setCMvals(DataSet *ds) {
     cm[i].wximm = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].retx = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].nPk = (double *)malloc(sizeof(double) * MAXPROJ);
+    cm[i].kPx = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].vk = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].vn = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].vk113 = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].vn113 = (double *)malloc(sizeof(double) * MAXPROJ);
 
+    for (int j = 0; j < 2; j++)
+      for (int k = 0; k < 3; k++) {
+	cm[i].DBORET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].NCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);	
+      }
   }
   printf("Setting values completed.\n");
 }
@@ -428,6 +434,15 @@ int printresults(DataSet *ds) {
   worksheet_write_string(worksheet, row, col+116, "nPk", NULL);
   worksheet_write_string(worksheet, row, col+117, "v^k", NULL);
   worksheet_write_string(worksheet, row, col+118, "v^n", NULL);
+
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 3; j++) {
+      snprintf(temp, sizeof(temp), "DBO RET %s %s",
+	       (i == PUC ? "PUC" : "TUC"),
+	       (j == PAR115 ? "PAR115" : (j == MATHRES ? "RES" : "PAR113")));
+      worksheet_write_string(worksheet, row, col+119 + j + 3*i, temp, NULL);
+      memset(temp, '\0', sizeof(temp));
+    }
   
   //-  Variables  -
   lxw_datetime DOC;
