@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
 
     cm->DBORET[PUC][PAR113][k] = cm->DBORET[PUC][PAR115][k];
 
-    //DBO TUC
+    // DBO TUC
     cm->DBORET[TUC][PAR115][k] =
       max(2, ART24TOT[TUC],
 	  gensum(cm->REDCAP[TUC], ER, k) + gensum(cm->REDCAP[TUC], EE, k)) *
@@ -225,6 +225,20 @@ int main(int argc, char **argv) {
       ART24TOT[TUC] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
 
     cm->DBORET[TUC][PAR113][k] = cm->DBORET[TUC][PAR115][k];
+
+    // NC PUC
+    cm->NCRET[PUC][PAR115][k] =
+      ART24TOT[PUC] * cm->FFSC[k] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
+      ART24TOT[PUC] * cm->FFSC[k] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
+
+    cm->NCRET[PUC][PAR113][k] = cm->NCRET[PUC][MATHRES][k] = cm->NCRET[PUC][PAR115][k];
+    
+    // NC TUC
+    cm->NCRET[TUC][PAR115][k] =
+      (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
+      (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
+
+    cm->NCRET[TUC][PAR113][k] = cm->NCRET[TUC][MATHRES][k] = cm->NCRET[TUC][PAR115][k];
 
     // kPx is defined after first loop
     if (k+1 < MAXPROJ)

@@ -442,6 +442,11 @@ int printresults(DataSet *ds) {
 	       (j == PAR115 ? "PAR115" : (j == MATHRES ? "RES" : "PAR113")));
       worksheet_write_string(worksheet, row, col+119 + j + 3*i, temp, NULL);
       memset(temp, '\0', sizeof(temp));
+      snprintf(temp, sizeof(temp), "NC RET %s %s",
+	       (i == PUC ? "PUC" : "TUC"),
+	       (j == PAR115 ? "PAR115" : (j == MATHRES ? "RES" : "PAR113")));
+      worksheet_write_string(worksheet, row, col+125 + j + 3*i, temp, NULL);
+      memset(temp, '\0', sizeof(temp));
     }
   
   //-  Variables  -
@@ -527,10 +532,19 @@ int printresults(DataSet *ds) {
       worksheet_write_number(worksheet, row+2, col+112, ds->cm[0].wxdef[row+1], NULL);
       worksheet_write_number(worksheet, row+2, col+113, ds->cm[0].wximm[row+1], NULL);
       worksheet_write_number(worksheet, row+2, col+114, ds->cm[0].retx[row+1], NULL);
-      worksheet_write_string(worksheet, row+2, col+115, "kPx not done yet", NULL);
+      worksheet_write_number(worksheet, row+2, col+115, ds->cm[0].kPx[row+1], NULL);
       worksheet_write_number(worksheet, row+2, col+116, ds->cm[0].nPk[row+1], NULL);
       worksheet_write_number(worksheet, row+2, col+117, ds->cm[0].vk[row+1], NULL);
       worksheet_write_number(worksheet, row+2, col+118, ds->cm[0].vn[row+1], NULL);
+
+      for (int i = 0; i < 2; i++)
+	for (int j = 0; j < 3; j++) {
+	  worksheet_write_number(worksheet,
+				 row+2, col+119 + j + 3*i, ds->cm[0].DBORET[i][j][row+1], NULL);
+	  worksheet_write_number(worksheet,
+				 row+2, col+125 + j + 3*i, ds->cm[0].NCRET[i][j][row+1], NULL);
+	}
+
     }
     row++;
   }
