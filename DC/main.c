@@ -160,11 +160,20 @@ int main(int argc, char **argv) {
 
     //***ART24 EVOLUTION***
     // the function will use the k-1 value to calculate the kth value
-    double ART24TOT[TUCPS_1 + 1];
     evolART24(cm, k-1);
-    for (int j = 0; j < TUCPS_1 + 1; j++)
+
+    // The following variables get updated each loop
+    double ART24TOT[TUCPS_1 + 1];
+    double RESTOT[TUCPS_1 + 1];
+    double REDCAPTOT[TUCPS_1 + 1];
+    
+    for (int j = 0; j < TUCPS_1 + 1; j++) {
       ART24TOT[j] = cm->ART24[j][ER][ART24GEN1][k] + cm->ART24[j][ER][ART24GEN2][k] +
 	cm->ART24[j][EE][ART24GEN1][k] + cm->ART24[j][EE][ART24GEN2][k];
+      RESTOT[j] = gensum(cm->RES[j], ER, k) + gensum(cm->RES[j], EE, k) +
+	gensum(cm->RESPS[j], ER, k) + gensum(cm->RESPS[j], EE, k);
+      REDCAPTOT[j] = gensum(cm->REDCAP[j], ER, k) + gensum(cm->REDCAP[j], EE, k);
+    }
 
     //***DBO CALCULATION - RETIREMENT***
     // Funding factors
@@ -198,11 +207,9 @@ int main(int argc, char **argv) {
     // Calculation
     // DBO PUC
     cm->DBORET[PUC][PAR115][k] =
-      max(2, ART24TOT[PUC] * cm->FF[k],
-	  gensum(cm->REDCAP[TUC], ER, k) + gensum(cm->REDCAP[TUC], EE, k)) *
+      max(2, ART24TOT[PUC] * cm->FF[k], REDCAPTOT[TUC]) *
       cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
-      max(2, ART24TOT[PUC] * cm->FF[k],
-	  gensum(cm->RES[TUC], ER, k) + gensum(cm->RES[TUC], EE, k)) *
+      max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]) *
       (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
 
     cm->DBORET[PUC][MATHRES][k] =
@@ -213,12 +220,8 @@ int main(int argc, char **argv) {
 
     // DBO TUC
     cm->DBORET[TUC][PAR115][k] =
-      max(2, ART24TOT[TUC],
-	  gensum(cm->REDCAP[TUC], ER, k) + gensum(cm->REDCAP[TUC], EE, k)) *
-      cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
-      max(2, ART24TOT[TUC],
-	  gensum(cm->RES[TUC], ER, k) + gensum(cm->RES[TUC], EE, k)) *
-      (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
+      max(2, ART24TOT[TUC], REDCAPTOT[TUC]) * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
+      max(2, ART24TOT[TUC], RESTOT[TUC]) * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
 
     cm->DBORET[TUC][MATHRES][k] =
       ART24TOT[TUC] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
@@ -239,6 +242,30 @@ int main(int argc, char **argv) {
       (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
 
     cm->NCRET[TUC][PAR113][k] = cm->NCRET[TUC][MATHRES][k] = cm->NCRET[TUC][PAR115][k];
+
+    // IC NC PUC
+    cm->ICNCRET[PUC][PAR115][k] =
+      ART24TOT[PUC] * cm->FFSC[k] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] * ass.DR +
+      ART24TOT[PUC] * cm->FFSC[k] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k] * ass.DR;
+
+    cm->ICNCRET[PUC][PAR113][k] = cm->ICNCRET[PUC][MATHRES][k] = cm->ICNCRET[PUC][PAR115][k];
+    
+    // IC NC TUC
+    cm->ICNCRET[TUC][PAR115][k] =
+      (ART24TOT[TUCPS_1] - ART24TOT[TUC]) *
+      cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] * ass.DR+
+      (ART24TOT[TUCPS_1] - ART24TOT[TUC]) *
+      (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k] * ass.DR;
+
+    cm->ICNCRET[TUC][PAR113][k] = cm->ICNCRET[TUC][MATHRES][k] = cm->ICNCRET[TUC][PAR115][k];
+
+    // Plan Assets
+    cm->assets[PAR115][k] =
+      REDCAPTOT[TUC] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
+      RESTOT[TUC] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
+    cm->assets[PAR113][k] =
+      REDCAPTOT[TUC] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn113[k] +
+      RESTOT[TUC] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk113[k];
 
     // kPx is defined after first loop
     if (k+1 < MAXPROJ)

@@ -136,11 +136,14 @@ void setCMvals(DataSet *ds) {
     cm[i].vk113 = (double *)malloc(sizeof(double) * MAXPROJ);
     cm[i].vn113 = (double *)malloc(sizeof(double) * MAXPROJ);
 
-    for (int j = 0; j < 2; j++)
-      for (int k = 0; k < 3; k++) {
+    for (int k = 0; k < 3; k++) {
+      for (int j = 0; j < 2; j++) {
 	cm[i].DBORET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].NCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);	
+	cm[i].NCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].ICNCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);		
       }
+      cm[i].assets[k] = (double *)malloc(sizeof(double) * MAXPROJ);
+    }
   }
   printf("Setting values completed.\n");
 }
@@ -448,6 +451,10 @@ int printresults(DataSet *ds) {
       worksheet_write_string(worksheet, row, col+125 + j + 3*i, temp, NULL);
       memset(temp, '\0', sizeof(temp));
     }
+
+  // Assets
+  worksheet_write_string(worksheet, row, col+131, "ASSETS PAR 115", NULL);
+  worksheet_write_string(worksheet, row, col+132, "ASSETS PAR 113", NULL);
   
   //-  Variables  -
   lxw_datetime DOC;
@@ -545,7 +552,12 @@ int printresults(DataSet *ds) {
 				 row+2, col+125 + j + 3*i, ds->cm[0].NCRET[i][j][row+1], NULL);
 	}
 
+      // Assets
+      worksheet_write_number(worksheet, row+2, col+131, ds->cm[0].assets[PAR115][row+1], NULL);
+      worksheet_write_number(worksheet, row+2, col+132, ds->cm[0].assets[PAR113][row+1], NULL);
     }
+    // END SHIFTED VARIABLES
+    
     row++;
   }
   // ***End Print Testcases***

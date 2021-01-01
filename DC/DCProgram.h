@@ -96,7 +96,7 @@ typedef struct currentmember {
   char *plan;
   double baranc; // baremic ancienity
   unsigned short extra; /* 0000 0000 0000 0011
-			   means prepensioner whose salary we increase at k = -1*/
+			   means prepensioner whose salary we increase at k = -1 */
   
   //---Variable definitions---    
   double *age; // age of affiliate
@@ -120,7 +120,9 @@ typedef struct currentmember {
 
   double *DBORET[2][3]; // DBO Retirement (PUC - TUC, Method Assets, loops)
   double *NCRET[2][3]; // Normal Cost Retirement (PUC - TUC, Method Assets, loops)
-  
+  double *ICNCRET[2][3]; /* Interest Cost on Normal Cost Retirement 
+			    (PUC - TUC, Method Assets, loops) */
+  double *assets[3]; // Plan Assets ($115, Mathematical Reserves, $113)
 } CurrentMember;
 
 //---Useful functions for CurrentMembers---
