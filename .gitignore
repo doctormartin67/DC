@@ -1,3 +1,5 @@
+#vim files
+*.swp
 #emacs backup files
 *~
 #C object files
