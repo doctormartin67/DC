@@ -35,6 +35,9 @@
 #define PAR115 0 // Assets $115
 #define MATHRES 1 // Assets Mathematical Reserves
 #define PAR113 2 // Assets $113
+#define PBO 0 // PBO Cashflows
+#define TBO 1 // TBO Cashflows
+
 static const double ART24TAUX[2][2] = {{0.0325, 0.0175}, {0.0375, 0.0175}};
 /* Current guarenteed rates that the employers need to guarentee on the 
    reserves of their employees by Belgian law (Employer-Employee, generation)*/
@@ -134,6 +137,13 @@ typedef struct currentmember {
 	double *NCDTHRiskPart; // NC Death Risk Part
 	double *ICNCDTHRESPart; // Interest Cost on Normal Cost Death Reserves Part
 	double *ICNCDTHRiskPart; // Interest Cost on Normal Cost Death Risk Part
+	
+	//---CASHFLOWS---
+	double *EBP[2][3][2]; /* Expected Benefits Paid (PUC - TUC, Method Assets,
+				 PBO - TBO, loops) */
+	double *PBONCCF[2][3]; // PBO Normal Cost Cashflows
+	double *EBPDTH[2]; // Expected Benefits Paid Death
+	double *PBODTHNCCF; // PBO Death Normal Cost Cashflows
 } CurrentMember;
 
 //---Useful functions for CurrentMembers---

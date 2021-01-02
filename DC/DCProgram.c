@@ -142,9 +142,17 @@ void setCMvals(DataSet *ds) {
 				cm[i].DBORET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
 				cm[i].NCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
 				cm[i].ICNCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);		
+			 	for (int l = 0; l < 2; l++) {
+					cm[i].EBP[j][k][l] = (double *)malloc(sizeof(double) * MAXPROJ); 
+				}
+				cm[i].PBONCCF[j][k] = (double *)malloc(sizeof(double) * MAXPROJ); 
 			}
 			cm[i].assets[k] = (double *)malloc(sizeof(double) * MAXPROJ);
 		}
+		for (int j = 0; j < 2; j++)
+			cm[i].EBPDTH[j] = (double *)malloc(sizeof(double) * MAXPROJ); 
+		cm[i].PBODTHNCCF= (double *)malloc(sizeof(double) * MAXPROJ);
+
 		//---DBO DTH---
 		cm[i].CAPDTHRESPart = (double *)malloc(sizeof(double) * MAXPROJ);
 		cm[i].CAPDTHRiskPart = (double *)malloc(sizeof(double) * MAXPROJ);
@@ -154,6 +162,9 @@ void setCMvals(DataSet *ds) {
 		cm[i].NCDTHRiskPart = (double *)malloc(sizeof(double) * MAXPROJ);
 		cm[i].ICNCDTHRESPart = (double *)malloc(sizeof(double) * MAXPROJ);
 		cm[i].ICNCDTHRiskPart = (double *)malloc(sizeof(double) * MAXPROJ);
+
+		//---EXPECTED BENEFITS PAID---
+
 
 		//***End k = 0 is undefined!!***
 

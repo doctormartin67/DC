@@ -36,6 +36,14 @@ int main(int argc, char **argv) {
 	cm->kPx[1] = 1;
 	cm->AFSL[0] = 0;
 
+	//-  Expected Benefits Paid  -
+	for (int i = 0; i < 2; i++)
+		for (int j = 0; j < 3; j++)
+			for (int k = 0; k < 2; k++) 
+				for (int l = 0; l < MAXPROJ; l++) {
+					cm->EBP[i][j][k][l] = 0;
+				}
+
 	cm->CAPDTHRESPart[0] = 
 		(cm->tariff == UKMS ? 
 		 gensum(cm->RES[PUC], ER, 0) + gensum(cm->RES[PUC], EE, 0) + 
@@ -277,7 +285,7 @@ int main(int argc, char **argv) {
 		
 		cm->AFSL[k] = cm->AFSL[k-1] * (cm->wxdef[k] + cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * (cm->age[k] - cm->age[1]); 
 
-		//***DBO CALCULATION - RETIREMENT***
+		//***DBO CALCULATION - DEATH***
 		cm->CAPDTHRESPart[k] = (cm->tariff == UKMS ? RESTOT[PUC] : 0);
 		cm->CAPDTHRiskPart[k] = calcDTH(cm, k); 
 		cm->DBODTHRESPart[k] = cm->CAPDTHRESPart[k] * cm->FF[k] * cm->qx[k] * cm->kPx[k] * cm->vk[k]; 
@@ -286,6 +294,61 @@ int main(int argc, char **argv) {
 		cm->NCDTHRiskPart[k] = cm->CAPDTHRiskPart[k] * cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * cm->vk[k]; 
 		cm->ICNCDTHRESPart[k] = cm->CAPDTHRESPart[k] * cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * cm->vk[k] * ass.DR; 
 		cm->ICNCDTHRiskPart[k] = cm->CAPDTHRiskPart[k] * cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * cm->vk[k] * ass.DR; 
+	
+		//***EXPECTED BENEFITS PAID***
+		int yearIMM; // year of immediate payment	
+		int yearDEF; // year of deferred payment	
+		double vIMM;
+		double vDEF;
+		yearIMM = calcyears(cm->DOC[k], cm->DOC[1]);
+		yearDEF = max(2, 0.0, calcyears(newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1), cm->DOC[1]));
+		if (yearIMM >= 0) {
+			vIMM = pow(1 + ass.DR, -calcyears(newDate(0, cm->DOC[1]->year + yearIMM, cm->DOC[1]->month, 1), cm->DOC[k]));
+			// EBP PUC
+			cm->EBP[PUC][PAR115][TBO][yearIMM] += max(2, ART24TOT[PUC], RESTOT[TUC]) * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->EBP[PUC][PAR115][PBO][yearIMM] += max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]) * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->EBP[PUC][MATHRES][TBO][yearIMM] += ART24TOT[PUC] * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->EBP[PUC][MATHRES][PBO][yearIMM] += ART24TOT[PUC] * cm->FF[k] * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->EBP[PUC][PAR113][TBO][yearIMM] = cm->EBP[PUC][PAR115][TBO][yearIMM];
+			cm->EBP[PUC][PAR113][PBO][yearIMM] = cm->EBP[PUC][PAR115][PBO][yearIMM];
+			
+			// EBP TUC
+			cm->EBP[TUC][PAR115][TBO][yearIMM] += max(2, ART24TOT[TUC], RESTOT[TUC]) * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->EBP[TUC][PAR115][PBO][yearIMM] += max(2, ART24TOT[TUC] ,RESTOT[TUC]) * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->EBP[TUC][MATHRES][TBO][yearIMM] += ART24TOT[TUC] * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->EBP[TUC][MATHRES][PBO][yearIMM] += ART24TOT[TUC] * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->EBP[TUC][PAR113][TBO][yearIMM] = cm->EBP[TUC][PAR115][TBO][yearIMM];
+			cm->EBP[TUC][PAR113][PBO][yearIMM] = cm->EBP[TUC][PAR115][PBO][yearIMM];
+
+			// PBO NC CF
+			cm->PBONCCF[PUC][PAR115][yearIMM] += ART24TOT[PUC] * cm->FFSC[k] * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->PBONCCF[PUC][MATHRES][yearIMM] += ART24TOT[PUC] * cm->FFSC[k] * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->PBONCCF[PUC][PAR113][yearIMM] = cm->PBONCCF[PUC][PAR115][yearIMM];
+			
+			cm->PBONCCF[TUC][PAR115][yearIMM] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->PBONCCF[TUC][MATHRES][yearIMM] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
+				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+			cm->PBONCCF[TUC][PAR113][yearIMM] = cm->PBONCCF[TUC][PAR115][yearIMM];
+
+			// EBP DTH
+			cm->EBPDTH[TBO][yearIMM] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
+				cm->qx[k] * cm->kPx[k] * vIMM;
+			cm->EBPDTH[PBO][yearIMM] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
+				cm->FF[k] * cm->qx[k] * cm->kPx[k] * vIMM;
+			cm->PBODTHNCCF[yearIMM] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
+				cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * vIMM;
+	}
 		
 		// kPx is defined after first loop
 		if (k+1 < MAXPROJ)
