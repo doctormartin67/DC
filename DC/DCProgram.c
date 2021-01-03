@@ -387,7 +387,7 @@ void createData(DataSet *ds) {
 	fclose(fp);
 }
 
-int printresults(DataSet *ds) {
+int printresults(DataSet *ds, int tc) {
 	char results[BUFSIZ/4];
 	char temp[64]; // to store temporary strings for field names and such.
 	int row = 0;
@@ -514,72 +514,72 @@ int printresults(DataSet *ds) {
 	format_set_num_format(format, DOCformat);
 	worksheet_set_column(worksheet, 0, 100, 15, NULL);
 	while (row < MAXPROJ) {
-		DOC.year = ds->cm[0].DOC[row]->year;
-		DOC.month = ds->cm[0].DOC[row]->month;
-		DOC.day = ds->cm[0].DOC[row]->day;
+		DOC.year = ds->cm[tc].DOC[row]->year;
+		DOC.month = ds->cm[tc].DOC[row]->month;
+		DOC.day = ds->cm[tc].DOC[row]->day;
 		DOC.hour = DOC.min = DOC.sec = 0;
-		worksheet_write_string(worksheet, row+1, col, ds->cm[0].key, NULL);
+		worksheet_write_string(worksheet, row+1, col, ds->cm[tc].key, NULL);
 		worksheet_write_datetime(worksheet, row+1, col+1, &DOC, format);
-		worksheet_write_number(worksheet, row+1, col+2, ds->cm[0].age[row], NULL);
-		worksheet_write_number(worksheet, row+1, col+4, ds->cm[0].sal[row], NULL);
-		worksheet_write_number(worksheet, row+1, col+8, gensum(ds->cm[0].PREMIUM, ER, row), NULL);
-		worksheet_write_number(worksheet, row+1, col+12, ds->cm[0].CAPDTHRiskPart[row], NULL);
-		worksheet_write_number(worksheet, row+1, col+13, ds->cm[0].CAPDTHRESPart[row], NULL);
-		worksheet_write_number(worksheet, row+1, col+14, gensum(ds->cm[0].PREMIUM, EE, row), NULL);
+		worksheet_write_number(worksheet, row+1, col+2, ds->cm[tc].age[row], NULL);
+		worksheet_write_number(worksheet, row+1, col+4, ds->cm[tc].sal[row], NULL);
+		worksheet_write_number(worksheet, row+1, col+8, gensum(ds->cm[tc].PREMIUM, ER, row), NULL);
+		worksheet_write_number(worksheet, row+1, col+12, ds->cm[tc].CAPDTHRiskPart[row], NULL);
+		worksheet_write_number(worksheet, row+1, col+13, ds->cm[tc].CAPDTHRESPart[row], NULL);
+		worksheet_write_number(worksheet, row+1, col+14, gensum(ds->cm[tc].PREMIUM, EE, row), NULL);
 		for (int i = 0; i < MAXGEN; i++) {
 			for (int EREE = 0; EREE < EE + 1; EREE++) { 
 				worksheet_write_number(worksheet, row+1, col+15 + 4*i + 32*EREE,
-						ds->cm[0].CAP[EREE][i][row], NULL);
+						ds->cm[tc].CAP[EREE][i][row], NULL);
 				worksheet_write_number(worksheet, row+1, col+16 + 4*i + 32*EREE,
-						ds->cm[0].PREMIUM[EREE][i][row], NULL);
+						ds->cm[tc].PREMIUM[EREE][i][row], NULL);
 				worksheet_write_number(worksheet, row+1, col+17 + 4*i + 32*EREE,
-						ds->cm[0].RESPS[PUC][EREE][i][row], NULL);
+						ds->cm[tc].RESPS[PUC][EREE][i][row], NULL);
 				worksheet_write_number(worksheet, row+1, col+18 + 4*i + 32*EREE,
-						ds->cm[0].RES[PUC][EREE][i][row], NULL);
+						ds->cm[tc].RES[PUC][EREE][i][row], NULL);
 			}
 		}
 		// Total Reserves
 		worksheet_write_number(worksheet, row+1, col+80,
-				gensum(ds->cm[0].RES[PUC], ER, row) +
-				gensum(ds->cm[0].RESPS[PUC], ER, row), NULL);
+				gensum(ds->cm[tc].RES[PUC], ER, row) +
+				gensum(ds->cm[tc].RESPS[PUC], ER, row), NULL);
 		worksheet_write_number(worksheet, row+1, col+81,
-				gensum(ds->cm[0].RES[PUC], EE, row) +
-				gensum(ds->cm[0].RESPS[PUC], EE, row), NULL);
+				gensum(ds->cm[tc].RES[PUC], EE, row) +
+				gensum(ds->cm[tc].RESPS[PUC], EE, row), NULL);
 
 		// REDCAP
 		worksheet_write_number(worksheet, row+1, col+82,
-				gensum(ds->cm[0].REDCAP[PUC], ER, row) +
-				gensum(ds->cm[0].REDCAP[PUC], EE, row), NULL);
+				gensum(ds->cm[tc].REDCAP[PUC], ER, row) +
+				gensum(ds->cm[tc].REDCAP[PUC], EE, row), NULL);
 		worksheet_write_number(worksheet, row+1, col+83,
-				gensum(ds->cm[0].REDCAP[TUC], ER, row) +
-				gensum(ds->cm[0].REDCAP[TUC], EE, row), NULL);
+				gensum(ds->cm[tc].REDCAP[TUC], ER, row) +
+				gensum(ds->cm[tc].REDCAP[TUC], EE, row), NULL);
 		worksheet_write_number(worksheet, row+1, col+84,
-				gensum(ds->cm[0].REDCAP[TUCPS_1], ER, row) +
-				gensum(ds->cm[0].REDCAP[TUCPS_1], EE, row), NULL);
+				gensum(ds->cm[tc].REDCAP[TUCPS_1], ER, row) +
+				gensum(ds->cm[tc].REDCAP[TUCPS_1], EE, row), NULL);
 
 		// RESERVES
 		worksheet_write_number(worksheet, row+1, col+85,
-				gensum(ds->cm[0].RES[PUC], ER, row) +
-				gensum(ds->cm[0].RES[PUC], EE, row) +
-				gensum(ds->cm[0].RESPS[PUC], ER, row) +
-				gensum(ds->cm[0].RESPS[PUC], EE, row), NULL);
+				gensum(ds->cm[tc].RES[PUC], ER, row) +
+				gensum(ds->cm[tc].RES[PUC], EE, row) +
+				gensum(ds->cm[tc].RESPS[PUC], ER, row) +
+				gensum(ds->cm[tc].RESPS[PUC], EE, row), NULL);
 		worksheet_write_number(worksheet, row+1, col+86,
-				gensum(ds->cm[0].RES[TUC], ER, row) +
-				gensum(ds->cm[0].RES[TUC], EE, row) +
-				gensum(ds->cm[0].RESPS[TUC], ER, row) +
-				gensum(ds->cm[0].RESPS[TUC], EE, row), NULL);
+				gensum(ds->cm[tc].RES[TUC], ER, row) +
+				gensum(ds->cm[tc].RES[TUC], EE, row) +
+				gensum(ds->cm[tc].RESPS[TUC], ER, row) +
+				gensum(ds->cm[tc].RESPS[TUC], EE, row), NULL);
 		worksheet_write_number(worksheet, row+1, col+87,
-				gensum(ds->cm[0].RES[TUCPS_1], ER, row) +
-				gensum(ds->cm[0].RES[TUCPS_1], EE, row) +
-				gensum(ds->cm[0].RESPS[TUCPS_1], ER, row) +
-				gensum(ds->cm[0].RESPS[TUCPS_1], EE, row), NULL);
+				gensum(ds->cm[tc].RES[TUCPS_1], ER, row) +
+				gensum(ds->cm[tc].RES[TUCPS_1], EE, row) +
+				gensum(ds->cm[tc].RESPS[TUCPS_1], ER, row) +
+				gensum(ds->cm[tc].RESPS[TUCPS_1], EE, row), NULL);
 
 		// Article 24
 		for (int j = 0; j < TUCPS_1 + 1; j++) {
 			for (int i = 0; i < 2; i++) { // generation
 				for (int EREE = 0; EREE < EE + 1; EREE++) { 
 					worksheet_write_number(worksheet, row+1, col+89 + 2*j + i + 6*EREE,
-							ds->cm[0].ART24[j][EREE][i][row], NULL);
+							ds->cm[tc].ART24[j][EREE][i][row], NULL);
 				}
 			}
 		}
@@ -587,45 +587,45 @@ int printresults(DataSet *ds) {
 		// DBO calculation
 		// These variables are shifted one row down because the first row is not used
 		if (row+1 < MAXPROJ) {
-			worksheet_write_number(worksheet, row+2, col+110, ds->cm[0].FF[row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+111, ds->cm[0].qx[row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+112, ds->cm[0].wxdef[row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+113, ds->cm[0].wximm[row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+114, ds->cm[0].retx[row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+115, ds->cm[0].kPx[row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+116, ds->cm[0].nPk[row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+117, ds->cm[0].vk[row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+118, ds->cm[0].vn[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+110, ds->cm[tc].FF[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+111, ds->cm[tc].qx[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+112, ds->cm[tc].wxdef[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+113, ds->cm[tc].wximm[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+114, ds->cm[tc].retx[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+115, ds->cm[tc].kPx[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+116, ds->cm[tc].nPk[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+117, ds->cm[tc].vk[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+118, ds->cm[tc].vn[row+1], NULL);
 
 			for (int i = 0; i < 2; i++)
 				for (int j = 0; j < 3; j++) {
 					worksheet_write_number(worksheet,
-							row+2, col+119 + j + 3*i, ds->cm[0].DBORET[i][j][row+1], NULL);
+							row+2, col+119 + j + 3*i, ds->cm[tc].DBORET[i][j][row+1], NULL);
 					worksheet_write_number(worksheet,
-							row+2, col+125 + j + 3*i, ds->cm[0].NCRET[i][j][row+1], NULL);
+							row+2, col+125 + j + 3*i, ds->cm[tc].NCRET[i][j][row+1], NULL);
 				}
 
 			// Assets
-			worksheet_write_number(worksheet, row+2, col+131, ds->cm[0].assets[PAR115][row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+132, ds->cm[0].assets[PAR113][row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+133, ds->cm[0].DBODTHRiskPart[row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+134, ds->cm[0].DBODTHRESPart[row+1] , NULL);
-			worksheet_write_number(worksheet, row+2, col+135, ds->cm[0].NCDTHRiskPart[row+1] , NULL);
-			worksheet_write_number(worksheet, row+2, col+136, ds->cm[0].NCDTHRESPart[row+1] , NULL);
+			worksheet_write_number(worksheet, row+2, col+131, ds->cm[tc].assets[PAR115][row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+132, ds->cm[tc].assets[PAR113][row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+133, ds->cm[tc].DBODTHRiskPart[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+134, ds->cm[tc].DBODTHRESPart[row+1] , NULL);
+			worksheet_write_number(worksheet, row+2, col+135, ds->cm[tc].NCDTHRiskPart[row+1] , NULL);
+			worksheet_write_number(worksheet, row+2, col+136, ds->cm[tc].NCDTHRESPart[row+1] , NULL);
 
 			// EBP
 			for (int j = 0; j < 3; j++) 
 				for (int i = 0; i < 2; i++) {
 					worksheet_write_number(worksheet, 
-							row+2, col+137 + j + 3*i, ds->cm[0].PBONCCF[i][j][row+1], NULL);
+							row+2, col+137 + j + 3*i, ds->cm[tc].PBONCCF[i][j][row+1], NULL);
 					for (int k = 0; k < 2; k++) {
 						worksheet_write_number(worksheet, 
-								row+2, col+143 + j + 3*i + 6*k, ds->cm[0].EBP[i][j][k][row+1], NULL);
+								row+2, col+143 + j + 3*i + 6*k, ds->cm[tc].EBP[i][j][k][row+1], NULL);
 					}	       
 				}
-			worksheet_write_number(worksheet, row+2, col+155, ds->cm[0].EBPDTH[TBO][row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+156, ds->cm[0].EBPDTH[PBO][row+1], NULL);
-			worksheet_write_number(worksheet, row+2, col+157, ds->cm[0].PBODTHNCCF[row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+155, ds->cm[tc].EBPDTH[TBO][row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+156, ds->cm[tc].EBPDTH[PBO][row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+157, ds->cm[tc].PBODTHNCCF[row+1], NULL);
 		}
 		// END SHIFTED VARIABLES
 

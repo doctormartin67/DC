@@ -249,6 +249,6 @@ void createData(DataSet *ds);
    1 is returned */
 void setkey(DataSet *ds);
 void countMembers(DataSet *ds);
-int printresults(DataSet *ds);
+int printresults(DataSet *ds, int tc); // tc = test case
 
 #endif

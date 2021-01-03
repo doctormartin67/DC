@@ -4,6 +4,8 @@
 #include "DCProgram.h"
 #include "actuarialfunctions.h"
 
+void run(CurrentMember *cm);
+
 int main(int argc, char **argv) {
 	if (argc != 2) {
 		printf("Syntax: main \"Excel file\"\n");
@@ -21,17 +23,30 @@ int main(int argc, char **argv) {
 	// Here the loop of all affiliates will start.
 	currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
 	CurrentMember *cm = ds.cm;
-	setassumptions(cm); // This defines the assumptions
 
+	printf("Running members...\n");
+	for (int i = 0; i < ds.membercnt; i++) {
+		setassumptions(cm + i); // This defines the assumptions
+		// run one affiliate
+		run(cm + i);
+		printf(" person %d run\n", i + 1);
+	}
+	printf("Run complete\n");
+
+	// create excel file to print results
+	int tc = 2; // Test case
+	tc -= 1; // Index is one less than given test case
+	printresults(&ds, tc);
+	return 0;
+}
+
+void run(CurrentMember *cm) {
 	//***INITIALISE VARIABLES (k = 0)***
 	//-  Dates and age  -
 	*cm->DOC = cm->DOS;
-	*cm->age = (*cm->DOC)->year - cm->DOB->year +
-		(double)((*cm->DOC)->month - cm->DOB->month - 1)/12;
-	*cm->nDOE = (*cm->DOC)->year - cm->DOE->year +
-		(double)((*cm->DOC)->month - cm->DOE->month - (cm->DOE->day == 1 ? 0 : 1))/12;
-	*cm->nDOA = (*cm->DOC)->year - cm->DOA->year +
-		(double)((*cm->DOC)->month - cm->DOA->month - (cm->DOA->day == 1 ? 0 : 1))/12;
+	*cm->age = calcyears(cm->DOB, *cm->DOC, 1);
+	*cm->nDOE = calcyears(cm->DOE, *cm->DOC, (cm->DOE->day == 1 ? 0 : 1));
+	*cm->nDOA = calcyears(cm->DOA, *cm->DOC, (cm->DOA->day == 1 ? 0 : 1));
 
 	cm->kPx[1] = 1;
 	cm->AFSL[0] = 0;
@@ -122,14 +137,10 @@ int main(int argc, char **argv) {
 
 		//***END PROLONGATION***
 
-		cm->age[k] = cm->DOC[k]->year - cm->DOB->year +
-			(double)(cm->DOC[k]->month - cm->DOB->month - 1)/12;
-		cm->age[k+1] = cm->DOC[k+1]->year - cm->DOB->year +
-			(double)(cm->DOC[k+1]->month - cm->DOB->month - 1)/12;
-		cm->nDOA[k] = cm->DOC[k]->year - cm->DOA->year +
-			(double)(cm->DOC[k]->month - cm->DOA->month - (cm->DOA->day == 1 ? 0 : 1))/12;
-		cm->nDOE[k] = cm->DOC[k]->year - cm->DOE->year +
-			(double)(cm->DOC[k]->month - cm->DOE->month - (cm->DOE->day == 1 ? 0 : 1))/12;
+		cm->age[k] = calcyears(cm->DOB, cm->DOC[k], 1);
+		cm->age[k+1] = calcyears(cm->DOB, cm->DOC[k+1], 1);
+		cm->nDOA[k] = calcyears(cm->DOA, cm->DOC[k], (cm->DOA->day == 1 ? 0 : 1));
+		cm->nDOE[k] = calcyears(cm->DOE, cm->DOC[k], (cm->DOE->day == 1 ? 0 : 1));
 
 		cm->sal[k] = cm->sal[k-1] *
 			pow((1 + salaryscale(cm, k)),
@@ -400,7 +411,4 @@ int main(int argc, char **argv) {
 			cm->kPx[k+1] =
 				cm->kPx[k] * (1 - cm->qx[k]) * (1 - cm->wxdef[k] - cm->wximm[k]) * (1 - cm->retx[k]);
 	}     
-	// create excel file to print results
-	printresults(&ds);
-	return 0;
 }
