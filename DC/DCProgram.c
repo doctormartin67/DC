@@ -142,7 +142,7 @@ void setCMvals(DataSet *ds) {
 				cm[i].DBORET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
 				cm[i].NCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
 				cm[i].ICNCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);		
-			 	for (int l = 0; l < 2; l++) {
+				for (int l = 0; l < 2; l++) {
 					cm[i].EBP[j][k][l] = (double *)malloc(sizeof(double) * MAXPROJ); 
 				}
 				cm[i].PBONCCF[j][k] = (double *)malloc(sizeof(double) * MAXPROJ); 
@@ -486,6 +486,27 @@ int printresults(DataSet *ds) {
 	worksheet_write_string(worksheet, row, col+135, "NC DTH Risk Part", NULL);
 	worksheet_write_string(worksheet, row, col+136, "NC DTH RES Part", NULL);
 
+	// EBP
+	for (int j = 0; j < 3; j++) 
+		for (int i = 0; i < 2; i++) {
+			snprintf(temp, sizeof(temp), "PBO NC CF %s %s",
+					(i == PUC ? "PUC" : "TUC"),
+					(j == PAR115 ? "PAR115" : (j == MATHRES ? "RES" : "PAR113")));
+			worksheet_write_string(worksheet, row, col+137 + j + 3*i, temp, NULL);
+			memset(temp, '\0', sizeof(temp));
+			for (int k = 0; k < 2; k++) {
+				snprintf(temp, sizeof(temp), "EBP %s %s %s",
+						(k == TBO ? "TBO" : "PBO"),
+						(i == PUC ? "PUC" : "TUC"),
+						(j == PAR115 ? "PAR115" : (j == MATHRES ? "RES" : "PAR113")));
+				worksheet_write_string(worksheet, row, col+143 + j + 3*i + 6*k, temp, NULL);
+				memset(temp, '\0', sizeof(temp));
+			}	       
+		}
+	worksheet_write_string(worksheet, row, col+155, "EBP DTH TBO", NULL);
+	worksheet_write_string(worksheet, row, col+156, "EBP DTH PBO", NULL);
+	worksheet_write_string(worksheet, row, col+157, "PBO DTH NC CF", NULL);
+
 	//-  Variables  -
 	lxw_datetime DOC;
 	lxw_format *format = workbook_add_format(workbook);
@@ -591,7 +612,21 @@ int printresults(DataSet *ds) {
 			worksheet_write_number(worksheet, row+2, col+134, ds->cm[0].DBODTHRESPart[row+1] , NULL);
 			worksheet_write_number(worksheet, row+2, col+135, ds->cm[0].NCDTHRiskPart[row+1] , NULL);
 			worksheet_write_number(worksheet, row+2, col+136, ds->cm[0].NCDTHRESPart[row+1] , NULL);
-	}
+
+			// EBP
+			for (int j = 0; j < 3; j++) 
+				for (int i = 0; i < 2; i++) {
+					worksheet_write_number(worksheet, 
+							row+2, col+137 + j + 3*i, ds->cm[0].PBONCCF[i][j][row+1], NULL);
+					for (int k = 0; k < 2; k++) {
+						worksheet_write_number(worksheet, 
+								row+2, col+143 + j + 3*i + 6*k, ds->cm[0].EBP[i][j][k][row+1], NULL);
+					}	       
+				}
+			worksheet_write_number(worksheet, row+2, col+155, ds->cm[0].EBPDTH[TBO][row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+156, ds->cm[0].EBPDTH[PBO][row+1], NULL);
+			worksheet_write_number(worksheet, row+2, col+157, ds->cm[0].PBODTHNCCF[row+1], NULL);
+		}
 		// END SHIFTED VARIABLES
 
 		row++;

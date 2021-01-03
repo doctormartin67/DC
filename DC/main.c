@@ -37,12 +37,17 @@ int main(int argc, char **argv) {
 	cm->AFSL[0] = 0;
 
 	//-  Expected Benefits Paid  -
-	for (int i = 0; i < 2; i++)
-		for (int j = 0; j < 3; j++)
-			for (int k = 0; k < 2; k++) 
-				for (int l = 0; l < MAXPROJ; l++) {
+	for (int l = 0; l < MAXPROJ; l++) {
+		cm->PBODTHNCCF[l] = 0;
+		for (int i = 0; i < 2; i++) {
+			cm->EBPDTH[i][l] = 0;
+			for (int j = 0; j < 3; j++) {
+				cm->PBONCCF[i][j][l] = 0;
+				for (int k = 0; k < 2; k++) 
 					cm->EBP[i][j][k][l] = 0;
-				}
+			}
+		}
+	}
 
 	cm->CAPDTHRESPart[0] = 
 		(cm->tariff == UKMS ? 
@@ -281,8 +286,8 @@ int main(int argc, char **argv) {
 		cm->assets[PAR113][k] =
 			REDCAPTOT[TUC] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn113[k] +
 			RESTOT[TUC] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk113[k];
-		
-		
+
+
 		cm->AFSL[k] = cm->AFSL[k-1] * (cm->wxdef[k] + cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * (cm->age[k] - cm->age[1]); 
 
 		//***DBO CALCULATION - DEATH***
@@ -294,62 +299,102 @@ int main(int argc, char **argv) {
 		cm->NCDTHRiskPart[k] = cm->CAPDTHRiskPart[k] * cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * cm->vk[k]; 
 		cm->ICNCDTHRESPart[k] = cm->CAPDTHRESPart[k] * cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * cm->vk[k] * ass.DR; 
 		cm->ICNCDTHRiskPart[k] = cm->CAPDTHRiskPart[k] * cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * cm->vk[k] * ass.DR; 
-	
+
 		//***EXPECTED BENEFITS PAID***
 		int yearIMM; // year of immediate payment	
 		int yearDEF; // year of deferred payment	
 		double vIMM;
 		double vDEF;
-		yearIMM = calcyears(cm->DOC[k], cm->DOC[1]);
-		yearDEF = max(2, 0.0, calcyears(newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1), cm->DOC[1]));
+		yearIMM = calcyears(cm->DOC[1], cm->DOC[k], 0);
+		yearDEF = max(2, 0.0, calcyears(cm->DOC[1], newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1), 0));
+		//-  EBP yearIMM  -
 		if (yearIMM >= 0) {
-			vIMM = pow(1 + ass.DR, -calcyears(newDate(0, cm->DOC[1]->year + yearIMM, cm->DOC[1]->month, 1), cm->DOC[k]));
+			vIMM = pow(1 + ass.DR, -calcyears(newDate(0, cm->DOC[1]->year + yearIMM, cm->DOC[1]->month, 1), cm->DOC[k], 0));
 			// EBP PUC
-			cm->EBP[PUC][PAR115][TBO][yearIMM] += max(2, ART24TOT[PUC], RESTOT[TUC]) * 
+			cm->EBP[PUC][PAR115][TBO][yearIMM+1] += max(2, ART24TOT[PUC], RESTOT[TUC]) * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->EBP[PUC][PAR115][PBO][yearIMM] += max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]) * 
+			cm->EBP[PUC][PAR115][PBO][yearIMM+1] += max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]) * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->EBP[PUC][MATHRES][TBO][yearIMM] += ART24TOT[PUC] * 
+			cm->EBP[PUC][MATHRES][TBO][yearIMM+1] += ART24TOT[PUC] * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->EBP[PUC][MATHRES][PBO][yearIMM] += ART24TOT[PUC] * cm->FF[k] * 
+			cm->EBP[PUC][MATHRES][PBO][yearIMM+1] += ART24TOT[PUC] * cm->FF[k] * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->EBP[PUC][PAR113][TBO][yearIMM] = cm->EBP[PUC][PAR115][TBO][yearIMM];
-			cm->EBP[PUC][PAR113][PBO][yearIMM] = cm->EBP[PUC][PAR115][PBO][yearIMM];
-			
+			cm->EBP[PUC][PAR113][TBO][yearIMM+1] = cm->EBP[PUC][PAR115][TBO][yearIMM+1];
+			cm->EBP[PUC][PAR113][PBO][yearIMM+1] = cm->EBP[PUC][PAR115][PBO][yearIMM+1];
+
 			// EBP TUC
-			cm->EBP[TUC][PAR115][TBO][yearIMM] += max(2, ART24TOT[TUC], RESTOT[TUC]) * 
+			cm->EBP[TUC][PAR115][TBO][yearIMM+1] += max(2, ART24TOT[TUC], RESTOT[TUC]) * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->EBP[TUC][PAR115][PBO][yearIMM] += max(2, ART24TOT[TUC] ,RESTOT[TUC]) * 
+			cm->EBP[TUC][PAR115][PBO][yearIMM+1] += max(2, ART24TOT[TUC] ,RESTOT[TUC]) * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->EBP[TUC][MATHRES][TBO][yearIMM] += ART24TOT[TUC] * 
+			cm->EBP[TUC][MATHRES][TBO][yearIMM+1] += ART24TOT[TUC] * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->EBP[TUC][MATHRES][PBO][yearIMM] += ART24TOT[TUC] * 
+			cm->EBP[TUC][MATHRES][PBO][yearIMM+1] += ART24TOT[TUC] * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->EBP[TUC][PAR113][TBO][yearIMM] = cm->EBP[TUC][PAR115][TBO][yearIMM];
-			cm->EBP[TUC][PAR113][PBO][yearIMM] = cm->EBP[TUC][PAR115][PBO][yearIMM];
+			cm->EBP[TUC][PAR113][TBO][yearIMM+1] = cm->EBP[TUC][PAR115][TBO][yearIMM+1];
+			cm->EBP[TUC][PAR113][PBO][yearIMM+1] = cm->EBP[TUC][PAR115][PBO][yearIMM+1];
 
 			// PBO NC CF
-			cm->PBONCCF[PUC][PAR115][yearIMM] += ART24TOT[PUC] * cm->FFSC[k] * 
+			cm->PBONCCF[PUC][PAR115][yearIMM+1] += ART24TOT[PUC] * cm->FFSC[k] * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->PBONCCF[PUC][MATHRES][yearIMM] += ART24TOT[PUC] * cm->FFSC[k] * 
+			cm->PBONCCF[PUC][MATHRES][yearIMM+1] += ART24TOT[PUC] * cm->FFSC[k] * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->PBONCCF[PUC][PAR113][yearIMM] = cm->PBONCCF[PUC][PAR115][yearIMM];
-			
-			cm->PBONCCF[TUC][PAR115][yearIMM] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
+			cm->PBONCCF[PUC][PAR113][yearIMM+1] = cm->PBONCCF[PUC][PAR115][yearIMM+1];
+
+			cm->PBONCCF[TUC][PAR115][yearIMM+1] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->PBONCCF[TUC][MATHRES][yearIMM] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
+			cm->PBONCCF[TUC][MATHRES][yearIMM+1] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
 				(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
-			cm->PBONCCF[TUC][PAR113][yearIMM] = cm->PBONCCF[TUC][PAR115][yearIMM];
+			cm->PBONCCF[TUC][PAR113][yearIMM+1] = cm->PBONCCF[TUC][PAR115][yearIMM+1];
 
 			// EBP DTH
-			cm->EBPDTH[TBO][yearIMM] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
+			cm->EBPDTH[TBO][yearIMM+1] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
 				cm->qx[k] * cm->kPx[k] * vIMM;
-			cm->EBPDTH[PBO][yearIMM] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
+			cm->EBPDTH[PBO][yearIMM+1] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
 				cm->FF[k] * cm->qx[k] * cm->kPx[k] * vIMM;
-			cm->PBODTHNCCF[yearIMM] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
+			cm->PBODTHNCCF[yearIMM+1] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
 				cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * vIMM;
-	}
-		
+		}
+		//-  EBP yearDEF  -
+		vDEF = pow(1 + ass.DR, -calcyears(newDate(0, cm->DOC[1]->year + yearDEF, cm->DOC[1]->month, 1),
+					newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1), 0));	
+		// EBP PUC
+		cm->EBP[PUC][PAR115][TBO][yearDEF+1] += max(2, ART24TOT[PUC], REDCAPTOT[TUC]) * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->EBP[PUC][PAR115][PBO][yearDEF+1] += max(2, ART24TOT[PUC] * cm->FF[k], REDCAPTOT[TUC]) * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->EBP[PUC][MATHRES][TBO][yearDEF+1] += ART24TOT[PUC] * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->EBP[PUC][MATHRES][PBO][yearDEF+1] += ART24TOT[PUC] * cm->FF[k] * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->EBP[PUC][PAR113][TBO][yearDEF+1] = cm->EBP[PUC][PAR115][TBO][yearDEF+1];
+		cm->EBP[PUC][PAR113][PBO][yearDEF+1] = cm->EBP[PUC][PAR115][PBO][yearDEF+1];
+
+		// EBP TUC
+		cm->EBP[TUC][PAR115][TBO][yearDEF+1] += max(2, ART24TOT[TUC], REDCAPTOT[TUC]) * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->EBP[TUC][PAR115][PBO][yearDEF+1] += max(2, ART24TOT[TUC] ,REDCAPTOT[TUC]) * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->EBP[TUC][MATHRES][TBO][yearDEF+1] += ART24TOT[TUC] * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->EBP[TUC][MATHRES][PBO][yearDEF+1] += ART24TOT[TUC] * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->EBP[TUC][PAR113][TBO][yearDEF+1] = cm->EBP[TUC][PAR115][TBO][yearDEF+1];
+		cm->EBP[TUC][PAR113][PBO][yearDEF+1] = cm->EBP[TUC][PAR115][PBO][yearDEF+1];
+
+		// PBO NC CF
+		cm->PBONCCF[PUC][PAR115][yearDEF+1] += ART24TOT[PUC] * cm->FFSC[k] * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->PBONCCF[PUC][MATHRES][yearDEF+1] += ART24TOT[PUC] * cm->FFSC[k] * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->PBONCCF[PUC][PAR113][yearDEF+1] = cm->PBONCCF[PUC][PAR115][yearDEF+1];
+
+		cm->PBONCCF[TUC][PAR115][yearDEF+1] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->PBONCCF[TUC][MATHRES][yearDEF+1] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+		cm->PBONCCF[TUC][PAR113][yearDEF+1] = cm->PBONCCF[TUC][PAR115][yearDEF+1];
+
 		// kPx is defined after first loop
 		if (k+1 < MAXPROJ)
 			cm->kPx[k+1] =
