@@ -6,7 +6,7 @@
 
 #define MAXAGE 120
 #define HASHLTSIZE 101
-#define PATH "/home/doctormartin67/Projects/work/tables/tables/"
+#define PATH "/home/doctormartin67/Projects/work/tables/tables/" //needs updating!!
 
 static struct lifetable *list[HASHLTSIZE];
 static unsigned hashlt(char *);
