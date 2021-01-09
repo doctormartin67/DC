@@ -5,47 +5,48 @@
 #include "libraryheader.h"
 
 unsigned hash(char *s) {
-  unsigned hashval;
-  
-  for (hashval = 0; *s != '\0'; s++)
-    hashval = *s + 31 * hashval;
-  return hashval % HASHSIZE;
+	unsigned hashval;
+
+	for (hashval = 0; *s != '\0'; s++)
+		hashval = *s + 31 * hashval;
+	return hashval % HASHSIZE;
 }
 
-Hashtable *get(char *t, Hashtable **list) {
-  Hashtable *pht;
-  char *key;
-  key = upper(t);
-  for (pht = list[hash(key)]; pht != NULL; pht = pht->next)
-    if (strcmp(key, pht->key) == 0) {
-      free(key);
-      return pht;
-    }
-  free(key);
-  return NULL;
+// if casesens is true then the key is case sensitive
+Hashtable *get(unsigned short casesens, char *t, Hashtable **list) {
+	Hashtable *pht;
+	char *key;
+	key = (casesens ? t : upper(t));
+	for (pht = list[hash(key)]; pht != NULL; pht = pht->next)
+		if (strcmp(key, pht->key) == 0) {
+			if (!casesens) free(key);
+			return pht;
+		}
+	if (!casesens) free(key);
+	return NULL;
 }
 
-Hashtable *set(char *t, char *value, Hashtable **list) {
-  Hashtable *pht;
-  unsigned hashval;
-  char *key;
-  key = upper(t);
-  if ((pht = get(key, list)) == NULL) {
-    pht = (Hashtable *) malloc(sizeof(*pht));
-    if (pht == NULL || (pht->key = strdup(key)) == NULL) {
-      free(key);
-      return NULL;
-    }
-    hashval = hash(key);
-    pht->next = list[hashval];
-    list[hashval] = pht;
-  }
-  else
-    free((void *) pht->value);
-  if ((pht->value = strdup(value)) == NULL) {
-    free(key);
-    return NULL;
-  }
-  free(key);
-  return pht;
+Hashtable *set(unsigned short casesens, char *t, char *value, Hashtable **list) {
+	Hashtable *pht;
+	unsigned hashval;
+	char *key;
+	key = (casesens ? t : upper(t));
+	if ((pht = get(casesens, key, list)) == NULL) {
+		pht = (Hashtable *) malloc(sizeof(*pht));
+		if (pht == NULL || (pht->key = strdup(key)) == NULL) {
+			if (!casesens) free(key);
+			return NULL;
+		}
+		hashval = hash(key);
+		pht->next = list[hashval];
+		list[hashval] = pht;
+	}
+	else
+		free((void *) pht->value);
+	if ((pht->value = strdup(value)) == NULL) {
+		if (!casesens) free(key);
+		return NULL;
+	}
+	if (!casesens) free(key);
+	return pht;
 }

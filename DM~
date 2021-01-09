@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [[ $# -ne 1 ]]
-then
-   echo syntax: DM \"Excel file\"
-   exit
-fi
-awk -f DM.awk "$1"
-exit
