@@ -458,22 +458,18 @@ double calcCAP(CurrentMember *cm, int EREE, int gen,
 	double ax;
 
 	// These are used for UKMT and MIXED
-	double axcost; 
-	double Ax1;
+	double axcost = 0;
+	double Ax1 = 0;
 
 	// These are used for UKMT
-	double IAx1;
-	double Iax;
+	double IAx1 = 0;
+	double Iax = 0;
 
 	double value;
 
 	i = lt->i;
 	Ex = nEx(lt->lt, i, tff.costRES, age, RA, 0);
 	ax = axn(lt->lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
-	axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
-	Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
-	IAx1 = IAx1n(lt->lt, i, tff.costRES, age, RA, 0);
-	Iax = Iaxn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
 
 	switch(cm->tariff) {
 		case UKMS :
@@ -486,11 +482,19 @@ double calcCAP(CurrentMember *cm, int EREE, int gen,
 				deltacap * (RA - age) * 12;
 			break;
 		case UKMT :
+			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+			Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
+			IAx1 = IAx1n(lt->lt, i, tff.costRES, age, RA, 0);
+			Iax = Iaxn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+
 			value = (res + prem * (1 - tff.admincost) * ax -
 					capdth * (Ax1 + tff.costKO * axcost) -
 					prem * (1 - tff.admincost) * (IAx1 + tff.costKO * Iax)) / Ex;
 			break;
 		case MIXED :
+			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+			Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
+
 			value = (res + prem * (1 - tff.admincost) * ax) /
 				(Ex + 1.0/cm->X10 * tff.MIXEDPS * (Ax1 + tff.costKO * axcost));
 			break;
@@ -509,12 +513,12 @@ double calcRES(CurrentMember *cm, int EREE, int gen, int k,
 	double ax;
 
 	// These are used for UKMT and MIXED
-	double axcost; 
-	double Ax1;
+	double axcost = 0; 
+	double Ax1 = 0;
 
 	// These are used for UKMT
-	double IAx1;
-	double Iax;
+	double IAx1 = 0;
+	double Iax = 0;
 
 	double value;
 
@@ -522,10 +526,6 @@ double calcRES(CurrentMember *cm, int EREE, int gen, int k,
 	i = lt->i;
 	Ex = nEx(lt->lt, i, tff.costRES, age, RA, 0);
 	ax = axn(lt->lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
-	axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
-	Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
-	IAx1 = IAx1n(lt->lt, i, tff.costRES, age, RA, 0);
-	Iax = Iaxn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
 
 	switch(cm->tariff) {
 		case UKMS :
@@ -538,11 +538,19 @@ double calcRES(CurrentMember *cm, int EREE, int gen, int k,
 				prem * (1 - tff.admincost) * ax;
 			break;
 		case UKMT :
+			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+			Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
+			IAx1 = IAx1n(lt->lt, i, tff.costRES, age, RA, 0);
+			Iax = Iaxn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+
 			value = cap * Ex - prem * (1 - tff.admincost) * ax +
 				capdth * (Ax1 + tff.costKO * axcost) +
 				prem * (1 - tff.admincost) * (IAx1 + tff.costKO * Iax);
 			break;
 		case MIXED :
+			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+			Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
+
 			value = cap * (Ex + 1.0/cm->X10 * tff.MIXEDPS * (Ax1 + tff.costKO * axcost)) -
 				prem * (1 - tff.admincost) * ax;
 			break;
