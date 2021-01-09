@@ -39,9 +39,9 @@ int lx(char *name, int age) {
 
 static void append(char *name) {
 	if (ltcnt == 0) 
-		ltlist = (LifeTable *)malloc(sizeof(LifeTable) * 2);
+		ltlist = (LifeTable *)malloc(sizeof(LifeTable));
 	else
-		ltlist = (LifeTable *)realloc(ltlist, sizeof(LifeTable) * (ltcnt + 2));
+		ltlist = (LifeTable *)realloc(ltlist, sizeof(LifeTable) * (ltcnt + 1));
 
 	snprintf(ltlist[ltcnt].name, sizeof(ltlist[ltcnt].name), "%s", name);
 	makeLifeTable(ltlist[ltcnt].name, ltlist[ltcnt].lt);
