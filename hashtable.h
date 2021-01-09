@@ -1,7 +1,7 @@
 #ifndef HASHTABLE
 #define HASHTABLE
 
-#define HASHSIZE 8209 // I took 8192 and then the next prime number
+#define HASHSIZE 131101 // I took 8192 and then the next prime number
 
 typedef struct hashtable {
   struct hashtable *next;
@@ -9,7 +9,7 @@ typedef struct hashtable {
   char *value;
 } Hashtable;
 
-unsigned hash(char *);
+unsigned long hash(char *);
 // casesens determines whether the key is case sensitive.
 // if it doesn't matter it is suggested to put it equal to
 // 1 because case sensitive is faster

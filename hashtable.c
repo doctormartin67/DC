@@ -4,11 +4,14 @@
 #include "hashtable.h"
 #include "libraryheader.h"
 
-unsigned hash(char *s) {
-	unsigned hashval;
+// djb2 by Dan Bernstein https://stackoverflow.com/questions/7666509/hash-function-for-string
+unsigned long hash(char *s) {
+	unsigned long hashval = 5381;
+	int c;
 
-	for (hashval = 0; *s != '\0'; s++)
-		hashval = *s + 31 * hashval;
+	while (c = *s++)
+		hashval = ((hashval << 5) + hashval) + c; /* hashval * 33 + c */
+
 	return hashval % HASHSIZE;
 }
 
