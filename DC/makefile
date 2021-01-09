@@ -28,9 +28,9 @@ ${TABLEPATH}/lifetable.o : ${LIBPATH}/libraryheader.h ${TABLEPATH}/lifetables.h
 
 ${ACTPATH}/actuarialfunctions.o : ${ACTPATH}/actuarialfunctions.c
 	gcc ${extra} -c -I. -I${TABLEPATH} -I${LIBPATH} $< -o $@
-${ACTPATH}/actuarialfunctions.o : ${ACTPATH}/actuarialfunctions.h ${TABLEPATH}/lifetables.h DCProgram.h
+${ACTPATH}/actuarialfunctions.o : ${ACTPATH}/actuarialfunctions.h ${TABLEPATH}/lifetables.h DCProgram.h ${LIBPATH}/hashtable.h
 
-${libOBJS} : %.o: %.c ${LIBPATH}/libraryheader.h
+${libOBJS} : %.o: %.c ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h
 	gcc ${extra} -c -I${LIBPATH} $< -o $@
 
 DCProgram.o : DCProgram.c
