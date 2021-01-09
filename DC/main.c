@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 	CurrentMember *cm = ds.cm;
 
 	printf("Running members...\n");
-	for (int i = 0; i < ds.membercnt*0 + 20; i++) {
+	for (int i = 0; i < ds.membercnt*0 + 200; i++) {
 		setassumptions(cm + i); // This defines the assumptions
 		// run one affiliate
 		run(cm + i);

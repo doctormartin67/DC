@@ -1,22 +1,34 @@
 #include "actuarialfunctions.h"
+#include "hashtable.h"
 
 const double eps = 0.0000001;
+
+static Hashtable *axntable[HASHSIZE]; // i decided to write tables for them as not
 
 double npx(char *lt, double ageX, double ageXn, int corr){ //lt = life table
 	/* generally the rule is npx = lx(ageXn)/lx(ageX) but because lx has
 	   an integer value as its input we need to interpolate both these
 	   values
 	   */
+
 	double ip1; //interpolation value 1
 	double ip2; //interpolation value 2
-
+	int lxX; // alive at ageX
+	int lxX1; // alive at ageX + 1
+	int lxXn; // alive at ageXn 
+	int lxXn1; // alive at ageXn + 1 
+	char value[128]; // value to return, Hashtable uses char so we need to convert it
 	ageX += corr;
 	ageXn += corr;
 	ageX = fmax(0, ageX);
 	ageXn = fmax(0, ageXn);
+	lxX = lx(lt, ageX);
+	lxX1 = lx(lt, ageX + 1);
+	lxXn = lx(lt, ageXn);
+	lxXn1 = lx(lt, ageXn + 1);
 
-	ip1 = lx(lt, ageX) - (ageX - (int)ageX) * (lx(lt, ageX) - lx(lt, ageX + 1));
-	ip2 = lx(lt, ageXn) - (ageXn - (int)ageXn) * (lx(lt, ageXn) - lx(lt, ageXn + 1));
+	ip1 = lxX - (ageX - (int)ageX) * (lxX - lxX1);
+	ip2 = lxXn - (ageXn - (int)ageXn) * (lxXn - lxXn1);
 
 	return ip2/ip1;
 }
@@ -31,38 +43,45 @@ double nEx(char *lt, double i, double charge, double ageX, double ageXn, int cor
 
 double axn(char *lt, double i, double charge, int prepost, int term,
 		double ageX, double ageXn, int corr){
-	if (12 % term != 0) {
-		printf("An incorrect term was chosen, payments are usually monthly (term = 12)\n");
-		printf("but can also be yearly for example (term = 1). term should be divisible\n");
-		printf("by 12 but \nterm = %d.\n", term);
-		exit(0);
-	}
-	else if (ageX > ageXn + eps) {
-		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
-		printf("axn = 0 is taken in this case.\n");
-		return 0;
-	}
-	else {
-		double ageXk = ageX + (double)prepost/term; // current age in while loop
-		int payments = (int)((ageXn - ageX) * term + eps);
-		double value = 0; //return value;
+	char key[256]; // This is used to search the Hashtable to see whether or not is has already been calculated
+	snprintf(key, sizeof(key), "%s%f%f%d%d%f%f%d", lt, i, charge, prepost, term, ageX, ageXn, corr); 
 
-		while (payments--) {
-			value += nEx(lt, i, charge, ageX, ageXk, corr);
-			ageXk += 1.0/term;
+	if (get(1, key, axntable) == NULL) {
+		if (12 % term != 0) {
+			printf("An incorrect term was chosen, payments are usually monthly (term = 12)\n");
+			printf("but can also be yearly for example (term = 1). term should be divisible\n");
+			printf("by 12 but \nterm = %d.\n", term);
+			exit(0);
 		}
-		/* There is a final portion that needs to be added when the amount of payments don't consider
-		   fractions of age, for example if ageX = 40 and ageXn = 40,5 and term = 1. This would give 0 
-		   payments but we still need to add nEx/2 in this case.
-		   We also need to subtract one term from ageXk because the while loop adds one too many.
-		   */    
-		ageXk -= 1.0/term * prepost;
-		value /= term;
-		value += (ageXn - ageXk) *
-			nEx(lt, i, charge, ageX,
-					(double)((int)(ageXn*term + eps))/term + term*prepost, corr);
-		return value;
+		else if (ageX > ageXn + eps) {
+			printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
+			printf("axn = 0 is taken in this case.\n");
+			return 0;
+		}
+		else {
+			double ageXk = ageX + (double)prepost/term; // current age in while loop
+			int payments = (int)((ageXn - ageX) * term + eps);
+			double value = 0; //return value;
+			char valuestr[128];
+			while (payments--) {
+				value += nEx(lt, i, charge, ageX, ageXk, corr);
+				ageXk += 1.0/term;
+			}
+			/* There is a final portion that needs to be added when the amount of payments don't consider
+			   fractions of age, for example if ageX = 40 and ageXn = 40,5 and term = 1. This would give 0 
+			   payments but we still need to add nEx/2 in this case.
+			   We also need to subtract one term from ageXk because the while loop adds one too many.
+			   */    
+			ageXk -= 1.0/term * prepost;
+			value /= term;
+			value += (ageXn - ageXk) *
+				nEx(lt, i, charge, ageX,
+						(double)((int)(ageXn*term + eps))/term + term*prepost, corr);
+			snprintf(valuestr, sizeof(valuestr), "%f", value);
+			set(1, key, valuestr, axntable);
+		}
 	}
+	return atof(get(1, key, axntable)->value);
 }
 
 double Ax1n(char *lt, double i, double charge, double ageX, double ageXn, int corr){

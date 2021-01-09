@@ -348,7 +348,7 @@ void createData(DataSet *ds) {
 
 		// Set the initial data (KEY)
 		data = cell(fp, dataCell, ds->xl);
-		set(*(ds->keys), data, *(ds->Data + i));
+		set(0, *(ds->keys), data, *(ds->Data + i));
 		nextcol(dataCell);
 		// Set index of keys to 1 at the start of loop
 		countkeys = 1;
@@ -361,13 +361,13 @@ void createData(DataSet *ds) {
 			fgets(line, sizeof(line), fp);
 			while ((data = valueincell(ds->xl, line, dataCell)) == NULL) {
 
-				set(*(ds->keys + countkeys), "0", *(ds->Data + i));
+				set(0, *(ds->keys + countkeys), "0", *(ds->Data + i));
 				// Here we update cell for loop, for example O11 becomes P11
 				countkeys++;
 				nextcol(dataCell);
 			}
 
-			set(*(ds->keys + countkeys), data, *(ds->Data + i));
+			set(0, *(ds->keys + countkeys), data, *(ds->Data + i));
 
 			// Here we update cell for loop, for example O11 becomes P11
 			countkeys++;
@@ -640,7 +640,7 @@ int printresults(DataSet *ds, int tc) {
 		worksheet_write_string(worksheet, row, col, *(ds->keys + col), NULL);
 		while (row < ds->membercnt) {
 			worksheet_write_string(worksheet, row+1, col,
-					get(*(ds->keys + col), *(ds->Data + row))->value, NULL);
+					get(0, *(ds->keys + col), *(ds->Data + row))->value, NULL);
 			row++;
 		}
 		col++;
@@ -664,14 +664,14 @@ int printresults(DataSet *ds, int tc) {
 }
 
 char *getcmval(CurrentMember *cm, char *value) {
-	if (get(value, cm->Data) == NULL) {
+	if (get(0, value, cm->Data) == NULL) {
 		printf("warning: '%s' not found in the set of keys given, ", value);
 		printf("make sure your column name is correct\n");
 		printf("Using 0 by default.\n");
 		return "0";
 	}
 	else
-		return get(value, cm->Data)->value;
+		return get(0, value, cm->Data)->value;
 }
 
 // Example if cm->PREMIUM then s = PREMIUM and we loop through PREMIUM_EREE_GENj
