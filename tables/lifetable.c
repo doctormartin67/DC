@@ -12,7 +12,7 @@ typedef struct lifetable {
 	int lt[MAXAGE];
 } LifeTable;
 
-static unsigned short ltcnt;
+static unsigned short ltcnt; // This is updated in makeLifeTable
 static LifeTable *ltlist;
 
 static void append(char *);
@@ -25,12 +25,10 @@ int lx(char *name, int age) {
 	if (age > MAXAGE)
 		return 0;
 	else {
-		int i = 0;
-		while (i < ltcnt) {
+		while (ltlist != NULL && lt - ltlist < ltcnt) {
 			if (strcmp(lt->name, name) == 0)
 				return lt->lt[age];	
 			lt++;
-			i++;
 		}
 		append(name);
 		lx(name, age);	
@@ -39,9 +37,9 @@ int lx(char *name, int age) {
 
 static void append(char *name) {
 	if (ltcnt == 0) 
-		ltlist = (LifeTable *)malloc(sizeof(LifeTable));
+		ltlist = (LifeTable *)malloc(sizeof(LifeTable) * 2);
 	else
-		ltlist = (LifeTable *)realloc(ltlist, sizeof(LifeTable) * (ltcnt + 1));
+		ltlist = (LifeTable *)realloc(ltlist, sizeof(LifeTable) * (ltcnt + 2));
 
 	snprintf(ltlist[ltcnt].name, sizeof(ltlist[ltcnt].name), "%s", name);
 	makeLifeTable(ltlist[ltcnt].name, ltlist[ltcnt].lt);
