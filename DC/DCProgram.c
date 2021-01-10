@@ -96,9 +96,9 @@ void setCMvals(DataSet *ds) {
 		*cm[i].DELTACAP[EE] = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
 		cm[i].X10 = atof(getcmval(&cm[i], "X/10"));
 		if (cm[i].tariff == MIXED && cm[i].X10 == 0) {
-			printf("ERROR: X/10 equals zero for %s but he has a MIXED contract\n", cm[i].key);
-			printf("Fix this and try again.\n Exiting...");
-			exit(0);
+			printf("Warning: X/10 equals zero for %s but he has a MIXED contract\n", cm[i].key);
+			printf("X/10 will be taken as 1 by default.\n");
+			cm[i].X10 = 1;
 		}
 		cm[i].CAO = atof(getcmval(&cm[i], "CAO"));
 		cm[i].ORU = getcmval(&cm[i], "ORU");

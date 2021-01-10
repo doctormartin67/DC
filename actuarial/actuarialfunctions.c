@@ -227,7 +227,6 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 			0, 0, 0,
 			RA, NRA(cm, k+1), &tff.ltProlongAfterTRM[EREE]);
 
-
 	//---TUC RESERVES---
 	RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
 	i = cm->TAUX[EREE][gen];
@@ -270,7 +269,6 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 				RA, cm->NRA, &tff.ltProlongAfterTRM[EREE]);    
 	}
 	else {
-		RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
 		cap = calcCAP(cm, EREE, gen,
 				cm->RES[PUC][EREE][gen][1],
 				0, 0,
@@ -312,6 +310,7 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
 				NRA(cm, k+1), &tff.ltProlongAfterTRM[EREE]);
 	}
 	//---TUCPS_1 RESERVES---
+	RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
 	cap = calcCAP(cm, EREE, gen,
 			cm->RES[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)],
 			0, 0,
