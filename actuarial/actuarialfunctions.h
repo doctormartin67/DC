@@ -9,16 +9,16 @@
 /*
 Definitions:
 - lt is the name of a life table that gets put in a hashtable to be called.
-  within the hash table element there is a int array with lx values. These lx 
-  values define the amount of people alive at a certain age (the array index).
+within the hash table element there is a int array with lx values. These lx 
+values define the amount of people alive at a certain age (the array index).
 - ageX is the age to start.
 - ageXn is the age to finish at.
 - corr is a correction that can be made with age. For example corr = -5 would mean ageX-=5
-  and ageXn-=5
+and ageXn-=5
 - i is the discount rate.
 - charge is a possible charge that an insurance company or another entity might charge on
-  the discount rate.
- */
+the discount rate.
+*/
 
 // npx is the chance for some of age ageX to live until the age of ageXn
 double npx(char *lt, double ageX, double ageXn, int corr);
@@ -31,19 +31,19 @@ double nEx(char *lt, double i, double charge, double ageX, double ageXn, int cor
 // prepost determines whether we pay straight away (prepost = 0) or after the first term ends
 // (prepost = 1). 
 double axn(char *lt, double i, double charge, int prepost, int term,
-	   double ageX, double ageXn, int corr);
+		double ageX, double ageXn, int corr);
 
 // discounted yearly payments in case of death
 double Ax1n(char *lt, double i, double charge, double ageX, double ageXn,
-	    int corr);
+		int corr);
 
 // discounted yearly payments in case of death where the payments are cummulative
 // (1 + 2 + 3 + ... + n instead of 1 + 1 + 1 + ... + 1)
 double IAx1n(char *lt, double i, double charge, double ageX, double ageXn,
-	    int corr);
+		int corr);
 
 double Iaxn(char *lt, double i, double charge, int prepost, int term,
-	   double ageX, double ageXn, int corr);
+		double ageX, double ageXn, int corr);
 
 // Update the current iteration (k) of death lump sum, employer-employee, generation
 void evolCAPDTH(CurrentMember *cm, int EREE, int gen, int k);
@@ -58,12 +58,15 @@ void evolART24(CurrentMember *cm, int k);
 
 // calculate the capital life (lump sum) given reserves and contributions
 double calcCAP(CurrentMember *cm, int EREE, int gen,
-	       double res, double prem, double deltacap, double capdth,
-	       double age, double RA, LifeTable *lt);
+		double res, double prem, double deltacap, double capdth,
+		double age, double RA, LifeTable *lt);
 
 // calculate the reserves given capital life (lump sum) and contributions
 double calcRES(CurrentMember *cm, int EREE, int gen, int k,
-	       double cap, double prem, double deltacap, double capdth,
-	       double age, LifeTable *lt);
+		double cap, double prem, double deltacap, double capdth,
+		double age, LifeTable *lt);
 
+// update all the DBO's, NC's, IC's and plan assets at iteration k
+void evolDBONCIC(CurrentMember *cm, int k, 
+		double ART24TOT[], double RESTOT[], double REDCAPTOT[]);
 #endif

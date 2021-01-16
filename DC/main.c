@@ -235,69 +235,8 @@ void run(CurrentMember *cm) {
 		cm->vk113[k] = pow(1 + ass.DR113, -(cm->age[k] - cm->age[1]));
 		cm->vn113[k] = pow(1 + ass.DR113, -(NRA(cm, k) - cm->age[1]));    
 
-		// Calculation
-		// DBO PUC
-		cm->DBORET[PUC][PAR115][k] =
-			max(2, ART24TOT[PUC] * cm->FF[k], REDCAPTOT[TUC]) *
-			cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
-			max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]) *
-			(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
-
-		cm->DBORET[PUC][MATHRES][k] =
-			ART24TOT[PUC] * cm->FF[k] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
-			ART24TOT[PUC] * cm->FF[k] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
-
-		cm->DBORET[PUC][PAR113][k] = cm->DBORET[PUC][PAR115][k];
-
-		// DBO TUC
-		cm->DBORET[TUC][PAR115][k] =
-			max(2, ART24TOT[TUC], REDCAPTOT[TUC]) * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
-			max(2, ART24TOT[TUC], RESTOT[TUC]) * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
-
-		cm->DBORET[TUC][MATHRES][k] =
-			ART24TOT[TUC] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
-			ART24TOT[TUC] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
-
-		cm->DBORET[TUC][PAR113][k] = cm->DBORET[TUC][PAR115][k];
-
-		// NC PUC
-		cm->NCRET[PUC][PAR115][k] =
-			ART24TOT[PUC] * cm->FFSC[k] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
-			ART24TOT[PUC] * cm->FFSC[k] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
-
-		cm->NCRET[PUC][PAR113][k] = cm->NCRET[PUC][MATHRES][k] = cm->NCRET[PUC][PAR115][k];
-
-		// NC TUC
-		cm->NCRET[TUC][PAR115][k] =
-			(ART24TOT[TUCPS_1] - ART24TOT[TUC]) * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
-			(ART24TOT[TUCPS_1] - ART24TOT[TUC]) * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
-
-		cm->NCRET[TUC][PAR113][k] = cm->NCRET[TUC][MATHRES][k] = cm->NCRET[TUC][PAR115][k];
-
-		// IC NC PUC
-		cm->ICNCRET[PUC][PAR115][k] =
-			ART24TOT[PUC] * cm->FFSC[k] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] * ass.DR +
-			ART24TOT[PUC] * cm->FFSC[k] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k] * ass.DR;
-
-		cm->ICNCRET[PUC][PAR113][k] = cm->ICNCRET[PUC][MATHRES][k] = cm->ICNCRET[PUC][PAR115][k];
-
-		// IC NC TUC
-		cm->ICNCRET[TUC][PAR115][k] =
-			(ART24TOT[TUCPS_1] - ART24TOT[TUC]) *
-			cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] * ass.DR+
-			(ART24TOT[TUCPS_1] - ART24TOT[TUC]) *
-			(cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k] * ass.DR;
-
-		cm->ICNCRET[TUC][PAR113][k] = cm->ICNCRET[TUC][MATHRES][k] = cm->ICNCRET[TUC][PAR115][k];
-
-		// Plan Assets
-		cm->assets[PAR115][k] =
-			REDCAPTOT[TUC] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k] +
-			RESTOT[TUC] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
-		cm->assets[PAR113][k] =
-			REDCAPTOT[TUC] * cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn113[k] +
-			RESTOT[TUC] * (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk113[k];
-
+		// All DBO's, NC's, IC's and plan assets are updated here
+		evolDBONCIC(cm, k, ART24TOT, RESTOT, REDCAPTOT);
 
 		cm->AFSL[k] = cm->AFSL[k-1] * (cm->wxdef[k] + cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * (cm->age[k] - cm->age[1]); 
 
@@ -403,7 +342,7 @@ void run(CurrentMember *cm) {
 		cm->PBONCCF[TUC][PAR115][yearDEF+1] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
 			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
 		cm->PBONCCF[TUC][MATHRES][yearDEF+1] += (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * 
-			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+			cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;
 		cm->PBONCCF[TUC][PAR113][yearDEF+1] = cm->PBONCCF[TUC][PAR115][yearDEF+1];
 
 		// kPx is defined after first loop

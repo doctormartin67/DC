@@ -3,7 +3,9 @@
 
 const double eps = 0.0000001;
 
-static Hashtable *axntable[HASHSIZE]; // i decided to write tables for them as not
+static Hashtable *axntable[HASHSIZE]; /* This is used so that axn gets saved and doesn't
+					 have to be calculated over and over for the same
+					 arguments. */
 
 double npx(char *lt, double ageX, double ageXn, int corr){ //lt = life table
 	/* generally the rule is npx = lx(ageXn)/lx(ageX) but because lx has
@@ -61,8 +63,8 @@ double axn(char *lt, double i, double charge, int prepost, int term,
 		else {
 			double ageXk = ageX + (double)prepost/term; // current age in while loop
 			int payments = (int)((ageXn - ageX) * term + eps);
-			double value = 0; //return value;
-			char valuestr[128];
+			double value = 0; // return value
+			char valuestr[128]; // return value as string to input in hashtable
 			while (payments--) {
 				value += nEx(lt, i, charge, ageX, ageXk, corr);
 				ageXk += 1.0/term;
@@ -554,9 +556,52 @@ double calcRES(CurrentMember *cm, int EREE, int gen, int k,
 				prem * (1 - tff.admincost) * ax;
 			break;
 	}
-
 	return value;
-
 }
 
+void evolDBONCIC(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], double REDCAPTOT[]) {
 
+	double probfactdef; // probability factors for deferred payment
+	double probfactimm; // probability factors for immediate payment
+	
+	probfactdef = cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k];
+	probfactimm = (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
+
+	// DBO PUC
+	cm->DBORET[PUC][PAR115][k] =
+		max(2, ART24TOT[PUC] * cm->FF[k], REDCAPTOT[TUC]) * probfactdef +
+		max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]) * probfactimm;
+
+	cm->DBORET[PUC][MATHRES][k] = ART24TOT[PUC] * cm->FF[k] * (probfactdef + probfactimm);
+	cm->DBORET[PUC][PAR113][k] = cm->DBORET[PUC][PAR115][k];
+
+	// DBO TUC
+	cm->DBORET[TUC][PAR115][k] =
+		max(2, ART24TOT[TUC], REDCAPTOT[TUC]) * probfactdef +
+		max(2, ART24TOT[TUC], RESTOT[TUC]) * probfactimm;
+
+	cm->DBORET[TUC][MATHRES][k] = ART24TOT[TUC] * (probfactdef + probfactimm);
+	cm->DBORET[TUC][PAR113][k] = cm->DBORET[TUC][PAR115][k];
+
+	// NC PUC
+	cm->NCRET[PUC][PAR115][k] = ART24TOT[PUC] * cm->FFSC[k] * (probfactdef + probfactimm);
+	cm->NCRET[PUC][PAR113][k] = cm->NCRET[PUC][MATHRES][k] = cm->NCRET[PUC][PAR115][k];
+
+	// NC TUC
+	cm->NCRET[TUC][PAR115][k] = (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * (probfactdef + probfactimm);
+	cm->NCRET[TUC][PAR113][k] = cm->NCRET[TUC][MATHRES][k] = cm->NCRET[TUC][PAR115][k];
+
+	// IC NC PUC
+	cm->ICNCRET[PUC][PAR115][k] = ART24TOT[PUC] * cm->FFSC[k] * ass.DR * (probfactdef + probfactimm);
+	cm->ICNCRET[PUC][PAR113][k] = cm->ICNCRET[PUC][MATHRES][k] = cm->ICNCRET[PUC][PAR115][k];
+
+	// IC NC TUC
+	cm->ICNCRET[TUC][PAR115][k] = (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * ass.DR * (probfactdef + probfactimm); 
+	cm->ICNCRET[TUC][PAR113][k] = cm->ICNCRET[TUC][MATHRES][k] = cm->ICNCRET[TUC][PAR115][k];
+
+	// Plan Assets
+	cm->assets[PAR115][k] = REDCAPTOT[TUC] * probfactdef + RESTOT[TUC] * probfactimm;
+	cm->assets[PAR113][k] =
+		REDCAPTOT[TUC] * probfactdef / cm->vn[k] * cm->vn113[k] +
+		RESTOT[TUC] * probfactimm / cm->vk[k] * cm->vk113[k];
+}
