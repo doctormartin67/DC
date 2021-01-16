@@ -6,6 +6,13 @@
 #include "lifetables.h"
 #include "DCProgram.h"
 
+#define DBO 0
+#define NC 1
+#define IC 2
+#define ASSETS 3
+#define DEF 0
+#define IMM 1
+
 /*
 Definitions:
 - lt is the name of a life table that gets put in a hashtable to be called.
@@ -69,4 +76,13 @@ double calcRES(CurrentMember *cm, int EREE, int gen, int k,
 // update all the DBO's, NC's, IC's and plan assets at iteration k
 void evolDBONCIC(CurrentMember *cm, int k, 
 		double ART24TOT[], double RESTOT[], double REDCAPTOT[]);
+
+// This is used as a help function to retrieve the appropriate amount
+// for the formula
+double getamount(CurrentMember *cm,  int k,  
+		unsigned short DBONCICASS,  
+		unsigned short method,  
+		unsigned short assets,  
+		unsigned short DEFIMM, 
+		double ART24TOT[], double RESTOT[], double REDCAPTOT[]); 
 #endif

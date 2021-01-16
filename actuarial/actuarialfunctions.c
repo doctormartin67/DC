@@ -563,45 +563,100 @@ void evolDBONCIC(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], d
 
 	double probfactdef; // probability factors for deferred payment
 	double probfactimm; // probability factors for immediate payment
+	double amountdef;
+	double amountimm;
 	
 	probfactdef = cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k];
 	probfactimm = (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
 
-	// DBO PUC
-	cm->DBORET[PUC][PAR115][k] =
-		max(2, ART24TOT[PUC] * cm->FF[k], REDCAPTOT[TUC]) * probfactdef +
-		max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]) * probfactimm;
+	// DBO, NC, IC
+	for (int i = 0; i < 2; i++) {
+		for (int j; j < 3; j++) {
+			amountdef = getamount(cm, k, DBO, i, j, DEF, ART24TOT, RESTOT, REDCAPTOT);
+			amountimm = getamount(cm, k, DBO, i, j, IMM, ART24TOT, RESTOT, REDCAPTOT);
+			cm->DBORET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
 
-	cm->DBORET[PUC][MATHRES][k] = ART24TOT[PUC] * cm->FF[k] * (probfactdef + probfactimm);
-	cm->DBORET[PUC][PAR113][k] = cm->DBORET[PUC][PAR115][k];
+			amountdef = getamount(cm, k, NC, i, j, DEF, ART24TOT, RESTOT, REDCAPTOT);
+			amountimm = getamount(cm, k, NC, i, j, IMM, ART24TOT, RESTOT, REDCAPTOT);
+			cm->NCRET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
 
-	// DBO TUC
-	cm->DBORET[TUC][PAR115][k] =
-		max(2, ART24TOT[TUC], REDCAPTOT[TUC]) * probfactdef +
-		max(2, ART24TOT[TUC], RESTOT[TUC]) * probfactimm;
+			amountdef = getamount(cm, k, IC, i, j, DEF, ART24TOT, RESTOT, REDCAPTOT);
+			amountimm = getamount(cm, k, IC, i, j, IMM, ART24TOT, RESTOT, REDCAPTOT);
+			cm->ICNCRET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
+		}
+		amountdef = getamount(cm, k, ASSETS, 0, PAR113*i, DEF, ART24TOT, RESTOT, REDCAPTOT);
+		amountimm = getamount(cm, k, ASSETS, 0, PAR113*i, IMM, ART24TOT, RESTOT, REDCAPTOT);
+		cm->assets[PAR113*i][k] = amountdef * probfactdef + amountimm * probfactimm;
+	}	
+}
 
-	cm->DBORET[TUC][MATHRES][k] = ART24TOT[TUC] * (probfactdef + probfactimm);
-	cm->DBORET[TUC][PAR113][k] = cm->DBORET[TUC][PAR115][k];
+double getamount(CurrentMember *cm,  int k,  
+		unsigned short DBONCICASS,  
+		unsigned short method,  
+		unsigned short assets,  
+		unsigned short DEFIMM, 
+		double ART24TOT[], double RESTOT[], double REDCAPTOT[]) {
 
-	// NC PUC
-	cm->NCRET[PUC][PAR115][k] = ART24TOT[PUC] * cm->FFSC[k] * (probfactdef + probfactimm);
-	cm->NCRET[PUC][PAR113][k] = cm->NCRET[PUC][MATHRES][k] = cm->NCRET[PUC][PAR115][k];
-
-	// NC TUC
-	cm->NCRET[TUC][PAR115][k] = (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * (probfactdef + probfactimm);
-	cm->NCRET[TUC][PAR113][k] = cm->NCRET[TUC][MATHRES][k] = cm->NCRET[TUC][PAR115][k];
-
-	// IC NC PUC
-	cm->ICNCRET[PUC][PAR115][k] = ART24TOT[PUC] * cm->FFSC[k] * ass.DR * (probfactdef + probfactimm);
-	cm->ICNCRET[PUC][PAR113][k] = cm->ICNCRET[PUC][MATHRES][k] = cm->ICNCRET[PUC][PAR115][k];
-
-	// IC NC TUC
-	cm->ICNCRET[TUC][PAR115][k] = (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * ass.DR * (probfactdef + probfactimm); 
-	cm->ICNCRET[TUC][PAR113][k] = cm->ICNCRET[TUC][MATHRES][k] = cm->ICNCRET[TUC][PAR115][k];
-
-	// Plan Assets
-	cm->assets[PAR115][k] = REDCAPTOT[TUC] * probfactdef + RESTOT[TUC] * probfactimm;
-	cm->assets[PAR113][k] =
-		REDCAPTOT[TUC] * probfactdef / cm->vn[k] * cm->vn113[k] +
-		RESTOT[TUC] * probfactimm / cm->vk[k] * cm->vk113[k];
+	switch (DBONCICASS) {
+		case DBO :
+			switch (method) {
+				case PUC :
+					switch (assets) {
+						case PAR113 :
+						case PAR115 :
+							switch (DEFIMM) {
+								case DEF :
+									return max(2, ART24TOT[PUC] * cm->FF[k], REDCAPTOT[TUC]); 
+								case IMM :
+									return max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]);
+							}
+						case MATHRES :
+							return ART24TOT[PUC] * cm->FF[k];
+					}
+				case TUC :
+					switch (assets) {
+						case PAR113 :
+						case PAR115 :
+							switch (DEFIMM) {
+								case DEF :
+									return max(2, ART24TOT[TUC], REDCAPTOT[TUC]);
+								case IMM :
+									return max(2, ART24TOT[TUC], RESTOT[TUC]); 
+							}
+						case MATHRES :
+							return ART24TOT[TUC];
+					}
+			}
+		case NC :
+			switch (method) {
+				case PUC :
+					return ART24TOT[PUC] * cm->FFSC[k];
+				case TUC :
+					return (ART24TOT[TUCPS_1] - ART24TOT[TUC]);
+			}
+		case IC :
+			switch (method) {
+				case PUC :
+					return ART24TOT[PUC] * cm->FFSC[k] * ass.DR;
+				case TUC :
+					return (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * ass.DR;
+			}
+		case ASSETS :
+			switch (assets) {
+				case PAR113 :
+					switch (DEFIMM) {
+						case DEF :
+							return REDCAPTOT[TUC] / cm->vn[k] * cm->vn113[k];
+						case IMM :
+							return RESTOT[TUC] / cm->vk[k] * cm->vk113[k];
+					}
+				case PAR115 :
+					switch (DEFIMM) {
+						case DEF :
+							return REDCAPTOT[TUC];
+						case IMM :
+							return RESTOT[TUC];
+					}
+			}
+	}
 }
