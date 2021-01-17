@@ -571,7 +571,7 @@ void evolDBONCIC(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], d
 
 	// DBO, NC, IC
 	for (int i = 0; i < 2; i++) {
-		for (int j; j < 3; j++) {
+		for (int j = 0; j < 3; j++) {
 			amountdef = getamount(cm, k, DBO, i, j, DEF, ART24TOT, RESTOT, REDCAPTOT);
 			amountimm = getamount(cm, k, DBO, i, j, IMM, ART24TOT, RESTOT, REDCAPTOT);
 			cm->DBORET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
@@ -609,9 +609,15 @@ double getamount(CurrentMember *cm,  int k,
 									return max(2, ART24TOT[PUC] * cm->FF[k], REDCAPTOT[TUC]); 
 								case IMM :
 									return max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]);
+								default :
+									printf("ERROR: DEFIMM = %d, but expected %d or %d\n", DEFIMM, DEF, IMM);
+									exit(1);
 							}
 						case MATHRES :
 							return ART24TOT[PUC] * cm->FF[k];
+						default :
+							printf("ERROR: assets = %d, but expected %d, %d or %d\n", assets, PAR113, PAR115, MATHRES);
+							exit(1);
 					}
 				case TUC :
 					switch (assets) {
@@ -622,10 +628,19 @@ double getamount(CurrentMember *cm,  int k,
 									return max(2, ART24TOT[TUC], REDCAPTOT[TUC]);
 								case IMM :
 									return max(2, ART24TOT[TUC], RESTOT[TUC]); 
+								default :
+									printf("ERROR: DEFIMM = %d, but expected %d or %d\n", DEFIMM, DEF, IMM);
+									exit(1);
 							}
 						case MATHRES :
 							return ART24TOT[TUC];
+						default :
+							printf("ERROR: assets = %d, but expected %d, %d or %d\n", assets, PAR113, PAR115, MATHRES);
+							exit(1);
 					}
+				default :
+					printf("ERROR: method = %d, but expected %d or %d\n", method, PUC, TUC);
+					exit(1);
 			}
 		case NC :
 			switch (method) {
@@ -633,6 +648,9 @@ double getamount(CurrentMember *cm,  int k,
 					return ART24TOT[PUC] * cm->FFSC[k];
 				case TUC :
 					return (ART24TOT[TUCPS_1] - ART24TOT[TUC]);
+				default :
+					printf("ERROR: method = %d, but expected %d or %d\n", method, PUC, TUC);
+					exit(1);
 			}
 		case IC :
 			switch (method) {
@@ -640,6 +658,9 @@ double getamount(CurrentMember *cm,  int k,
 					return ART24TOT[PUC] * cm->FFSC[k] * ass.DR;
 				case TUC :
 					return (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * ass.DR;
+				default :
+					printf("ERROR: method = %d, but expected %d or %d\n", method, PUC, TUC);
+					exit(1);
 			}
 		case ASSETS :
 			switch (assets) {
@@ -649,6 +670,9 @@ double getamount(CurrentMember *cm,  int k,
 							return REDCAPTOT[TUC] / cm->vn[k] * cm->vn113[k];
 						case IMM :
 							return RESTOT[TUC] / cm->vk[k] * cm->vk113[k];
+						default :
+							printf("ERROR: DEFIMM = %d, but expected %d or %d\n", DEFIMM, DEF, IMM);
+							exit(1);
 					}
 				case PAR115 :
 					switch (DEFIMM) {
@@ -656,7 +680,14 @@ double getamount(CurrentMember *cm,  int k,
 							return REDCAPTOT[TUC];
 						case IMM :
 							return RESTOT[TUC];
+						default :
+							printf("ERROR: DEFIMM = %d, but expected %d or %d\n", DEFIMM, DEF, IMM);
+							exit(1);
 					}
+				default :
+					printf("ERROR: assets = %d, but expected %d or %d\n", assets, PAR113, PAR115);
+					exit(1);
+
 			}
 	}
 }
