@@ -17,7 +17,6 @@ unsigned long hash(char *s) {
 
 // if casesens is true then the key is case sensitive
 Hashtable *get(unsigned short casesens, char *t, Hashtable **list) {
-	static unsigned long colcnt;
 	Hashtable *pht;
 	char *key;
 	unsigned long hashval;
@@ -26,11 +25,6 @@ Hashtable *get(unsigned short casesens, char *t, Hashtable **list) {
 		if (strcmp(key, pht->key) == 0) {
 			if (!casesens) free(key);
 			return pht;
-		}
-		static unsigned short i = 1;
-		if (++colcnt > 100000 * i) {
-			printf("collision: %ld\n", colcnt);
-			i++;
 		}
 	}
 	if (!casesens) free(key);
