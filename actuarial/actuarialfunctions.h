@@ -77,6 +77,10 @@ double calcRES(CurrentMember *cm, int EREE, int gen, int k,
 void evolDBONCIC(CurrentMember *cm, int k, 
 		double ART24TOT[], double RESTOT[], double REDCAPTOT[]);
 
+// update EBP cashflows
+void evolEBP(CurrentMember *cm, int k, 
+		double ART24TOT[], double RESTOT[], double REDCAPTOT[]);
+
 // This is used as a help function to retrieve the appropriate amount
 // for the formula
 double getamount(CurrentMember *cm,  int k,  
@@ -84,5 +88,6 @@ double getamount(CurrentMember *cm,  int k,
 		unsigned short method,  
 		unsigned short assets,  
 		unsigned short DEFIMM, 
+		unsigned short PBOTBO,
 		double ART24TOT[], double RESTOT[], double REDCAPTOT[]); 
 #endif

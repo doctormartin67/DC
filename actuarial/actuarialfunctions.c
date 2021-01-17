@@ -572,22 +572,77 @@ void evolDBONCIC(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], d
 	// DBO, NC, IC
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 3; j++) {
-			amountdef = getamount(cm, k, DBO, i, j, DEF, ART24TOT, RESTOT, REDCAPTOT);
-			amountimm = getamount(cm, k, DBO, i, j, IMM, ART24TOT, RESTOT, REDCAPTOT);
+			amountdef = getamount(cm, k, DBO, i, j, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
+			amountimm = getamount(cm, k, DBO, i, j, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
 			cm->DBORET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
 
-			amountdef = getamount(cm, k, NC, i, j, DEF, ART24TOT, RESTOT, REDCAPTOT);
-			amountimm = getamount(cm, k, NC, i, j, IMM, ART24TOT, RESTOT, REDCAPTOT);
+			amountdef = getamount(cm, k, NC, i, j, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
+			amountimm = getamount(cm, k, NC, i, j, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
 			cm->NCRET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
 
-			amountdef = getamount(cm, k, IC, i, j, DEF, ART24TOT, RESTOT, REDCAPTOT);
-			amountimm = getamount(cm, k, IC, i, j, IMM, ART24TOT, RESTOT, REDCAPTOT);
+			amountdef = getamount(cm, k, IC, i, j, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
+			amountimm = getamount(cm, k, IC, i, j, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
 			cm->ICNCRET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
 		}
-		amountdef = getamount(cm, k, ASSETS, 0, PAR113*i, DEF, ART24TOT, RESTOT, REDCAPTOT);
-		amountimm = getamount(cm, k, ASSETS, 0, PAR113*i, IMM, ART24TOT, RESTOT, REDCAPTOT);
+		amountdef = getamount(cm, k, ASSETS, 0, PAR113*i, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
+		amountimm = getamount(cm, k, ASSETS, 0, PAR113*i, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
 		cm->assets[PAR113*i][k] = amountdef * probfactdef + amountimm * probfactimm;
 	}	
+}
+
+void evolEBP(CurrentMember *cm, int k, 
+		double ART24TOT[], double RESTOT[], double REDCAPTOT[]) {
+
+	double probfactdef; // probability factors for deferred payment
+	double probfactimm; // probability factors for immediate payment
+	double amountdef;
+	double amountimm;
+	int yearIMM; // year of immediate payment	
+	int yearDEF; // year of deferred payment	
+	double vIMM;
+	double vDEF;
+
+	yearIMM = calcyears(cm->DOC[1], cm->DOC[k], 0);
+	yearDEF = max(2, 0.0, calcyears(cm->DOC[1], newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1), 0));
+	
+	//-  EBP yearIMM  -
+	if (yearIMM >= 0) {
+		vIMM = pow(1 + ass.DR, -calcyears(newDate(0, cm->DOC[1]->year + yearIMM, cm->DOC[1]->month, 1), cm->DOC[k], 0));
+		probfactimm = (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+
+		for (int i = 0; i < 2; i++) { // PUCTUC
+			for (int j = 0; j < 3; j++) { // PUCTUC
+				for (int l = 0; l < 2; l++) { // PBOTBO 
+					amountimm = getamount(cm, k, DBO, i, j, IMM, l, ART24TOT, RESTOT, REDCAPTOT);
+					cm->EBP[i][j][l][yearIMM+1] += amountimm * probfactimm;
+				}
+				amountimm = getamount(cm, k, NC, i, j, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
+				cm->PBONCCF[i][j][yearIMM+1] += amountimm * probfactimm;
+			}
+		}
+		cm->EBPDTH[TBO][yearIMM+1] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
+			cm->qx[k] * cm->kPx[k] * vIMM;
+		cm->EBPDTH[PBO][yearIMM+1] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
+			cm->FF[k] * cm->qx[k] * cm->kPx[k] * vIMM;
+		cm->PBODTHNCCF[yearIMM+1] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
+			cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * vIMM;
+	}
+	
+	//-  EBP yearDEF  -
+	vDEF = pow(1 + ass.DR, -calcyears(newDate(0, cm->DOC[1]->year + yearDEF, cm->DOC[1]->month, 1),
+				newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1), 0));	
+	probfactdef = cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+
+	for (int i = 0; i < 2; i++) { // PUCTUC
+		for (int j = 0; j < 3; j++) { // PUCTUC
+			for (int l = 0; l < 2; l++) { // PBOTBO 
+				amountdef = getamount(cm, k, DBO, i, j, DEF, l, ART24TOT, RESTOT, REDCAPTOT);
+				cm->EBP[i][j][l][yearDEF+1] += amountdef * probfactdef;
+			}
+			amountdef = getamount(cm, k, NC, i, j, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
+			cm->PBONCCF[i][j][yearDEF+1] += amountdef * probfactdef;
+		}
+	}
 }
 
 double getamount(CurrentMember *cm,  int k,  
@@ -595,6 +650,7 @@ double getamount(CurrentMember *cm,  int k,
 		unsigned short method,  
 		unsigned short assets,  
 		unsigned short DEFIMM, 
+		unsigned short PBOTBO,
 		double ART24TOT[], double RESTOT[], double REDCAPTOT[]) {
 
 	switch (DBONCICASS) {
@@ -606,15 +662,15 @@ double getamount(CurrentMember *cm,  int k,
 						case PAR115 :
 							switch (DEFIMM) {
 								case DEF :
-									return max(2, ART24TOT[PUC] * cm->FF[k], REDCAPTOT[TUC]); 
+									return max(2, ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO), REDCAPTOT[TUC]); 
 								case IMM :
-									return max(2, ART24TOT[PUC] * cm->FF[k], RESTOT[TUC]);
+									return max(2, ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO), RESTOT[TUC]);
 								default :
 									printf("ERROR: DEFIMM = %d, but expected %d or %d\n", DEFIMM, DEF, IMM);
 									exit(1);
 							}
 						case MATHRES :
-							return ART24TOT[PUC] * cm->FF[k];
+							return ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO);
 						default :
 							printf("ERROR: assets = %d, but expected %d, %d or %d\n", assets, PAR113, PAR115, MATHRES);
 							exit(1);
