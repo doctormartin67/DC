@@ -11,6 +11,18 @@
 #define MALE 0x4 // used to set MALE bit on if it is a male
 #define MARRIED 0x8 // used to set MARRIED bit on if it is married
 
+//-  method BITS -
+#define mIAS 0x1 // used to set IAS bit on (off means FAS)
+#define mDTH 0x2 // used to set DTH bit on if death is evaluated
+#define mTUC 0x4 // used to set TUC bit on (off means PUC)
+#define mmaxERContr 0x8 /* used to set bit on if we take the maximum between 
+			  the contributions and the service cost (never used in
+			  case we have PUC methodology) */
+#define mmaxPUCTUC 0x10 // used to set bit on if we take maximum of PUC and TUC
+#define mRES 0x20 // used to set bit on in case assets are mathematical reserves
+#define mPAR115 0x40 // used to set bit on in case assets are paragraph 115
+// if neither mRES, mPAR115 bits are on, then we take paragraph 113
+
 //-  extra BITS  -
 #define INCSAL 01; // put this bit on when we increase the salary in the first line
 #define CCRA 02; // put this bit on if this is a prepensioner
@@ -178,9 +190,13 @@ typedef struct assumptions {
 	double (*retx)(CurrentMember *cm, int k); // Turnover rate with deferred payment
 
 	//Assumptions that usually won't change from year to year
+	unsigned short incrSalk0; // determine whether sal gets increased at k = 0 
 	unsigned short incrSalk1; // determine whether sal gets increased at k = 1 
 	double TRM_PercDef; /* Percentage of deferred members that will keep their
 			       reserves with the current employer at termination (usually equals 1)*/
+	unsigned short method; // Methodology, we use bits here
+	double taxes; /* used for the Service cost because the taxes shouldn't be included
+			 in the admin cost (usually equal to 0.1326 */
 } Assumptions;
 
 Assumptions ass; // Assumptions

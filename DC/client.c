@@ -32,8 +32,16 @@ void setassumptions(CurrentMember *cm) {
 	ass.calcDTH = (currrun >= runNewMethodology ? calcDTHTY : calcDTHLY);    
 
 	// Assumptions that usually won't change from year to year
+	ass.incrSalk0 = 0; // determine whether sal gets increased at k = 0
 	ass.incrSalk1 = 1; // determine whether sal gets increased at k = 1
 	ass.TRM_PercDef = 1;
+	ass.method = mPAR115;
+	// mIAS, mTUC, mmaxERContr and mmaxPUCTUC still need to be added here
+	if (ass.method & mIAS)
+		ass.taxes = 0.1326; // 0.0886 + 0.044
+	else
+		ass.taxes = 0; // in case of FAS calculation, no taxes
+	ass.method += mDTH; // death is evaluated
 
 	//---Tariff Structure---
 	//-  Life Tables  -
