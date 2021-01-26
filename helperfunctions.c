@@ -180,3 +180,10 @@ double max(int argc, ...) {
 
 	return value;
 }
+
+double sum(double a[], int length) {
+	double value = 0;
+	for (int i = 0; i < length; i++)
+		value += *a++;
+	return value;
+}

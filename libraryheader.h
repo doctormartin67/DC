@@ -37,6 +37,7 @@ int FILEexists(const char *fname);
 int DIRexists(const char *dname);
 double min(int, ...);
 double max(int, ...);
+double sum(double a[], int length); // sum all elements of array
 
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, char *s);
