@@ -648,18 +648,39 @@ int printresults(DataSet *ds, int tc) {
 	}
 	printf("Printing Data complete.\n");
 	printf("Printing results...\n");
-	col+=5;
-	worksheet_write_string(worksheet, row, col, "Age", NULL);
+
+	worksheet_write_string(worksheet, row, ++col, "DR", NULL);
+	worksheet_write_string(worksheet, row, col+1, "DC NC", NULL);
+	worksheet_write_string(worksheet, row, col+2, "Method Standard", NULL);
+	worksheet_write_string(worksheet, row, col+3, "Method DBO", NULL);
+	worksheet_write_string(worksheet, row, col+4, "Method Assets", NULL);
+	worksheet_write_string(worksheet, row, col+5, "Method Death", NULL);
+	worksheet_write_string(worksheet, row, col+6, "Admin Cost", NULL);
+	worksheet_write_string(worksheet, row, col+7, "Age", NULL);
+	worksheet_write_string(worksheet, row, col+8, "Salary Scale", NULL);
 	while (row < ds->membercnt) {
-		worksheet_write_number(worksheet, row+1, col, *ds->cm[row].age, NULL);
+		worksheet_write_number(worksheet, row+1, col, ass.DR, NULL);
+		worksheet_write_number(worksheet, row+1, col+1, ass.DR, NULL);
+		worksheet_write_string(worksheet, row+1, col+2, 
+				(ass.method & mIAS ? "IAS" : "FAS"), NULL);
+		worksheet_write_string(worksheet, row+1, col+3, 
+				(ass.method & mTUC ? "TUC" : "PUC"), NULL);
+		worksheet_write_string(worksheet, row+1, col+4, 
+				(ass.method & mRES ? "RES" : 
+				 (ass.method & mPAR115 ? "PAR115" : "PAR113")), NULL);
+		worksheet_write_number(worksheet, row+1, col+5, 
+				(ass.method * mDTH ? 1 : 0), NULL);
+		worksheet_write_number(worksheet, row+1, col+6, tff.admincost, NULL);
+		worksheet_write_number(worksheet, row+1, col+7, *ds->cm[row].age, NULL);
+		worksheet_write_number(worksheet, row+1, col+8, salaryscale(&ds->cm[row], 1), NULL);
 		row++;
 	}
-	col++;
 	row = 0;
 
 	printf("Printing results complete.\n");
 	printf("Printing complete.\n");
 	// ***End Print Data***
+
 	return workbook_close(workbook);
 }
 
