@@ -4,9 +4,11 @@ LIBPATH = /home/doctormartin67/Projects/library
 TABLEPATH = /home/doctormartin67/Projects/work/tables
 ACTPATH = /home/doctormartin67/Projects/work/actuarial
 BINPATH = /home/doctormartin67/bin
+GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0`
 libs = -lm -lxlsxwriter #libraries to include: -lm is Math.
 miscOBJS = ${TABLEPATH}/lifetable.o ${ACTPATH}/actuarialfunctions.o DCProgram.o client.o
 libOBJS = ${LIBPATH}/helperfunctions.o ${LIBPATH}/XLfunctions.o ${LIBPATH}/hashtable.o
+gtkOBJS = userinterface.o
 
 extra = -pg #add -g if you want to debug, -pg for gprof
 programs = main
@@ -14,8 +16,8 @@ SRCS = main.o
 
 #***Start makefile***
 
-${programs} : %: %.o ${miscOBJS} ${libOBJS}
-	gcc ${extra} -o $@ $< ${miscOBJS} ${libOBJS} ${libs}
+${programs} : %: %.o ${miscOBJS} ${libOBJS} ${gtkOBJS}
+	gcc ${extra} -o $@ $< ${miscOBJS} ${libOBJS} ${gtkOBJS} ${libs} ${GTK}
 	mv $@ ${BINPATH}
 	cp ${LIBPATH}/runDC ${BINPATH}
 
@@ -24,10 +26,12 @@ ${SRCS} : %.o: %.c ${ACTPATH}/actuarialfunctions.h ${LIBPATH}/libraryheader.h ${
 
 ${TABLEPATH}/lifetable.o : ${TABLEPATH}/lifetable.c
 	gcc ${extra} -c -I${LIBPATH} -I${TABLEPATH} $< -o $@
+
 ${TABLEPATH}/lifetable.o : ${LIBPATH}/libraryheader.h ${TABLEPATH}/lifetables.h
 
 ${ACTPATH}/actuarialfunctions.o : ${ACTPATH}/actuarialfunctions.c
 	gcc ${extra} -c -I. -I${TABLEPATH} -I${LIBPATH} $< -o $@
+
 ${ACTPATH}/actuarialfunctions.o : ${ACTPATH}/actuarialfunctions.h ${TABLEPATH}/lifetables.h DCProgram.h ${LIBPATH}/hashtable.h
 
 ${libOBJS} : %.o: %.c ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h
@@ -35,8 +39,13 @@ ${libOBJS} : %.o: %.c ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h
 
 DCProgram.o : DCProgram.c
 	gcc ${extra} -c -I${LIBPATH} $< -o $@
+
 DCProgram.o : ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h DCProgram.h
 
 client.o : client.c
 	gcc ${extra} -c -I${LIBPATH} $< -o $@
+
 client.o : ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h DCProgram.h
+
+userinterface.o : userinterface.c
+	gcc ${extra} -c $< -o $@ ${GTK}

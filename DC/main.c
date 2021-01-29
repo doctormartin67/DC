@@ -4,6 +4,7 @@
 #include "DCProgram.h"
 #include "actuarialfunctions.h"
 
+void userinterface(int, char **);
 void run(CurrentMember *cm);
 
 int main(int argc, char **argv) {
@@ -11,6 +12,10 @@ int main(int argc, char **argv) {
 		printf("Syntax: main \"Excel file\"\n");
 		exit(0);
 	}
+
+	userinterface(argc, argv);
+	printf("Exiting user interface and program...\n");
+	exit(0); // remove this line once my interface is complete
 
 	XLfile xl;
 	DataSet ds;
