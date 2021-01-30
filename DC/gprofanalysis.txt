@@ -5,6 +5,7 @@ Each sample counts as 0.01 seconds.
 
   %   cumulative   self              self     total           
  time   seconds   seconds    calls  Ts/call  Ts/call  name    
+  0.00      0.00     0.00        1     0.00     0.00  createwindow
   0.00      0.00     0.00        1     0.00     0.00  userinterface
 
  %         the percentage of the total running time of the
@@ -46,8 +47,12 @@ notice and this notice are preserved.
 granularity: each sample hit covers 2 byte(s) no time propagated
 
 index % time    self  children    called     name
-                0.00    0.00       1/1           main [48]
-[1]      0.0    0.00    0.00       1         userinterface [1]
+                0.00    0.00       1/1           userinterface [2]
+[1]      0.0    0.00    0.00       1         createwindow [1]
+-----------------------------------------------
+                0.00    0.00       1/1           main [49]
+[2]      0.0    0.00    0.00       1         userinterface [2]
+                0.00    0.00       1/1           createwindow [1]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -140,4 +145,4 @@ notice and this notice are preserved.
 
 Index by function name
 
-   [1] userinterface
+   [1] createwindow            [2] userinterface
