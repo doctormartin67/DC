@@ -685,14 +685,15 @@ int printresults(DataSet *ds, int tc) {
 }
 
 char *getcmval(CurrentMember *cm, char *value) {
-	if (get(0, value, cm->Data) == NULL) {
+	Hashtable *h;
+	if ((h = get(0, value, cm->Data)) == NULL) {
 		printf("warning: '%s' not found in the set of keys given, ", value);
 		printf("make sure your column name is correct\n");
 		printf("Using 0 by default.\n");
 		return "0";
 	}
 	else
-		return get(0, value, cm->Data)->value;
+		return h->value;
 }
 
 // Example if cm->PREMIUM then s = PREMIUM and we loop through PREMIUM_EREE_GENj
