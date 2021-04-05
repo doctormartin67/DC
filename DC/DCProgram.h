@@ -56,7 +56,7 @@ static const double ART24TAUX[2][2] = {{0.0325, 0.0175}, {0.0375, 0.0175}};
    reserves of their employees by Belgian law (Employer-Employee, generation)*/
 
 typedef struct {
-	Hashtable **Data; //Data for an affiliate is in the form of a hashtable
+	Hashtable *Data; //Data for an affiliate is in the form of a hashtable
 
 	//---Variable Declarations---  
 	char *key; // KEY in data
@@ -169,7 +169,7 @@ typedef struct {
 	char **keys; // This points to the array of keys in excel
 	char datasheet[256]; // This is the sheet where the data lies
 	XLfile *xl;
-	Hashtable ***Data; // This will be set using createData function below
+	Hashtable **Data; // This will be set using createData function below
 	int membercnt;
 	CurrentMember *cm; // This is a pointer to the affiliates	 
 } DataSet;
@@ -223,7 +223,7 @@ double retx(CurrentMember *cm, int k);
 //---Tariff Structure---
 
 typedef struct {
-	char *lt; // This will point to one of the lifetables
+	unsigned int lt; // there is an array of strings containing the names of lifetables. I reference the array elements by using the index defined with an enum lifetables.
 	double i; // Insurance rate (This changes for prolongation table for example)
 } LifeTable;
 
@@ -242,10 +242,6 @@ typedef struct {
 } Tariff;
 
 Tariff tff; // Tariff structure
-
-static char *lifetables[6] =
-{"LXMR", "LXFR", "LXMK", "LXFK", "LXFK'", "Lxnihil"};
-enum lifetables {LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL};
 
 //---Setter declarations---
 void setDSvals(XLfile *xl, DataSet *ds);

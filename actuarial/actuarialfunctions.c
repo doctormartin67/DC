@@ -3,11 +3,11 @@
 
 const double eps = 0.0000001;
 
-static Hashtable *axntable[HASHSIZE]; /* This is used so that axn gets saved and doesn't
-					 have to be calculated over and over for the same
-					 arguments. */
+static Hashtable *axntable; /* This is used so that axn gets saved 
+							and doesn't have to be calculated
+							over and over for the same arguments. */
 
-double npx(char *lt, double ageX, double ageXn, int corr){ //lt = life table
+double npx(unsigned int lt, double ageX, double ageXn, int corr){ //lt = life table
     /* generally the rule is npx = lx(ageXn)/lx(ageX) but because lx has
        an integer value as its input we need to interpolate both these
        values
@@ -34,7 +34,7 @@ double npx(char *lt, double ageX, double ageXn, int corr){ //lt = life table
     return ip2/ip1;
 }
 
-double nEx(char *lt, double i, double charge, double ageX, double ageXn, int corr){
+double nEx(unsigned int lt, double i, double charge, double ageX, double ageXn, int corr){
     double im = (1+i)/(1+charge) - 1;
     double n = ageXn - ageX;
     double vn = 1/pow(1 + im, n);
@@ -42,12 +42,15 @@ double nEx(char *lt, double i, double charge, double ageX, double ageXn, int cor
     return vn * nPx;
 }
 
-double axn(char *lt, double i, double charge, int prepost, int term,
+double axn(unsigned int lt, double i, double charge, int prepost, int term,
 	double ageX, double ageXn, int corr){
     char key[256]; // This is used to search the Hashtable to see whether or not is has already been calculated
-    snprintf(key, sizeof(key), "%s%f%f%d%d%f%f%d", lt, i, charge, prepost, term, ageX, ageXn, corr); 
+    snprintf(key, sizeof(key), "%d%f%f%d%d%f%f%d", lt, i, charge, prepost, term, ageX, ageXn, corr); 
 
-    Hashtable *h;
+    if (axntable == NULL)
+	axntable = newHashtable(HASHSIZE);
+
+    List *h;
 
     if ((h = get(1, key, axntable)) == NULL) {
 	if (12 % term != 0) {
@@ -87,7 +90,7 @@ double axn(char *lt, double i, double charge, int prepost, int term,
     return atof(h->value);
 }
 
-double Ax1n(char *lt, double i, double charge, double ageX, double ageXn, int corr){
+double Ax1n(unsigned int lt, double i, double charge, double ageX, double ageXn, int corr){
     if (ageX > ageXn + eps) {
 	printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
 	printf("Ax1n = 0 is taken in this case.\n");
@@ -114,7 +117,7 @@ double Ax1n(char *lt, double i, double charge, double ageX, double ageXn, int co
     }
 }
 
-double IAx1n(char *lt, double i, double charge, double ageX, double ageXn, int corr){
+double IAx1n(unsigned int lt, double i, double charge, double ageX, double ageXn, int corr){
     if (ageX > ageXn + eps) {
 	printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
 	printf("Ax1n = 0 is taken in this case.\n");
@@ -139,7 +142,7 @@ double IAx1n(char *lt, double i, double charge, double ageX, double ageXn, int c
 
 // This function hasn't been completed because I don't think I need it. At the moment it
 // only works for term = 1
-double Iaxn(char *lt, double i, double charge, int prepost, int term,
+double Iaxn(unsigned int lt, double i, double charge, int prepost, int term,
 	double ageX, double ageXn, int corr){
     if (1 % term != 0) {
 	printf("Iaxn has only been implemented for term = 1. You will need to adjust your \n");

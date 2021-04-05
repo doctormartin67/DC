@@ -300,11 +300,10 @@ void createData(DataSet *ds) {
 	strcat(dataCell, srow);
 
 	// Allocate memory for data matrix and initialise to NULL pointer
-	ds->Data = (Hashtable ***)malloc(ds->membercnt * sizeof(Hashtable **));
+	ds->Data = (Hashtable **)malloc(ds->membercnt * sizeof(Hashtable *));
 	for (int k = 0; k < ds->membercnt; k++) {
-		*(ds->Data + k) = (Hashtable **)malloc(HASHSIZE * sizeof(Hashtable *));
-		for (int l = 0; l < HASHSIZE; l++)
-			*(*(ds->Data + k) + l) = NULL;
+		// https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-8.html
+		*(ds->Data + k) = newHashtable(233); // 179 * 1.3 = 232.7 -> 233 is a prime
 	}
 
 	// Set the keys
@@ -682,7 +681,7 @@ int printresults(DataSet *ds, int tc) {
 }
 
 char *getcmval(CurrentMember *cm, char *value) {
-	Hashtable *h;
+	List *h;
 	if ((h = get(0, value, cm->Data)) == NULL) {
 		printf("warning: '%s' not found in the set of keys given, ", value);
 		printf("make sure your column name is correct\n");

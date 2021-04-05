@@ -4,75 +4,81 @@
 #include "libraryheader.h"
 #include "lifetables.h"
 
-#define MAXAGE 120
 #define PATH "/home/doctormartin67/Projects/work/tables/tables/" //needs updating!!
+enum {MAXAGE = 120};
 
-typedef struct lifetable {
-	char name[32];
-	int lt[MAXAGE];
+static const char *lifetables[6] =
+{"LXMR", "LXFR", "LXMK", "LXFK", "LXFK'", "Lxnihil"};
+
+typedef struct {
+    unsigned int ltindex;
+    int lt[MAXAGE];
 } LifeTable;
 
 static unsigned short ltcnt; // This is updated in makeLifeTable
 static LifeTable *ltlist;
 
-static void append(char *);
-static void makeLifeTable(char *, int *);
+static void append(unsigned int);
+static void makeLifeTable(const char *, int *);
 
-int lx(char *name, int age) {
-	LifeTable *lt;
-	lt = ltlist;
+int lx(unsigned int ltindex, int age) {
+    LifeTable *lt;
+    lt = ltlist;
 
-	if (age > MAXAGE)
-		return 0;
-	else {
-		while (ltlist != NULL && lt - ltlist < ltcnt) {
-			if (strcmp(lt->name, name) == 0)
-				return lt->lt[age];	
-			lt++;
-		}
-		append(name);
-		lx(name, age);	
+    if (age > MAXAGE)
+	return 0;
+    else {
+	while (ltlist != NULL && lt - ltlist < ltcnt) {
+	    if (strcmp(lifetables[lt->ltindex], lifetables[ltindex]) == 0)
+		return lt->lt[age];	
+	    lt++;
 	}
+	append(ltindex);
+	return lx(ltindex, age);	
+    }
+    printf("ERROR in %s(%d, %d) (recursive function):", __func__, ltindex, age);
+    printf("should never reach this point.\n");
+    exit(1);
 }
 
-static void append(char *name) {
-	if (ltcnt == 0) 
-		ltlist = (LifeTable *)malloc(sizeof(LifeTable) * 2);
-	else
-		ltlist = (LifeTable *)realloc(ltlist, sizeof(LifeTable) * (ltcnt + 2));
+static void append(unsigned int lt) {
+    if (ltcnt == 0) 
+	ltlist = (LifeTable *)malloc(sizeof(LifeTable) * 2);
+    else
+	ltlist = (LifeTable *)realloc(ltlist, sizeof(LifeTable) * (ltcnt + 2));
 
-	snprintf(ltlist[ltcnt].name, sizeof(ltlist[ltcnt].name), "%s", name);
-	makeLifeTable(ltlist[ltcnt].name, ltlist[ltcnt].lt);
+    ltlist[ltcnt].ltindex = lt;
+    makeLifeTable(lifetables[ltlist[ltcnt].ltindex], ltlist[ltcnt].lt);
 }
 
-static void makeLifeTable(char *name, int *clt) { //clt = current life table
-	char line[64];
-	FILE *lt;
-	char value[64];
-	char *vp = value;
-	char *lp = line;
-	char path[128]; 
-	snprintf(path, sizeof(path), "%s", PATH);
+static void makeLifeTable(const char *name, int *clt) { //clt = current life table
+    char line[64];
+    FILE *lt;
+    char value[64];
+    char *vp = value;
+    char *lp = line;
+    char path[128]; 
+    snprintf(path, sizeof(path), "%s", PATH);
 
-	if ((lt = fopen(strcat(path, name), "r")) == NULL) {
-		fprintf(stderr, "In function makeLifeTable: can't open %s\n", name);
-		exit(1);
+    if ((lt = fopen(strcat(path, name), "r")) == NULL) {
+	fprintf(stderr, "In function makeLifeTable: can't open %s\n", name);
+	exit(1);
+    }
+    while((fgets(line, BUFSIZ, lt))) {
+	lp = line;
+	while (*lp++ != ',') {
+	    ;
 	}
-	while((fgets(line, BUFSIZ, lt))) {
-		lp = line;
-		while (*lp++ != ',') {
-			;
-		}
-		while ((*vp = *lp)) {
-			vp++;
-			lp++;
-		}
-		vp = trim(value);
-		*clt++ = atoi(vp);
-		vp = value;
+	while ((*vp = *lp)) {
+	    vp++;
+	    lp++;
 	}
+	vp = trim(value);
+	*clt++ = atoi(vp);
+	vp = value;
+    }
 
-	fclose(lt);
-	ltcnt++;
-	printf("amount of tables: %d\n", ltcnt);
+    fclose(lt);
+    ltcnt++;
+    printf("amount of tables: %d\n", ltcnt);
 }

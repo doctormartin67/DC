@@ -6,12 +6,8 @@
 #include "lifetables.h"
 #include "DCProgram.h"
 
-#define DBO 0
-#define NC 1
-#define IC 2
-#define ASSETS 3
-#define DEF 0
-#define IMM 1
+enum {DBO, NC, IC, ASSETS};
+enum {DEF, IMM}; // deferred or immediate payment
 
 /*
 Definitions:
@@ -28,28 +24,28 @@ the discount rate.
 */
 
 // npx is the chance for some of age ageX to live until the age of ageXn
-double npx(char *lt, double ageX, double ageXn, int corr);
+double npx(unsigned int lt, double ageX, double ageXn, int corr);
 // nEx is a factor used to give the present value of an amount, taking death chance into
 // account. 
-double nEx(char *lt, double i, double charge, double ageX, double ageXn, int corr);
+double nEx(unsigned int lt, double i, double charge, double ageX, double ageXn, int corr);
 // axn is the annuity factor that calculates the present value of investing 1 dollar
 // each year from ageX until ageXn divided up by the term, where term is represented in months,
 // so term = 12 means we pay 1/12 per months, term = 6 means we pay 2/12 every 2 months.
 // prepost determines whether we pay straight away (prepost = 0) or after the first term ends
 // (prepost = 1). 
-double axn(char *lt, double i, double charge, int prepost, int term,
+double axn(unsigned int lt, double i, double charge, int prepost, int term,
 		double ageX, double ageXn, int corr);
 
 // discounted yearly payments in case of death
-double Ax1n(char *lt, double i, double charge, double ageX, double ageXn,
+double Ax1n(unsigned int lt, double i, double charge, double ageX, double ageXn,
 		int corr);
 
 // discounted yearly payments in case of death where the payments are cummulative
 // (1 + 2 + 3 + ... + n instead of 1 + 1 + 1 + ... + 1)
-double IAx1n(char *lt, double i, double charge, double ageX, double ageXn,
+double IAx1n(unsigned int lt, double i, double charge, double ageX, double ageXn,
 		int corr);
 
-double Iaxn(char *lt, double i, double charge, int prepost, int term,
+double Iaxn(unsigned int lt, double i, double charge, int prepost, int term,
 		double ageX, double ageXn, int corr);
 
 // Update the current iteration (k) of death lump sum, employer-employee, generation

@@ -43,9 +43,9 @@ DCProgram.o : DCProgram.c
 DCProgram.o : ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h DCProgram.h
 
 client.o : client.c
-	gcc ${extra} -c -I${LIBPATH} $< -o $@
+	gcc ${extra} -c -I${LIBPATH} -I${TABLEPATH} $< -o $@
 
-client.o : ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h DCProgram.h
+client.o : ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h DCProgram.h ${TABLEPATH}/lifetables.h
 
 userinterface.o : userinterface.c
 	gcc ${extra} -c $< -o $@ ${GTK}

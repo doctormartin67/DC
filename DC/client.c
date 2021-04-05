@@ -1,4 +1,5 @@
 #include "DCProgram.h"
+#include "lifetables.h"
 
 static double salaryscaleTY(CurrentMember *cm, int k);
 static double salaryscaleLY(CurrentMember *cm, int k);
@@ -50,25 +51,25 @@ void setassumptions(CurrentMember *cm) {
 		for (int j = 0; j < MAXGEN; j++) {
 			switch(cm->tariff) {
 				case UKMS :
-					tff.ltINS[EREE][j].lt = lifetables[LXNIHIL];
-					tff.ltAfterTRM[EREE][j].lt = lifetables[LXNIHIL];
+					tff.ltINS[EREE][j].lt = LXNIHIL;
+					tff.ltAfterTRM[EREE][j].lt = LXNIHIL;
 					break;
 				case UKZT :
 					if (cm->status & ACT) {
-						tff.ltINS[EREE][j].lt = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
-						tff.ltAfterTRM[EREE][j].lt = (cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]);
+						tff.ltINS[EREE][j].lt = (cm->status & MALE ? LXMK : LXFKP);
+						tff.ltAfterTRM[EREE][j].lt = (cm->status & MALE ? LXMR : LXFR);
 					}
 					else {
-						tff.ltINS[EREE][j].lt = (cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]);
+						tff.ltINS[EREE][j].lt = (cm->status & MALE ? LXMR : LXFR);
 						tff.ltAfterTRM[EREE][j].lt = tff.ltINS[EREE][j].lt;
 					}
 					break;
 				case UKMT :
-					tff.ltINS[EREE][j].lt = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
+					tff.ltINS[EREE][j].lt = (cm->status & MALE ? LXMK : LXFKP);
 					tff.ltAfterTRM[EREE][j].lt = tff.ltINS[EREE][j].lt;
 					break;
 				case MIXED :
-					tff.ltINS[EREE][j].lt = (cm->status & MALE ? lifetables[LXMK] : lifetables[LXFKP]);
+					tff.ltINS[EREE][j].lt = (cm->status & MALE ? LXMK : LXFKP);
 					tff.ltAfterTRM[EREE][j].lt = tff.ltINS[EREE][j].lt;
 					break;
 			}

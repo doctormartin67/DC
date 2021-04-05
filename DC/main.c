@@ -228,10 +228,10 @@ void run(CurrentMember *cm) {
 		cm->wximm[k] = wxdef(cm, k) * (cm->age[k+1] - cm->age[k]) * (1 - ass.TRM_PercDef);
 
 		// Life and Death rates
-		cm->qx[k] = 1 - npx((cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]),
+		cm->qx[k] = 1 - npx((cm->status & MALE ? LXMR : LXFR),
 				cm->age[k], cm->age[k+1], ass.agecorr);
 		cm->retx[k] = retx(cm, k) * (k > 1 && cm->age[k] == cm->age[k-1] ? 0 : 1);
-		cm->nPk[k] = npx((cm->status & MALE ? lifetables[LXMR] : lifetables[LXFR]),
+		cm->nPk[k] = npx((cm->status & MALE ? LXMR : LXFR),
 				cm->age[k], NRA(cm, k), ass.agecorr);
 
 		// Financial variables (discount rate)
