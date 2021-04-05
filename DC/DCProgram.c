@@ -187,9 +187,7 @@ void setkey(DataSet *ds) {
 	FILE *fp;
 	XLfile *xl;
 	char line[BUFSIZ];
-	char sname[BUFSIZ]; // name of the sheet to open (xml file)
 	char *begin;
-	int sheetnr;
 	int value = 1; // value to return
 	int i,j = 0;
 	xl = ds->xl;
@@ -243,7 +241,6 @@ void setkey(DataSet *ds) {
 
 void countMembers(DataSet *ds) {
 	FILE *fp;
-	int count = 0;
 	char column[3];
 	int irow;
 	char srow[6];
@@ -333,7 +330,7 @@ void createData(DataSet *ds) {
 				char temp[BUFSIZ/256];
 				printf("Warning: %s is a double\n", *(ds->keys + l));
 				snprintf(temp, sizeof(temp), "%s%d", *(ds->keys + l), ++cntdouble + 1);
-				memset(*(ds->keys + l), '\0', sizeof(*(ds->keys + l)));
+				memset(*(ds->keys + l), '\0', strlen(*(ds->keys + l)));
 				strcpy(*(ds->keys + l), temp);
 				printf("Changed it to %s\n",  *(ds->keys + l));
 			}
@@ -669,7 +666,7 @@ int printresults(DataSet *ds, int tc) {
 				(ass.method & mRES ? "RES" : 
 				 (ass.method & mPAR115 ? "PAR115" : "PAR113")), NULL);
 		worksheet_write_number(worksheet, row+1, col+5, 
-				(ass.method * mDTH ? 1 : 0), NULL);
+				(ass.method & mDTH ? 1 : 0), NULL);
 		worksheet_write_number(worksheet, row+1, col+6, tff.admincost, NULL);
 		worksheet_write_number(worksheet, row+1, col+7, *ds->cm[row].age, NULL);
 		worksheet_write_number(worksheet, row+1, col+8, salaryscale(&ds->cm[row], 1), NULL);

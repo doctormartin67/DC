@@ -28,33 +28,34 @@
 #define CCRA 02; // put this bit on if this is a prepensioner
 
 //---Define constants---
-#define MAXPROJ 65 // years to calculate of one affiliate
-#define MAXPROJBEFOREPROL 50 // years up to NRA, afterwards we prolongate to RA assumption
-#define MAXGEN 8 // amount of generations of insurer
-#define ER 0 // Employer index
-#define EE 1 // Employee index
-#define ART24GEN1 0 // article 24 index (3,75% for employee contributions and 3,25% for employee)
-#define ART24GEN2 1 // article 24 index (1,75%)
+// 65 years to calculate of one affiliate
+// 50 years up to NRA, afterwards we prolongate to RA assumption
+enum {MAXPROJ = 65, MAXPROJBEFOREPROL = 50};
+enum {MAXGEN = 8}; // amount of generations of insurer
+enum {ER, EE};// Employer index, Employer index
+// article 24 index (3,75% for employee contributions and 3,25% for employee)
+// article 24 index (1,75%)
+enum {ART24GEN1, ART24GEN2};
 #define ART24admincost 0.05 // Maximum admin cost that may be applied to Employer contribution
-#define UKMS 0
-#define UKZT 1
-#define UKMT 2
-#define MIXED 3
-#define PUC 0 // projected unit credit with future premiums
-#define TUC 1 // projected unit credit without future premiums
-#define TUCPS_1 2 /* projected unit credit with future premiums,
+enum inscomb {UKMS, UKZT, UKMT, MIXED};
+// projected unit credit with future premiums
+// projected unit credit without future premiums
+/* projected unit credit with future premiums,
 		     one year later (for service cost)*/
-#define PAR115 0 // Assets $115
-#define MATHRES 1 // Assets Mathematical Reserves
-#define PAR113 2 // Assets $113
-#define PBO 0 // PBO Cashflows
-#define TBO 1 // TBO Cashflows
+enum {PUC, TUC, TUCPS_1};
+// Assets $115
+// Assets Mathematical Reserves
+// Assets $113
+enum assets {PAR115, MATHRES, PAR113};
+// PBO Cashflows
+// TBO Cashflows
+enum cashflows {PBO, TBO};
 
 static const double ART24TAUX[2][2] = {{0.0325, 0.0175}, {0.0375, 0.0175}};
 /* Current guarenteed rates that the employers need to guarentee on the 
    reserves of their employees by Belgian law (Employer-Employee, generation)*/
 
-typedef struct currentmember {
+typedef struct {
 	Hashtable **Data; //Data for an affiliate is in the form of a hashtable
 
 	//---Variable Declarations---  
@@ -161,7 +162,7 @@ typedef struct currentmember {
 //---Useful functions for CurrentMembers---
 double gensum(double *amount[][MAXGEN], unsigned short EREE, int loop);
 
-typedef struct dataset {
+typedef struct {
 	int keyrow; /* find the row in the excel file where 
 		       the keys are to use in the hashtable */
 	char keycolumn[3];
@@ -174,7 +175,7 @@ typedef struct dataset {
 } DataSet;
 
 //---Assumptions declarations---
-typedef struct assumptions {
+typedef struct {
 	Date *DOC; /* This is DOC[1] which is the start of the run through affiliates.
 		      DOC[0] is date of situation.*/
 	double infl; // Inflation
@@ -221,12 +222,12 @@ double retx(CurrentMember *cm, int k);
 
 //---Tariff Structure---
 
-typedef struct lifetable {
+typedef struct {
 	char *lt; // This will point to one of the lifetables
 	double i; // Insurance rate (This changes for prolongation table for example)
 } LifeTable;
 
-typedef struct tariff {
+typedef struct {
 	LifeTable ltINS[2][MAXGEN]; // Life Table Insurer
 	LifeTable ltAfterTRM[2][MAXGEN]; // Life Table after termination
 	LifeTable ltProlong[2]; // Life Table Prolongation (i = last generation of insurer)
@@ -244,12 +245,7 @@ Tariff tff; // Tariff structure
 
 static char *lifetables[6] =
 {"LXMR", "LXFR", "LXMK", "LXFK", "LXFK'", "Lxnihil"};
-#define LXMR 0
-#define LXFR 1
-#define LXMK 2
-#define LXFK 3
-#define LXFKP 4
-#define LXNIHIL 5
+enum lifetables {LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL};
 
 //---Setter declarations---
 void setDSvals(XLfile *xl, DataSet *ds);

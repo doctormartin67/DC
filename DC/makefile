@@ -10,7 +10,7 @@ miscOBJS = ${TABLEPATH}/lifetable.o ${ACTPATH}/actuarialfunctions.o DCProgram.o 
 libOBJS = ${LIBPATH}/helperfunctions.o ${LIBPATH}/XLfunctions.o ${LIBPATH}/hashtable.o
 gtkOBJS = userinterface.o
 
-extra = -pg #add -g if you want to debug, -pg for gprof
+extra = -pg -Wall#add -g if you want to debug, -pg for gprof
 programs = main
 SRCS = main.o
 

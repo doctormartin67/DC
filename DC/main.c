@@ -13,10 +13,10 @@ int main(int argc, char **argv) {
 		exit(0);
 	}
 
-	userinterface(argc, argv);
+/*	userinterface(argc, argv);
 	printf("Exiting user interface and program...\n");
 	exit(0); // remove this line once my interface is complete
-
+*/
 	XLfile xl;
 	DataSet ds;
 
