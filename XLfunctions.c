@@ -29,10 +29,7 @@ void setXLvals(XLfile *xl, char *s) {
    */
 char *cell(FILE *fp, char *s, XLfile *xl) {
 	char line[BUFSIZ];
-	char *begin;
-	char *ss; // string to determine whether I need to call findss or not
 	char *value; // value of cell to return (string)
-	char *temp; // used to free allocated memory after findss is called
 
 	fseek(fp, 0, SEEK_SET);
 	while (fgets(line, BUFSIZ, fp) != NULL) {
@@ -352,14 +349,18 @@ Date *minDate(int argc, ...) {
 
 	for (int i = 1; i < argc; i++) {
 		currmin = va_arg(dates, Date *);
-		if (min->year > currmin->year)
+		if (min->year > currmin->year) {
 			min = currmin;
-		else if (min->year == currmin->year)
-			if (min->month > currmin->month)
+		}
+		else if (min->year == currmin->year) {
+			if (min->month > currmin->month) {
 				min = currmin;
-			else if (min->month == currmin->month)
+			}
+			else if (min->month == currmin->month) {
 				if (min->day > currmin->day)
 					min = currmin;
+			}
+		}
 	}
 	// Error checking
 	if (min->day > (isleapyear(min->year) ? leapdays[min->month] : commondays[min->month])) {

@@ -3,17 +3,23 @@
 
 #define HASHSIZE 1048583 // I took 2^20 and then the next prime number
 
-typedef struct hashtable {
-  struct hashtable *next;
+typedef struct list {
+  struct list *next;
   char *key;
   char *value;
+} List;
+
+typedef struct {
+    List **list;
+    unsigned long hashsize;
 } Hashtable;
 
-unsigned long hash(char *);
 // casesens determines whether the key is case sensitive.
 // if it doesn't matter it is suggested to put it equal to
 // 1 because case sensitive is faster
-Hashtable *get(unsigned short casesens, char *key, Hashtable **);
-Hashtable *set(unsigned short casesens, char *key, char *value, Hashtable **);
+List *get(unsigned short casesens, char *key, Hashtable *);
+List *set(unsigned short casesens, char *key, char *value, Hashtable *);
+// This allocates memory for n Hashtable pointers
+Hashtable *newHashtable(unsigned long n);
 
 #endif
