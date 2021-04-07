@@ -48,11 +48,11 @@ double axn(unsigned int lt, double i, double charge, int prepost, int term,
     snprintf(key, sizeof(key), "%d%f%f%d%d%f%f%d", lt, i, charge, prepost, term, ageX, ageXn, corr); 
 
     if (axntable == NULL)
-	axntable = newHashtable(HASHSIZE);
+	axntable = newHashtable(HASHSIZE, 1);
 
     List *h;
 
-    if ((h = get(1, key, axntable)) == NULL) {
+    if ((h = lookup(key, NULL, axntable)) == NULL) {
 	if (12 % term != 0) {
 	    printf("An incorrect term was chosen, payments are usually monthly (term = 12)\n");
 	    printf("but can also be yearly for example (term = 1). term should be divisible\n");
@@ -84,7 +84,7 @@ double axn(unsigned int lt, double i, double charge, int prepost, int term,
 		nEx(lt, i, charge, ageX,
 			(double)((int)(ageXn*term + eps))/term + term*prepost, corr);
 	    snprintf(valuestr, sizeof(valuestr), "%f", value);
-	    h = set(1, key, valuestr, axntable);
+	    h = lookup(key, valuestr, axntable);
 	}
     }
     return atof(h->value);

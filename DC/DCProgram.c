@@ -303,7 +303,7 @@ void createData(DataSet *ds) {
 	ds->Data = (Hashtable **)malloc(ds->membercnt * sizeof(Hashtable *));
 	for (int k = 0; k < ds->membercnt; k++) {
 		// https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-8.html
-		*(ds->Data + k) = newHashtable(233); // 179 * 1.3 = 232.7 -> 233 is a prime
+		*(ds->Data + k) = newHashtable(233, 0); // 179 * 1.3 = 232.7 -> 233 is a prime
 	}
 
 	// Set the keys
@@ -344,7 +344,7 @@ void createData(DataSet *ds) {
 
 		// Set the initial data (KEY)
 		data = cell(fp, dataCell, ds->xl);
-		set(0, *(ds->keys), data, *(ds->Data + i));
+		lookup(*(ds->keys), data, *(ds->Data + i));
 		nextcol(dataCell);
 		// Set index of keys to 1 at the start of loop
 		countkeys = 1;
@@ -357,13 +357,13 @@ void createData(DataSet *ds) {
 			fgets(line, sizeof(line), fp);
 			while ((data = valueincell(ds->xl, line, dataCell)) == NULL) {
 
-				set(0, *(ds->keys + countkeys), "0", *(ds->Data + i));
+				lookup(*(ds->keys + countkeys), "0", *(ds->Data + i));
 				// Here we update cell for loop, for example O11 becomes P11
 				countkeys++;
 				nextcol(dataCell);
 			}
 
-			set(0, *(ds->keys + countkeys), data, *(ds->Data + i));
+			lookup(*(ds->keys + countkeys), data, *(ds->Data + i));
 
 			// Here we update cell for loop, for example O11 becomes P11
 			countkeys++;
@@ -636,7 +636,7 @@ int printresults(DataSet *ds, int tc) {
 		worksheet_write_string(worksheet, row, col, *(ds->keys + col), NULL);
 		while (row < ds->membercnt) {
 			worksheet_write_string(worksheet, row+1, col,
-					get(0, *(ds->keys + col), *(ds->Data + row))->value, NULL);
+					lookup(*(ds->keys + col), NULL, *(ds->Data + row))->value, NULL);
 			row++;
 		}
 		col++;
@@ -682,7 +682,7 @@ int printresults(DataSet *ds, int tc) {
 
 char *getcmval(CurrentMember *cm, char *value) {
 	List *h;
-	if ((h = get(0, value, cm->Data)) == NULL) {
+	if ((h = lookup(value, NULL, cm->Data)) == NULL) {
 		printf("warning: '%s' not found in the set of keys given, ", value);
 		printf("make sure your column name is correct\n");
 		printf("Using 0 by default.\n");
