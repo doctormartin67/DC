@@ -12,14 +12,13 @@ typedef struct list {
 typedef struct {
     List **list;
     unsigned long hashsize;
+    unsigned short casesens; // casesens = 1 for case sensitive, casesens = 0 for insensitive
 } Hashtable;
 
-// casesens determines whether the key is case sensitive.
-// if it doesn't matter it is suggested to put it equal to
-// 1 because case sensitive is faster
-List *get(unsigned short casesens, char *key, Hashtable *);
-List *set(unsigned short casesens, char *key, char *value, Hashtable *);
+// search the hashtable for the key and return the found List if value == NULL. if value is
+// not NULL, update the List with the value
+List *lookup(char *key, char *value, Hashtable *);
 // This allocates memory for n Hashtable pointers
-Hashtable *newHashtable(unsigned long n);
+Hashtable *newHashtable(unsigned long n, unsigned short casesens);
 
 #endif
