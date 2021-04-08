@@ -20,16 +20,11 @@ char *trim(char *s) {
 	return t;
 }
 
-char *upper(const char *t) {
-	char *s;
-	int i = 0;
-	s = (char *)malloc(strlen(t)+1);
-	strcpy(s, t);
-	while(*(s+i)) {
-		*(s+i) = (*(s+i) >= 'a' && *(s+i) <= 'z') ? *(s+i) - 'a' + 'A' : *(s+i);
-		i++;
+void upper(char *s) {
+	while(*s) {
+		*s = (*s >= 'a' && *s <= 'z') ? *s - 'a' + 'A' : *s;
+		s++;
 	}
-	return s;
 }
 // replace all occurences of string oldW with newW in s
 char *replace(const char *s, const char *oldW, 

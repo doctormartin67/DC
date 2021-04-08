@@ -7,8 +7,15 @@
 List *lookup(char *t, char *value, Hashtable *ht) {
     List *pht;
     unsigned long hashval;
-    char *key, *s;
-    key = (ht->casesens ? t : upper(t));
+    char *key, *s, temp[strlen(t) + 1];
+
+    if (ht->casesens)
+	key = t;
+    else { 
+	key = temp;
+	strcpy(key, t);
+	upper(key);
+    }
 
     // hash the key using the following:
     // djb2 by Dan Bernstein https://stackoverflow.com/questions/7666509/hash-function-for-string
@@ -26,10 +33,8 @@ List *lookup(char *t, char *value, Hashtable *ht) {
     }
 
     // if the user enters NULL as value, no new value is set and item is returned
-    if (value == NULL) {
-	if (!ht->casesens) free(key);
+    if (value == NULL)
 	return pht;
-    }
 
     // if key has never been set, create new entry and set key and value for new entry
     // otherwhise, remove current entry and set with new value
@@ -48,7 +53,6 @@ List *lookup(char *t, char *value, Hashtable *ht) {
 	perror(__func__);
 	exit(1);
     }
-    if (!ht->casesens) free(key);
     return pht;
 }
 

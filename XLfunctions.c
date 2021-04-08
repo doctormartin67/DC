@@ -197,17 +197,13 @@ void nextcol(char *next) {
 		(*npt)++;
 }
 
+
 char *valueincell(XLfile *xl, char *line, char *find) {
 	char *begin;
 	char *ss; // string to determine whether I need to call findss or not
 	char *value; // value of cell to return (string)
 	char *temp; // used to free allocated memory after findss is called
-	char sname[BUFSIZ/4];
 	int i = 0, j = 0;
-
-	memset(sname, '0', sizeof(sname));
-	strcpy(sname, find);
-	strcat(sname, "\"");
 
 	begin = line;
 

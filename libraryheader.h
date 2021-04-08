@@ -30,7 +30,7 @@ void printDate(Date *d);
 
 //---Library Functions---
 char *trim(char *);
-char *upper(const char *);
+void upper(char *);
 char *strinside(char *s, char *begin, char *end);
 char *replace(const char *str, const char *orig, const char *rep);
 int FILEexists(const char *fname);

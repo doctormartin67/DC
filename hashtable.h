@@ -1,8 +1,6 @@
 #ifndef HASHTABLE
 #define HASHTABLE
 
-#define HASHSIZE 1048583 // I took 2^20 and then the next prime number
-
 typedef struct list {
   struct list *next;
   char *key;
