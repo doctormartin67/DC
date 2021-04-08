@@ -734,5 +734,3 @@ double wxdef(CurrentMember *cm, int k) {
 double retx(CurrentMember *cm, int k) {
 	return (*ass.retx)(cm, k);
 }
-
-

@@ -6,7 +6,7 @@ ACTPATH = /home/doctormartin67/Projects/work/actuarial
 BINPATH = /home/doctormartin67/bin
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0`
 libs = -lm -lxlsxwriter #libraries to include: -lm is Math.
-miscOBJS = ${TABLEPATH}/lifetable.o ${ACTPATH}/actuarialfunctions.o DCProgram.o client.o
+miscOBJS = ${TABLEPATH}/lifetables.o ${ACTPATH}/actuarialfunctions.o DCProgram.o client.o
 libOBJS = ${LIBPATH}/helperfunctions.o ${LIBPATH}/XLfunctions.o ${LIBPATH}/hashtable.o
 gtkOBJS = userinterface.o
 
@@ -24,10 +24,10 @@ ${programs} : %: %.o ${miscOBJS} ${libOBJS} ${gtkOBJS}
 ${SRCS} : %.o: %.c ${ACTPATH}/actuarialfunctions.h ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h DCProgram.h
 	gcc ${extra} -c -I${LIBPATH} -I${ACTPATH} -I${TABLEPATH} -I. $<
 
-${TABLEPATH}/lifetable.o : ${TABLEPATH}/lifetable.c
+${TABLEPATH}/lifetables.o : ${TABLEPATH}/lifetables.c
 	gcc ${extra} -c -I${LIBPATH} -I${TABLEPATH} $< -o $@
 
-${TABLEPATH}/lifetable.o : ${LIBPATH}/libraryheader.h ${TABLEPATH}/lifetables.h
+${TABLEPATH}/lifetables.o : ${LIBPATH}/libraryheader.h ${TABLEPATH}/lifetables.h
 
 ${ACTPATH}/actuarialfunctions.o : ${ACTPATH}/actuarialfunctions.c
 	gcc ${extra} -c -I. -I${TABLEPATH} -I${LIBPATH} $< -o $@

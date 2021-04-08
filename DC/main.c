@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 		setassumptions(cm + i); // This defines the assumptions
 		// run one affiliate
 		run(cm + i);
-		printf(" person %d run\n", i + 1);
+		printf("Person %d run\n", i + 1);
 	}
 	printf("Run complete\n");
 

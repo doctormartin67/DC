@@ -47,8 +47,9 @@ double axn(unsigned int lt, double i, double charge, int prepost, int term,
     char key[256]; // This is used to search the Hashtable to see whether or not is has already been calculated
     snprintf(key, sizeof(key), "%d%f%f%d%d%f%f%d", lt, i, charge, prepost, term, ageX, ageXn, corr); 
 
+/* I took 5 * 3 * (12 * 45)^2 * 2 as a rough estimate of the amount of combinations for keys then times 1.3 and then the next prime number*/
     if (axntable == NULL)
-	axntable = newHashtable(HASHSIZE, 1);
+	axntable = newHashtable(11372401, 1);
 
     List *h;
 
@@ -62,6 +63,7 @@ double axn(unsigned int lt, double i, double charge, int prepost, int term,
 	else if (ageX > ageXn + eps) {
 	    printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
 	    printf("axn = 0 is taken in this case.\n");
+	    h = lookup(key, "0", axntable);
 	    return 0;
 	}
 	else {
