@@ -49,3 +49,6 @@ client.o : ${LIBPATH}/libraryheader.h ${LIBPATH}/hashtable.h DCProgram.h ${TABLE
 
 userinterface.o : userinterface.c
 	gcc ${extra} -c $< -o $@ ${GTK}
+
+clean :
+	rm ${BINPATH}/${programs} ${miscOBJS} ${libOBJS} ${gtkOBJS}
