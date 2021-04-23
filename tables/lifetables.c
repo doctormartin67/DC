@@ -20,10 +20,10 @@ int lx(unsigned int ltindex, int age) {
     if (age > MAXAGE)
 	return 0;
     else {
-	    if (ltlist[ltindex][0] == 0)
-		makeLifeTable(lifetables[ltindex], ltlist[ltindex]);
-	    return ltlist[ltindex][age];
-	}
+	if (ltlist[ltindex][0] == 0)
+	    makeLifeTable(lifetables[ltindex], ltlist[ltindex]);
+	return ltlist[ltindex][age];
+    }
 }
 
 static void makeLifeTable(const char *name, int *clt) { //clt = current life table

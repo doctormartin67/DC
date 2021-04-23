@@ -5,12 +5,12 @@ TABLEPATH = /home/doctormartin67/Projects/work/tables
 ACTPATH = /home/doctormartin67/Projects/work/actuarial
 BINPATH = /home/doctormartin67/bin
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0`
-libs = -lm -lxlsxwriter #libraries to include: -lm is Math.
+libs = -lm -lxlsxwriter #libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.
 miscOBJS = ${TABLEPATH}/lifetables.o ${ACTPATH}/actuarialfunctions.o DCProgram.o client.o
 libOBJS = ${LIBPATH}/helperfunctions.o ${LIBPATH}/XLfunctions.o ${LIBPATH}/hashtable.o
 gtkOBJS = userinterface.o
 
-extra = -pg -Wall#add -g if you want to debug, -pg for gprof
+extra = -pg -Wall -Wshadow -Wextra #add -g if you want to debug, -pg for gprof
 programs = main
 SRCS = main.o
 

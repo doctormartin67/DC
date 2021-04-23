@@ -4,6 +4,10 @@
 
 enum {WIDTH = 3, BORDER = 10}; // This is the width of the grids inside the notebook boxes
 
+/* the following enum elements are self created response identifiers for the dialog used in
+   the assumptions like salary increase and turnover that have specific rule */
+enum {RESPONSE_AGE, RESPONSE_NO_REGLEMENT, RESPONSE_CATEGORY};
+
 void userinterface(int argc, char **argv);
 
 // signal functions
@@ -102,15 +106,41 @@ static void fixed_button_toggled(GtkToggleButton *toggle, GtkWidget *entry) {
    that will be based on a given criteria. I called the second argument "null" because it is
    not used */
 
-static void rule_button_toggled(GtkToggleButton *toggle, GtkWidget *null) {
-    if (gtk_toggle_button_get_active (toggle)) {
-    }
+static void rule_button_toggled(GtkToggleButton *toggle, GtkWidget *button) {
+    if (gtk_toggle_button_get_active (toggle))
+	gtk_widget_set_sensitive(button, TRUE);
+    else
+	gtk_widget_set_sensitive(button, FALSE);
 }
 
 /* When a file is selected, display the full path in the GtkLabel widget. */
 static void file_changed (GtkFileChooser *chooser, GtkLabel *label) {
     gchar *file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
     gtk_label_set_text (label, file);
+}
+
+/* Create a new GtkDialog that can be used to add or remove a rule from the assumption. */
+static void addremoverule(GtkButton *button, GtkWindow *parent) {
+    GtkWidget *dialog, *label, *contentarea;
+
+    /* The dialog that will be created will have three options to choose from:
+       add/remove age, add/remove plan rule, add/remove category */
+    dialog = gtk_dialog_new_with_buttons ("Add or remove a rule", parent, 
+	    GTK_DIALOG_MODAL,
+	    "AGE", RESPONSE_AGE, 
+	    "NO REGLEMENT",RESPONSE_NO_REGLEMENT, 
+	    "CATEGORY", RESPONSE_CATEGORY,
+	    NULL);
+    label = gtk_label_new("Pick a rule to add or remove:");
+    contentarea = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    gtk_container_add(GTK_CONTAINER(contentarea), label);
+    gtk_container_set_border_width(GTK_CONTAINER(contentarea), BORDER);
+
+    gtk_widget_show_all(dialog);
+
+    /* Create the dialog as modal and destroy it when a button is clicked. */
+    gtk_dialog_run(GTK_DIALOG (dialog));
+    gtk_widget_destroy(dialog);
 }
 //***End signal functions***
 
@@ -281,7 +311,7 @@ GtkWidget *addEntryToGrid(GtkWidget *grid, char *name, int x, int y, gboolean is
 }
 
 GtkWidget *createrulegrid(char *ass, char *comment) {
-    GtkWidget *rulegrid, *rulegridlabel, *fixedbutton, *rulebutton, *fixedentry;
+    GtkWidget *rulegrid, *rulegridlabel, *fixedbutton, *rulebutton, *fixedentry, *addrulebutton;
     char text[128];
 
     rulegrid = gtk_grid_new();	
@@ -294,18 +324,30 @@ GtkWidget *createrulegrid(char *ass, char *comment) {
     snprintf(text, sizeof(text), "%s%s", ass, " is based on multiple rules.");
     rulebutton = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(fixedbutton), text);
 
+    addrulebutton = gtk_button_new_with_mnemonic("add/remove rule");
+
     gtk_label_set_selectable(GTK_LABEL(rulegridlabel), TRUE);
 
     gtk_grid_attach(GTK_GRID(rulegrid), rulegridlabel, 0, 0, WIDTH, 1);
     gtk_grid_attach(GTK_GRID(rulegrid), fixedbutton, 0, 1, 1, 1);
     fixedentry = addEntryToGrid(rulegrid, "Fixed amount:", 0, 2, FALSE);
     gtk_grid_attach(GTK_GRID(rulegrid), rulebutton, 0, 3, 1, 1);
+    gtk_grid_attach(GTK_GRID(rulegrid), addrulebutton, 0, 4, 1, 1);
 
-    g_signal_connect (G_OBJECT (fixedbutton), "toggled",
-	    G_CALLBACK (fixed_button_toggled),
-	    (gpointer) fixedentry);
-    g_signal_connect (G_OBJECT (rulebutton), "toggled",
-      G_CALLBACK (rule_button_toggled), NULL);
+    /* These two signals toggle the options on and off */
+    g_signal_connect(G_OBJECT(fixedbutton), "toggled",
+	    G_CALLBACK(fixed_button_toggled),
+	    (gpointer)fixedentry);
+    g_signal_connect(G_OBJECT(rulebutton), "toggled",
+	    G_CALLBACK(rule_button_toggled), addrulebutton);
+
+    /* This signal is to activate the dialog for the rule button to add or remove a rule */
+    g_signal_connect(G_OBJECT(addrulebutton), "clicked",
+	    G_CALLBACK(addremoverule), NULL);
+
+    /* the rule button should start with not being able to be clicked until the radio button 
+       for this option is on */
+    gtk_widget_set_sensitive(addrulebutton, FALSE);
 
     return rulegrid;
 }

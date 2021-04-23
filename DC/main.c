@@ -4,7 +4,7 @@
 #include "DCProgram.h"
 #include "actuarialfunctions.h"
 
-enum {UI = 1}; // set to 0 if you dont want the user interface, eventually this wont be possible
+enum {UI = 0}; // set to 0 if you dont want the user interface, eventually this wont be possible
 
 void userinterface(int, char **);
 void run(CurrentMember *cm);
