@@ -2,9 +2,9 @@
 #define HASHTABLE
 
 typedef struct list {
-  struct list *next;
-  char *key;
-  char *value;
+    struct list *next;
+    char *key;
+    char *value;
 } List;
 
 typedef struct {
