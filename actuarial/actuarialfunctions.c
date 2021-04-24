@@ -504,6 +504,9 @@ double calcCAP(CurrentMember *cm,
 	    value = (res + prem * (1 - tff.admincost) * ax) /
 		(Ex + 1.0/cm->X10 * tff.MIXEDPS * (Ax1 + tff.costKO * axcost));
 	    break;
+	default :
+	    printf("Error in %s: %d is not a valid tariff.\n", __func__, cm->tariff);
+	    exit(1);
     }
 
     return value;
@@ -560,6 +563,9 @@ double calcRES(CurrentMember *cm, int k,
 	    value = cap * (Ex + 1.0/cm->X10 * tff.MIXEDPS * (Ax1 + tff.costKO * axcost)) -
 		prem * (1 - tff.admincost) * ax;
 	    break;
+	default :
+	    printf("Error in %s: %d is not a valid tariff.\n", __func__, cm->tariff);
+	    exit(1);
     }
     return value;
 }

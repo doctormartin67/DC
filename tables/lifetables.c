@@ -5,7 +5,7 @@
 #include "lifetables.h"
 
 #define PATH "/home/doctormartin67/Projects/work/tables/tables/" //needs updating!!
-enum {TOTALTABLES = 32, MAXAGE = 130};
+enum {TOTALTABLES = 32, MAXAGE = 130, LENGTHLINE = 64};
 
 static const char *lifetables[6] =
 {"LXMR", "LXFR", "LXMK", "LXFK", "LXFK'", "Lxnihil"};
@@ -27,9 +27,9 @@ int lx(unsigned int ltindex, int age) {
 }
 
 static void makeLifeTable(const char *name, int *clt) { //clt = current life table
-    char line[64];
+    char line[LENGTHLINE];
     FILE *lt;
-    char value[64];
+    char value[LENGTHLINE];
     char *vp = value;
     char *lp = line;
     char path[128]; 
@@ -39,7 +39,7 @@ static void makeLifeTable(const char *name, int *clt) { //clt = current life tab
 	fprintf(stderr, "In function makeLifeTable: can't open %s\n", name);
 	exit(1);
     }
-    while((fgets(line, BUFSIZ, lt))) {
+    while((fgets(line, LENGTHLINE, lt))) {
 	lp = line;
 	while (*lp++ != ',') {
 	    ;

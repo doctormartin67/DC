@@ -187,7 +187,7 @@ void setkey(DataSet *ds) {
     char line[BUFSIZ];
     char *begin;
     int value = 1; // value to return
-    int i,j = 0;
+    int i = 0, j = 0;
     xl = ds->xl;
     while (*(xl->sheetname + i) != NULL) {
 	fp = opensheet(xl, *(xl->sheetname + i));
@@ -225,9 +225,9 @@ void setkey(DataSet *ds) {
 	    printf("Data starts at cell: %s%d\n", ds->keycolumn, ds->keyrow);
 	    return;
 	}
+	fclose(fp);
 	i++;
     }
-    fclose(fp);
     printf("warning: KEY was not found anywhere, ");
     printf("row 1 is therefore assumed for the key row, ");
     printf("column A is assumed as key column and ");
@@ -241,7 +241,7 @@ void countMembers(DataSet *ds) {
     FILE *fp;
     char column[3];
     int irow;
-    char srow[6];
+    char srow[16];
     char currentCell[10];
     char *temp;
 
@@ -272,7 +272,7 @@ void createData(DataSet *ds) {
     FILE *fp;
     char column[4]; // This holds the column of the beginning of our data cell, for example O
     int irow; // This holds the row of the beginning of our data cell, for example 11
-    char srow[6]; /* This holds the row in string form of the beginning of our data cell, 
+    char srow[16]; /* This holds the row in string form of the beginning of our data cell, 
 		     for example "11" */
     char keyCell[10]; // This will hold the cell of a key for the hashtable, for example O11
     char dataCell[10]; /* This will hold the cell of data corresponding to a key
@@ -350,7 +350,12 @@ void createData(DataSet *ds) {
 	       for is not found (== NULL) then there is nothing in the cell 
 	       in the excel file. We therefore set the data to 0 and go to
 	       next data cell.*/
-	    fgets(line, sizeof(line), fp);
+	    if (fgets(line, sizeof(line), fp) == NULL) {
+		printf("Error in %s: should never reach the end of the file before", __func__);
+		printf("all the members were created.\n");
+		exit(1);
+	    }
+
 	    while ((data = valueincell(ds->xl, line, dataCell)) == NULL) {
 
 		lookup(*(ds->keys + countkeys), "0", *(ds->Data + i));
