@@ -1,6 +1,8 @@
 # commands:
 CC = gcc
 RM = rm
+CP = cp
+MV = mv
 
 # paths:
 LIBPATH = /home/doctormartin67/Projects/library
@@ -15,6 +17,7 @@ MISCOBJS = $(TABLEPATH)/lifetables.o $(ACTPATH)/actuarialfunctions.o DCProgram.o
 LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/XLfunctions.o $(LIBPATH)/hashtable.o
 GTKOBJS = userinterface.o
 EXEC = main
+SCRIPT = runDC
 
 # flags: 
 # -g if you want to debug, 
@@ -32,18 +35,21 @@ LDFLAGS = -lm -lxlsxwriter#libraries to include: -lm is Math, -lxlsxwriter is an
 
 #***Start makefile***
 
+# phony targets:
+.PHONY: debug clean
+
 # targets:
 $(EXEC) debug: $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
-	$(CC) -o $(EXEC) $< $(MISCOBJS) $(LIBOBJS) $(GTKOBJS) $(LDFLAGS) $(GPROFFLAGS) $(GTK)
-	mv $(EXEC) $(BINPATH)
-	cp $(LIBPATH)/runDC $(BINPATH)
+	$(CC) -o $(EXEC) $^ $(LDFLAGS) $(GPROFFLAGS) $(GTK)
+	$(MV) $(EXEC) $(BINPATH)
+	$(CP) $(LIBPATH)/$(SCRIPT) $(BINPATH)
 
 $(EXEC): CFLAGS += $(OPTFLAGS)
 
 debug: CFLAGS += $(DEBUGFLAGS)
 
 clean:
-	$(RM) $(BINPATH)/$(EXEC) $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
+	$(RM) $(BINPATH)/$(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
 
 # dependencies:
 $(EXEC).o: %.o: %.c $(ACTPATH)/actuarialfunctions.h DCProgram.h
