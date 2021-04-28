@@ -48,7 +48,7 @@ List *lookup(char *t, char *value, Hashtable *ht) {
 	ht->list[hashval] = pht;
     }
     else
-	free((void *) pht->value);
+	free((void *)pht->value);
     if ((pht->value = strdup(value)) == NULL) {
 	perror(__func__);
 	exit(1);

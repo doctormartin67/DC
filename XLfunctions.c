@@ -165,7 +165,7 @@ FILE *opensheet(XLfile *xl, char *sheet) {
 }
 
 void nextcol(char *next) {
-    char *npt;
+    char *npt = next;
     int i = 0, j = 0, endindex = 0, finalindex = 0;
     /* endindex is the last index of the letters
        finalindex is the last index of the whole string*/
