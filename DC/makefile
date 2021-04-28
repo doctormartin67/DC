@@ -3,11 +3,13 @@ CC = gcc
 RM = rm
 CP = cp
 MV = mv
+CTAGS = ctags
 
 # paths:
-LIBPATH = /home/doctormartin67/Projects/library
-TABLEPATH = /home/doctormartin67/Projects/work/tables
-ACTPATH = /home/doctormartin67/Projects/work/actuarial
+PROJECTPATH = /home/doctormartin67/Projects
+LIBPATH = $(PROJECTPATH)/library
+TABLEPATH = $(PROJECTPATH)/work/tables
+ACTPATH = $(PROJECTPATH)/work/actuarial
 INCLUDE = -I. -I$(LIBPATH) -I$(TABLEPATH) -I$(ACTPATH)
 BINPATH = /home/doctormartin67/bin
 
@@ -32,6 +34,7 @@ DEBUGFLAGS = -g
 GPROFFLAGS = -pg
 CFLAGS = -Wall -Wshadow -Wextra $(GPROFFLAGS)
 LDFLAGS = -lm -lxlsxwriter#libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.
+CTAGSFLAGS = --c-kinds=+p
 
 #***Start makefile***
 
@@ -41,8 +44,9 @@ LDFLAGS = -lm -lxlsxwriter#libraries to include: -lm is Math, -lxlsxwriter is an
 # targets:
 $(EXEC) debug: $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
 	$(CC) -o $(EXEC) $^ $(LDFLAGS) $(GPROFFLAGS) $(GTK)
-	$(MV) $(EXEC) $(BINPATH)
+	$(CP) $(EXEC) $(BINPATH)
 	$(CP) $(LIBPATH)/$(SCRIPT) $(BINPATH)
+	$(CTAGS) -R $(CTAGSFLAGS) $(PROJECTPATH)/*
 
 $(EXEC): CFLAGS += $(OPTFLAGS)
 
@@ -52,25 +56,10 @@ clean:
 	$(RM) $(BINPATH)/$(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
 
 # dependencies:
-$(EXEC).o: %.o: %.c $(ACTPATH)/actuarialfunctions.h DCProgram.h
-	$(CC) -c $(INCLUDE) $< $(CFLAGS) 
-
 %.o: %.c
-	$(CC) $(INCLUDE) -c $< -o $@ $(CFLAGS) 
+	$(CC) $(INCLUDE) -c $< -o $@ $(GTK) $(CFLAGS) 
 
-$(TABLEPATH)/lifetables.o: %.o: %.h $(LIBPATH)/libraryheader.h
+dependencies: $(EXEC).c $(MISCOBJS:.o=.c) $(LIBOBJS:.o=.c) $(GTKOBJS:.o=.c)
+	$(CC) -M $(INCLUDE) $(GTK) $^ > $@
 
-$(ACTPATH)/actuarialfunctions.o: %.o: %.h $(LIBPATH)/hashtable.h
-
-$(LIBPATH)/helperfunctions.o: $(LIBPATH)/libraryheader.h 
-
-$(LIBPATH)/XLfunctions.o: $(LIBPATH)/libraryheader.h 
-
-$(LIBPATH)/hashtable.o: %.o: %.h $(LIBPATH)/libraryheader.h 
-
-DCProgram.o: %.o: %.h $(LIBPATH)/libraryheader.h
-
-client.o: DCProgram.h $(TABLEPATH)/lifetables.h
-
-userinterface.o: %.o: %.c
-	$(CC) -c $< -o $@ $(GTK) $(CFLAGS) 
+include dependencies
