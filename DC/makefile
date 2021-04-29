@@ -59,6 +59,7 @@ clean:
 %.o: %.c
 	$(CC) $(INCLUDE) -c $< -o $@ $(GTK) $(CFLAGS) 
 
+# clever way to add all dependencies, see page 723 of C in a nutshell.
 dependencies: $(EXEC).c $(MISCOBJS:.o=.c) $(LIBOBJS:.o=.c) $(GTKOBJS:.o=.c)
 	$(CC) -M $(INCLUDE) $(GTK) $^ > $@
 

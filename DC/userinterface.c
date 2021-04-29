@@ -4,9 +4,19 @@
 
 enum {WIDTH = 3, BORDER = 10}; // This is the width of the grids inside the notebook boxes
 
+/* This will be the default size of the window on start up. after that the user can adjust the 
+   window how he pleases. */
+enum {ROWSIZE = 600, COLUMNSIZE = 500}; 
+
 /* the following enum elements are self created response identifiers for the dialog used in
    the assumptions like salary increase and turnover that have specific rule */
 enum {RESPONSE_AGE, RESPONSE_NO_REGLEMENT, RESPONSE_CATEGORY};
+enum {MAXCOMMENT = 128}; // Maximum characters in a line of text, usually a comment
+
+typedef struct {
+    GtkWidget *grid;
+    unsigned short index;
+} Gridinput;
 
 void userinterface(int argc, char **argv);
 
@@ -16,13 +26,15 @@ static gboolean delete_event(GtkWidget *window, GdkEvent *event, gpointer data);
 static void fixed_button_toggled(GtkToggleButton *toggle, GtkWidget *other_toggle);
 static void rule_button_toggled(GtkToggleButton *toggle, GtkWidget *other_toggle);
 static void file_changed(GtkFileChooser *chooser, GtkLabel *label);
+static void addremoverule(GtkButton *button, gpointer data);
 
 // helper functions
 GtkWidget *createwindow(char *title, int width, int col, int row);
 GtkWidget *createrunbutton(GtkWidget *window, GtkWidget *windowbox);
 void createassgrid(GtkWidget *notebookbox);
 void addassnotebook(char *label, GtkWidget *notebook);
-GtkWidget *addEntryToGrid(GtkWidget *grid, char *name, int x, int y, gboolean isbold);
+GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, 
+	unsigned short entriescnt, gboolean isbold);
 
 /* a rule grid will consist of a grid with a label describing the rule, the two toggle buttons
    describing whether the assumption is a fixed amount of depends on a rule */
@@ -31,6 +43,7 @@ GtkWidget *createrulegrid(char *ass, char *comment);
 
 void userinterface(int argc, char **argv) {
     GtkWidget *window;
+    GtkWidget *scrolledwindow;
     GtkWidget *windowbox; // This will contain the notebook and Run button
     GtkWidget *notebook;
 
@@ -52,6 +65,10 @@ void userinterface(int argc, char **argv) {
 
     (void)createrunbutton(window, windowbox);
 
+    /* This will hold the window box so that everything will be scrollable, just in case there
+       are many assumptions that would make the window go off screen */
+    scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
+
     notebook = gtk_notebook_new();
     addassnotebook("Assumptions Last Year", notebook);
     addassnotebook("Assumptions This Year", notebook);
@@ -59,17 +76,18 @@ void userinterface(int argc, char **argv) {
 								  through tabs if there are 
 								  too many */
 
-    gtk_container_add (GTK_CONTAINER (windowbox), notebook);
-    gtk_container_add (GTK_CONTAINER (window), windowbox);
+    gtk_container_add(GTK_CONTAINER(windowbox), notebook);
+    gtk_container_add(GTK_CONTAINER(scrolledwindow), windowbox);
+    gtk_container_add(GTK_CONTAINER(window), scrolledwindow);
 
     /* This will show the window and all it's children inside the window. Note that it does
        not show the parent of the window (if any) and so it will be queued until the parent is shown */
-    gtk_widget_show_all (window);
+    gtk_widget_show_all(window);
 
     /* Hand control over to the main loop. */
     /* It will continue to run until gtk_main_quit() is called or the application
        terminates. It sleeps and waits for signals to be emitted. */
-    gtk_main ();
+    gtk_main();
 }
 
 //***Start signal functions***
@@ -120,12 +138,15 @@ static void file_changed (GtkFileChooser *chooser, GtkLabel *label) {
 }
 
 /* Create a new GtkDialog that can be used to add or remove a rule from the assumption. */
-static void addremoverule(GtkButton *button, GtkWindow *parent) {
-    GtkWidget *dialog, *label, *contentarea;
+static void addremoverule(GtkButton *button, gpointer data) {
+    GtkWidget *dialog, *label, *contentarea, **entry;
+    Gridinput *pdata = (Gridinput *)data;
+    unsigned short response;
+    char text[MAXCOMMENT];
 
     /* The dialog that will be created will have three options to choose from:
        add/remove age, add/remove plan rule, add/remove category */
-    dialog = gtk_dialog_new_with_buttons ("Add or remove a rule", parent, 
+    dialog = gtk_dialog_new_with_buttons ("Add or remove a rule", NULL, 
 	    GTK_DIALOG_MODAL,
 	    "AGE", RESPONSE_AGE, 
 	    "NO REGLEMENT",RESPONSE_NO_REGLEMENT, 
@@ -139,7 +160,24 @@ static void addremoverule(GtkButton *button, GtkWindow *parent) {
     gtk_widget_show_all(dialog);
 
     /* Create the dialog as modal and destroy it when a button is clicked. */
-    gtk_dialog_run(GTK_DIALOG (dialog));
+    response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    switch (response) {
+	case RESPONSE_AGE:
+	    strcpy(text, "Age: (f.e. 40 0.05 means assumption is 0.05 for Age<40)");
+	    break;
+	case RESPONSE_NO_REGLEMENT:
+	    strcpy(text, "Reglement:");
+	    break;
+	case RESPONSE_CATEGORY:
+	    strcpy(text, "Category:");
+	    break;
+	default:
+	    strcpy(text, "TBD");
+	    break;
+    }
+    entry = addEntryToGrid(pdata->grid, text, 0, pdata->index++, 2, FALSE);
+    gtk_widget_show_all(pdata->grid);
     gtk_widget_destroy(dialog);
 }
 //***End signal functions***
@@ -160,7 +198,12 @@ GtkWidget *createwindow(char *title, int width, int col, int row) {
        is the row width. the two numbers are the minimum size that the window can be. using -1
        for either col or row will force the widget to take its natural size. this can be useful
        if you only want to specify either col or row */
-    gtk_widget_set_size_request (window, col, row);
+    gtk_widget_set_size_request(window, col, row);
+
+    /* because a scrollable window will be added to this window, the default size needs to be set
+       just so that when the program starts, it's not really tiny. The user can still adjust 
+       the window how he pleases, this is just for initial start up */
+    gtk_window_set_default_size(GTK_WINDOW(window), COLUMNSIZE, ROWSIZE);
 
     /* https://developer.gnome.org/gtk3/stable/GtkWindow.html#gtk-window-set-title */
     gtk_window_set_title(GTK_WINDOW(window), title); 
@@ -208,7 +251,7 @@ void createassgrid(GtkWidget *notebookbox) {
     GtkWidget *assgrid, *assgridlabel, *expander, *rulegrid, *file, *filelabel;
     GtkFileFilter *filter;
     char *ass; // This will be the name of the assumption for which we need to create a grid
-    char text[128]; // used to set some text to bold using markup
+    char text[MAXCOMMENT]; // used to set some text to bold using markup
     int index = 0;
 
     assgrid = gtk_grid_new();	
@@ -236,9 +279,9 @@ void createassgrid(GtkWidget *notebookbox) {
     gtk_grid_attach(GTK_GRID(assgrid), assgridlabel, 0, index++, WIDTH, 1);
 
     /* Fixed entries in the grid, TRUE means they will be bold */ 
-    (void)addEntryToGrid(assgrid, "DOC: ", 1, index++, TRUE);
-    (void)addEntryToGrid(assgrid, "DR: ", 1, index++, TRUE);
-    (void)addEntryToGrid(assgrid, "Age Correction: ", 1, index++, TRUE);
+    (void)addEntryToGrid(assgrid, "DOC: ", 1, index++, 1, TRUE);
+    (void)addEntryToGrid(assgrid, "DR: ", 1, index++, 1, TRUE);
+    (void)addEntryToGrid(assgrid, "Age Correction: ", 1, index++, 1, TRUE);
 
     /* Salary increase is an assumption that might be based on multiple factors, such as category, 
        plan rules, age, ... */
@@ -253,7 +296,7 @@ void createassgrid(GtkWidget *notebookbox) {
     gtk_grid_attach(GTK_GRID(assgrid), expander, 1, index++, 3, 1);	
 
     /* Fixed entries in the grid, TRUE means they will be bold */ 
-    (void)addEntryToGrid(assgrid, "Inflation: ", 1, index++, TRUE);
+    (void)addEntryToGrid(assgrid, "Inflation: ", 1, index++, 1, TRUE);
 
     /* Turnover is an assumption that might be based on multiple factors, such as category, 
        plan rules, age, ... */
@@ -285,9 +328,11 @@ void addassnotebook(char *label, GtkWidget *notebook) {
 
 /* the assumptions grid consists of a label and an entry. This function will add one of these
    pairs to the grid */
-GtkWidget *addEntryToGrid(GtkWidget *grid, char *name, int x, int y, gboolean isbold) {
-    char text[128];
-    GtkWidget *label, *entry;
+GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, unsigned short entriescnt, 
+	gboolean isbold) {
+    char text[MAXCOMMENT];
+    GtkWidget *label, **entry;
+    entry = (GtkWidget **)calloc(entriescnt, sizeof(GtkWidget *));
 
     if (isbold) {
 	/* set label bold */
@@ -302,17 +347,21 @@ GtkWidget *addEntryToGrid(GtkWidget *grid, char *name, int x, int y, gboolean is
        copying the text). */
     gtk_label_set_selectable(GTK_LABEL(label), TRUE);
 
-    entry = gtk_entry_new();
+    for (int i = 0; i < entriescnt; i++)
+    entry[i] = gtk_entry_new();
 
     /* https://developer.gnome.org/gtk3/unstable/GtkGrid.html#gtk-grid-attach */
-    gtk_grid_attach(GTK_GRID(grid), label, x, y, 2, 1);	
-    gtk_grid_attach(GTK_GRID(grid), entry, x+2, y, 1, 1);	
+    gtk_grid_attach(GTK_GRID(grid), label, x, y, 1, 1);	
+    for (int i = 0; i < entriescnt; i++)
+	gtk_grid_attach(GTK_GRID(grid), entry[i], x+i+1, y, 1, 1);	
     return entry;
 }
 
 GtkWidget *createrulegrid(char *ass, char *comment) {
-    GtkWidget *rulegrid, *rulegridlabel, *fixedbutton, *rulebutton, *fixedentry, *addrulebutton;
-    char text[128];
+    GtkWidget *rulegrid, *rulegridlabel, *fixedbutton, *rulebutton, **fixedentry, *addrulebutton;
+    char text[MAXCOMMENT];
+    unsigned index = 0;
+    Gridinput *data = (Gridinput *)malloc(sizeof(Gridinput));
 
     rulegrid = gtk_grid_new();	
     rulegridlabel = gtk_label_new(NULL);
@@ -328,22 +377,28 @@ GtkWidget *createrulegrid(char *ass, char *comment) {
 
     gtk_label_set_selectable(GTK_LABEL(rulegridlabel), TRUE);
 
-    gtk_grid_attach(GTK_GRID(rulegrid), rulegridlabel, 0, 0, WIDTH, 1);
-    gtk_grid_attach(GTK_GRID(rulegrid), fixedbutton, 0, 1, 1, 1);
-    fixedentry = addEntryToGrid(rulegrid, "Fixed amount:", 0, 2, FALSE);
-    gtk_grid_attach(GTK_GRID(rulegrid), rulebutton, 0, 3, 1, 1);
-    gtk_grid_attach(GTK_GRID(rulegrid), addrulebutton, 0, 4, 1, 1);
+    gtk_grid_attach(GTK_GRID(rulegrid), rulegridlabel, 0, index++, WIDTH, 1);
+    gtk_grid_attach(GTK_GRID(rulegrid), fixedbutton, 0, index++, 1, 1);
+    fixedentry = addEntryToGrid(rulegrid, "Fixed amount:", 0, index++, 1, FALSE);
+    gtk_grid_attach(GTK_GRID(rulegrid), rulebutton, 0, index++, 1, 1);
+    gtk_grid_attach(GTK_GRID(rulegrid), addrulebutton, 0, index++, 1, 1);
+
+    /* when the button addremoverule is pressed, we need to add a rule to the grid, this is done
+       by using data as a parameter that has the grid and the index where the rule should be 
+       added */
+    data->grid = rulegrid;
+    data->index = index;
 
     /* These two signals toggle the options on and off */
     g_signal_connect(G_OBJECT(fixedbutton), "toggled",
 	    G_CALLBACK(fixed_button_toggled),
-	    (gpointer)fixedentry);
+	    (gpointer)*fixedentry);
     g_signal_connect(G_OBJECT(rulebutton), "toggled",
 	    G_CALLBACK(rule_button_toggled), addrulebutton);
 
     /* This signal is to activate the dialog for the rule button to add or remove a rule */
     g_signal_connect(G_OBJECT(addrulebutton), "clicked",
-	    G_CALLBACK(addremoverule), NULL);
+	    G_CALLBACK(addremoverule), (gpointer)data);
 
     /* the rule button should start with not being able to be clicked until the radio button 
        for this option is on */
