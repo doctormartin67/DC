@@ -5,10 +5,12 @@ Each sample counts as 0.01 seconds.
 
   %   cumulative   self              self     total           
  time   seconds   seconds    calls  Ts/call  Ts/call  name    
+  0.00      0.00     0.00       29     0.00     0.00  createdialog
+  0.00      0.00     0.00       15     0.00     0.00  addrule
+  0.00      0.00     0.00       14     0.00     0.00  removerule
   0.00      0.00     0.00       12     0.00     0.00  addEntryToGrid.constprop.0
   0.00      0.00     0.00        4     0.00     0.00  createrulegrid
   0.00      0.00     0.00        2     0.00     0.00  createassgrid
-  0.00      0.00     0.00        1     0.00     0.00  addEntryToGrid.constprop.1
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -49,21 +51,27 @@ notice and this notice are preserved.
 granularity: each sample hit covers 2 byte(s) no time propagated
 
 index % time    self  children    called     name
-                0.00    0.00       4/12          createrulegrid [2]
-                0.00    0.00       8/12          createassgrid [3]
-[1]      0.0    0.00    0.00      12         addEntryToGrid.constprop.0 [1]
+                0.00    0.00      29/29          addremoverule [16]
+[1]      0.0    0.00    0.00      29         createdialog [1]
 -----------------------------------------------
-                0.00    0.00       4/4           createassgrid [3]
-[2]      0.0    0.00    0.00       4         createrulegrid [2]
-                0.00    0.00       4/12          addEntryToGrid.constprop.0 [1]
+                0.00    0.00      15/15          addremoverule [16]
+[2]      0.0    0.00    0.00      15         addrule [2]
 -----------------------------------------------
-                0.00    0.00       2/2           userinterface [87]
-[3]      0.0    0.00    0.00       2         createassgrid [3]
-                0.00    0.00       8/12          addEntryToGrid.constprop.0 [1]
-                0.00    0.00       4/4           createrulegrid [2]
+                0.00    0.00      14/14          addremoverule [16]
+[3]      0.0    0.00    0.00      14         removerule [3]
 -----------------------------------------------
-                0.00    0.00       1/1           addremoverule [14]
-[4]      0.0    0.00    0.00       1         addEntryToGrid.constprop.1 [4]
+                0.00    0.00       4/12          createrulegrid [5]
+                0.00    0.00       8/12          createassgrid [6]
+[4]      0.0    0.00    0.00      12         addEntryToGrid.constprop.0 [4]
+-----------------------------------------------
+                0.00    0.00       4/4           createassgrid [6]
+[5]      0.0    0.00    0.00       4         createrulegrid [5]
+                0.00    0.00       4/12          addEntryToGrid.constprop.0 [4]
+-----------------------------------------------
+                0.00    0.00       2/2           userinterface [89]
+[6]      0.0    0.00    0.00       2         createassgrid [6]
+                0.00    0.00       8/12          addEntryToGrid.constprop.0 [4]
+                0.00    0.00       4/4           createrulegrid [5]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -156,5 +164,5 @@ notice and this notice are preserved.
 
 Index by function name
 
-   [1] addEntryToGrid.constprop.0 [3] createassgrid
-   [4] addEntryToGrid.constprop.1 [2] createrulegrid
+   [4] addEntryToGrid.constprop.0 [6] createassgrid        [5] createrulegrid
+   [2] addrule                 [1] createdialog            [3] removerule

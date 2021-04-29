@@ -12,10 +12,16 @@ enum {ROWSIZE = 600, COLUMNSIZE = 500};
    the assumptions like salary increase and turnover that have specific rule */
 enum {RESPONSE_AGE, RESPONSE_NO_REGLEMENT, RESPONSE_CATEGORY};
 enum {MAXCOMMENT = 128}; // Maximum characters in a line of text, usually a comment
+enum {RULEROWS = 3}; // Each rule consists of 3 rows
+
+enum {OFF, ON}; // determines whether a rule has been set on or off
 
 typedef struct {
     GtkWidget *grid;
     unsigned short index;
+    unsigned short ageset; // set to the index of age if age has been set
+    unsigned short reglementset; // set to the index of reglement if reglement has been set
+    unsigned short categoryset; // set to the index of category if category has been set
 } Gridinput;
 
 void userinterface(int argc, char **argv);
@@ -35,10 +41,13 @@ static void createassgrid(GtkWidget *notebookbox);
 static void addassnotebook(char *label, GtkWidget *notebook);
 static GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, 
 	unsigned short entriescnt, gboolean isbold);
+static GtkWidget *createdialog(gpointer data);
 
 /* a rule grid will consist of a grid with a label describing the rule, the two toggle buttons
    describing whether the assumption is a fixed amount of depends on a rule */
 static GtkWidget *createrulegrid(char *ass, char *comment);
+static void addrule(int rule, gpointer data);
+static void removerule(int rule, gpointer data);
 
 void userinterface(int argc, char **argv) {
     GtkWidget *window;
@@ -138,19 +147,14 @@ static void file_changed (GtkFileChooser *chooser, GtkLabel *label) {
 
 /* Create a new GtkDialog that can be used to add or remove a rule from the assumption. */
 static void addremoverule(GtkButton *button, gpointer data) {
-    GtkWidget *dialog, *label, *contentarea, **entry, *asslabel, *rulelabel, *explanationlabel;
+    GtkWidget *dialog, *label, *contentarea;
     Gridinput *pdata = (Gridinput *)data;
     unsigned short response;
-    char text[MAXCOMMENT];
 
     /* The dialog that will be created will have three options to choose from:
        add/remove age, add/remove plan rule, add/remove category */
-    dialog = gtk_dialog_new_with_buttons ("Add or remove a rule", NULL, 
-	    GTK_DIALOG_MODAL,
-	    "AGE", RESPONSE_AGE, 
-	    "NO REGLEMENT",RESPONSE_NO_REGLEMENT, 
-	    "CATEGORY", RESPONSE_CATEGORY,
-	    NULL);
+    dialog = createdialog(data);
+
     label = gtk_label_new("Pick a rule to add or remove:");
     contentarea = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
     gtk_container_add(GTK_CONTAINER(contentarea), label);
@@ -162,27 +166,32 @@ static void addremoverule(GtkButton *button, gpointer data) {
     response = gtk_dialog_run(GTK_DIALOG(dialog));
 
     /* asslabel is just the label that goes above the amount of the assumption */
-    asslabel = gtk_label_new("Amount");
     switch (response) {
 	case RESPONSE_AGE:
-	    strcpy(text, "Age");
-	    rulelabel = gtk_label_new(text);
-	    explanationlabel = gtk_label_new("f.e.: Age = 40 and Amount is 0.05 means for Age < 40 the amount will be 0.05");
-	    gtk_grid_attach(GTK_GRID(pdata->grid), explanationlabel, 0, pdata->index++, 3, 1);
-	    gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, 0, pdata->index, 1, 1);
-	    gtk_grid_attach(GTK_GRID(pdata->grid), asslabel, 1, pdata->index++, 1, 1);
-	    entry = addEntryToGrid(pdata->grid, NULL, 0, pdata->index++, 2, FALSE);
+	    if (pdata->ageset == OFF) {
+		addrule(response, data);
+	    }
+	    else {
+		removerule(response, data);
+	    }
 	    break;
 	case RESPONSE_NO_REGLEMENT:
-	    strcpy(text, "Reglement:");
-	    entry = addEntryToGrid(pdata->grid, text, 0, pdata->index++, 2, FALSE);
+	    if (pdata->reglementset == OFF) {
+		addrule(response, data);
+	    }
+	    else {
+		removerule(response, data);
+	    }
 	    break;
 	case RESPONSE_CATEGORY:
-	    strcpy(text, "Category:");
-	    entry = addEntryToGrid(pdata->grid, text, 0, pdata->index++, 2, FALSE);
+	    if (pdata->categoryset == OFF) {
+		addrule(response, data);
+	    }
+	    else {
+		removerule(response, data);
+	    }
 	    break;
 	default:
-	    strcpy(text, "TBD");
 	    break;
     }
     gtk_widget_show_all(pdata->grid);
@@ -191,7 +200,7 @@ static void addremoverule(GtkButton *button, gpointer data) {
 //***End signal functions***
 
 //***Start helper functions***
-GtkWidget *createwindow(char *title, int width, int col, int row) {
+static GtkWidget *createwindow(char *title, int width, int col, int row) {
     GtkWidget *window;
 
     /* Create a new window and give it a title */
@@ -231,7 +240,7 @@ GtkWidget *createwindow(char *title, int width, int col, int row) {
     return window;
 }
 
-GtkWidget *createrunbutton(GtkWidget *window, GtkWidget *windowbox) {
+static GtkWidget *createrunbutton(GtkWidget *window, GtkWidget *windowbox) {
     GtkWidget *button;
 
     button = gtk_button_new_with_label("Run");
@@ -255,7 +264,7 @@ GtkWidget *createrunbutton(GtkWidget *window, GtkWidget *windowbox) {
 }
 
 /* each notebook page has a verticle box where a grid gets added to pick the assumptions. */
-void createassgrid(GtkWidget *notebookbox) {
+static void createassgrid(GtkWidget *notebookbox) {
     GtkWidget *assgrid, *assgridlabel, *expander, *rulegrid, *file, *filelabel;
     GtkFileFilter *filter;
     char *ass; // This will be the name of the assumption for which we need to create a grid
@@ -324,7 +333,7 @@ void createassgrid(GtkWidget *notebookbox) {
 
 /* add a page to the notebook. there will only be two pages, one with last year assumptions and 
    one with this year assumptions. */
-void addassnotebook(char *label, GtkWidget *notebook) {
+static void addassnotebook(char *label, GtkWidget *notebook) {
     GtkWidget *notebookbox, *asslabel;
     notebookbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     createassgrid(notebookbox);
@@ -337,8 +346,8 @@ void addassnotebook(char *label, GtkWidget *notebook) {
 /* the assumptions grid consists of a label and an entry. This function will add one of these
    pairs to the grid. If name == NULL then there is no label and the entries are shifted to the
    left. */
-GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, unsigned short entriescnt, 
-	gboolean isbold) {
+static GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, 
+	unsigned short entriescnt, gboolean isbold) {
     char text[MAXCOMMENT];
     GtkWidget *label, **entry;
     entry = (GtkWidget **)calloc(entriescnt, sizeof(GtkWidget *));
@@ -367,7 +376,7 @@ GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, unsigned s
     return entry;
 }
 
-GtkWidget *createrulegrid(char *ass, char *comment) {
+static GtkWidget *createrulegrid(char *ass, char *comment) {
     GtkWidget *rulegrid, *rulegridlabel, *fixedbutton, *rulebutton, **fixedentry, *addrulebutton;
     char text[MAXCOMMENT];
     unsigned index = 0;
@@ -398,6 +407,9 @@ GtkWidget *createrulegrid(char *ass, char *comment) {
        added */
     data->grid = rulegrid;
     data->index = index;
+    data->ageset = OFF;
+    data->reglementset = OFF;
+    data->categoryset = OFF;
 
     /* These two signals toggle the options on and off */
     g_signal_connect(G_OBJECT(fixedbutton), "toggled",
@@ -415,5 +427,98 @@ GtkWidget *createrulegrid(char *ass, char *comment) {
     gtk_widget_set_sensitive(addrulebutton, FALSE);
 
     return rulegrid;
+}
+
+static GtkWidget *createdialog(gpointer data) {
+    GtkWidget *dialog;
+    char agetext[MAXCOMMENT];
+    char reglementtext[MAXCOMMENT];
+    char categorytext[MAXCOMMENT];
+    Gridinput *pdata = (Gridinput *)data;
+
+    (pdata->ageset ? strcpy(agetext, "remove Age") : 
+     strcpy(agetext, "add Age"));
+    (pdata->reglementset ? strcpy(reglementtext, "remove Reglement") : 
+     strcpy(reglementtext, "add Reglement"));
+    (pdata->categoryset ? strcpy(categorytext, "remove Category") : 
+     strcpy(categorytext, "add Category"));
+
+    dialog = gtk_dialog_new_with_buttons ("Add or remove a rule", NULL, 
+	    GTK_DIALOG_MODAL,
+	    agetext, RESPONSE_AGE, 
+	    reglementtext,RESPONSE_NO_REGLEMENT, 
+	    categorytext, RESPONSE_CATEGORY,
+	    NULL);
+    
+    return dialog;
+}
+
+static void addrule(int rule, gpointer data) {
+    GtkWidget *asslabel, *rulelabel, *explanationlabel;
+    Gridinput *pdata = (Gridinput *)data;
+    char text[MAXCOMMENT];
+    char comment[MAXCOMMENT];
+
+    switch (rule) {
+	case RESPONSE_AGE:
+	    pdata->ageset = pdata->index;
+	    strcpy(text, "AGE");
+	    strcpy(comment, "Age something");
+	    break;
+	case RESPONSE_NO_REGLEMENT:
+	    pdata->reglementset = pdata->index;
+	    strcpy(text, "NO REGLEMENT");
+	    strcpy(comment, "");
+	    break;
+	case RESPONSE_CATEGORY:
+	    pdata->categoryset = pdata->index;
+	    strcpy(text, "CATEGORY");
+	    strcpy(comment, "");
+	    break;
+	default:
+	    return;
+    }
+
+    asslabel = gtk_label_new("Amount");
+    rulelabel = gtk_label_new(text);
+    explanationlabel = gtk_label_new(comment);
+    gtk_grid_attach(GTK_GRID(pdata->grid), explanationlabel, 0, pdata->index++, 3, 1);
+    gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, 0, pdata->index, 1, 1);
+    gtk_grid_attach(GTK_GRID(pdata->grid), asslabel, 1, pdata->index++, 1, 1);
+    (void)addEntryToGrid(pdata->grid, NULL, 0, pdata->index++, 2, FALSE);
+}
+
+static void removerule(int rule, gpointer data) {
+   unsigned short row;
+   Gridinput *pdata = (Gridinput *)data;
+
+   switch (rule) {
+	case RESPONSE_AGE:
+	    row = pdata->ageset;
+	    pdata->ageset = OFF;
+	    break;
+	case RESPONSE_NO_REGLEMENT:
+	    row = pdata->reglementset;
+	    pdata->reglementset = OFF;
+	    break;
+	case RESPONSE_CATEGORY:
+	    row = pdata->categoryset;
+	    pdata->categoryset = OFF;
+	    break;
+	default:
+	    return;
+   }
+
+   for (int i = 0; i < RULEROWS; i++)
+       gtk_grid_remove_row(GTK_GRID(pdata->grid), row);
+
+   /* shift the indices up */
+   pdata->index -= RULEROWS;
+   if (pdata->ageset > row)
+       pdata->ageset -= RULEROWS;
+   if (pdata->reglementset > row)
+       pdata->reglementset -= RULEROWS;
+   if (pdata->categoryset > row)
+       pdata->categoryset -= RULEROWS;
 }
 //***End helper functions***
