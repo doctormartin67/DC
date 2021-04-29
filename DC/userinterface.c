@@ -29,17 +29,16 @@ static void file_changed(GtkFileChooser *chooser, GtkLabel *label);
 static void addremoverule(GtkButton *button, gpointer data);
 
 // helper functions
-GtkWidget *createwindow(char *title, int width, int col, int row);
-GtkWidget *createrunbutton(GtkWidget *window, GtkWidget *windowbox);
-void createassgrid(GtkWidget *notebookbox);
-void addassnotebook(char *label, GtkWidget *notebook);
-GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, 
+static GtkWidget *createwindow(char *title, int width, int col, int row);
+static GtkWidget *createrunbutton(GtkWidget *window, GtkWidget *windowbox);
+static void createassgrid(GtkWidget *notebookbox);
+static void addassnotebook(char *label, GtkWidget *notebook);
+static GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, 
 	unsigned short entriescnt, gboolean isbold);
 
 /* a rule grid will consist of a grid with a label describing the rule, the two toggle buttons
    describing whether the assumption is a fixed amount of depends on a rule */
-GtkWidget *createrulegrid(char *ass, char *comment);
-
+static GtkWidget *createrulegrid(char *ass, char *comment);
 
 void userinterface(int argc, char **argv) {
     GtkWidget *window;
@@ -139,7 +138,7 @@ static void file_changed (GtkFileChooser *chooser, GtkLabel *label) {
 
 /* Create a new GtkDialog that can be used to add or remove a rule from the assumption. */
 static void addremoverule(GtkButton *button, gpointer data) {
-    GtkWidget *dialog, *label, *contentarea, **entry;
+    GtkWidget *dialog, *label, *contentarea, **entry, *asslabel, *rulelabel, *explanationlabel;
     Gridinput *pdata = (Gridinput *)data;
     unsigned short response;
     char text[MAXCOMMENT];
@@ -162,21 +161,30 @@ static void addremoverule(GtkButton *button, gpointer data) {
     /* Create the dialog as modal and destroy it when a button is clicked. */
     response = gtk_dialog_run(GTK_DIALOG(dialog));
 
+    /* asslabel is just the label that goes above the amount of the assumption */
+    asslabel = gtk_label_new("Amount");
     switch (response) {
 	case RESPONSE_AGE:
-	    strcpy(text, "Age: (f.e. 40 0.05 means assumption is 0.05 for Age<40)");
+	    strcpy(text, "Age");
+	    rulelabel = gtk_label_new(text);
+	    explanationlabel = gtk_label_new("f.e.: Age = 40 and Amount is 0.05 means for Age < 40 the amount will be 0.05");
+	    gtk_grid_attach(GTK_GRID(pdata->grid), explanationlabel, 0, pdata->index++, 3, 1);
+	    gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, 0, pdata->index, 1, 1);
+	    gtk_grid_attach(GTK_GRID(pdata->grid), asslabel, 1, pdata->index++, 1, 1);
+	    entry = addEntryToGrid(pdata->grid, NULL, 0, pdata->index++, 2, FALSE);
 	    break;
 	case RESPONSE_NO_REGLEMENT:
 	    strcpy(text, "Reglement:");
+	    entry = addEntryToGrid(pdata->grid, text, 0, pdata->index++, 2, FALSE);
 	    break;
 	case RESPONSE_CATEGORY:
 	    strcpy(text, "Category:");
+	    entry = addEntryToGrid(pdata->grid, text, 0, pdata->index++, 2, FALSE);
 	    break;
 	default:
 	    strcpy(text, "TBD");
 	    break;
     }
-    entry = addEntryToGrid(pdata->grid, text, 0, pdata->index++, 2, FALSE);
     gtk_widget_show_all(pdata->grid);
     gtk_widget_destroy(dialog);
 }
@@ -327,7 +335,8 @@ void addassnotebook(char *label, GtkWidget *notebook) {
 }
 
 /* the assumptions grid consists of a label and an entry. This function will add one of these
-   pairs to the grid */
+   pairs to the grid. If name == NULL then there is no label and the entries are shifted to the
+   left. */
 GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, unsigned short entriescnt, 
 	gboolean isbold) {
     char text[MAXCOMMENT];
@@ -348,12 +357,13 @@ GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, unsigned s
     gtk_label_set_selectable(GTK_LABEL(label), TRUE);
 
     for (int i = 0; i < entriescnt; i++)
-    entry[i] = gtk_entry_new();
+	entry[i] = gtk_entry_new();
 
     /* https://developer.gnome.org/gtk3/unstable/GtkGrid.html#gtk-grid-attach */
-    gtk_grid_attach(GTK_GRID(grid), label, x, y, 1, 1);	
+    if (name)
+	gtk_grid_attach(GTK_GRID(grid), label, x, y, 1, 1);	
     for (int i = 0; i < entriescnt; i++)
-	gtk_grid_attach(GTK_GRID(grid), entry[i], x+i+1, y, 1, 1);	
+	gtk_grid_attach(GTK_GRID(grid), entry[i], x+i+(name ? 1 : 0), y, 1, 1);	
     return entry;
 }
 
@@ -378,9 +388,9 @@ GtkWidget *createrulegrid(char *ass, char *comment) {
     gtk_label_set_selectable(GTK_LABEL(rulegridlabel), TRUE);
 
     gtk_grid_attach(GTK_GRID(rulegrid), rulegridlabel, 0, index++, WIDTH, 1);
-    gtk_grid_attach(GTK_GRID(rulegrid), fixedbutton, 0, index++, 1, 1);
+    gtk_grid_attach(GTK_GRID(rulegrid), fixedbutton, 0, index++, WIDTH, 1);
     fixedentry = addEntryToGrid(rulegrid, "Fixed amount:", 0, index++, 1, FALSE);
-    gtk_grid_attach(GTK_GRID(rulegrid), rulebutton, 0, index++, 1, 1);
+    gtk_grid_attach(GTK_GRID(rulegrid), rulebutton, 0, index++, WIDTH, 1);
     gtk_grid_attach(GTK_GRID(rulegrid), addrulebutton, 0, index++, 1, 1);
 
     /* when the button addremoverule is pressed, we need to add a rule to the grid, this is done
