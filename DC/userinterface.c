@@ -8,21 +8,25 @@ enum {WIDTH = 3, BORDER = 10}; // This is the width of the grids inside the note
    window how he pleases. */
 enum {ROWSIZE = 600, COLUMNSIZE = 500}; 
 
-/* the following enum elements are self created response identifiers for the dialog used in
-   the assumptions like salary increase and turnover that have specific rule */
-enum {RESPONSE_AGE, RESPONSE_NO_REGLEMENT, RESPONSE_CATEGORY};
-enum {MAXCOMMENT = 128}; // Maximum characters in a line of text, usually a comment
+enum {MAXLENGTH = 128}; // Maximum characters in a line of text, usually a comment
 enum {RULEROWS = 3}; // Each rule consists of 3 rows
 
 enum {OFF, ON}; // determines whether a rule has been set on or off
 
 typedef struct {
-    GtkWidget *grid;
     unsigned short index;
-    unsigned short ageset; // set to the index of age if age has been set
-    unsigned short reglementset; // set to the index of reglement if reglement has been set
-    unsigned short categoryset; // set to the index of category if category has been set
-} Gridinput;
+    unsigned short response;
+    char name[MAXLENGTH]; // name of the rule, f.e. Age
+    char comment[MAXLENGTH]; /* Comment to explain rule for the user. 
+				(this will be above the entries) */
+} Rule;
+
+typedef struct {
+    unsigned short index; // This will be the next place where an element will be added to the grid
+    unsigned short rulecnt; // current amount of rules
+    Rule *rules; // each grid will have a set of rules, f.e. Age, category, ...
+    GtkWidget *grid;
+} Grid;
 
 void userinterface(int argc, char **argv);
 
@@ -46,8 +50,9 @@ static GtkWidget *createdialog(gpointer data);
 /* a rule grid will consist of a grid with a label describing the rule, the two toggle buttons
    describing whether the assumption is a fixed amount of depends on a rule */
 static GtkWidget *createrulegrid(char *ass, char *comment);
-static void addrule(int rule, gpointer data);
-static void removerule(int rule, gpointer data);
+static void addrule(Rule *rule, gpointer data);
+static void removerule(Rule *rule, gpointer data);
+void newRule(Grid *, char *name, char *comment);
 
 void userinterface(int argc, char **argv) {
     GtkWidget *window;
@@ -148,8 +153,10 @@ static void file_changed (GtkFileChooser *chooser, GtkLabel *label) {
 /* Create a new GtkDialog that can be used to add or remove a rule from the assumption. */
 static void addremoverule(GtkButton *button, gpointer data) {
     GtkWidget *dialog, *label, *contentarea;
-    Gridinput *pdata = (Gridinput *)data;
+    Grid *pdata = (Grid *)data;
+    Rule *rule = pdata->rules;
     unsigned short response;
+    int i = 0;
 
     /* The dialog that will be created will have three options to choose from:
        add/remove age, add/remove plan rule, add/remove category */
@@ -165,35 +172,15 @@ static void addremoverule(GtkButton *button, gpointer data) {
     /* Create the dialog as modal and destroy it when a button is clicked. */
     response = gtk_dialog_run(GTK_DIALOG(dialog));
 
-    /* asslabel is just the label that goes above the amount of the assumption */
-    switch (response) {
-	case RESPONSE_AGE:
-	    if (pdata->ageset == OFF) {
-		addrule(response, data);
-	    }
-	    else {
-		removerule(response, data);
-	    }
-	    break;
-	case RESPONSE_NO_REGLEMENT:
-	    if (pdata->reglementset == OFF) {
-		addrule(response, data);
-	    }
-	    else {
-		removerule(response, data);
-	    }
-	    break;
-	case RESPONSE_CATEGORY:
-	    if (pdata->categoryset == OFF) {
-		addrule(response, data);
-	    }
-	    else {
-		removerule(response, data);
-	    }
-	    break;
-	default:
-	    break;
-    }
+    while (i < pdata->rulecnt && rule[i].response != response)
+	i++;
+    if (i == pdata->rulecnt)
+	; // user closed window, thus didn't choose anything so no need to do anything
+    else if (rule[i].index == OFF)
+	addrule(rule + i, data);
+    else
+	removerule(rule + i, data);
+
     gtk_widget_show_all(pdata->grid);
     gtk_widget_destroy(dialog);
 }
@@ -268,7 +255,7 @@ static void createassgrid(GtkWidget *notebookbox) {
     GtkWidget *assgrid, *assgridlabel, *expander, *rulegrid, *file, *filelabel;
     GtkFileFilter *filter;
     char *ass; // This will be the name of the assumption for which we need to create a grid
-    char text[MAXCOMMENT]; // used to set some text to bold using markup
+    char text[MAXLENGTH]; // used to set some text to bold using markup
     int index = 0;
 
     assgrid = gtk_grid_new();	
@@ -348,7 +335,7 @@ static void addassnotebook(char *label, GtkWidget *notebook) {
    left. */
 static GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, 
 	unsigned short entriescnt, gboolean isbold) {
-    char text[MAXCOMMENT];
+    char text[MAXLENGTH];
     GtkWidget *label, **entry;
     entry = (GtkWidget **)calloc(entriescnt, sizeof(GtkWidget *));
 
@@ -378,9 +365,9 @@ static GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y,
 
 static GtkWidget *createrulegrid(char *ass, char *comment) {
     GtkWidget *rulegrid, *rulegridlabel, *fixedbutton, *rulebutton, **fixedentry, *addrulebutton;
-    char text[MAXCOMMENT];
+    char text[MAXLENGTH];
     unsigned index = 0;
-    Gridinput *data = (Gridinput *)malloc(sizeof(Gridinput));
+    Grid *data = (Grid *)malloc(sizeof(Grid));
 
     rulegrid = gtk_grid_new();	
     rulegridlabel = gtk_label_new(NULL);
@@ -407,9 +394,12 @@ static GtkWidget *createrulegrid(char *ass, char *comment) {
        added */
     data->grid = rulegrid;
     data->index = index;
-    data->ageset = OFF;
-    data->reglementset = OFF;
-    data->categoryset = OFF;
+    data->rules = NULL;
+    data->rulecnt = 0;
+
+    newRule(data, "AGE", "Age < 25, Age < 30, ...");
+    newRule(data, "NO REGLEMENT", "Make sure the plan rules correspond to the data");
+    newRule(data, "CATEGORY", "Make sure the categories correspond to the data");
 
     /* These two signals toggle the options on and off */
     g_signal_connect(G_OBJECT(fixedbutton), "toggled",
@@ -431,94 +421,87 @@ static GtkWidget *createrulegrid(char *ass, char *comment) {
 
 static GtkWidget *createdialog(gpointer data) {
     GtkWidget *dialog;
-    char agetext[MAXCOMMENT];
-    char reglementtext[MAXCOMMENT];
-    char categorytext[MAXCOMMENT];
-    Gridinput *pdata = (Gridinput *)data;
+    Grid *pdata = (Grid *)data;
+    Rule *rule = pdata->rules;
+    char text[MAXLENGTH * 2];
+    int i = 0;
 
-    (pdata->ageset ? strcpy(agetext, "remove Age") : 
-     strcpy(agetext, "add Age"));
-    (pdata->reglementset ? strcpy(reglementtext, "remove Reglement") : 
-     strcpy(reglementtext, "add Reglement"));
-    (pdata->categoryset ? strcpy(categorytext, "remove Category") : 
-     strcpy(categorytext, "add Category"));
+    dialog = gtk_dialog_new();
+    gtk_window_set_title(GTK_WINDOW(dialog), "Choose rule to add/remove");
 
-    dialog = gtk_dialog_new_with_buttons ("Add or remove a rule", NULL, 
-	    GTK_DIALOG_MODAL,
-	    agetext, RESPONSE_AGE, 
-	    reglementtext,RESPONSE_NO_REGLEMENT, 
-	    categorytext, RESPONSE_CATEGORY,
-	    NULL);
-    
+    while (i < pdata->rulecnt) {
+	if (rule[i].index)
+	    snprintf(text, sizeof(text), "%s%s", "Remove ", rule[i].name);
+	else	
+	    snprintf(text, sizeof(text), "%s%s", "Add ", rule[i].name);
+
+	gtk_dialog_add_button(GTK_DIALOG(dialog), text, rule[i].response);
+	i++;
+    }
+
     return dialog;
 }
 
-static void addrule(int rule, gpointer data) {
+static void addrule(Rule *rule, gpointer data) {
     GtkWidget *asslabel, *rulelabel, *explanationlabel;
-    Gridinput *pdata = (Gridinput *)data;
-    char text[MAXCOMMENT];
-    char comment[MAXCOMMENT];
+    Grid *pdata = (Grid *)data;
 
-    switch (rule) {
-	case RESPONSE_AGE:
-	    pdata->ageset = pdata->index;
-	    strcpy(text, "AGE");
-	    strcpy(comment, "Age something");
-	    break;
-	case RESPONSE_NO_REGLEMENT:
-	    pdata->reglementset = pdata->index;
-	    strcpy(text, "NO REGLEMENT");
-	    strcpy(comment, "");
-	    break;
-	case RESPONSE_CATEGORY:
-	    pdata->categoryset = pdata->index;
-	    strcpy(text, "CATEGORY");
-	    strcpy(comment, "");
-	    break;
-	default:
-	    return;
-    }
-
+    rule->index = pdata->index;
     asslabel = gtk_label_new("Amount");
-    rulelabel = gtk_label_new(text);
-    explanationlabel = gtk_label_new(comment);
+    rulelabel = gtk_label_new(rule->name);
+    explanationlabel = gtk_label_new(rule->comment);
     gtk_grid_attach(GTK_GRID(pdata->grid), explanationlabel, 0, pdata->index++, 3, 1);
     gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, 0, pdata->index, 1, 1);
     gtk_grid_attach(GTK_GRID(pdata->grid), asslabel, 1, pdata->index++, 1, 1);
     (void)addEntryToGrid(pdata->grid, NULL, 0, pdata->index++, 2, FALSE);
 }
 
-static void removerule(int rule, gpointer data) {
-   unsigned short row;
-   Gridinput *pdata = (Gridinput *)data;
+static void removerule(Rule *rule, gpointer data) {
+    unsigned short row;
+    Grid *pdata = (Grid *)data;
+    Rule *prules = pdata->rules;
+    int j = 0;
 
-   switch (rule) {
-	case RESPONSE_AGE:
-	    row = pdata->ageset;
-	    pdata->ageset = OFF;
-	    break;
-	case RESPONSE_NO_REGLEMENT:
-	    row = pdata->reglementset;
-	    pdata->reglementset = OFF;
-	    break;
-	case RESPONSE_CATEGORY:
-	    row = pdata->categoryset;
-	    pdata->categoryset = OFF;
-	    break;
-	default:
-	    return;
-   }
+    row = rule->index;
+    rule->index = OFF;
 
-   for (int i = 0; i < RULEROWS; i++)
-       gtk_grid_remove_row(GTK_GRID(pdata->grid), row);
+    for (int i = 0; i < RULEROWS; i++)
+	gtk_grid_remove_row(GTK_GRID(pdata->grid), row);
 
-   /* shift the indices up */
-   pdata->index -= RULEROWS;
-   if (pdata->ageset > row)
-       pdata->ageset -= RULEROWS;
-   if (pdata->reglementset > row)
-       pdata->reglementset -= RULEROWS;
-   if (pdata->categoryset > row)
-       pdata->categoryset -= RULEROWS;
+    /* shift the indices up */
+    pdata->index -= RULEROWS;
+
+    while (j < pdata->rulecnt) {
+	if (prules[j].index > row)
+	    prules[j].index -= RULEROWS;
+	j++;
+    }
+}
+
+void newRule(Grid *data, char *name, char *comment) {
+    int i;
+
+    if (strlen(name) - 1 > MAXLENGTH) {
+	printf("ERROR in %s: %s is too big of a name\n", __func__, name);
+	exit(1);
+    }
+    if (strlen(comment) - 1 > MAXLENGTH) {
+	printf("ERROR in %s: %s is too big of a comment\n", __func__, comment);
+	exit(1);
+    }
+
+    if (data->rules == NULL) {
+	data->rules = (Rule *)malloc(sizeof(Rule)); 
+	data->rulecnt = 1;
+    }
+    else
+	data->rules = (Rule *)realloc(data->rules, sizeof(Rule) * (++data->rulecnt));
+
+    i = data->rulecnt - 1; // Last created rule
+
+    data->rules[i].index = OFF;
+    data->rules[i].response = i;
+    strcpy(data->rules[i].name, name);
+    strcpy(data->rules[i].comment, comment);
 }
 //***End helper functions***
