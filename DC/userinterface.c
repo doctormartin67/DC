@@ -9,13 +9,13 @@ enum {WIDTH = 3, BORDER = 10}; // This is the width of the grids inside the note
 enum {ROWSIZE = 600, COLUMNSIZE = 500}; 
 
 enum {MAXLENGTH = 128}; // Maximum characters in a line of text, usually a comment
-enum {RULEROWS = 3}; // Each rule consists of 3 rows
 
 enum {OFF, ON}; // determines whether a rule has been set on or off
 
 typedef struct {
     unsigned short index;
     unsigned short response;
+    unsigned short rows; // the amount of rows the rule takes in the grid
     char name[MAXLENGTH]; // name of the rule, f.e. Age
     char comment[MAXLENGTH]; /* Comment to explain rule for the user. 
 				(this will be above the entries) */
@@ -443,17 +443,31 @@ static GtkWidget *createdialog(gpointer data) {
 }
 
 static void addrule(Rule *rule, gpointer data) {
-    GtkWidget *asslabel, *rulelabel, *explanationlabel;
+    GtkWidget *asslabel, *rulelabel, *explanationlabel, *entrybutton;
+
+    /* data is a gpointer (void *) and thus needs to be cast as Grid * to be used */
     Grid *pdata = (Grid *)data;
 
+    /* The rule will be placed at the next index available in the grid */
     rule->index = pdata->index;
+
+    /* Labels of the rule */
     asslabel = gtk_label_new("Amount");
     rulelabel = gtk_label_new(rule->name);
     explanationlabel = gtk_label_new(rule->comment);
+
+    /* This button will be used to add an entry to the grid */
+    entrybutton = gtk_button_new_with_mnemonic("Add entry");
+
     gtk_grid_attach(GTK_GRID(pdata->grid), explanationlabel, 0, pdata->index++, 3, 1);
+    rule->rows++;
     gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, 0, pdata->index, 1, 1);
     gtk_grid_attach(GTK_GRID(pdata->grid), asslabel, 1, pdata->index++, 1, 1);
+    rule->rows++;
     (void)addEntryToGrid(pdata->grid, NULL, 0, pdata->index++, 2, FALSE);
+    rule->rows++;
+    gtk_grid_attach(GTK_GRID(pdata->grid), entrybutton, 1, pdata->index++, 1, 1);
+    rule->rows++;
 }
 
 static void removerule(Rule *rule, gpointer data) {
@@ -462,20 +476,27 @@ static void removerule(Rule *rule, gpointer data) {
     Rule *prules = pdata->rules;
     int j = 0;
 
+    /* This is the row that needs to be deleted until we reach next rule or end of grid */
     row = rule->index;
+
+    /* Turn the rule of because we removed it from grid */
     rule->index = OFF;
 
-    for (int i = 0; i < RULEROWS; i++)
+    /* remove all the rows in the grid corresponding to the rule */
+    for (int i = 0; i < rule->rows; i++)
 	gtk_grid_remove_row(GTK_GRID(pdata->grid), row);
 
     /* shift the indices up */
-    pdata->index -= RULEROWS;
+    pdata->index -= rule->rows;
 
     while (j < pdata->rulecnt) {
 	if (prules[j].index > row)
-	    prules[j].index -= RULEROWS;
+	    prules[j].index -= rule->rows;
 	j++;
     }
+
+    /* reset amount of rows for the rule in the grid to zero */
+    rule->rows = 0;
 }
 
 void newRule(Grid *data, char *name, char *comment) {
@@ -499,8 +520,12 @@ void newRule(Grid *data, char *name, char *comment) {
 
     i = data->rulecnt - 1; // Last created rule
 
+    /* start with the rule being OFF until the button is clicked to put it on */
     data->rules[i].index = OFF;
+    /* each rule needs a response for the dialog to return to know which button was clicked */
     data->rules[i].response = i;
+    /* before the rule is added to the grid it doesn't have any rows and thus equal to zero */
+    data->rules[i].rows = 0;
     strcpy(data->rules[i].name, name);
     strcpy(data->rules[i].comment, comment);
 }
