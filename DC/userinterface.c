@@ -14,8 +14,9 @@ enum boolean {OFF, ON}; // determines whether a rule has been set on or off
 
 typedef struct {
     enum boolean set;
-    unsigned short index;
-    unsigned short response;
+    unsigned short row; // row where rule start in the grid
+    unsigned short col; // col where rule start in the grid
+    unsigned short response; // response of dialog to know which rule was chosen
     unsigned short rows; // the amount of rows the rule takes in the grid
     char name[MAXLENGTH]; // name of the rule, f.e. Age
     char comment[MAXLENGTH]; /* Comment to explain rule for the user. 
@@ -45,8 +46,7 @@ static GtkWidget *createwindow(char *title, int width, int col, int row);
 static GtkWidget *createrunbutton(GtkWidget *window, GtkWidget *windowbox);
 static void createassgrid(GtkWidget *notebookbox);
 static void addassnotebook(char *label, GtkWidget *notebook);
-static GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, 
-	unsigned short entriescnt, gboolean isbold);
+static GtkWidget *addEntryToGrid(GtkWidget *grid, char *name, int x, int y, gboolean isbold);
 static GtkWidget *createdialog(gpointer data);
 
 /* a rule grid will consist of a grid with a label describing the rule, the two toggle buttons
@@ -182,7 +182,6 @@ static void addremoverule(GtkButton *button, gpointer data) {
 	addrule(rule + i, data);
     else
 	removerule(rule + i, data);
-    printf("Current amount of rules: %d\n", pdata->rulecnt);
 
     gtk_widget_show_all(pdata->grid);
     gtk_widget_destroy(dialog);
@@ -286,9 +285,9 @@ static void createassgrid(GtkWidget *notebookbox) {
     gtk_grid_attach(GTK_GRID(assgrid), assgridlabel, 0, index++, WIDTH, 1);
 
     /* Fixed entries in the grid, TRUE means they will be bold */ 
-    (void)addEntryToGrid(assgrid, "DOC: ", 1, index++, 1, TRUE);
-    (void)addEntryToGrid(assgrid, "DR: ", 1, index++, 1, TRUE);
-    (void)addEntryToGrid(assgrid, "Age Correction: ", 1, index++, 1, TRUE);
+    (void)addEntryToGrid(assgrid, "DOC: ", 1, index++, TRUE);
+    (void)addEntryToGrid(assgrid, "DR: ", 1, index++, TRUE);
+    (void)addEntryToGrid(assgrid, "Age Correction: ", 1, index++, TRUE);
 
     /* Salary increase is an assumption that might be based on multiple factors, such as category, 
        plan rules, age, ... */
@@ -303,7 +302,7 @@ static void createassgrid(GtkWidget *notebookbox) {
     gtk_grid_attach(GTK_GRID(assgrid), expander, 1, index++, 3, 1);	
 
     /* Fixed entries in the grid, TRUE means they will be bold */ 
-    (void)addEntryToGrid(assgrid, "Inflation: ", 1, index++, 1, TRUE);
+    (void)addEntryToGrid(assgrid, "Inflation: ", 1, index++, TRUE);
 
     /* Turnover is an assumption that might be based on multiple factors, such as category, 
        plan rules, age, ... */
@@ -336,11 +335,9 @@ static void addassnotebook(char *label, GtkWidget *notebook) {
 /* the assumptions grid consists of a label and an entry. This function will add one of these
    pairs to the grid. If name == NULL then there is no label and the entries are shifted to the
    left. */
-static GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y, 
-	unsigned short entriescnt, gboolean isbold) {
+static GtkWidget *addEntryToGrid(GtkWidget *grid, char *name, int x, int y, gboolean isbold) {
     char text[MAXLENGTH];
-    GtkWidget *label, **entry;
-    entry = (GtkWidget **)calloc(entriescnt, sizeof(GtkWidget *));
+    GtkWidget *label, *entry;
 
     if (isbold) {
 	/* set label bold */
@@ -355,19 +352,17 @@ static GtkWidget **addEntryToGrid(GtkWidget *grid, char *name, int x, int y,
        copying the text). */
     gtk_label_set_selectable(GTK_LABEL(label), TRUE);
 
-    for (int i = 0; i < entriescnt; i++)
-	entry[i] = gtk_entry_new();
+    entry = gtk_entry_new();
 
     /* https://developer.gnome.org/gtk3/unstable/GtkGrid.html#gtk-grid-attach */
     if (name)
 	gtk_grid_attach(GTK_GRID(grid), label, x, y, 1, 1);	
-    for (int i = 0; i < entriescnt; i++)
-	gtk_grid_attach(GTK_GRID(grid), entry[i], x+i+(name ? 1 : 0), y, 1, 1);	
+    gtk_grid_attach(GTK_GRID(grid), entry, x+(name ? 1 : 0), y, 1, 1);	
     return entry;
 }
 
 static GtkWidget *createrulegrid(char *ass, char *comment) {
-    GtkWidget *rulegrid, *rulegridlabel, *fixedbutton, *rulebutton, **fixedentry, *addrulebutton;
+    GtkWidget *rulegrid, *rulegridlabel, *fixedbutton, *rulebutton, *fixedentry, *addrulebutton;
     GtkWidget *entrygrid;
     char text[MAXLENGTH];
     unsigned index = 0;
@@ -390,7 +385,7 @@ static GtkWidget *createrulegrid(char *ass, char *comment) {
 
     gtk_grid_attach(GTK_GRID(rulegrid), rulegridlabel, 0, index++, WIDTH, 1);
     gtk_grid_attach(GTK_GRID(rulegrid), fixedbutton, 0, index++, WIDTH, 1);
-    fixedentry = addEntryToGrid(rulegrid, "Fixed amount:", 0, index++, 1, FALSE);
+    fixedentry = addEntryToGrid(rulegrid, "Fixed amount:", 0, index++, FALSE);
     gtk_grid_attach(GTK_GRID(rulegrid), rulebutton, 0, index++, WIDTH, 1);
     gtk_grid_attach(GTK_GRID(rulegrid), addrulebutton, 0, index++, 1, 1);
     gtk_grid_attach(GTK_GRID(rulegrid), entrygrid, 0, index++, WIDTH, 1);
@@ -411,7 +406,7 @@ static GtkWidget *createrulegrid(char *ass, char *comment) {
     /* These two signals toggle the options on and off */
     g_signal_connect(G_OBJECT(fixedbutton), "toggled",
 	    G_CALLBACK(fixed_button_toggled),
-	    (gpointer)*fixedentry);
+	    (gpointer)fixedentry);
     g_signal_connect(G_OBJECT(rulebutton), "toggled",
 	    G_CALLBACK(rule_button_toggled), addrulebutton);
 
@@ -456,10 +451,10 @@ static void addrule(Rule *rule, gpointer data) {
     /* data is a gpointer (void *) and thus needs to be cast as Grid * to be used */
     Grid *pdata = (Grid *)data;
 
-    /* The rule will be placed at the next index available in the grid */
-    rule->index = pdata->index;
+    /* The rule will be placed at the next index available in the grid. For now this is just 0.*/
+    rule->row = 0;
     rule->set = ON;
-    pdata->rulecnt++;
+    rule->col = pdata->rulecnt;
 
     /* Labels of the rule */
     asslabel = gtk_label_new("Amount");
@@ -470,46 +465,51 @@ static void addrule(Rule *rule, gpointer data) {
     snprintf(text, sizeof(text), "%s%s", "Add entry ", rule->name);
     entrybutton = gtk_button_new_with_mnemonic(text);
 
-    gtk_grid_attach(GTK_GRID(pdata->grid), explanationlabel, 0, pdata->index++, 3, 1);
-    rule->rows++;
-    gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, 0, pdata->index, 1, 1);
-    gtk_grid_attach(GTK_GRID(pdata->grid), asslabel, 1, pdata->index++, 1, 1);
-    rule->rows++;
-    (void)addEntryToGrid(pdata->grid, NULL, 0, pdata->index++, 2, FALSE);
-    rule->rows++;
-    gtk_grid_attach(GTK_GRID(pdata->grid), entrybutton, 0, pdata->index++, 1, 1);
-    rule->rows++;
+    if (pdata->rulecnt == 0) { // The first rule that is added
+	gtk_grid_attach(GTK_GRID(pdata->grid), explanationlabel, 0, pdata->index++, WIDTH, 1);
+	rule->rows++;
+	gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, 0, pdata->index, 1, 1);
+	gtk_grid_attach(GTK_GRID(pdata->grid), asslabel, 1, pdata->index++, 1, 1);
+	rule->rows++;
+	(void)addEntryToGrid(pdata->grid, NULL, 0, pdata->index, FALSE);
+	(void)addEntryToGrid(pdata->grid, NULL, 1, pdata->index++, FALSE);
+	rule->rows++;
+	gtk_grid_attach(GTK_GRID(pdata->grid), entrybutton, 0, pdata->index++, 1, 1);
+	rule->rows++;
+    }
+    else { // a rule is inserted in the grid
+	rule->rows++;
+	gtk_grid_insert_column(GTK_GRID(pdata->grid), pdata->rulecnt);
+	gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, pdata->rulecnt, rule->rows++, 1, 1);
+	(void)addEntryToGrid(pdata->grid, NULL, pdata->rulecnt, rule->rows++, FALSE);
+	gtk_grid_attach(GTK_GRID(pdata->grid), entrybutton, pdata->rulecnt, rule->rows++, 1, 1);
+    }
+    pdata->rulecnt++;
 }
 
 static void removerule(Rule *rule, gpointer data) {
-    unsigned short row;
     Grid *pdata = (Grid *)data;
-    Rule *prules = pdata->rules;
-    int j = 0;
-
-    /* This is the row that needs to be deleted until we reach next rule or end of grid */
-    row = rule->index;
 
     /* Turn the rule off because we removed it from grid */
     rule->set = OFF;
-    rule->index = 0;
-    pdata->rulecnt--;
 
-    /* remove all the rows in the grid corresponding to the rule */
-    for (int i = 0; i < rule->rows; i++)
-	gtk_grid_remove_row(GTK_GRID(pdata->grid), row);
-
-    /* shift the indices up */
-    pdata->index -= rule->rows;
-
-    while (j < pdata->totalrules) {
-	if (prules[j].index > row)
-	    prules[j].index -= rule->rows;
-	j++;
+    if (pdata->rulecnt-- == 1) { // only one rule left
+	/* remove all the rows in the grid corresponding to the rule */
+	for (int i = 0; i < pdata->index; i++)
+	    gtk_grid_remove_row(GTK_GRID(pdata->grid), rule->row);
+	pdata->index = 0;
+    }
+    else { // multiple rules still in the grid, remove the column of this rule and shift other rules
+	gtk_grid_remove_column(GTK_GRID(pdata->grid), rule->col);
+	for (int i = 0; i < pdata->totalrules; i++)
+	    if (rule->col < pdata->rules[i].col)
+		pdata->rules[i].col--;
     }
 
     /* reset amount of rows for the rule in the grid to zero */
     rule->rows = 0;
+    rule->row = 0;
+    rule->col = 0;
 }
 
 void newRule(Grid *data, char *name, char *comment) {
@@ -535,7 +535,8 @@ void newRule(Grid *data, char *name, char *comment) {
 
     data->rules[i].set = OFF;
     /* start with the rule being OFF until the button is clicked to put it on */
-    data->rules[i].index = 0;
+    data->rules[i].row = 0;
+    data->rules[i].col = 0;
     /* each rule needs a response for the dialog to return to know which button was clicked */
     data->rules[i].response = i;
     /* before the rule is added to the grid it doesn't have any rows and thus equal to zero */
