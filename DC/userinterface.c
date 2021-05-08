@@ -17,10 +17,10 @@ typedef struct {
     unsigned short row; // row where rule start in the grid
     unsigned short col; // col where rule start in the grid
     unsigned short response; // response of dialog to know which rule was chosen
-    unsigned short rows; // the amount of rows the rule takes in the grid
+    unsigned short entrycnt; // the amount of entries the rule has in the grid
     char name[MAXLENGTH]; // name of the rule, f.e. Age
-    char comment[MAXLENGTH]; /* Comment to explain rule for the user. 
-				(this will be above the entries) */
+    char comment[MAXLENGTH * 2]; /* Comment to explain rule for the user. 
+				    (this will be above the entries) */
 } Rule;
 
 typedef struct {
@@ -29,7 +29,13 @@ typedef struct {
     unsigned short rulecnt; // current amount of rules
     Rule *rules; // each grid will have a set of rules, f.e. Age, category, ...
     GtkWidget *grid;
-} Grid;
+} Rulegrid;
+
+/* This type was created so I can pass it to a callback function to access the rule and grid */
+typedef struct {
+    Rule *rule;
+    Rulegrid *grid;
+} Data;
 
 void userinterface(int argc, char **argv);
 
@@ -39,7 +45,8 @@ static gboolean delete_event(GtkWidget *window, GdkEvent *event, gpointer data);
 static void fixed_button_toggled(GtkToggleButton *toggle, GtkWidget *other_toggle);
 static void rule_button_toggled(GtkToggleButton *toggle, GtkWidget *other_toggle);
 static void file_changed(GtkFileChooser *chooser, GtkLabel *label);
-static void addremoverule(GtkButton *button, gpointer data);
+static void addremoverule(GtkButton *button, gpointer rg);
+static void addEntryToRulegrid(GtkButton *button, gpointer data);
 
 // helper functions
 static GtkWidget *createwindow(char *title, int width, int col, int row);
@@ -47,14 +54,14 @@ static GtkWidget *createrunbutton(GtkWidget *window, GtkWidget *windowbox);
 static void createassgrid(GtkWidget *notebookbox);
 static void addassnotebook(char *label, GtkWidget *notebook);
 static GtkWidget *addEntryToGrid(GtkWidget *grid, char *name, int x, int y, gboolean isbold);
-static GtkWidget *createdialog(gpointer data);
+static GtkWidget *createdialog(gpointer rg);
 
 /* a rule grid will consist of a grid with a label describing the rule, the two toggle buttons
    describing whether the assumption is a fixed amount of depends on a rule */
 static GtkWidget *createrulegrid(char *ass, char *comment);
-static void addrule(Rule *rule, gpointer data);
-static void removerule(Rule *rule, gpointer data);
-void newRule(Grid *, char *name, char *comment);
+static void addrule(Rule *rule, gpointer rg);
+static void removerule(Rule *rule, gpointer rg);
+void newRule(Rulegrid *, char *name, char *comment);
 
 void userinterface(int argc, char **argv) {
     GtkWidget *window;
@@ -147,22 +154,22 @@ static void rule_button_toggled(GtkToggleButton *toggle, GtkWidget *button) {
 }
 
 /* When a file is selected, display the full path in the GtkLabel widget. */
-static void file_changed (GtkFileChooser *chooser, GtkLabel *label) {
+static void file_changed(GtkFileChooser *chooser, GtkLabel *label) {
     gchar *file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
-    gtk_label_set_text (label, file);
+    gtk_label_set_text(label, file);
 }
 
 /* Create a new GtkDialog that can be used to add or remove a rule from the assumption. */
-static void addremoverule(GtkButton *button, gpointer data) {
+static void addremoverule(GtkButton *button, gpointer rg) {
     GtkWidget *dialog, *label, *contentarea;
-    Grid *pdata = (Grid *)data;
-    Rule *rule = pdata->rules;
+    Rulegrid *prg = (Rulegrid *)rg;
+    Rule *rule = prg->rules;
     unsigned short response;
     int i = 0;
 
     /* The dialog that will be created will have three options to choose from:
        add/remove age, add/remove plan rule, add/remove category */
-    dialog = createdialog(data);
+    dialog = createdialog(rg);
 
     label = gtk_label_new("Pick a rule to add or remove:");
     contentarea = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -174,17 +181,38 @@ static void addremoverule(GtkButton *button, gpointer data) {
     /* Create the dialog as modal and destroy it when a button is clicked. */
     response = gtk_dialog_run(GTK_DIALOG(dialog));
 
-    while (i < pdata->totalrules && rule[i].response != response)
+    while (i < prg->totalrules && rule[i].response != response)
 	i++;
-    if (i == pdata->totalrules)
+    if (i == prg->totalrules)
 	; // user closed window, thus didn't choose anything so no need to do anything
     else if (!rule[i].set)
-	addrule(rule + i, data);
+	addrule(rule + i, rg);
     else
-	removerule(rule + i, data);
+	removerule(rule + i, rg);
 
-    gtk_widget_show_all(pdata->grid);
+    gtk_widget_show_all(prg->grid);
     gtk_widget_destroy(dialog);
+}
+
+static void addEntryToRulegrid(GtkButton *button, gpointer data) {
+    Data *pdata = (Data *)data;
+
+    /* we check to see if there is space in the grid to fit the entry, if there is not we insert
+       a row. The minus 1 of the index is because the index is the next empty space of the grid, 
+       the plus 1 of the entry count is to get to the button just under the entries. */
+    if (pdata->grid->index - 1 <= pdata->rule->row + pdata->rule->entrycnt + 1)
+	gtk_grid_insert_row(GTK_GRID(pdata->grid->grid), pdata->grid->index++ - 1);
+    (void)addEntryToGrid(pdata->grid->grid, NULL, 
+	    pdata->rule->col, pdata->rule->row + ++pdata->rule->entrycnt, FALSE);
+
+    /* this checks whether there is an enty for the amount in the grid, if there isn't then
+       we also need to add this to the grid */
+    if (gtk_grid_get_child_at(GTK_GRID(pdata->grid->grid), 
+		pdata->grid->rulecnt, pdata->rule->row + pdata->rule->entrycnt) == NULL)
+	(void)addEntryToGrid(pdata->grid->grid, NULL, 
+		pdata->grid->rulecnt, pdata->rule->row + pdata->rule->entrycnt, FALSE);
+
+    gtk_widget_show_all(pdata->grid->grid);
 }
 //***End signal functions***
 
@@ -366,7 +394,7 @@ static GtkWidget *createrulegrid(char *ass, char *comment) {
     GtkWidget *entrygrid;
     char text[MAXLENGTH];
     unsigned index = 0;
-    Grid *data = (Grid *)malloc(sizeof(Grid));
+    Rulegrid *rg = (Rulegrid *)malloc(sizeof(Rulegrid));
 
     rulegrid = gtk_grid_new();	
     entrygrid = gtk_grid_new();	
@@ -391,17 +419,26 @@ static GtkWidget *createrulegrid(char *ass, char *comment) {
     gtk_grid_attach(GTK_GRID(rulegrid), entrygrid, 0, index++, WIDTH, 1);
 
     /* when the button addremoverule is pressed, we need to add a rule to the grid, this is done
-       by using data as a parameter that has the grid and the index where the rule should be 
+       by using rg as a parameter that has the grid and the index where the rule should be 
        added */
-    data->grid = entrygrid;
-    data->index = 0;
-    data->rules = NULL;
-    data->totalrules = 0;
-    data->rulecnt = 0;
+    rg->grid = entrygrid;
+    rg->index = 0;
+    rg->rules = NULL;
+    rg->totalrules = 0;
+    rg->rulecnt = 0;
 
-    newRule(data, "AGE", "Age < 25, Age < 30, ...");
-    newRule(data, "NO REGLEMENT", "Make sure the plan rules correspond to the data");
-    newRule(data, "CATEGORY", "Make sure the categories correspond to the data");
+    newRule(rg, "AGE", 
+	    "Possible symbols that you can fill in the grid:\n"
+	    "<, >, <=, >=\n"
+	    "Example:\n"
+	    "Age\tAmount\n"
+	    "<= 40\t0.01\n"
+	    "<= 50\t0.008\n"
+	    "<= 60\t0.005\n"
+	    "If inflation would be 2\%, then this would mean for people younger or equal to"
+	    " 40, his salary increase would be 3\% (0.02 + 0.01).");
+    newRule(rg, "NO REGLEMENT", "Make sure the plan rules correspond to the data");
+    newRule(rg, "CATEGORY", "Make sure the categories correspond to the data");
 
     /* These two signals toggle the options on and off */
     g_signal_connect(G_OBJECT(fixedbutton), "toggled",
@@ -412,7 +449,7 @@ static GtkWidget *createrulegrid(char *ass, char *comment) {
 
     /* This signal is to activate the dialog for the rule button to add or remove a rule */
     g_signal_connect(G_OBJECT(addrulebutton), "clicked",
-	    G_CALLBACK(addremoverule), (gpointer)data);
+	    G_CALLBACK(addremoverule), (gpointer)rg);
 
     /* the rule button should start with not being able to be clicked until the radio button 
        for this option is on */
@@ -421,17 +458,17 @@ static GtkWidget *createrulegrid(char *ass, char *comment) {
     return rulegrid;
 }
 
-static GtkWidget *createdialog(gpointer data) {
+static GtkWidget *createdialog(gpointer rg) {
     GtkWidget *dialog;
-    Grid *pdata = (Grid *)data;
-    Rule *rule = pdata->rules;
+    Rulegrid *prg = (Rulegrid *)rg;
+    Rule *rule = prg->rules;
     char text[MAXLENGTH * 2];
     int i = 0;
 
     dialog = gtk_dialog_new();
     gtk_window_set_title(GTK_WINDOW(dialog), "Choose rule to add/remove");
 
-    while (i < pdata->totalrules) {
+    while (i < prg->totalrules) {
 	if (rule[i].set)
 	    snprintf(text, sizeof(text), "%s%s", "Remove ", rule[i].name);
 	else	
@@ -444,104 +481,123 @@ static GtkWidget *createdialog(gpointer data) {
     return dialog;
 }
 
-static void addrule(Rule *rule, gpointer data) {
-    GtkWidget *asslabel, *rulelabel, *explanationlabel, *entrybutton;
+static void addrule(Rule *rule, gpointer rg) {
+    GtkWidget *asslabel, *rulelabel, *entrybutton;
     char text[MAXLENGTH * 2];
 
-    /* data is a gpointer (void *) and thus needs to be cast as Grid * to be used */
-    Grid *pdata = (Grid *)data;
+    /* rg is a gpointer (void *) and thus needs to be cast as Rulegrid * to be used */
+    Rulegrid *prg = (Rulegrid *)rg;
 
     /* The rule will be placed at the next index available in the grid. For now this is just 0.*/
     rule->row = 0;
     rule->set = ON;
-    rule->col = pdata->rulecnt;
+    rule->col = prg->rulecnt;
 
     /* Labels of the rule */
     asslabel = gtk_label_new("Amount");
     rulelabel = gtk_label_new(rule->name);
-    explanationlabel = gtk_label_new(rule->comment);
+    gtk_widget_set_tooltip_text(asslabel, "This amount should be given in decimal form, f.e. 0.012"
+	    " would mean if inflation is 2\%, salary increase would be 3.2\%.");
 
     /* This button will be used to add an entry to the grid */
     snprintf(text, sizeof(text), "%s%s", "Add entry ", rule->name);
     entrybutton = gtk_button_new_with_mnemonic(text);
 
-    if (pdata->rulecnt == 0) { // The first rule that is added
-	gtk_grid_attach(GTK_GRID(pdata->grid), explanationlabel, 0, pdata->index++, WIDTH, 1);
-	rule->rows++;
-	gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, 0, pdata->index, 1, 1);
-	gtk_grid_attach(GTK_GRID(pdata->grid), asslabel, 1, pdata->index++, 1, 1);
-	rule->rows++;
-	(void)addEntryToGrid(pdata->grid, NULL, 0, pdata->index, FALSE);
-	(void)addEntryToGrid(pdata->grid, NULL, 1, pdata->index++, FALSE);
-	rule->rows++;
-	gtk_grid_attach(GTK_GRID(pdata->grid), entrybutton, 0, pdata->index++, 1, 1);
-	rule->rows++;
+    /* This signal is to add an entry of the rule to the grid */
+    Data *data = (Data *)malloc(sizeof(Data));
+    data->rule = rule;
+    data->grid = prg;
+    g_signal_connect(G_OBJECT(entrybutton), "clicked",
+	    G_CALLBACK(addEntryToRulegrid), (gpointer)data);
+
+    if (prg->rulecnt == 0) { // The first rule that is added
+	gtk_grid_attach(GTK_GRID(prg->grid), rulelabel, 0, prg->index, 1, 1);
+	gtk_grid_attach(GTK_GRID(prg->grid), asslabel, 1, prg->index++, 1, 1);
+	(void)addEntryToGrid(prg->grid, NULL, 0, prg->index, FALSE);
+	(void)addEntryToGrid(prg->grid, NULL, 1, prg->index++, FALSE);
+	gtk_grid_attach(GTK_GRID(prg->grid), entrybutton, 0, prg->index++, 1, 1);
+	gtk_widget_set_tooltip_text(rulelabel, rule->comment);
     }
     else { // a rule is inserted in the grid
-	rule->rows++;
-	gtk_grid_insert_column(GTK_GRID(pdata->grid), pdata->rulecnt);
-	gtk_grid_attach(GTK_GRID(pdata->grid), rulelabel, pdata->rulecnt, rule->rows++, 1, 1);
-	(void)addEntryToGrid(pdata->grid, NULL, pdata->rulecnt, rule->rows++, FALSE);
-	gtk_grid_attach(GTK_GRID(pdata->grid), entrybutton, pdata->rulecnt, rule->rows++, 1, 1);
+	unsigned short index = 0;
+	gtk_grid_insert_column(GTK_GRID(prg->grid), prg->rulecnt);
+	gtk_grid_attach(GTK_GRID(prg->grid), rulelabel, prg->rulecnt, index++, 1, 1);
+	(void)addEntryToGrid(prg->grid, NULL, prg->rulecnt, index++, FALSE);
+
+	/* the button should be located in the last row of the grid */
+	gtk_grid_attach(GTK_GRID(prg->grid), entrybutton, prg->rulecnt, prg->index - 1, 1, 1);
+	gtk_widget_set_tooltip_text(rulelabel, rule->comment);
     }
-    pdata->rulecnt++;
+    prg->rulecnt++;
+    rule->entrycnt++; // when a rule is created it starts with 1 entry
 }
 
-static void removerule(Rule *rule, gpointer data) {
-    Grid *pdata = (Grid *)data;
+static void removerule(Rule *rule, gpointer rg) {
+    Rulegrid *prg = (Rulegrid *)rg;
 
     /* Turn the rule off because we removed it from grid */
     rule->set = OFF;
 
-    if (pdata->rulecnt-- == 1) { // only one rule left
+    if (prg->rulecnt-- == 1) { // only one rule left
 	/* remove all the rows in the grid corresponding to the rule */
-	for (int i = 0; i < pdata->index; i++)
-	    gtk_grid_remove_row(GTK_GRID(pdata->grid), rule->row);
-	pdata->index = 0;
+	for (int i = 0; i < prg->index; i++)
+	    gtk_grid_remove_row(GTK_GRID(prg->grid), rule->row);
+	prg->index = 0;
     }
     else { // multiple rules still in the grid, remove the column of this rule and shift other rules
-	gtk_grid_remove_column(GTK_GRID(pdata->grid), rule->col);
-	for (int i = 0; i < pdata->totalrules; i++)
-	    if (rule->col < pdata->rules[i].col)
-		pdata->rules[i].col--;
+	gtk_grid_remove_column(GTK_GRID(prg->grid), rule->col);
+	for (int i = 0; i < prg->totalrules; i++)
+	    if (rule->col < prg->rules[i].col)
+		prg->rules[i].col--;
     }
 
     /* reset amount of rows for the rule in the grid to zero */
-    rule->rows = 0;
+    rule->entrycnt = 0;
     rule->row = 0;
     rule->col = 0;
 }
 
-void newRule(Grid *data, char *name, char *comment) {
+void newRule(Rulegrid *rg, char *name, char *comment) {
     int i;
 
-    if (strlen(name) - 1 > MAXLENGTH) {
-	printf("ERROR in %s: %s is too big of a name\n", __func__, name);
-	exit(1);
-    }
-    if (strlen(comment) - 1 > MAXLENGTH) {
-	printf("ERROR in %s: %s is too big of a comment\n", __func__, comment);
-	exit(1);
-    }
 
-    if (data->rules == NULL) {
-	data->rules = (Rule *)malloc(sizeof(Rule)); 
-	data->totalrules = 1;
+    if (rg->rules == NULL) {
+	rg->rules = (Rule *)malloc(sizeof(Rule)); 
+	rg->totalrules = 1;
     }
     else
-	data->rules = (Rule *)realloc(data->rules, sizeof(Rule) * (++data->totalrules));
+	rg->rules = (Rule *)realloc(rg->rules, sizeof(Rule) * (++rg->totalrules));
 
-    i = data->totalrules - 1; // Last created rule
+    i = rg->totalrules - 1; // Last created rule
 
-    data->rules[i].set = OFF;
+    rg->rules[i].set = OFF;
     /* start with the rule being OFF until the button is clicked to put it on */
-    data->rules[i].row = 0;
-    data->rules[i].col = 0;
+    rg->rules[i].row = 0;
+    rg->rules[i].col = 0;
     /* each rule needs a response for the dialog to return to know which button was clicked */
-    data->rules[i].response = i;
+    rg->rules[i].response = i;
     /* before the rule is added to the grid it doesn't have any rows and thus equal to zero */
-    data->rules[i].rows = 0;
-    strcpy(data->rules[i].name, name);
-    strcpy(data->rules[i].comment, comment);
+    rg->rules[i].entrycnt = 0;
+
+    /* Error handling */
+    if (strlen(name) - 1 > sizeof(rg->rules->name)) {
+	printf("ERROR in %s:\n"
+		"----------\n"
+		"%s\n"
+		"----------\n"
+		"is too big of a name.\n", __func__, name);
+	exit(1);
+    }
+    if (strlen(comment) - 1 > sizeof(rg->rules->comment)) {
+	printf("ERROR in %s:\n"
+		"----------\n"
+		"%s\n"
+		"----------\n"
+		"is too big of a comment.\n", __func__, comment);
+	exit(1);
+    }
+
+    strcpy(rg->rules[i].name, name);
+    strcpy(rg->rules[i].comment, comment);
 }
 //***End helper functions***
