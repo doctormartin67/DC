@@ -14,7 +14,7 @@ INCLUDE = -I. -I$(LIBPATH) -I$(TABLEPATH) -I$(ACTPATH)
 BINPATH = /home/doctormartin67/bin
 
 # objects:
-GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0`
+GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -rdynamic
 MISCOBJS = $(TABLEPATH)/lifetables.o $(ACTPATH)/actuarialfunctions.o DCProgram.o client.o
 LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/XLfunctions.o $(LIBPATH)/hashtable.o
 GTKOBJS = userinterface.o
