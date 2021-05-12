@@ -4,7 +4,7 @@
 #include "DCProgram.h"
 #include "actuarialfunctions.h"
 
-enum {UI = 0}; // set to 0 if you dont want the user interface, eventually this wont be possible
+enum {UI = 1}; // set to 0 if you dont want the user interface, eventually this wont be possible
 
 void userinterface(DataSet *ds);
 void runmember(CurrentMember *cm);
@@ -26,11 +26,8 @@ int main(int argc, char *argv[]) {
     printf("dont reach here\n");
     setCMvals(&ds);
 
-    if (UI) {
+    if (UI)
 	userinterface(&ds);
-	printf("Exiting user interface and program...\n");
-	exit(0); // remove this line once my interface is complete
-    }
     else
 	runonerun(&ds);
 

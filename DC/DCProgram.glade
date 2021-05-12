@@ -944,11 +944,12 @@ the salary will increase with 0.032 each year.</property>
             <property name="margin_top">10</property>
             <property name="spacing">10</property>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="runonerunbutton">
                 <property name="label" translatable="yes">Run one run</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="clicked" handler="on_runonerunbutton_clicked" object="progressbar" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -970,11 +971,12 @@ the salary will increase with 0.032 each year.</property>
               </packing>
             </child>
             <child>
-              <object class="GtkProgressBar">
+              <object class="GtkProgressBar" id="progressbar">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_right">10</property>
                 <property name="hexpand">True</property>
+                <property name="pulse_step">0.01</property>
                 <property name="show_text">True</property>
               </object>
               <packing>

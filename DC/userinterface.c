@@ -3,12 +3,20 @@
 
 #define GLADEFILE "DCProgram.glade"
 
+static DataSet *ds;
+
+void runmember(CurrentMember *cm);
+void runonerun(DataSet *ds);
+
 /* signal functions */
 void on_SIradiobutton_toggled(GtkRadioButton *, GtkWidget *);
+void on_runonerunbutton_clicked(GtkButton *, GtkWidget *);
 
-void userinterface(DataSet *ds) {
+void userinterface(DataSet *pds) {
     GtkBuilder *builder;
     GtkWidget *window;
+
+    ds = pds;
 
     /* Initialize GTK+ and all of its supporting libraries. */
     gtk_init(NULL, NULL);
@@ -33,4 +41,21 @@ void userinterface(DataSet *ds) {
 void on_SIradiobutton_toggled(GtkRadioButton *rb, GtkWidget *w) {
     gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb));
     gtk_widget_set_sensitive(w, state);
+}
+void on_runonerunbutton_clicked(GtkButton *b, GtkWidget *pb) {
+    // Here the loop of all affiliates will start.
+    currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
+    CurrentMember *cm = ds->cm;
+
+    for (int i = 0; i < ds->membercnt; i++) {
+	setassumptions(cm + i); // This defines the assumptions
+	runmember(cm + i);
+	gtk_progress_bar_set_fraction(
+		(GTK_PROGRESS_BAR(pb)), (gdouble)(i+1)/ds->membercnt);
+    }
+
+    // create excel file to print results
+    int tc = 2; // Test case
+    tc -= 1; // Index is one less than given test case
+    printresults(ds, tc);
 }
