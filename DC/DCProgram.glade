@@ -7,6 +7,7 @@
     <property name="title" translatable="yes">DC Program</property>
     <property name="default_width">800</property>
     <property name="default_height">600</property>
+    <property name="icon">../../library/Aonlogo.png</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -47,7 +48,8 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFileChooserButton">
+                  <object class="GtkFileChooserButton" id="LYfilechooserbutton">
+                    <property name="width_request">240</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes">Click to browse your PC for the data to use in the calculation.</property>
@@ -430,7 +432,7 @@ the salary will increase with 0.032 each year.</property>
                             <property name="receives_default">False</property>
                             <property name="active">True</property>
                             <property name="draw_indicator">True</property>
-                            <signal name="toggled" handler="on_fixedSIradiobutton_toggled" swapped="no"/>
+                            <signal name="toggled" handler="on_SIradiobutton_toggled" object="fixedSIentry" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -486,7 +488,7 @@ the salary will increase with 0.032 each year.</property>
                             <property name="active">True</property>
                             <property name="draw_indicator">True</property>
                             <property name="group">fixedSIradiobutton</property>
-                            <signal name="toggled" handler="on_variableSIradiobutton_toggled" swapped="no"/>
+                            <signal name="toggled" handler="on_SIradiobutton_toggled" object="interpreterbutton" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
