@@ -111,7 +111,6 @@ void setsheetnames(XLfile *xl) {
     char line[BUFSIZ];
     char sname[BUFSIZ];
     int i, sheet = 0;
-    char *temp;
 
     /* sheets.txt is a file that is created in the bash script before C is run. It
        uses a simple awk program to list the sheets.*/
@@ -128,12 +127,7 @@ void setsheetnames(XLfile *xl) {
 	while (line[i++] != '\n')
 	    ;
 	line[i-1] = '\0';
-	/* set memory aside for xl->sheetname to point at. This will stay "alive"
-	   until the end of the program. */
-	temp = (char *)malloc(sizeof(line));
-	strcpy(temp, line);
-	*(xl->sheetname + sheet) = temp;
-	sheet++;
+	*(xl->sheetname + sheet++) = strdup(line);
     }
     // final pointer is just a null pointer
     *(xl->sheetname + sheet) = NULL;
