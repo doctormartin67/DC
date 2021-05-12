@@ -165,7 +165,7 @@ double gensum(double *amount[][MAXGEN], unsigned short EREE, int loop);
 typedef struct {
     int keyrow; /* find the row in the excel file where 
 		   the keys are to use in the hashtable */
-    char keycolumn[3];
+    char keycolumn[4];
     char **keys; // This points to the array of keys in excel
     char datasheet[256]; // This is the sheet where the data lies
     XLfile *xl;

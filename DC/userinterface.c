@@ -1,16 +1,17 @@
 #include <gtk/gtk.h>
+#include "DCProgram.h"
 
 #define GLADEFILE "DCProgram.glade"
 
 /* signal functions */
 void on_SIradiobutton_toggled(GtkRadioButton *, GtkWidget *);
 
-void userinterface(int argc, char **argv) {
+void userinterface(DataSet *ds) {
     GtkBuilder *builder;
     GtkWidget *window;
 
     /* Initialize GTK+ and all of its supporting libraries. */
-    gtk_init (&argc, &argv);
+    gtk_init(NULL, NULL);
 
     builder = gtk_builder_new_from_file(GLADEFILE);
 

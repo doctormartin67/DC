@@ -187,7 +187,7 @@ void setkey(DataSet *ds) {
     char line[BUFSIZ];
     char *begin;
     int value = 1; // value to return
-    int i = 0, j = 0;
+    int i = 0;
     xl = ds->xl;
     while (*(xl->sheetname + i) != NULL) {
 	fp = opensheet(xl, *(xl->sheetname + i));
@@ -203,10 +203,11 @@ void setkey(DataSet *ds) {
 		exit(1);
 	    }
 	    char *temp = begin;
-	    while (!isdigit(*temp)) {
-		ds->keycolumn[j++] = *temp;
-		temp++;
-	    }
+	    char *kc = ds->keycolumn;
+	    printf("temp = %s\n", temp);
+	    while (!isdigit(*temp) && *kc)
+		*kc++ = *temp++;
+	    *kc = '\0';
 	    value = atoi(temp);
 	    free(begin);
 	    fclose(fp);
@@ -214,9 +215,11 @@ void setkey(DataSet *ds) {
 	    ds->keyrow = value;
 
 	    if (strlen(ds->keycolumn) > 3) {
-		printf("the key column: %s has a length larger than 3 which should not be ",
-			ds->keycolumn);
-		printf("possible in excel, exiting program.\n");
+		printf(
+			"Error in %s:\n" 
+			"the key column: %s has a length larger than 3 which should not be " 
+			"possible in excel, exiting program.\n", 
+			__func__, ds->keycolumn);
 		exit(1);
 	    }
 	    printf("Found KEY in\nsheet: %s\ncell: %s%d\n",
@@ -273,7 +276,7 @@ void createData(DataSet *ds) {
     char column[4]; // This holds the column of the beginning of our data cell, for example O
     int irow; // This holds the row of the beginning of our data cell, for example 11
     char srow[16]; /* This holds the row in string form of the beginning of our data cell, 
-		     for example "11" */
+		      for example "11" */
     char keyCell[10]; // This will hold the cell of a key for the hashtable, for example O11
     char dataCell[10]; /* This will hold the cell of data corresponding to a key
 			  for the hashtable, for example O12.*/

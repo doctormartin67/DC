@@ -4,41 +4,48 @@
 #include "DCProgram.h"
 #include "actuarialfunctions.h"
 
-enum {UI = 1}; // set to 0 if you dont want the user interface, eventually this wont be possible
+enum {UI = 0}; // set to 0 if you dont want the user interface, eventually this wont be possible
 
-void userinterface(int, char **);
-void run(CurrentMember *cm);
+void userinterface(DataSet *ds);
+void runmember(CurrentMember *cm);
+void runonerun(DataSet *ds);
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
     if (argc != 2) {
 	printf("Syntax: main \"Excel file\"\n");
 	exit(0);
     }
-
-    if (UI) {
-	userinterface(argc, argv);
-	printf("Exiting user interface and program...\n");
-	exit(0); // remove this line once my interface is complete
-    }
-
 
     XLfile xl;
     DataSet ds;
 
     // These functions set all the necessary values of all the variables needed for the calculations.
     setXLvals(&xl, argv[1]);
+    printf("reach here\n");
     setDSvals(&xl, &ds);
+    printf("dont reach here\n");
     setCMvals(&ds);
 
+    if (UI) {
+	userinterface(&ds);
+	printf("Exiting user interface and program...\n");
+	exit(0); // remove this line once my interface is complete
+    }
+    else
+	runonerun(&ds);
+
+    return 0;
+}
+
+void runonerun(DataSet *ds) {
     // Here the loop of all affiliates will start.
     currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
-    CurrentMember *cm = ds.cm;
+    CurrentMember *cm = ds->cm;
 
     printf("Running members...\n");
-    for (int i = 0; i < ds.membercnt; i++) {
+    for (int i = 0; i < ds->membercnt; i++) {
 	setassumptions(cm + i); // This defines the assumptions
-	// run one affiliate
-	run(cm + i);
+	runmember(cm + i);
 	printf("Person %d run\n", i + 1);
     }
     printf("Run complete\n");
@@ -46,11 +53,10 @@ int main(int argc, char **argv) {
     // create excel file to print results
     int tc = 2; // Test case
     tc -= 1; // Index is one less than given test case
-    printresults(&ds, tc);
-    return 0;
+    printresults(ds, tc);
 }
 
-void run(CurrentMember *cm) {
+void runmember(CurrentMember *cm) {
     //***INITIALISE VARIABLES (k = 0)***
     //-  Dates and age  -
     *cm->DOC = cm->DOS;
