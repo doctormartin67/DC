@@ -21,9 +21,7 @@ int main(int argc, char *argv[]) {
 
     // These functions set all the necessary values of all the variables needed for the calculations.
     setXLvals(&xl, argv[1]);
-    printf("reach here\n");
     setDSvals(&xl, &ds);
-    printf("dont reach here\n");
     setCMvals(&ds);
 
     if (UI)

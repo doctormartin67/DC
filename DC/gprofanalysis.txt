@@ -1,23 +1,23 @@
 Flat profile:
 
 Each sample counts as 0.01 seconds.
+ no time accumulated
+
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  ms/call  ms/call  name    
- 52.39      0.11     0.11 29907993     0.00     0.00  valueincell
- 19.05      0.15     0.04      818     0.05     0.21  cell
- 14.29      0.18     0.03   145644     0.00     0.00  lookup
-  4.76      0.19     0.01   145644     0.00     0.00  upper
-  4.76      0.20     0.01    71773     0.00     0.00  strinside
-  4.76      0.21     0.01     2724     0.00     0.00  findss
-  0.00      0.21     0.00    57101     0.00     0.00  nextcol
-  0.00      0.21     0.00     1908     0.00     0.00  newDate
-  0.00      0.21     0.00     1629     0.00     0.00  setdate
-  0.00      0.21     0.00     1272     0.00     0.00  allocvar
-  0.00      0.21     0.00      318     0.00     0.00  newHashtable
-  0.00      0.21     0.00        6     0.00     0.00  opensheet
-  0.00      0.21     0.00        1     0.00     0.00  FILEexists
-  0.00      0.21     0.00        1     0.00    66.42  countMembers
-  0.00      0.21     0.00        1     0.00     0.00  setkey
+ time   seconds   seconds    calls  Ts/call  Ts/call  name    
+  0.00      0.00     0.00   182510     0.00     0.00  valueincell
+  0.00      0.00     0.00        6     0.00     0.00  opensheet
+  0.00      0.00     0.00        2     0.00     0.00  cell
+  0.00      0.00     0.00        1     0.00     0.00  FILEexists
+  0.00      0.00     0.00        1     0.00     0.00  countMembers
+  0.00      0.00     0.00        1     0.00     0.00  createData
+  0.00      0.00     0.00        1     0.00     0.00  setCMvals
+  0.00      0.00     0.00        1     0.00     0.00  setDSvals
+  0.00      0.00     0.00        1     0.00     0.00  setXLvals
+  0.00      0.00     0.00        1     0.00     0.00  setkey
+  0.00      0.00     0.00        1     0.00     0.00  setsheetnames
+  0.00      0.00     0.00        1     0.00     0.00  strinside
+  0.00      0.00     0.00        1     0.00     0.00  userinterface
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -55,92 +55,62 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 4.76% of 0.21 seconds
+granularity: each sample hit covers 2 byte(s) no time propagated
 
 index % time    self  children    called     name
-                0.02    0.05     320/818         countMembers [5]
-                0.02    0.08     498/818         createData [3]
-[1]     80.8    0.04    0.13     818         cell [1]
-                0.11    0.02 29851389/29907993     valueincell [2]
------------------------------------------------
-                0.00    0.00   56604/29907993     createData [3]
-                0.11    0.02 29851389/29907993     cell [1]
-[2]     61.9    0.11    0.02 29907993         valueincell [2]
-                0.01    0.00    2724/2724        findss [8]
-                0.01    0.00   69048/71773       strinside [10]
------------------------------------------------
-                                                 <spontaneous>
-[3]     56.8    0.00    0.12                 createData [3]
-                0.02    0.08     498/818         cell [1]
-                0.01    0.00   56922/145644      lookup [6]
-                0.00    0.00   56604/29907993     valueincell [2]
-                0.00    0.00   57101/57101       nextcol [13]
-                0.00    0.00     318/318         newHashtable [16]
-                0.00    0.00       1/6           opensheet [17]
------------------------------------------------
-                                                 <spontaneous>
-[4]     31.6    0.00    0.07                 setDSvals [4]
-                0.00    0.07       1/1           countMembers [5]
-                0.00    0.00       1/1           setkey [12]
------------------------------------------------
-                0.00    0.07       1/1           setDSvals [4]
-[5]     31.6    0.00    0.07       1         countMembers [5]
-                0.02    0.05     320/818         cell [1]
-                0.00    0.00       1/6           opensheet [17]
------------------------------------------------
-                0.00    0.00   20352/145644      allocvar [11]
-                0.01    0.00   56922/145644      createData [3]
-                0.01    0.00   68370/145644      setCMvals [7]
-[6]     19.0    0.03    0.01  145644         lookup [6]
-                0.01    0.00  145644/145644      upper [9]
------------------------------------------------
-                                                 <spontaneous>
-[7]     11.6    0.00    0.02                 setCMvals [7]
-                0.01    0.00   68370/145644      lookup [6]
-                0.00    0.01    1272/1272        allocvar [11]
-                0.00    0.00    1908/1908        newDate [14]
------------------------------------------------
-                0.01    0.00    2724/2724        valueincell [2]
-[8]      4.9    0.01    0.00    2724         findss [8]
-                0.00    0.00    2724/71773       strinside [10]
------------------------------------------------
-                0.01    0.00  145644/145644      lookup [6]
-[9]      4.8    0.01    0.00  145644         upper [9]
------------------------------------------------
-                0.00    0.00       1/71773       setkey [12]
-                0.00    0.00    2724/71773       findss [8]
-                0.01    0.00   69048/71773       valueincell [2]
-[10]     4.8    0.01    0.00   71773         strinside [10]
------------------------------------------------
-                0.00    0.01    1272/1272        setCMvals [7]
-[11]     2.7    0.00    0.01    1272         allocvar [11]
-                0.00    0.00   20352/145644      lookup [6]
------------------------------------------------
-                0.00    0.00       1/1           setDSvals [4]
-[12]     0.0    0.00    0.00       1         setkey [12]
-                0.00    0.00       1/71773       strinside [10]
-                0.00    0.00       4/6           opensheet [17]
------------------------------------------------
-                0.00    0.00   57101/57101       createData [3]
-[13]     0.0    0.00    0.00   57101         nextcol [13]
------------------------------------------------
-                0.00    0.00    1908/1908        setCMvals [7]
-[14]     0.0    0.00    0.00    1908         newDate [14]
-                0.00    0.00    1629/1629        setdate [15]
------------------------------------------------
-                0.00    0.00    1629/1629        newDate [14]
-[15]     0.0    0.00    0.00    1629         setdate [15]
------------------------------------------------
-                0.00    0.00     318/318         createData [3]
-[16]     0.0    0.00    0.00     318         newHashtable [16]
+                0.00    0.00  182510/182510      cell [3]
+[1]      0.0    0.00    0.00  182510         valueincell [1]
 -----------------------------------------------
                 0.00    0.00       1/6           countMembers [5]
-                0.00    0.00       1/6           createData [3]
-                0.00    0.00       4/6           setkey [12]
-[17]     0.0    0.00    0.00       6         opensheet [17]
+                0.00    0.00       1/6           createData [6]
+                0.00    0.00       4/6           setkey [10]
+[2]      0.0    0.00    0.00       6         opensheet [2]
 -----------------------------------------------
-                0.00    0.00       1/1           setXLvals [76]
-[18]     0.0    0.00    0.00       1         FILEexists [18]
+                0.00    0.00       1/2           countMembers [5]
+                0.00    0.00       1/2           createData [6]
+[3]      0.0    0.00    0.00       2         cell [3]
+                0.00    0.00  182510/182510      valueincell [1]
+-----------------------------------------------
+                0.00    0.00       1/1           setXLvals [9]
+[4]      0.0    0.00    0.00       1         FILEexists [4]
+-----------------------------------------------
+                0.00    0.00       1/1           setDSvals [8]
+[5]      0.0    0.00    0.00       1         countMembers [5]
+                0.00    0.00       1/6           opensheet [2]
+                0.00    0.00       1/2           cell [3]
+-----------------------------------------------
+                0.00    0.00       1/1           setDSvals [8]
+[6]      0.0    0.00    0.00       1         createData [6]
+                0.00    0.00       1/6           opensheet [2]
+                0.00    0.00       1/2           cell [3]
+-----------------------------------------------
+                0.00    0.00       1/1           main [53]
+[7]      0.0    0.00    0.00       1         setCMvals [7]
+-----------------------------------------------
+                0.00    0.00       1/1           main [53]
+[8]      0.0    0.00    0.00       1         setDSvals [8]
+                0.00    0.00       1/1           setkey [10]
+                0.00    0.00       1/1           countMembers [5]
+                0.00    0.00       1/1           createData [6]
+-----------------------------------------------
+                0.00    0.00       1/1           main [53]
+[9]      0.0    0.00    0.00       1         setXLvals [9]
+                0.00    0.00       1/1           FILEexists [4]
+                0.00    0.00       1/1           setsheetnames [11]
+-----------------------------------------------
+                0.00    0.00       1/1           setDSvals [8]
+[10]     0.0    0.00    0.00       1         setkey [10]
+                0.00    0.00       4/6           opensheet [2]
+                0.00    0.00       1/1           strinside [12]
+-----------------------------------------------
+                0.00    0.00       1/1           setXLvals [9]
+[11]     0.0    0.00    0.00       1         setsheetnames [11]
+-----------------------------------------------
+                0.00    0.00       1/1           setkey [10]
+[12]     0.0    0.00    0.00       1         strinside [12]
+-----------------------------------------------
+                0.00    0.00       1/1           main [53]
+[13]     0.0    0.00    0.00       1         userinterface [13]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -233,8 +203,8 @@ notice and this notice are preserved.
 
 Index by function name
 
-  [18] FILEexists              [6] lookup                 [15] setdate
-  [11] allocvar               [14] newDate                [12] setkey
-   [1] cell                   [16] newHashtable           [10] strinside
-   [5] countMembers           [13] nextcol                 [9] upper
-   [8] findss                 [17] opensheet               [2] valueincell
+   [4] FILEexists              [7] setCMvals              [12] strinside
+   [3] cell                    [8] setDSvals              [13] userinterface
+   [5] countMembers            [9] setXLvals               [1] valueincell
+   [6] createData             [10] setkey
+   [2] opensheet              [11] setsheetnames

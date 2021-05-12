@@ -205,7 +205,7 @@ void setkey(DataSet *ds) {
 	    char *temp = begin;
 	    char *kc = ds->keycolumn;
 	    printf("temp = %s\n", temp);
-	    while (!isdigit(*temp) && *kc)
+	    while (!isdigit(*temp))
 		*kc++ = *temp++;
 	    *kc = '\0';
 	    value = atoi(temp);
