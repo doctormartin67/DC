@@ -2,6 +2,74 @@
 <!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkWindow" id="asswindow">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Interpreter</property>
+    <property name="destroy_with_parent">True</property>
+    <signal name="delete-event" handler="on_asswindow_delete_event" swapped="no"/>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">10</property>
+            <property name="margin_right">10</property>
+            <property name="margin_top">10</property>
+            <property name="margin_bottom">10</property>
+            <property name="label" translatable="yes">Below is a simple interpreter to understand the assumption based on 1 or more variables.
+The interpreter understands the following variables:
+	- age
+	- cat (corresponds to column CATEGORY in the data)
+	- reg (corresponds to column NO REGLEMENT in the data)
+	- x (This is the assumption in question)
+The interpreter only understands "Select Case, but you can use it in the same way that VBA works. 
+For example:
+Select Case age
+	Case Is &lt; 40
+		x = 0.05
+	Case Else
+		x = 0.03
+End Select
+
+The interpreter is case insensitive (meaning you could write select case, Select Case, selECT CASE, ...)</property>
+            <attributes>
+              <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkViewport">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkTextView">
+                <property name="height_request">200</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">DC Program</property>
@@ -514,7 +582,7 @@ the salary will increase with 0.032 each year.</property>
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
                                     <property name="group">fixedSIradiobutton</property>
-                                    <signal name="toggled" handler="on_SIradiobutton_toggled" object="interpreterbutton" swapped="no"/>
+                                    <signal name="toggled" handler="on_SIradiobutton_toggled" object="SIinterpreterbutton" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -523,12 +591,13 @@ the salary will increase with 0.032 each year.</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkButton" id="interpreterbutton">
+                                  <object class="GtkButton" id="SIinterpreterbutton">
                                     <property name="label" translatable="yes">Open interpreter</property>
                                     <property name="visible">True</property>
                                     <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
+                                    <signal name="clicked" handler="on_interpreterbutton_clicked" object="asswindow" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>

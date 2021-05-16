@@ -4,11 +4,6 @@
 
 #define GLADEFILE "DCProgram.glade"
 
-typedef struct {
-    GtkButton *b; /* run button */
-    GtkWidget *pl; /* progresslabel */
-} Run;
-
 static DataSet *ds;
 
 void runmember(CurrentMember *cm);
@@ -17,13 +12,15 @@ static GtkWidget *runchoice; /* used for combo box text to choose which run opti
 /* signal functions */
 void on_SIradiobutton_toggled(GtkRadioButton *, GtkWidget *);
 void on_startstopbutton_clicked(GtkButton *, GtkWidget *);
+void on_SIinterpreterbutton_clicked(GtkButton *b, gpointer *p);
+gboolean on_asswindow_delete_event(GtkWidget *, GdkEvent *, gpointer);
 
 /* helper functions */
 static int runth(void *);
 
 void userinterface(DataSet *pds) {
     GtkBuilder *builder;
-    GtkWidget *window;
+    GtkWidget *window, *asswindow;
 
     ds = pds;
 
@@ -62,14 +59,25 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl) {
 	    currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
 	    (void)thrd_create(th, runth, (void *)pl);
 	    (void)thrd_detach(*th);
+	    printf("Thread created in %s\n", __func__);
 	}
     }
     else {
 	/* this still needs improved when I've read about threads in the new book!!! */
-	gtk_label_set_text(GTK_LABEL(pl), ""); 
+	printf("Program still running, button doesn't do anything\n");
     }
 }
 
+void on_interpreterbutton_clicked(GtkButton *b, gpointer *w) {
+    gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+gboolean on_asswindow_delete_event(GtkWidget *w, GdkEvent *e, gpointer data) {
+    gtk_widget_hide(w);
+    return TRUE;
+}
+
+/* helper functions */
 static int runth(void *pl) {
     char text[128];
     CurrentMember *cm = ds->cm;
