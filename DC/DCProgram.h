@@ -73,7 +73,7 @@ typedef struct {
     Date **DOC; // date of calculation (will be an array)
     char *category; // for example blue collar, white collar, management, ...
     double *sal; // salary (array)
-    double PG; // pensioengrondslag ( I have never needed this)
+    double PG; // pensioengrondslag (I have never needed this)
     double PT; // part time
     double NRA; // normal retirement age
     unsigned short kids; // amount of kids
