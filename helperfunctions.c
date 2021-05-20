@@ -11,12 +11,15 @@ char *trim(char *s) {
     char *t;
     t = s;
     while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r'){
-	t = ++s;
-    }
-    while (*s != ' ' && *s != '\t' && *s != '\n' && *s != '\r'){
 	s++;
     }
-    *s = '\0';
+    t = s;
+    while (*s)
+	s++;
+    s--;
+    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r'){
+	*s-- = '\0';
+    }
     return t;
 }
 
