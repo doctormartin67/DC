@@ -170,7 +170,7 @@ void setCMvals(DataSet *ds) {
     printf("Setting values completed.\n");
 }
 
-double gensum(double *amount[][MAXGEN], unsigned short EREE, int loop) {
+double gensum(GenPtrArr amount[], unsigned short EREE, int loop) {
     double sum = 0;
 
     for (int i = 0; i < MAXGEN; i++) {
@@ -685,7 +685,7 @@ char *getcmval(CurrentMember *cm, char *value) {
 }
 
 // Example if cm->PREMIUM then s = PREMIUM and we loop through PREMIUM_EREE_GENj
-void allocvar(CurrentMember *cm, double *var[][MAXGEN], char *s) {
+void allocvar(CurrentMember *cm, GenPtrArr var[], char *s) {
     char temp[32];
 
     for (int j = 0; j < MAXGEN; j++) {

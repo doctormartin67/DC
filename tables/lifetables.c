@@ -29,8 +29,6 @@ int lx(unsigned int ltindex, int age) {
 static void makeLifeTable(const char *name, int *clt) { //clt = current life table
     char line[LENGTHLINE];
     FILE *lt;
-    char value[LENGTHLINE];
-    char *vp = value;
     char *lp = line;
     char path[128]; 
     snprintf(path, sizeof(path), "%s", PATH);
@@ -44,13 +42,7 @@ static void makeLifeTable(const char *name, int *clt) { //clt = current life tab
 	while (*lp++ != ',') {
 	    ;
 	}
-	while ((*vp = *lp)) {
-	    vp++;
-	    lp++;
-	}
-	vp = trim(value);
-	*clt++ = atoi(vp);
-	vp = value;
+	*clt++ = atoi(lp);
     }
 
     fclose(lt);

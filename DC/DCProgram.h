@@ -55,6 +55,8 @@ static const double ART24TAUX[2][2] = {{0.0325, 0.0175}, {0.0375, 0.0175}};
 /* Current guarenteed rates that the employers need to guarentee on the 
    reserves of their employees by Belgian law (Employer-Employee, generation)*/
 
+typedef double *GenPtrArr[MAXGEN]; /* Each generation has an amount that evolves with k */
+
 typedef struct {
     Hashtable *Data; //Data for an affiliate is in the form of a hashtable
 
@@ -84,22 +86,22 @@ typedef struct {
     double *ART24[TUCPS_1 + 1][2][2]; /* WAP: art24 reserves 
 					 (Method, Exployer-Employee, generation, loops)*/
     // Currently there are 2 generations for article 24 and 3 methods needed
-    double *CAP[2][MAXGEN]; // Pension lump sum (Employer-Employee, generations, loops)
-    double *CAPPS[2][MAXGEN]; /* Pension lump sum profit sharing 
+    GenPtrArr CAP[2]; // Pension lump sum (Employer-Employee, generations, loops)
+    GenPtrArr CAPPS[2]; /* Pension lump sum profit sharing 
 				 (Employer-Employee, generations, loops)*/
-    double *REDCAP[TUCPS_1 + 1][2][MAXGEN]; /* Reduced lump sum 
+    GenPtrArr REDCAP[TUCPS_1 + 1][2]; /* Reduced lump sum 
 					       (Employer-Employee, generations, Method, loops)*/
     double TAUX[2][MAXGEN]; /* return guarentee insurer
 			       (Employer-Employee, generations, loops)*/
-    double *PREMIUM[2][MAXGEN]; // Contribution (Employer-Employee, generations, loops)
-    double *RES[TUCPS_1 + 1][2][MAXGEN]; // Reserves (Employer-Employee, generations, Method, loops)
-    double *RESPS[TUCPS_1 + 1][2][MAXGEN]; /* Profit Sharing Reserves 
+    GenPtrArr PREMIUM[2]; // Contribution (Employer-Employee, generations, loops)
+    GenPtrArr RES[TUCPS_1 + 1][2]; // Reserves (Employer-Employee, generations, Method, loops)
+    GenPtrArr RESPS[TUCPS_1 + 1][2]; /* Profit Sharing Reserves 
 					      (Employer-Employee, generations, Method, loops)*/
     double *DELTACAP[2]; // Delta Cap (AXA) (Employer-Employee, generations, loops)
     double X10; // MIXED combination
-    double *CAPDTH[2][MAXGEN]; /* Death lump sum (used for UKMT)
+    GenPtrArr CAPDTH[2]; /* Death lump sum (used for UKMT)
 				  (Employer-Employee, generations, loops)*/
-    double *RP[2][MAXGEN]; // Risk Premium
+    GenPtrArr RP[2]; // Risk Premium
     double CAO; // collectieve arbeidsovereenkomst
     char *ORU;
     char *CHOICEDTH; // Choice of death insurance
@@ -160,7 +162,7 @@ typedef struct {
 } CurrentMember;
 
 //---Useful functions for CurrentMembers---
-double gensum(double *amount[][MAXGEN], unsigned short EREE, int loop);
+double gensum(GenPtrArr amount[], unsigned short EREE, int loop);
 
 typedef struct {
     int keyrow; /* find the row in the excel file where 
@@ -247,7 +249,7 @@ Tariff tff; // Tariff structure
 void setDSvals(XLfile *xl, DataSet *ds);
 void setCMvals(DataSet *ds);
 char *getcmval(CurrentMember *cm, char *value);
-void allocvar(CurrentMember *cm, double *var[][MAXGEN], char *s);
+void allocvar(CurrentMember *cm, GenPtrArr var[], char *s);
 /* This function will allocate memory based on membercnt for the underlying
    Hashtable used for the data.*/
 void createData(DataSet *ds);

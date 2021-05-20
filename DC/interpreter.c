@@ -4,17 +4,14 @@
 #include <ctype.h>
 #include "libraryheader.h"
 
-char *strclean(char *);
+char *strclean(const char *);
 unsigned isgarbage(int c);
 static char *numcase(double d, const char *s, const char *t);
 
-char *strclean(char *s) {
+char *strclean(const char *s) {
     char *t = calloc(strlen(s) + 1, sizeof(char));
     char *pt = t;
     
-    s = trim(s);
-    printf("trim(s) = %s\n", s);
-
     while (*s) {
 	if (!isgarbage(*s))
 	    *pt++ = *s++;
@@ -26,7 +23,7 @@ char *strclean(char *s) {
     }
     *pt = '\0';
 
-    return t;
+    return trim(t);
 }
 
 double interpretass(double age, char *cat, char *reg, const char *s) {

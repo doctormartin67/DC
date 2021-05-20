@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-char *strclean(char *);
+char *strclean(const char *);
 
 int main(void) {
     char s[BUFSIZ];
@@ -12,7 +12,7 @@ int main(void) {
     printf("---------\n");
     printf("%s\n", s);
     printf("---------\n");
-    printf("%s\n", strclean(s));
+    printf("%s", strclean(s));
 
     return 0;
 }
