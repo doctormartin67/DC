@@ -43,7 +43,7 @@ char *cell(FILE *fp, const char *s, XLfile *xl) {
     return NULL;
 }
 
-int findsheetID(XLfile *xl, char *s) {
+int findsheetID(XLfile *xl, const char *s) {
 
     int sheet = 0;
     while (*(xl->sheetname + sheet) != NULL) {
@@ -77,14 +77,13 @@ char *findss(XLfile *xl, int index) {
     char line[BUFSIZ];
     char sname[BUFSIZ];
     char sindex[BUFSIZ/32]; //used to convert int to string
-    char *begin;
     int count = 0;
     char *value; // value of cell to return (string)
     // create the name of the txt file to find the string
-    snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/ss.txt");
-    snprintf(sindex, sizeof sindex, "%d:\t", index);
+    snprintf(sname, sizeof(sname), "%s%s", xl->dirname, "/ss.txt");
+    snprintf(sindex, sizeof(sindex), "%d:\t", index);
     if ((fp = fopen(sname, "r")) == NULL) {
-	printf("Error in function findss:\n");
+	printf("Error in %s:\n", __func__);
 	perror(sname);
 	exit(1);
     }
@@ -95,11 +94,7 @@ char *findss(XLfile *xl, int index) {
 	    continue;
 	}
 	if(count == index) {
-	    begin = line;
-	    begin = strinside(begin, "\t", "\n");
-	    value = (char *)malloc((strlen(begin) + 1) * sizeof(char));
-	    strcpy(value, begin);
-	    free(begin);
+	    value = strinside(line, "\t", "\n");
 	    fclose(fp);
 	    return value;
 	}
@@ -120,7 +115,7 @@ void setsheetnames(XLfile *xl) {
 
     snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/sheets.txt");
     if ((fp = fopen(sname, "r")) == NULL) {
-	printf("Error in function setsheetnames:\n");
+	printf("Error in %s:\n", __func__);
 	perror(sname);
 	exit(1);
     }
@@ -199,20 +194,17 @@ char *valueincell(XLfile *xl, const char *line, const char *find) {
     char *t;
     char *ss; // string to determine whether I need to call findss or not
     char *value; // value of cell to return (string)
-    unsigned i = 0, j = 0;
 
     // the line should contain the cell at the start
-    unsigned len = strlen(find);
-    while (i < len) {
-	if (line[i] == find[i])
-	    j++;
-	i++;
-    }
-    if (i != j)
-	return NULL;
+    while (*find)
+	if (*line++ != *find++)
+	    return NULL;
 
     ss = strinside(line, "t=\"", "\">");
-    t = strinside(line, "<v>", "</v>");
+    if ((t = strinside(line, "<v>", "</v>")) == NULL) {
+	printf("Error in %s: %s does not contain <v> and/or </v>\n", __func__, line);
+	exit(1);
+    }
     if (ss != NULL && strcmp(ss, "s") == 0)
 	value = findss(xl, atoi(t));
     else

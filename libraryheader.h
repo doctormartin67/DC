@@ -56,7 +56,7 @@ char *cell(FILE *fp, const char *s, XLfile *xl);
    in the sheet xml files they are listed as a number and so we
    need to retrieve the strings given this number
  */
-int findsheetID(XLfile *xl, char *s);
+int findsheetID(XLfile *xl, const char *s);
 char *findss(XLfile *xl, int index);
 void setsheetnames(XLfile *xl);
 FILE *opensheet(XLfile *xl, char *sheet);
