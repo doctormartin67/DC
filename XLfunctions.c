@@ -135,21 +135,10 @@ void setsheetnames(XLfile *xl) {
 FILE *opensheet(XLfile *xl, char *sheet) {
     char sname[BUFSIZ];
     FILE *fp;
-    int check;
-    int i = 0;
 
-    while (*(xl->sheetname + i) != NULL && (check = strcmp(sheet, *(xl->sheetname + i)) != 0))
-	i++;
-    if (check) {
-	printf("warning in function opensheet: the given sheet \"%s\" ", sheet);
-	printf("does not match any of the known sheets:\n");
-	i = 0;
-	while ( *(xl->sheetname + i) != NULL)
-	    printf("%s\n", *(xl->sheetname + i++));
-    }
-    snprintf(sname, sizeof sname, "%s%s%s%s", xl->dirname, "/", sheet, ".txt");
+    snprintf(sname, sizeof(sname), "%s%s%s%s", xl->dirname, "/", sheet, ".txt");
     if ((fp = fopen(sname, "r")) == NULL) {
-	printf("Error in function setsheetnames:\n");
+	printf("Error in %s:\n", __func__);
 	perror(sname);
 	exit(1);
     }
@@ -231,8 +220,8 @@ int isleapyear(int year) {
 
 void setdate(Date *date) {
     static unsigned int daytoday[BUFSIZ * 16]; // We save the searched days in this array
-    static unsigned int daytomonth[BUFSIZ * 16]; // We save the searched days in this array
-    static unsigned int daytoyear[BUFSIZ * 16]; // We save the searched days in this array
+    static unsigned int daytomonth[BUFSIZ * 16]; // We save the searched months in this array
+    static unsigned int daytoyear[BUFSIZ * 16]; // We save the searched years in this array
     unsigned int countday = 1;
     int countyear = 1900; // excel starts counting at 00/00/1900
     int currentmonth = 0;
@@ -365,8 +354,7 @@ Date *minDate(int argc, ...) {
 // Calculate the time in years between two dates
 // m is the amount of months to subtract (usually 0 or 1)
 double calcyears(Date *d1, Date *d2, int m) {
-    return d2->year - d1->year +
-	(double)(d2->month - d1->month - m)/12;
+    return d2->year - d1->year + (double)(d2->month - d1->month - m)/12;
 }
 
 void printDate(Date *d) {
