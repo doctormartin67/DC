@@ -10,16 +10,19 @@
 #include "libraryheader.h"
 
 // s is the name of the excel file to set the values of
-void setXLvals(XLfile *xl, char *s) {
-    char *temp;
-    strcpy(xl->fname, s);
-    if ((temp = strstr(s, ".xls")) == NULL || !FILEexists(s)) {// not an excel file
+void setXLvals(XLfile *xl, const char *s) {
+    char temp[MAXLENGTH];
+    char *pt = temp;
+
+    strcpy(temp, s);
+    strcpy(xl->fname, temp);
+    if ((pt = strstr(temp, ".xls")) == NULL || !FILEexists(temp)) {// not an excel file
 	printf("Please select an valid excel file.\n");
 	printf("Exiting program.\n");
 	exit(0);
     }
-    *temp = '\0';
-    strcpy(xl->dirname, s);
+    *pt = '\0';
+    strcpy(xl->dirname, temp);
     setsheetnames(xl);
 }
 
@@ -27,7 +30,7 @@ void setXLvals(XLfile *xl, char *s) {
    s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
  */
-char *cell(FILE *fp, char *s, XLfile *xl) {
+char *cell(FILE *fp, const char *s, XLfile *xl) {
     char line[BUFSIZ];
     char *value; // value of cell to return (string)
 
@@ -192,7 +195,7 @@ void nextcol(char *next) {
 }
 
 
-char *valueincell(XLfile *xl, char *line, char *find) {
+char *valueincell(XLfile *xl, char *line, const char *find) {
     char *begin;
     char *ss; // string to determine whether I need to call findss or not
     char *value; // value of cell to return (string)

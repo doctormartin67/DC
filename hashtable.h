@@ -15,7 +15,7 @@ typedef struct {
 
 // search the hashtable for the key and return the found List if value == NULL. if value is
 // not NULL, update the List with the value
-List *lookup(char *key, char *value, Hashtable *);
+List *lookup(const char *key, const char *value, Hashtable *);
 // This allocates memory for n Hashtable pointers
 Hashtable *newHashtable(unsigned long n, unsigned short casesens);
 

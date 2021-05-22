@@ -4,18 +4,14 @@
 #include "hashtable.h"
 #include "libraryheader.h"
 
-List *lookup(char *t, char *value, Hashtable *ht) {
+List *lookup(const char *t, const char *value, Hashtable *ht) {
     List *pht;
-    unsigned long hashval;
-    char *key, *s, temp[strlen(t) + 1];
+    register unsigned long hashval;
+    char *s, key[strlen(t) + 1];
 
-    if (ht->casesens)
-	key = t;
-    else { 
-	key = temp;
-	strcpy(key, t);
+    strcpy(key, t);
+    if (!ht->casesens)
 	upper(key);
-    }
 
     // hash the key using the following:
     // djb2 by Dan Bernstein https://stackoverflow.com/questions/7666509/hash-function-for-string

@@ -6,18 +6,19 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "libraryheader.h"
+#include <ctype.h>
 
 char *trim(char *s) {
     char *t;
     t = s;
-    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r'){
+    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') {
 	s++;
     }
     t = s;
     while (*s)
 	s++;
     s--;
-    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r'){
+    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') {
 	*s-- = '\0';
     }
     return t;
@@ -25,14 +26,13 @@ char *trim(char *s) {
 
 void upper(char *s) {
     while(*s) {
-	*s = (*s >= 'a' && *s <= 'z') ? *s - 'a' + 'A' : *s;
+	*s = toupper(*s);
 	s++;
     }
 }
+
 // replace all occurences of string oldW with newW in s
-char *replace(const char *s, const char *oldW, 
-	const char *newW) 
-{ 
+char *replace(const char *s, const char *oldW, 	const char *newW) { 
     char *result; 
     int i, cnt = 0; 
     int newWlen = strlen(newW); 
@@ -103,7 +103,7 @@ int DIRexists(const char *dname) {
    REMEMBER TO FREE THE RETURN VALUE WHEN YOU ARE
    FINISHED WITH IT!
  */
-char *strinside(char *s, char *begin, char *end) {
+char *strinside(const char *s, const char *begin, const char *end) {
     char *pb; //pointer to begin in s
     char *pe; //pointer to end in s
     char *value; //malloc result that we will return
@@ -126,7 +126,7 @@ char *strinside(char *s, char *begin, char *end) {
        of value, we then need one extra value for '\0'.
      */
     length = pe - pb + 1;
-    value = (char *)malloc(length);
+    value = (char *)calloc(length, sizeof(char));
     for (i = 0; i < length; i++) {
 	value[i] = *pb++;
     }

@@ -7,10 +7,12 @@
 #include <sys/types.h>
 #include "hashtable.h"
 
+enum {MAXLENGTH = 256};
+
 typedef struct excel {
-    char fname[BUFSIZ/8];
-    char dirname[BUFSIZ/8];
-    char *sheetname[256];
+    char fname[MAXLENGTH];
+    char dirname[MAXLENGTH];
+    char *sheetname[MAXLENGTH];
 } XLfile;
 
 //---This section is for Date functionality---
@@ -31,7 +33,7 @@ void printDate(Date *d);
 //---Library Functions---
 char *trim(char *);
 void upper(char *);
-char *strinside(char *s, char *begin, char *end);
+char *strinside(const char *s, const char *begin, const char *end);
 char *replace(const char *str, const char *orig, const char *rep);
 int FILEexists(const char *fname);
 int DIRexists(const char *dname);
@@ -40,14 +42,14 @@ double max(int, ...);
 double sum(double a[], int length); // sum all elements of array
 
 // s is the name of the excel file to set the values of
-void setXLvals(XLfile *xl, char *s);
+void setXLvals(XLfile *xl, const char *s);
 
 /* s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
    sheet is the number of the sheet to open. Returns NULL when no
    value in cell.
  */
-char *cell(FILE *fp, char *s, XLfile *xl);
+char *cell(FILE *fp, const char *s, XLfile *xl);
 
 /* the excel zip has an xml file with all the string literals
    called sharedStrings.
@@ -59,6 +61,6 @@ char *findss(XLfile *xl, int index);
 void setsheetnames(XLfile *xl);
 FILE *opensheet(XLfile *xl, char *sheet);
 void nextcol(char *next);
-char *valueincell(XLfile *xl, char *line, char *find);
+char *valueincell(XLfile *xl, char *line, const char *find);
 
 #endif
