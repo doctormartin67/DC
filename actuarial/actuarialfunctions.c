@@ -3,10 +3,6 @@
 
 const double eps = 0.0000001;
 
-static Hashtable *axntable; /* This is used so that axn gets saved 
-			       and doesn't have to be calculated
-			       over and over for the same arguments. */
-
 double npx(register unsigned int lt, 
 	register double ageX, register double ageXn, register int corr){ //lt = life table
     /* generally the rule is npx = lx(ageXn)/lx(ageX) but because lx has
@@ -44,7 +40,12 @@ double nEx(unsigned int lt, double i, double charge, double ageX, double ageXn, 
 
 double axn(unsigned int lt, double i, double charge, int prepost, int term,
 	double ageX, double ageXn, int corr){
-    char key[256]; // This is used to search the Hashtable to see whether or not is has already been calculated
+    static Hashtable *axntable; /* This is used so that axn gets saved 
+				   and doesn't have to be calculated
+				   over and over for the same arguments. */
+
+    char key[256]; /* This is used to search the Hashtable to see whether or not it 
+		      has already been calculated */
     snprintf(key, sizeof(key), "%d%f%f%d%d%f%f%d", lt, i, charge, prepost, term, ageX, ageXn, corr); 
 
     /* I took 5 * 3 * (12 * 45)^2 * 2 as a rough estimate of the amount of combinations for keys then times 1.3 and then the next prime number*/

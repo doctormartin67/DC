@@ -6,14 +6,6 @@
 #include "lifetables.h"
 #include "DCProgram.h"
 
-#ifdef __GNUC__
-/* This is used to define an attribute so that the actuarial functions are only calculated
-   once, rather than recalculating them each time, because the value only depends on the input */
-#define CONST __attribute__ ((const))
-#else
-#define CONST
-#endif
-
 enum {DBO, NC, IC, ASSETS};
 enum {DEF, IMM}; // deferred or immediate payment
 
@@ -33,29 +25,29 @@ the discount rate.
 
 // npx is the chance for some of age ageX to live until the age of ageXn
 double npx(register unsigned int lt, register double ageX, 
-	register double ageXn, register int corr) CONST ;
+	register double ageXn, register int corr) PURE ;
 // nEx is a factor used to give the present value of an amount, taking death chance into
 // account. 
-double nEx(unsigned int lt, double i, double charge, double ageX, double ageXn, int corr) CONST ;
+double nEx(unsigned int lt, double i, double charge, double ageX, double ageXn, int corr) PURE ;
 // axn is the annuity factor that calculates the present value of investing 1 dollar
 // each year from ageX until ageXn divided up by the term, where term is represented in months,
 // so term = 12 means we pay 1/12 per months, term = 6 means we pay 2/12 every 2 months.
 // prepost determines whether we pay straight away (prepost = 0) or after the first term ends
 // (prepost = 1). 
 double axn(unsigned int lt, double i, double charge, int prepost, int term,
-	double ageX, double ageXn, int corr) CONST ;
+	double ageX, double ageXn, int corr) PURE ;
 
 // discounted yearly payments in case of death
 double Ax1n(unsigned int lt, double i, double charge, double ageX, double ageXn,
-	int corr) CONST ;
+	int corr) PURE ;
 
 // discounted yearly payments in case of death where the payments are cummulative
 // (1 + 2 + 3 + ... + n instead of 1 + 1 + 1 + ... + 1)
 double IAx1n(unsigned int lt, double i, double charge, double ageX, double ageXn,
-	int corr) CONST ;
+	int corr) PURE ;
 
 double Iaxn(unsigned int lt, double i, double charge, int prepost, int term,
-	double ageX, double ageXn, int corr) CONST ;
+	double ageX, double ageXn, int corr) PURE ;
 
 // Update the current iteration (k) of death lump sum, employer-employee, generation
 void evolCAPDTH(CurrentMember *cm, int EREE, int gen, int k);
