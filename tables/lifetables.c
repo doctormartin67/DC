@@ -10,12 +10,11 @@ enum {TOTALTABLES = 32, MAXAGE = 130, LENGTHLINE = 64};
 static const char *lifetables[6] =
 {"LXMR", "LXFR", "LXMK", "LXFK", "LXFK'", "Lxnihil"};
 
-static unsigned short ltcnt; // This is updated in makeLifeTable
 static int ltlist[TOTALTABLES][MAXAGE]; // each row is a life table
 
 static void makeLifeTable(const char *, int *);
 
-int lx(unsigned int ltindex, int age) {
+int lx(register unsigned int ltindex, register int age) {
 
     if (age > MAXAGE)
 	return 0;
@@ -39,13 +38,15 @@ static void makeLifeTable(const char *name, int *clt) { //clt = current life tab
     }
     while((fgets(line, LENGTHLINE, lt))) {
 	lp = line;
-	while (*lp++ != ',') {
-	    ;
+	while (*lp != ',' && *lp != '\0')
+	    lp++;
+	if (*lp == '\0') {
+	    printf("Error in %s: %s does not contain a ',', "
+		    "so how does it separate age from value?\n", __func__, line);
+	    exit(1);
 	}
-	*clt++ = atoi(lp);
+	*clt++ = atoi(++lp);
     }
 
     fclose(lt);
-    ltcnt++;
-    printf("amount of tables: %d\n", ltcnt);
 }

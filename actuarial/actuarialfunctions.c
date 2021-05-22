@@ -7,18 +7,18 @@ static Hashtable *axntable; /* This is used so that axn gets saved
 			       and doesn't have to be calculated
 			       over and over for the same arguments. */
 
-double npx(unsigned int lt, double ageX, double ageXn, int corr){ //lt = life table
+double npx(register unsigned int lt, 
+	register double ageX, register double ageXn, register int corr){ //lt = life table
     /* generally the rule is npx = lx(ageXn)/lx(ageX) but because lx has
        an integer value as its input we need to interpolate both these
        values
      */
-
-    double ip1; //interpolation value 1
-    double ip2; //interpolation value 2
-    int lxX; // alive at ageX
-    int lxX1; // alive at ageX + 1
-    int lxXn; // alive at ageXn 
-    int lxXn1; // alive at ageXn + 1 
+    register double ip1; //interpolation value 1
+    register double ip2; //interpolation value 2
+    register int lxX; // alive at ageX
+    register int lxX1; // alive at ageX + 1
+    register int lxXn; // alive at ageXn 
+    register int lxXn1; // alive at ageXn + 1 
     ageX += corr;
     ageXn += corr;
     ageX = fmax(0, ageX);
