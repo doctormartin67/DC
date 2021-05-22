@@ -195,36 +195,29 @@ void nextcol(char *next) {
 }
 
 
-char *valueincell(XLfile *xl, char *line, const char *find) {
-    char *begin;
+char *valueincell(XLfile *xl, const char *line, const char *find) {
+    char *t;
     char *ss; // string to determine whether I need to call findss or not
     char *value; // value of cell to return (string)
-    char *temp; // used to free allocated memory after findss is called
-    unsigned int i = 0, j = 0;
-
-    begin = line;
+    unsigned i = 0, j = 0;
 
     // the line should contain the cell at the start
-    while (i < strlen(find)) {
-	if (begin[i] == find[i])
+    unsigned len = strlen(find);
+    while (i < len) {
+	if (line[i] == find[i])
 	    j++;
 	i++;
     }
     if (i != j)
 	return NULL;
-    ss = strinside(begin, "t=\"", "\">");
-    begin = strinside(begin, "<v>", "</v>");
-    if (ss != NULL && strcmp(ss, "s") == 0) {
-	temp = findss(xl, atoi(begin));
-	value = (char *)malloc((strlen(temp) + 1) * sizeof(char));
-	strcpy(value, temp);
-	free(temp);
-    }
-    else {
-	value = (char *)malloc((strlen(begin) + 1) * sizeof(char));
-	strcpy(value, begin);
-    }
-    free(begin);
+
+    ss = strinside(line, "t=\"", "\">");
+    t = strinside(line, "<v>", "</v>");
+    if (ss != NULL && strcmp(ss, "s") == 0)
+	value = findss(xl, atoi(t));
+    else
+	value = strdup(t);
+    free(t);
     free(ss);
     return value;
 }

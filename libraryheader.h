@@ -61,6 +61,6 @@ char *findss(XLfile *xl, int index);
 void setsheetnames(XLfile *xl);
 FILE *opensheet(XLfile *xl, char *sheet);
 void nextcol(char *next);
-char *valueincell(XLfile *xl, char *line, const char *find);
+char *valueincell(XLfile *xl, const char *line, const char *find);
 
 #endif
