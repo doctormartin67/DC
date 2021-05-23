@@ -248,7 +248,7 @@ Tariff tff; // Tariff structure
 //---Setter declarations---
 void setDSvals(XLfile *xl, DataSet *ds);
 void setCMvals(DataSet *ds);
-char *getcmval(CurrentMember *cm, char *value);
+char *getcmval(CurrentMember *cm, const char *value);
 void allocvar(CurrentMember *cm, GenPtrArr var[], char *s);
 /* This function will allocate memory based on membercnt for the underlying
    Hashtable used for the data.*/

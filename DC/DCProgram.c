@@ -17,7 +17,7 @@ void setDSvals(XLfile *xl, DataSet *ds) {
 // initialise all variables from data (hashtable)
 void setCMvals(DataSet *ds) {
     CurrentMember *cm;
-    ds->cm = (CurrentMember *)malloc(sizeof(CurrentMember) * ds->membercnt);
+    ds->cm = (CurrentMember *)calloc(ds->membercnt, sizeof(CurrentMember));
     cm = ds->cm;
     printf("Setting all the values for the affiliates...\n");
     for (int i = 0; i < ds->membercnt; i++) {
@@ -38,7 +38,7 @@ void setCMvals(DataSet *ds) {
 	cm[i].DOA = newDate((unsigned short)atoi(getcmval(&cm[i], "DOA")), 0, 0, 0);
 	cm[i].DOR = newDate((unsigned short)atoi(getcmval(&cm[i], "DOR")), 0, 0, 0);
 	cm[i].category = getcmval(&cm[i], "CATEGORIE");
-	cm[i].sal = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].sal = (double *)calloc(MAXPROJ, sizeof(double));
 	*cm[i].sal = atof(getcmval(&cm[i], "SAL"));
 	cm[i].PG = atof(getcmval(&cm[i], "PG"));
 	cm[i].PT = atof(getcmval(&cm[i], "PT"));
@@ -55,13 +55,13 @@ void setCMvals(DataSet *ds) {
 
 	// define article 24 from data
 	for (int j = 0; j < TUCPS_1 + 1; j++) {
-	    cm[i].ART24[j][ER][ART24GEN1] = (double *)malloc(sizeof(double) * MAXPROJ);
+	    cm[i].ART24[j][ER][ART24GEN1] = (double *)calloc(MAXPROJ, sizeof(double));
 	    *cm[i].ART24[j][ER][ART24GEN1] = atof(getcmval(&cm[i], "ART24_A_GEN1"));
-	    cm[i].ART24[j][ER][ART24GEN2] = (double *)malloc(sizeof(double) * MAXPROJ);
+	    cm[i].ART24[j][ER][ART24GEN2] = (double *)calloc(MAXPROJ, sizeof(double));
 	    *cm[i].ART24[j][ER][ART24GEN2] = atof(getcmval(&cm[i], "ART24_A_GEN2"));
-	    cm[i].ART24[j][EE][ART24GEN1] = (double *)malloc(sizeof(double) * MAXPROJ);
+	    cm[i].ART24[j][EE][ART24GEN1] = (double *)calloc(MAXPROJ, sizeof(double));
 	    *cm[i].ART24[j][EE][ART24GEN1] = atof(getcmval(&cm[i], "ART24_C_GEN1"));
-	    cm[i].ART24[j][EE][ART24GEN2] = (double *)malloc(sizeof(double) * MAXPROJ);
+	    cm[i].ART24[j][EE][ART24GEN2] = (double *)calloc(MAXPROJ, sizeof(double));
 	    *cm[i].ART24[j][EE][ART24GEN2] = atof(getcmval(&cm[i], "ART24_C_GEN2"));
 	}
 
@@ -83,13 +83,13 @@ void setCMvals(DataSet *ds) {
 	    snprintf(tempEE, sizeof(tempEE), "%s%d", "TAUX_C_GEN", j + 1);
 	    cm[i].TAUX[ER][j] = atof(getcmval(&cm[i], tempER));
 	    cm[i].TAUX[EE][j] = atof(getcmval(&cm[i], tempEE));      
-	    cm[i].RP[ER][j] = (double *)malloc(sizeof(double) * MAXPROJ);
-	    cm[i].RP[EE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+	    cm[i].RP[ER][j] = (double *)calloc(MAXPROJ, sizeof(double));
+	    cm[i].RP[EE][j] = (double *)calloc(MAXPROJ, sizeof(double));
 	}
 
 	//-  MISCELLANEOUS  -
-	cm[i].DELTACAP[ER] = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].DELTACAP[EE] = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].DELTACAP[ER] = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].DELTACAP[EE] = (double *)calloc(MAXPROJ, sizeof(double));
 	*cm[i].DELTACAP[ER] = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
 	*cm[i].DELTACAP[EE] = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
 	cm[i].X10 = atof(getcmval(&cm[i], "X/10"));
@@ -114,52 +114,52 @@ void setCMvals(DataSet *ds) {
 	if (strcmp(getcmval(&cm[i], "CCRA"), "1") == 0)  cm[i].extra += CCRA;
 
 	// The following get initialised in main loop
-	cm[i].DOC = (Date **)malloc(sizeof(Date *) * MAXPROJ);
-	cm[i].age = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].nDOE = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].nDOA = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].DOC = (Date **)calloc(MAXPROJ, sizeof(Date *));
+	cm[i].age = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].nDOE = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].nDOA = (double *)calloc(MAXPROJ, sizeof(double));
 
 	//---Variables that are used for DBO calculation---
 	//***For k = 0 these will all be undefined!!***
-	cm[i].FF = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].FFSC = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].qx = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].wxdef = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].wximm = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].retx = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].nPk = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].kPx = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].vk = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].vn = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].vk113 = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].vn113 = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].AFSL = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].FF = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].FFSC = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].qx = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].wxdef = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].wximm = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].retx = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].nPk = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].kPx = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].vk = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].vn = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].vk113 = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].vn113 = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].AFSL = (double *)calloc(MAXPROJ, sizeof(double));
 
 	for (int k = 0; k < 3; k++) {
 	    for (int j = 0; j < 2; j++) {
-		cm[i].DBORET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
-		cm[i].NCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);
-		cm[i].ICNCRET[j][k] = (double *)malloc(sizeof(double) * MAXPROJ);		
+		cm[i].DBORET[j][k] = (double *)calloc(MAXPROJ, sizeof(double));
+		cm[i].NCRET[j][k] = (double *)calloc(MAXPROJ, sizeof(double));
+		cm[i].ICNCRET[j][k] = (double *)calloc(MAXPROJ, sizeof(double));		
 		for (int l = 0; l < 2; l++) {
-		    cm[i].EBP[j][k][l] = (double *)malloc(sizeof(double) * MAXPROJ); 
+		    cm[i].EBP[j][k][l] = (double *)calloc(MAXPROJ, sizeof(double)); 
 		}
-		cm[i].PBONCCF[j][k] = (double *)malloc(sizeof(double) * MAXPROJ); 
+		cm[i].PBONCCF[j][k] = (double *)calloc(MAXPROJ, sizeof(double)); 
 	    }
-	    cm[i].assets[k] = (double *)malloc(sizeof(double) * MAXPROJ);
+	    cm[i].assets[k] = (double *)calloc(MAXPROJ, sizeof(double));
 	}
 	for (int j = 0; j < 2; j++)
-	    cm[i].EBPDTH[j] = (double *)malloc(sizeof(double) * MAXPROJ); 
-	cm[i].PBODTHNCCF= (double *)malloc(sizeof(double) * MAXPROJ);
+	    cm[i].EBPDTH[j] = (double *)calloc(MAXPROJ, sizeof(double)); 
+	cm[i].PBODTHNCCF= (double *)calloc(MAXPROJ, sizeof(double));
 
 	//---DBO DTH---
-	cm[i].CAPDTHRESPart = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].CAPDTHRiskPart = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].DBODTHRESPart = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].DBODTHRiskPart = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].NCDTHRESPart = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].NCDTHRiskPart = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].ICNCDTHRESPart = (double *)malloc(sizeof(double) * MAXPROJ);
-	cm[i].ICNCDTHRiskPart = (double *)malloc(sizeof(double) * MAXPROJ);
+	cm[i].CAPDTHRESPart = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].CAPDTHRiskPart = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].DBODTHRESPart = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].DBODTHRiskPart = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].NCDTHRESPart = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].NCDTHRiskPart = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].ICNCDTHRESPart = (double *)calloc(MAXPROJ, sizeof(double));
+	cm[i].ICNCDTHRiskPart = (double *)calloc(MAXPROJ, sizeof(double));
 
 	//---EXPECTED BENEFITS PAID---
 
@@ -241,7 +241,7 @@ void setkey(DataSet *ds) {
 
 void countMembers(DataSet *ds) {
     FILE *fp;
-    char column[3];
+    char column[4];
     int irow;
     char srow[16];
     char currentCell[10];
@@ -672,7 +672,7 @@ int printresults(DataSet *ds, int tc) {
     return workbook_close(workbook);
 }
 
-char *getcmval(CurrentMember *cm, char *value) {
+char *getcmval(CurrentMember *cm, const char *value) {
     List *h;
     if ((h = lookup(value, NULL, cm->Data)) == NULL) {
 	printf("warning: '%s' not found in the set of keys given, ", value);
@@ -692,7 +692,7 @@ void allocvar(CurrentMember *cm, GenPtrArr var[], char *s) {
 	for (int EREE = 0; EREE < 2; EREE++) {
 	    snprintf(temp, sizeof(temp), "%s%c%c%s%d",
 		    s, '_', (EREE == ER ? 'A' : 'C'), "_GEN", j + 1);
-	    var[EREE][j] = (double *)malloc(sizeof(double) * MAXPROJ);
+	    var[EREE][j] = (double *)calloc(MAXPROJ, sizeof(double));
 	    *var[EREE][j] = atof(getcmval(cm, temp));
 	}
     }

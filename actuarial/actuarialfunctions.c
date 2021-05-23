@@ -24,8 +24,8 @@ double npx(register unsigned int lt,
     lxXn = lx(lt, ageXn);
     lxXn1 = lx(lt, ageXn + 1);
 
-    ip1 = lxX - (ageX - (int)ageX) * (lxX - lxX1);
-    ip2 = lxXn - (ageXn - (int)ageXn) * (lxXn - lxXn1);
+    ip1 = lxX - (ageX - floor(ageX)) * (lxX - lxX1);
+    ip2 = lxXn - (ageXn - floor(ageXn)) * (lxXn - lxXn1);
 
     return ip2/ip1;
 }
