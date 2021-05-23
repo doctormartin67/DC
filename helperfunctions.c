@@ -111,8 +111,10 @@ char *strinside(const char *s, const char *begin, const char *end) {
     if ((pb = strstr(s, begin)) == NULL) {
 	return NULL;
     }
-    // pe should start looking for end starting at begin
-    pe = pb;
+    /* pe should start looking for end starting at begin (+1 just in case begin and end are the
+       same string, otherwise the strstr function would find the same string and pb would be equal
+       to pe) */
+    pe = pb + 1;
     if ((pe = strstr(pe, end)) == NULL) {
 	return NULL;
     }
