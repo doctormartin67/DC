@@ -23,7 +23,7 @@ typedef struct casetree {
 			this points to first case of nested select case */
 } CaseTree;
 
-double interpret(CaseTree *);
+double interpret(CaseTree *ct, double age, char *reg, char *cat);
 CaseTree *buildTree(const char *);
 void printTree(CaseTree *ct);
 

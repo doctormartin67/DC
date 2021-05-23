@@ -2,7 +2,7 @@
 
 char *strclean(const char *);
 
-int main(void) {
+int main(int argc, char *argv[]) {
     char s[BUFSIZ];
     char *t = s;
     CaseTree *ct;
@@ -12,6 +12,6 @@ int main(void) {
     *t = '\0';
 
     ct = buildTree(s);
-    printTree(ct);
+    printf("x = %f\n", interpret(ct, atof(argv[1]), argv[2], argv[3]));
     return 0;
 }

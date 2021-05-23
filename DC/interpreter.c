@@ -2,6 +2,8 @@
 
 static char *strclean(const char *);
 static unsigned isgarbage(int c);
+static unsigned cmpnum(CaseTree *ct, double);
+static unsigned cmpstr(CaseTree *ct, const char *);
 
 static char *strclean(const char *s) {
     char *t = calloc(strlen(s) + 1, sizeof(char));
@@ -20,10 +22,6 @@ static char *strclean(const char *s) {
 
     upper(t); // make case insensitive
     return trim(t);
-}
-
-double interpret(CaseTree *ct) {
-
 }
 
 CaseTree *buildTree(const char *s) {
@@ -114,6 +112,147 @@ void printTree(CaseTree *ct) {
     }
 }
 
+static unsigned cmpnum(CaseTree *ct, double f) {
+    char tmp[strlen(ct->cond)+1];
+    strcpy(tmp, ct->cond);
+    char *pt = tmp;
+
+    int n = 1; // number of conditions separated by ',' (there is atleast 1 condition)
+    while (*pt)
+	if (*pt++ == ',')
+	    n++;
+
+    char *cond = strtok(tmp, ",");     
+    while (n--) {
+
+	/* in case there is a "TO" operator */
+	char *to;
+	if ((to = strstr(cond, "TO")) != NULL) {
+
+	    while (!isdigit(*cond))
+		cond++; 
+	    while (!isdigit(*to))
+		to++;
+
+	    if (f >= atof(cond) && f <= atof(to))
+		return 1;
+	}
+
+	/* in case of "<" or "<=" */
+	else if ((to = strchr(cond, '<')) != NULL) {
+
+	    while (!isdigit(*cond))
+		cond++;
+
+	    if (*++to == '=') {
+		if (f <= atof(cond))
+		    return 1;
+	    }
+	    else {
+		if (f < atof(cond))
+		    return 1;
+	    }
+		
+	}
+
+	/* in case of ">" or ">=" */
+	else if ((to = strchr(cond, '>')) != NULL) {
+
+	    while (!isdigit(*cond))
+		cond++;
+
+	    if (*++to == '=') {
+		if (f >= atof(cond))
+		    return 1;
+	    }
+	    else {
+		if (f > atof(cond))
+		    return 1;
+	    }
+		
+	}
+
+	/* if there is an else */
+	else if ((to = strstr(cond, "ELSE")) != NULL) {
+	    return 1;
+	}
+
+	/* in case it's just a fixed amount */
+	else {
+
+	    while (!isdigit(*cond))
+		cond++;
+	    
+	    if (f == atof(cond))
+		return 1;
+	}
+
+	cond = strtok(NULL, ",");
+    }
+
+    return 0;
+}
+
+static unsigned cmpstr(CaseTree *ct, const char *s) {
+    char tmp[strlen(ct->cond)+1];
+    strcpy(tmp, ct->cond);
+    char *pt = tmp;
+
+    int n = 1; // number of conditions separated by ',' (there is atleast 1 condition)
+    while (*pt)
+	if (*pt++ == ',')
+	    n++;
+
+    char *cond = strtok(tmp, ",");     
+    while (n--) {
+	cond = strinside(cond, "\"", "\"");
+	if (strcmp(cond, s) == 0) {
+	    free(cond);
+	    return 1;
+	}
+	free(cond);
+	cond = strtok(NULL, ",");
+    }
+
+    return 0;
+}
+
+double interpret(CaseTree *ct, double age, char *reg, char *cat) {
+    double x = 0.0;
+    for (CaseTree *pct = ct; pct != NULL; ) {
+
+	while (!isdigit(*pct->expr))
+	    pct->expr++;
+	x = atof(pct->expr);
+
+	if (strcmp(pct->rule, "AGE") == 0 && cmpnum(pct, age)) {
+	    if ((pct = pct->child) == NULL)
+		return x;
+	    else 
+		continue;
+	}
+	else if (strcmp(pct->rule, "REG") == 0 && cmpstr(pct, reg)) {
+	    if ((pct = pct->child) == NULL)
+		return x;
+	    else 
+		continue;
+	}
+	else if (strcmp(pct->rule, "CAT") == 0 && cmpstr(pct, cat)) {
+	    if ((pct = pct->child) == NULL)
+		return x;
+	    else 
+		continue;
+	}
+
+	pct = pct->next;
+    }
+
+    printf("Warning in %s: no case was found in tree:\n", __func__);
+    printTree(ct);
+    printf("The assumption will be equal to zero in this case.\n");
+    return x;
+}
+
 static unsigned isgarbage(int c) {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ':';
 }
