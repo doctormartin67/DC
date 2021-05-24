@@ -2,8 +2,8 @@
 #include "interpreter.h"
 
 static unsigned isgarbage(int c);
-static unsigned cmpnum(CaseTree *ct, double);
-static unsigned cmpstr(CaseTree *ct, const char *);
+static Cmpfunc cmpnum;
+static Cmpfunc cmpstr;
 
 char *strclean(const char *s) {
     char *t = calloc(strlen(s) + 1, sizeof(char));
@@ -126,8 +126,9 @@ void printTree(CaseTree *ct) {
     }
 }
 
-static unsigned cmpnum(CaseTree *ct, double f) {
-    char tmp[strlen(ct->cond)+1];
+static unsigned cmpnum(CaseTree *ct, const void *pf) {
+    double f = *((double *)pf);
+    char tmp[strlen(ct->cond) + 1];
     strcpy(tmp, ct->cond);
     char *pt = tmp;
 
@@ -207,7 +208,7 @@ static unsigned cmpnum(CaseTree *ct, double f) {
     return 0;
 }
 
-static unsigned cmpstr(CaseTree *ct, const char *s) {
+static unsigned cmpstr(CaseTree *ct, const void *s) {
     char tmp[strlen(ct->cond)+1];
     strcpy(tmp, ct->cond);
     char *pt = tmp;
@@ -220,7 +221,7 @@ static unsigned cmpstr(CaseTree *ct, const char *s) {
     char *cond = strtok(tmp, ",");     
     while (n--) {
 	cond = strinside(cond, "\"", "\"");
-	if (strcmp(cond, s) == 0) {
+	if (strcmp(cond, (char *)s) == 0) {
 	    free(cond);
 	    return 1;
 	}
@@ -233,33 +234,28 @@ static unsigned cmpstr(CaseTree *ct, const char *s) {
 
 double interpret(CaseTree *ct, double age, char *reg, char *cat) {
     double x = 0.0;
+    Cmpfunc *cf;
+    void *v;
     for (CaseTree *pct = ct; pct != NULL; ) {
 
-	if (strcmp(pct->rule, "AGE") == 0 && cmpnum(pct, age)) {
-	    if ((pct->child) == NULL) {
-		while (!isdigit(*pct->expr))
-		    pct->expr++;
-		x = atof(pct->expr);
-		return x;
-	    }
-	    else {
-		pct = pct->child;
-		continue;
-	    }
+	if (strcmp(pct->rule, "AGE") == 0) {
+	    cf = cmpnum;
+	    v = &age;
 	}
-	else if (strcmp(pct->rule, "REG") == 0 && cmpstr(pct, reg)) {
-	    if ((pct->child) == NULL) {
-		while (!isdigit(*pct->expr))
-		    pct->expr++;
-		x = atof(pct->expr);
-		return x;
-	    }
-	    else {
-		pct = pct->child;
-		continue;
-	    }
+	else if (strcmp(pct->rule, "REG") == 0) { 
+	    cf = cmpstr;
+	    v = reg;
 	}
-	else if (strcmp(pct->rule, "CAT") == 0 && cmpstr(pct, cat)) {
+	else if (strcmp(pct->rule, "CAT") == 0) { 
+	    cf = cmpstr;
+	    v = cat;
+	}
+	else {
+	    printf("Error in %s: Unknown rule \"%s\"\n", __func__, pct->rule);
+	    exit(1);
+	}
+
+	if (cf(pct, v)) {
 	    if ((pct->child) == NULL) {
 		while (!isdigit(*pct->expr))
 		    pct->expr++;
