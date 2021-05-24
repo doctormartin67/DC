@@ -10,8 +10,9 @@ int main(int argc, char *argv[]) {
     while ((*t = getchar()) != EOF)
 	t++;
     *t = '\0';
-
-    ct = buildTree(s);
+    
+    t = strclean(s);
+    ct = buildTree(t);
     printf("x = %f\n", interpret(ct, atof(argv[1]), argv[2], argv[3]));
     return 0;
 }

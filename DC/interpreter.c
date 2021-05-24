@@ -1,11 +1,11 @@
+#include <assert.h>
 #include "interpreter.h"
 
-static char *strclean(const char *);
 static unsigned isgarbage(int c);
 static unsigned cmpnum(CaseTree *ct, double);
 static unsigned cmpstr(CaseTree *ct, const char *);
 
-static char *strclean(const char *s) {
+char *strclean(const char *s) {
     char *t = calloc(strlen(s) + 1, sizeof(char));
     char *pt = t;
 
@@ -21,11 +21,19 @@ static char *strclean(const char *s) {
     *pt = '\0';
 
     upper(t); // make case insensitive
+
+    /* END SELECT needs to be replaced with something else, because I need a unique identifier
+       to find the beginning and end of a select case. If there is a case after end select, then
+       strstr(s, "SELECT CASE") would find this when in fact this isn't the beginning of a select
+       case, it's the end of the previous one. I chose "END SELECT67" */
+    pt = t;
+    t = replace(t, "END SELECT", "END SELEC67");
+    free(pt);
     return trim(t);
 }
 
 CaseTree *buildTree(const char *s) {
-    char *t = strclean(s);
+    char *t = strdup(s);
     char *c, *sc, *es, *x;
     CaseTree *ct = (CaseTree *)malloc(sizeof(CaseTree));
 
@@ -54,32 +62,38 @@ CaseTree *buildTree(const char *s) {
 	else 
 	    t = (x < sc ? x : sc);
 	*(t - 1) = '\0';
+	pct->expr = t;
 
 	if (strncmp(t, SC, strlen(SC)) == 0) {
 	    char *prevt = t++;
 
 	    /* select cases can be nested, we need to find the final end select of this tree */
 	    int nests = 1;
-	    sc = strstr(t, SC);
-	    es = strstr(t, ES);
-	    while (sc != NULL && sc < es) {
-		nests++;
-		sc++;
-		sc = strstr(sc, SC);
-	    }
-	    while (nests--) {
+
+	    while (nests) {
+		sc = strstr(t, SC);
+		es = strstr(t, ES);
+		if (sc == NULL || sc > es) {
+		    t = es;
+		    nests--;
+		}
+		else {
+		    t = sc;
+		    nests++;
+		}
 		t++;
-		t = strstr(t, ES);
 	    }
 
-	    t += strlen(ES);
+	    /* when nests hits zero, t should be at end select ( the +1 is because we add 1 to t in
+	       the while loop */
+	    assert(t == es + 1);
+
+	    t += strlen(ES) - 1;
 	    *t++ = '\0';
 	    pct->child = buildTree(prevt);
 	}
 	else
 	    pct->child = NULL;
-
-	pct->expr = t;
 
 	c = strstr(t, C);
 	es = strstr(t, ES);
@@ -152,7 +166,7 @@ static unsigned cmpnum(CaseTree *ct, double f) {
 		if (f < atof(cond))
 		    return 1;
 	    }
-		
+
 	}
 
 	/* in case of ">" or ">=" */
@@ -169,7 +183,7 @@ static unsigned cmpnum(CaseTree *ct, double f) {
 		if (f > atof(cond))
 		    return 1;
 	    }
-		
+
 	}
 
 	/* if there is an else */
@@ -182,7 +196,7 @@ static unsigned cmpnum(CaseTree *ct, double f) {
 
 	    while (!isdigit(*cond))
 		cond++;
-	    
+
 	    if (f == atof(cond))
 		return 1;
 	}
@@ -221,27 +235,41 @@ double interpret(CaseTree *ct, double age, char *reg, char *cat) {
     double x = 0.0;
     for (CaseTree *pct = ct; pct != NULL; ) {
 
-	while (!isdigit(*pct->expr))
-	    pct->expr++;
-	x = atof(pct->expr);
-
 	if (strcmp(pct->rule, "AGE") == 0 && cmpnum(pct, age)) {
-	    if ((pct = pct->child) == NULL)
+	    if ((pct->child) == NULL) {
+		while (!isdigit(*pct->expr))
+		    pct->expr++;
+		x = atof(pct->expr);
 		return x;
-	    else 
+	    }
+	    else {
+		pct = pct->child;
 		continue;
+	    }
 	}
 	else if (strcmp(pct->rule, "REG") == 0 && cmpstr(pct, reg)) {
-	    if ((pct = pct->child) == NULL)
+	    if ((pct->child) == NULL) {
+		while (!isdigit(*pct->expr))
+		    pct->expr++;
+		x = atof(pct->expr);
 		return x;
-	    else 
+	    }
+	    else {
+		pct = pct->child;
 		continue;
+	    }
 	}
 	else if (strcmp(pct->rule, "CAT") == 0 && cmpstr(pct, cat)) {
-	    if ((pct = pct->child) == NULL)
+	    if ((pct->child) == NULL) {
+		while (!isdigit(*pct->expr))
+		    pct->expr++;
+		x = atof(pct->expr);
 		return x;
-	    else 
+	    }
+	    else {
+		pct = pct->child;
 		continue;
+	    }
 	}
 
 	pct = pct->next;

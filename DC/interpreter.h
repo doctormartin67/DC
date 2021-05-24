@@ -8,7 +8,7 @@
 
 #define C "CASE "
 #define SC "SELECT CASE "
-#define ES "END SELECT"
+#define ES "END SELEC67"
 #define X "X"
 
 enum {RULESIZE = 3};
@@ -23,6 +23,7 @@ typedef struct casetree {
 			this points to first case of nested select case */
 } CaseTree;
 
+char *strclean(const char *);
 double interpret(CaseTree *ct, double age, char *reg, char *cat);
 CaseTree *buildTree(const char *);
 void printTree(CaseTree *ct);
