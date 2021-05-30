@@ -38,8 +38,7 @@ void setCMvals(DataSet *ds) {
 	cm[i].DOA = newDate((unsigned short)atoi(getcmval(&cm[i], "DOA")), 0, 0, 0);
 	cm[i].DOR = newDate((unsigned short)atoi(getcmval(&cm[i], "DOR")), 0, 0, 0);
 	cm[i].category = getcmval(&cm[i], "CATEGORIE");
-	cm[i].sal = (double *)calloc(MAXPROJ, sizeof(double));
-	*cm[i].sal = atof(getcmval(&cm[i], "SAL"));
+	cm[i].sal[0] = atof(getcmval(&cm[i], "SAL"));
 	cm[i].PG = atof(getcmval(&cm[i], "PG"));
 	cm[i].PT = atof(getcmval(&cm[i], "PT"));
 	cm[i].NRA = atof(getcmval(&cm[i], "NRA"));
@@ -55,26 +54,22 @@ void setCMvals(DataSet *ds) {
 
 	// define article 24 from data
 	for (int j = 0; j < TUCPS_1 + 1; j++) {
-	    cm[i].ART24[j][ER][ART24GEN1] = (double *)calloc(MAXPROJ, sizeof(double));
-	    *cm[i].ART24[j][ER][ART24GEN1] = atof(getcmval(&cm[i], "ART24_A_GEN1"));
-	    cm[i].ART24[j][ER][ART24GEN2] = (double *)calloc(MAXPROJ, sizeof(double));
-	    *cm[i].ART24[j][ER][ART24GEN2] = atof(getcmval(&cm[i], "ART24_A_GEN2"));
-	    cm[i].ART24[j][EE][ART24GEN1] = (double *)calloc(MAXPROJ, sizeof(double));
-	    *cm[i].ART24[j][EE][ART24GEN1] = atof(getcmval(&cm[i], "ART24_C_GEN1"));
-	    cm[i].ART24[j][EE][ART24GEN2] = (double *)calloc(MAXPROJ, sizeof(double));
-	    *cm[i].ART24[j][EE][ART24GEN2] = atof(getcmval(&cm[i], "ART24_C_GEN2"));
+	    cm[i].ART24[j][ER][ART24GEN1][0] = atof(getcmval(&cm[i], "ART24_A_GEN1"));
+	    cm[i].ART24[j][ER][ART24GEN2][0] = atof(getcmval(&cm[i], "ART24_A_GEN2"));
+	    cm[i].ART24[j][EE][ART24GEN1][0] = atof(getcmval(&cm[i], "ART24_C_GEN1"));
+	    cm[i].ART24[j][EE][ART24GEN2][0] = atof(getcmval(&cm[i], "ART24_C_GEN2"));
 	}
 
 	// all variables that have generations, employer and employee
 	//-  VARIABLES WITH MAXGEN  -
-	allocvar(&cm[i], cm[i].PREMIUM, "PREMIUM");
-	allocvar(&cm[i], cm[i].CAP, "CAP");
-	allocvar(&cm[i], cm[i].CAPPS, "CAPPS");
-	allocvar(&cm[i], cm[i].CAPDTH, "CAPDTH");
+	setGenMatrix(&cm[i], cm[i].PREMIUM, "PREMIUM");
+	setGenMatrix(&cm[i], cm[i].CAP, "CAP");
+	setGenMatrix(&cm[i], cm[i].CAPPS, "CAPPS");
+	setGenMatrix(&cm[i], cm[i].CAPDTH, "CAPDTH");
 	for (int k = 0; k < TUCPS_1 + 1; k++) {
-	    allocvar(&cm[i], cm[i].RES[k], "RES");
-	    allocvar(&cm[i], cm[i].RESPS[k], "RESPS");
-	    allocvar(&cm[i], cm[i].REDCAP[k], "CAPRED");
+	    setGenMatrix(&cm[i], cm[i].RES[k], "RES");
+	    setGenMatrix(&cm[i], cm[i].RESPS[k], "RESPS");
+	    setGenMatrix(&cm[i], cm[i].REDCAP[k], "CAPRED");
 	}
 	for (int j = 0; j < MAXGEN; j++) {
 	    char tempER[32];
@@ -83,15 +78,11 @@ void setCMvals(DataSet *ds) {
 	    snprintf(tempEE, sizeof(tempEE), "%s%d", "TAUX_C_GEN", j + 1);
 	    cm[i].TAUX[ER][j] = atof(getcmval(&cm[i], tempER));
 	    cm[i].TAUX[EE][j] = atof(getcmval(&cm[i], tempEE));      
-	    cm[i].RP[ER][j] = (double *)calloc(MAXPROJ, sizeof(double));
-	    cm[i].RP[EE][j] = (double *)calloc(MAXPROJ, sizeof(double));
 	}
 
 	//-  MISCELLANEOUS  -
-	cm[i].DELTACAP[ER] = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].DELTACAP[EE] = (double *)calloc(MAXPROJ, sizeof(double));
-	*cm[i].DELTACAP[ER] = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
-	*cm[i].DELTACAP[EE] = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
+	cm[i].DELTACAP[ER][0] = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
+	cm[i].DELTACAP[EE][0] = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
 	cm[i].X10 = atof(getcmval(&cm[i], "X/10"));
 	if (cm[i].tariff == MIXED && cm[i].X10 == 0) {
 	    printf("Warning: X/10 equals zero for %s but he has a MIXED contract\n", cm[i].key);
@@ -113,64 +104,12 @@ void setCMvals(DataSet *ds) {
 	if (strcmp(getcmval(&cm[i], "increaseSalFirstYear"), "1") == 0)  cm[i].extra += INCSAL;
 	if (strcmp(getcmval(&cm[i], "CCRA"), "1") == 0)  cm[i].extra += CCRA;
 
-	// The following get initialised in main loop
 	cm[i].DOC = (Date **)calloc(MAXPROJ, sizeof(Date *));
-	cm[i].age = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].nDOE = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].nDOA = (double *)calloc(MAXPROJ, sizeof(double));
-
-	//---Variables that are used for DBO calculation---
-	//***For k = 0 these will all be undefined!!***
-	cm[i].FF = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].FFSC = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].qx = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].wxdef = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].wximm = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].retx = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].nPk = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].kPx = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].vk = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].vn = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].vk113 = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].vn113 = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].AFSL = (double *)calloc(MAXPROJ, sizeof(double));
-
-	for (int k = 0; k < 3; k++) {
-	    for (int j = 0; j < 2; j++) {
-		cm[i].DBORET[j][k] = (double *)calloc(MAXPROJ, sizeof(double));
-		cm[i].NCRET[j][k] = (double *)calloc(MAXPROJ, sizeof(double));
-		cm[i].ICNCRET[j][k] = (double *)calloc(MAXPROJ, sizeof(double));		
-		for (int l = 0; l < 2; l++) {
-		    cm[i].EBP[j][k][l] = (double *)calloc(MAXPROJ, sizeof(double)); 
-		}
-		cm[i].PBONCCF[j][k] = (double *)calloc(MAXPROJ, sizeof(double)); 
-	    }
-	    cm[i].assets[k] = (double *)calloc(MAXPROJ, sizeof(double));
-	}
-	for (int j = 0; j < 2; j++)
-	    cm[i].EBPDTH[j] = (double *)calloc(MAXPROJ, sizeof(double)); 
-	cm[i].PBODTHNCCF= (double *)calloc(MAXPROJ, sizeof(double));
-
-	//---DBO DTH---
-	cm[i].CAPDTHRESPart = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].CAPDTHRiskPart = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].DBODTHRESPart = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].DBODTHRiskPart = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].NCDTHRESPart = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].NCDTHRiskPart = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].ICNCDTHRESPart = (double *)calloc(MAXPROJ, sizeof(double));
-	cm[i].ICNCDTHRiskPart = (double *)calloc(MAXPROJ, sizeof(double));
-
-	//---EXPECTED BENEFITS PAID---
-
-
-	//***End k = 0 is undefined!!***
-
     }
     printf("Setting values completed.\n");
 }
 
-double gensum(GenPtrArr amount[], unsigned short EREE, int loop) {
+double gensum(GenMatrix amount[], unsigned short EREE, int loop) {
     double sum = 0;
 
     for (int i = 0; i < MAXGEN; i++) {
@@ -186,7 +125,7 @@ void setkey(DataSet *ds) {
     XLfile *xl;
     char line[BUFSIZ];
     char *begin;
-    int value = 1; // value to return
+    int value = 1; 
     int i = 0;
     xl = ds->xl;
     while (*(xl->sheetname + i) != NULL) {
@@ -235,7 +174,7 @@ void setkey(DataSet *ds) {
     printf("column A is assumed as key column and ");
     printf("\"sheet1\" is assumed as the data sheet name\n");
     strcpy(ds->datasheet, *xl->sheetname);
-    ds->keyrow = 1;
+    ds->keyrow = value;
     ds->keycolumn[0] = 'A';
 }
 
@@ -299,7 +238,7 @@ void createData(DataSet *ds) {
     strcat(dataCell, srow);
 
     // Allocate memory for data matrix and initialise to NULL pointer
-    ds->Data = (Hashtable **)malloc(ds->membercnt * sizeof(Hashtable *));
+    ds->Data = (Hashtable **)calloc(ds->membercnt, sizeof(Hashtable *));
     for (int k = 0; k < ds->membercnt; k++) {
 	// https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-8.html
 	*(ds->Data + k) = newHashtable(233, 0); // 179 * 1.3 = 232.7 -> 233 is a prime
@@ -678,22 +617,21 @@ char *getcmval(CurrentMember *cm, const char *value) {
 	printf("warning: '%s' not found in the set of keys given, ", value);
 	printf("make sure your column name is correct\n");
 	printf("Using 0 by default.\n");
-	return "0";
+	return strdup("0");
     }
     else
 	return h->value;
 }
 
 // Example if cm->PREMIUM then s = PREMIUM and we loop through PREMIUM_EREE_GENj
-void allocvar(CurrentMember *cm, GenPtrArr var[], char *s) {
+void setGenMatrix(CurrentMember *cm, GenMatrix var[], char *s) {
     char temp[32];
 
     for (int j = 0; j < MAXGEN; j++) {
 	for (int EREE = 0; EREE < 2; EREE++) {
 	    snprintf(temp, sizeof(temp), "%s%c%c%s%d",
 		    s, '_', (EREE == ER ? 'A' : 'C'), "_GEN", j + 1);
-	    var[EREE][j] = (double *)calloc(MAXPROJ, sizeof(double));
-	    *var[EREE][j] = atof(getcmval(cm, temp));
+	    var[EREE][j][0] = atof(getcmval(cm, temp));
 	}
     }
 }

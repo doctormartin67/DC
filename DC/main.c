@@ -56,9 +56,9 @@ void runmember(CurrentMember *cm) {
     //***INITIALISE VARIABLES (k = 0)***
     //-  Dates and age  -
     *cm->DOC = cm->DOS;
-    *cm->age = calcyears(cm->DOB, *cm->DOC, 1);
-    *cm->nDOE = calcyears(cm->DOE, *cm->DOC, (cm->DOE->day == 1 ? 0 : 1));
-    *cm->nDOA = calcyears(cm->DOA, *cm->DOC, (cm->DOA->day == 1 ? 0 : 1));
+    cm->age[0] = calcyears(cm->DOB, *cm->DOC, 1);
+    cm->nDOE[0] = calcyears(cm->DOE, *cm->DOC, (cm->DOE->day == 1 ? 0 : 1));
+    cm->nDOA[0] = calcyears(cm->DOA, *cm->DOC, (cm->DOA->day == 1 ? 0 : 1));
 
     cm->kPx[1] = 1;
     cm->AFSL[0] = 0;

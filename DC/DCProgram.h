@@ -55,7 +55,7 @@ static const double ART24TAUX[2][2] = {{0.0325, 0.0175}, {0.0375, 0.0175}};
 /* Current guarenteed rates that the employers need to guarentee on the 
    reserves of their employees by Belgian law (Employer-Employee, generation)*/
 
-typedef double *GenPtrArr[MAXGEN]; /* Each generation has an amount that evolves with k */
+typedef double GenMatrix[MAXGEN][MAXPROJ]; /* Each generation has an amount that evolves with k */
 
 typedef struct {
     Hashtable *Data; //Data for an affiliate is in the form of a hashtable
@@ -74,7 +74,7 @@ typedef struct {
     Date *DOR; // date of retirement
     Date **DOC; // date of calculation (will be an array)
     char *category; // for example blue collar, white collar, management, ...
-    double *sal; // salary (array)
+    double sal[MAXPROJ]; // salary (array)
     double PG; // pensioengrondslag (I have never needed this)
     double PT; // part time
     double NRA; // normal retirement age
@@ -83,25 +83,25 @@ typedef struct {
     double KO; // death lump sum (kapitaal overlijden)
     double annINV; // annuity in case of invalidity
     double contrINV; // contribution for invalidity insurance
-    double *ART24[TUCPS_1 + 1][2][2]; /* WAP: art24 reserves 
+    double ART24[TUCPS_1 + 1][2][2][MAXPROJ]; /* WAP: art24 reserves 
 					 (Method, Exployer-Employee, generation, loops)*/
     // Currently there are 2 generations for article 24 and 3 methods needed
-    GenPtrArr CAP[2]; // Pension lump sum (Employer-Employee, generations, loops)
-    GenPtrArr CAPPS[2]; /* Pension lump sum profit sharing 
+    GenMatrix CAP[2]; // Pension lump sum (Employer-Employee, generations, loops)
+    GenMatrix CAPPS[2]; /* Pension lump sum profit sharing 
 				 (Employer-Employee, generations, loops)*/
-    GenPtrArr REDCAP[TUCPS_1 + 1][2]; /* Reduced lump sum 
+    GenMatrix REDCAP[TUCPS_1 + 1][2]; /* Reduced lump sum 
 					       (Employer-Employee, generations, Method, loops)*/
     double TAUX[2][MAXGEN]; /* return guarentee insurer
 			       (Employer-Employee, generations, loops)*/
-    GenPtrArr PREMIUM[2]; // Contribution (Employer-Employee, generations, loops)
-    GenPtrArr RES[TUCPS_1 + 1][2]; // Reserves (Employer-Employee, generations, Method, loops)
-    GenPtrArr RESPS[TUCPS_1 + 1][2]; /* Profit Sharing Reserves 
+    GenMatrix PREMIUM[2]; // Contribution (Employer-Employee, generations, loops)
+    GenMatrix RES[TUCPS_1 + 1][2]; // Reserves (Employer-Employee, generations, Method, loops)
+    GenMatrix RESPS[TUCPS_1 + 1][2]; /* Profit Sharing Reserves 
 					      (Employer-Employee, generations, Method, loops)*/
-    double *DELTACAP[2]; // Delta Cap (AXA) (Employer-Employee, generations, loops)
+    double DELTACAP[2][MAXPROJ]; // Delta Cap (AXA) (Employer-Employee, generations, loops)
     double X10; // MIXED combination
-    GenPtrArr CAPDTH[2]; /* Death lump sum (used for UKMT)
+    GenMatrix CAPDTH[2]; /* Death lump sum (used for UKMT)
 				  (Employer-Employee, generations, loops)*/
-    GenPtrArr RP[2]; // Risk Premium
+    GenMatrix RP[2]; // Risk Premium
     double CAO; // collectieve arbeidsovereenkomst
     char *ORU;
     char *CHOICEDTH; // Choice of death insurance
@@ -117,52 +117,52 @@ typedef struct {
 			     means prepensioner whose salary we increase at k = -1 */
 
     //---Variable definitions---    
-    double *age; // age of affiliate
-    double *nDOE; // years since date of entry
-    double *nDOA; // years since date of affiliation
+    double age[MAXPROJ + 1]; // age of affiliate
+    double nDOE[MAXPROJ]; // years since date of entry
+    double nDOA[MAXPROJ]; // years since date of affiliation
 
     //---Variables that are used for DBO calculation---
     // For k = 0 these will all be undefined!!
-    double *FF; // Funding Factor
-    double *FFSC; // Funding Factor Service Cost
-    double *qx; // Chance to die within 1 year
-    double *wxdef; // Turnover rate within 1 year (deferred payment)
-    double *wximm; // Turnover rate within 1 year (immediate payment)
-    double *retx; // Chance to retire within 1 year (usually 100% at 65)
-    double *nPk; // Chance to live from now until retirement
-    double *kPx; // Chance to live from the start until now
-    double *vk; // 1/(1+DR)^k with DR = discount rate
-    double *vn; // 1/(1+DR)^n with DR = discount rate
-    double *vk113; // 1/(1+DR)^k with DR = discount rate according to IAS19 $113
-    double *vn113; // 1/(1+DR)^n with DR = discount rate according to IAS19 $113
+    double FF[MAXPROJ]; // Funding Factor
+    double FFSC[MAXPROJ]; // Funding Factor Service Cost
+    double qx[MAXPROJ]; // Chance to die within 1 year
+    double wxdef[MAXPROJ]; // Turnover rate within 1 year (deferred payment)
+    double wximm[MAXPROJ]; // Turnover rate within 1 year (immediate payment)
+    double retx[MAXPROJ]; // Chance to retire within 1 year (usually 100% at 65)
+    double nPk[MAXPROJ]; // Chance to live from now until retirement
+    double kPx[MAXPROJ]; // Chance to live from the start until now
+    double vk[MAXPROJ]; // 1/(1+DR)^k with DR = discount rate
+    double vn[MAXPROJ]; // 1/(1+DR)^n with DR = discount rate
+    double vk113[MAXPROJ]; // 1/(1+DR)^k with DR = discount rate according to IAS19 $113
+    double vn113[MAXPROJ]; // 1/(1+DR)^n with DR = discount rate according to IAS19 $113
 
-    double *DBORET[2][3]; // DBO Retirement (PUC - TUC, Method Assets, loops)
-    double *NCRET[2][3]; // Normal Cost Retirement (PUC - TUC, Method Assets, loops)
-    double *ICNCRET[2][3]; /* Interest Cost on Normal Cost Retirement 
+    double DBORET[2][3][MAXPROJ]; // DBO Retirement (PUC - TUC, Method Assets, loops)
+    double NCRET[2][3][MAXPROJ]; // Normal Cost Retirement (PUC - TUC, Method Assets, loops)
+    double ICNCRET[2][3][MAXPROJ]; /* Interest Cost on Normal Cost Retirement 
 			      (PUC - TUC, Method Assets, loops) */
-    double *assets[3]; // Plan Assets ($115, Mathematical Reserves, $113)
-    double *AFSL;
+    double assets[3][MAXPROJ]; // Plan Assets ($115, Mathematical Reserves, $113)
+    double AFSL[MAXPROJ];
 
     //---DBO DTH---
-    double *CAPDTHRESPart; // Death Lump Sum Reserves Part
-    double *CAPDTHRiskPart; // Death Lump Sum Risk Part
-    double *DBODTHRESPart; // DBO Death Reserves Part
-    double *DBODTHRiskPart; // DBO Death Risk Part
-    double *NCDTHRESPart; // NC Death Reserves Part
-    double *NCDTHRiskPart; // NC Death Risk Part
-    double *ICNCDTHRESPart; // Interest Cost on Normal Cost Death Reserves Part
-    double *ICNCDTHRiskPart; // Interest Cost on Normal Cost Death Risk Part
+    double CAPDTHRESPart[MAXPROJ]; // Death Lump Sum Reserves Part
+    double CAPDTHRiskPart[MAXPROJ]; // Death Lump Sum Risk Part
+    double DBODTHRESPart[MAXPROJ]; // DBO Death Reserves Part
+    double DBODTHRiskPart[MAXPROJ]; // DBO Death Risk Part
+    double NCDTHRESPart[MAXPROJ]; // NC Death Reserves Part
+    double NCDTHRiskPart[MAXPROJ]; // NC Death Risk Part
+    double ICNCDTHRESPart[MAXPROJ]; // Interest Cost on Normal Cost Death Reserves Part
+    double ICNCDTHRiskPart[MAXPROJ]; // Interest Cost on Normal Cost Death Risk Part
 
     //---CASHFLOWS---
-    double *EBP[2][3][2]; /* Expected Benefits Paid (PUC - TUC, Method Assets,
+    double EBP[2][3][2][MAXPROJ]; /* Expected Benefits Paid (PUC - TUC, Method Assets,
 			     PBO - TBO, loops) */
-    double *PBONCCF[2][3]; // PBO Normal Cost Cashflows
-    double *EBPDTH[2]; // Expected Benefits Paid Death
-    double *PBODTHNCCF; // PBO Death Normal Cost Cashflows
+    double PBONCCF[2][3][MAXPROJ]; // PBO Normal Cost Cashflows
+    double EBPDTH[2][MAXPROJ]; // Expected Benefits Paid Death
+    double PBODTHNCCF[MAXPROJ]; // PBO Death Normal Cost Cashflows
 } CurrentMember;
 
 //---Useful functions for CurrentMembers---
-double gensum(GenPtrArr amount[], unsigned short EREE, int loop);
+double gensum(GenMatrix amount[], unsigned short EREE, int loop);
 
 typedef struct {
     int keyrow; /* find the row in the excel file where 
@@ -248,8 +248,8 @@ Tariff tff; // Tariff structure
 //---Setter declarations---
 void setDSvals(XLfile *xl, DataSet *ds);
 void setCMvals(DataSet *ds);
+void setGenMatrix(CurrentMember *cm, GenMatrix var[], char *s);
 char *getcmval(CurrentMember *cm, const char *value);
-void allocvar(CurrentMember *cm, GenPtrArr var[], char *s);
 /* This function will allocate memory based on membercnt for the underlying
    Hashtable used for the data.*/
 void createData(DataSet *ds);
