@@ -1,8 +1,4 @@
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
 #include "DCProgram.h"
 #include "libraryheader.h"
 #include "xlsxwriter.h"
@@ -324,7 +320,7 @@ void createData(DataSet *ds) {
 }
 
 int printresults(DataSet *ds, int tc) {
-    char results[BUFSIZ/4];
+    char results[PATH_MAX];
     char temp[64]; // to store temporary strings for field names and such.
     int row = 0;
     int col = 0;  

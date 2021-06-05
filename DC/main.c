@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include "DCProgram.h"
 #include "actuarialfunctions.h"
 
 enum {UI = 1}; // set to 0 if you dont want the user interface, eventually this wont be possible
@@ -20,7 +15,8 @@ int main(int argc, char *argv[]) {
     XLfile xl;
     DataSet ds;
 
-    // These functions set all the necessary values of all the variables needed for the calculations.
+    /* These functions set all the necessary values of all the variables needed for the 
+       calculations. */
     setXLvals(&xl, argv[1]);
     setDSvals(&xl, &ds);
     setCMvals(&ds);
@@ -40,7 +36,7 @@ void runonerun(DataSet *ds) {
 
     printf("Running members...\n");
     for (int i = 0; i < ds->membercnt; i++) {
-	setassumptions(cm + i); // This defines the assumptions
+	setassumptions(cm + i); 
 	runmember(cm + i);
 	printf("Person %d run\n", i + 1);
     }
@@ -175,6 +171,8 @@ void runmember(CurrentMember *cm) {
 	double Ax1;
 	double ax;
 	double axcost;
+	double RPCAP;
+	double RPRES;
 	for (int EREE = 0; EREE < EE + 1; EREE++) {
 	    for (int j = 0; j < MAXGEN; j++) {
 		cm->PREMIUM[EREE][j][k] = (EREE == ER ? calcA(cm, k) : calcC(cm, k));
@@ -194,9 +192,10 @@ void runmember(CurrentMember *cm) {
 			    tff.prepost, tff.term, cm->age[k-1], cm->age[k], 0);
 		    axcost = axn(tff.ltINS[EREE][j].lt, cm->TAUX[EREE][j], tff.costRES,
 			    0, 1, cm->age[k-1], cm->age[k], 0);
+		    RPCAP = cm->CAP[EREE][j][k-1]/cm->X10;
+		    RPRES = cm->RES[PUC][EREE][j][k-1];
 		    cm->RP[EREE][j][k-1] =
-			max(2, 0.0, (cm->CAP[EREE][j][k-1]/cm->X10 - cm->RES[PUC][EREE][j][k-1]) * Ax1/ax) +
-			cm->CAP[EREE][j][k-1]/cm->X10 * tff.costKO * axcost;
+			fmax(0.0, (RPCAP - RPRES) * Ax1/ax) + RPCAP * tff.costKO * axcost;
 		}			     
 	    }
 	}
@@ -220,7 +219,8 @@ void runmember(CurrentMember *cm) {
 
 	//***DBO CALCULATION - RETIREMENT***
 	// Funding factors
-	if (!(cm->status & ACT) || gensum(cm->PREMIUM, ER, 1) + gensum(cm->PREMIUM, EE, 1) == 0) {
+	if (!(cm->status & ACT) || gensum(cm->PREMIUM, ER, 1) + gensum(cm->PREMIUM, EE, 1) == 0)
+	{
 	    cm->FF[k] = 1;
 	    cm->FFSC[k] = 0;
 	}

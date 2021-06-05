@@ -8,6 +8,7 @@
 #else
 #define PURE
 #endif
+#include "libraryheader.h"
 
 enum lifetables {LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL};
 int lx(register unsigned int, register int) PURE ;

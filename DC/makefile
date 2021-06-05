@@ -3,7 +3,6 @@ CC = gcc
 RM = rm
 CP = cp
 MV = mv
-CTAGS = ctags
 
 # paths:
 PROJECTPATH = /home/doctormartin67/Projects
@@ -34,8 +33,6 @@ DEBUGFLAGS = -g
 GPROFFLAGS = -pg
 CFLAGS = -Wall -Wshadow -Wextra $(GPROFFLAGS)
 LDFLAGS = -lm -lxlsxwriter#libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.
-CTAGSFLAGS = --c-kinds=+p
-
 #***Start makefile***
 
 # phony targets:
@@ -46,7 +43,6 @@ $(EXEC) debug: $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
 	$(CC) -o $(EXEC) $^ $(LDFLAGS) $(GPROFFLAGS) $(GTK)
 	$(CP) $(EXEC) $(BINPATH)
 	$(CP) $(LIBPATH)/$(SCRIPT) $(BINPATH)
-	$(CTAGS) -R $(CTAGSFLAGS) $(PROJECTPATH)/*
 
 $(EXEC): CFLAGS += $(OPTFLAGS)
 

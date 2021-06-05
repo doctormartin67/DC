@@ -1,7 +1,5 @@
 #ifndef ACTUARIALFUNCTIONS
 #define ACTUARIALFUNCTIONS
-#include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
 #include "lifetables.h"
 #include "DCProgram.h"

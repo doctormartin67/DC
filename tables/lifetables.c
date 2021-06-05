@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include "libraryheader.h"
 #include "lifetables.h"
 
 #define PATH "/home/doctormartin67/Projects/work/tables/tables/" //needs updating!!

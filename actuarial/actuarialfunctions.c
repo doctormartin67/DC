@@ -673,92 +673,69 @@ double getamount(CurrentMember *cm,  int k,
 			case PAR113 :
 			case PAR115 :
 			    switch (DEFIMM) {
-				case DEF :
-				    return max(2, ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO), REDCAPTOT[TUC]); 
-				case IMM :
-				    return max(2, ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO), RESTOT[TUC]);
-				default :
-				    printf("ERROR: DEFIMM = %d, but expected %d or %d\n", DEFIMM, DEF, IMM);
-				    exit(1);
+				case DEF : return max(2, ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO), REDCAPTOT[TUC]); 
+				case IMM : return max(2, ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO), RESTOT[TUC]);
+				default : printf("Error in %s: DEFIMM = %d\n", __func__, DEFIMM);
+					  exit(1);
 			    }
-			case MATHRES :
-			    return ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO);
-			default :
-			    printf("ERROR: assets = %d, but expected %d, %d or %d\n", assets, PAR113, PAR115, MATHRES);
-			    exit(1);
+			case MATHRES : return ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO);
+			default : printf("Error in %s: assets = %d\n", __func__, assets);
+				  exit(1);
 		    }
 		case TUC :
 		    switch (assets) {
 			case PAR113 :
 			case PAR115 :
 			    switch (DEFIMM) {
-				case DEF :
-				    return max(2, ART24TOT[TUC], REDCAPTOT[TUC]);
-				case IMM :
-				    return max(2, ART24TOT[TUC], RESTOT[TUC]); 
-				default :
-				    printf("ERROR: DEFIMM = %d, but expected %d or %d\n", DEFIMM, DEF, IMM);
-				    exit(1);
+				case DEF : return max(2, ART24TOT[TUC], REDCAPTOT[TUC]);
+				case IMM : return max(2, ART24TOT[TUC], RESTOT[TUC]); 
+				default : printf("Error in %s: DEFIMM = %d\n", __func__, DEFIMM);
+					  exit(1);
 			    }
-			case MATHRES :
-			    return ART24TOT[TUC];
-			default :
-			    printf("ERROR: assets = %d, but expected %d, %d or %d\n", assets, PAR113, PAR115, MATHRES);
-			    exit(1);
+			case MATHRES : return ART24TOT[TUC];
+			default : printf("Error in %s: assets = %d\n", __func__, assets);
+				  exit(1);
 		    }
-		default :
-		    printf("ERROR: method = %d, but expected %d or %d\n", method, PUC, TUC);
-		    exit(1);
+		default : printf("Error in %s: method = %d\n", __func__, method);
+			  exit(1);
 	    }
 	case NC :
 	    switch (method) {
-		case PUC :
-		    return ART24TOT[PUC] * cm->FFSC[k];
-		case TUC :
-		    return (ART24TOT[TUCPS_1] - ART24TOT[TUC]);
-		default :
-		    printf("ERROR: method = %d, but expected %d or %d\n", method, PUC, TUC);
-		    exit(1);
+		case PUC : return ART24TOT[PUC] * cm->FFSC[k];
+		case TUC : return (ART24TOT[TUCPS_1] - ART24TOT[TUC]);
+		default : printf("Error in %s: method = %d\n", __func__, method);
+			  exit(1);
 	    }
 	case IC :
 	    switch (method) {
-		case PUC :
-		    return ART24TOT[PUC] * cm->FFSC[k] * ass.DR;
-		case TUC :
-		    return (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * ass.DR;
-		default :
-		    printf("ERROR: method = %d, but expected %d or %d\n", method, PUC, TUC);
-		    exit(1);
+		case PUC : return ART24TOT[PUC] * cm->FFSC[k] * ass.DR;
+		case TUC : return (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * ass.DR;
+		default : printf("Error in %s: method = %d\n", __func__, method);
+			  exit(1);
 	    }
 	case ASSETS :
 	    switch (assets) {
 		case PAR113 :
 		    switch (DEFIMM) {
-			case DEF :
-			    return REDCAPTOT[TUC] / cm->vn[k] * cm->vn113[k];
-			case IMM :
-			    return RESTOT[TUC] / cm->vk[k] * cm->vk113[k];
-			default :
-			    printf("ERROR: DEFIMM = %d, but expected %d or %d\n", DEFIMM, DEF, IMM);
-			    exit(1);
+			case DEF : return REDCAPTOT[TUC] / cm->vn[k] * cm->vn113[k];
+			case IMM : return RESTOT[TUC] / cm->vk[k] * cm->vk113[k];
+			default : printf("Error in %s: DEFIMM = %d\n", __func__, DEFIMM);
+				  exit(1);
 		    }
 		case PAR115 :
 		    switch (DEFIMM) {
-			case DEF :
-			    return REDCAPTOT[TUC];
-			case IMM :
-			    return RESTOT[TUC];
-			default :
-			    printf("ERROR: DEFIMM = %d, but expected %d or %d\n", DEFIMM, DEF, IMM);
-			    exit(1);
+			case DEF : return REDCAPTOT[TUC];
+			case IMM : return RESTOT[TUC];
+			default : printf("Error in %s: DEFIMM = %d\n", __func__, DEFIMM);
+				  exit(1);
 		    }
 		default :
-		    printf("ERROR: assets = %d, but expected %d or %d\n", assets, PAR113, PAR115);
+		    printf("Error in %s: assets = %d\n", __func__, assets);
 		    exit(1);
 
 	    }
 	default :
-	    printf("ERROR: DBONCICASS = %d, but expected %d, %d, %d or %d\n", DBONCICASS, DBO, NC, IC, ASSETS);
+	    printf("Error in %s: DBONCICASS = %d\n", __func__, DBONCICASS);
 	    exit(1);
     }
 }
