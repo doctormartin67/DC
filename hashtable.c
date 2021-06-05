@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "hashtable.h"
-#include "libraryheader.h"
 
 List *lookup(const char *t, const char *value, Hashtable *ht) {
     List *pht;

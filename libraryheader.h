@@ -5,14 +5,17 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <errno.h>
 #include "hashtable.h"
 
-enum {MAXLENGTH = 256};
-
 typedef struct excel {
-    char fname[MAXLENGTH];
-    char dirname[MAXLENGTH];
-    char *sheetname[MAXLENGTH];
+    char fname[PATH_MAX];
+    char dirname[PATH_MAX];
+    char *sheetname[PATH_MAX];
 } XLfile;
 
 //---This section is for Date functionality---

@@ -1,17 +1,8 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <dirent.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <ctype.h>
 #include "libraryheader.h"
 
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, const char *s) {
-    char temp[MAXLENGTH];
+    char temp[PATH_MAX];
     char *pt = temp;
 
     strcpy(temp, s);
@@ -75,12 +66,13 @@ int findsheetID(XLfile *xl, const char *s) {
 char *findss(XLfile *xl, int index) {
     FILE *fp;
     char line[BUFSIZ];
-    char sname[BUFSIZ];
-    char sindex[BUFSIZ/32]; //used to convert int to string
+    char sname[PATH_MAX];
+    char sindex[16]; //used to convert int to string
     int count = 0;
     char *value; // value of cell to return (string)
     // create the name of the txt file to find the string
-    snprintf(sname, sizeof(sname), "%s%s", xl->dirname, "/ss.txt");
+    char *shstr = "/ss.txt";
+    snprintf(sname, sizeof(sname), "%s%s", xl->dirname, shstr);
     snprintf(sindex, sizeof(sindex), "%d:\t", index);
     if ((fp = fopen(sname, "r")) == NULL) {
 	printf("Error in %s:\n", __func__);
@@ -107,13 +99,13 @@ char *findss(XLfile *xl, int index) {
 void setsheetnames(XLfile *xl) {
     FILE *fp;
     char line[BUFSIZ];
-    char sname[BUFSIZ];
+    char sname[PATH_MAX];
     int i, sheet = 0;
 
     /* sheets.txt is a file that is created in the bash script before C is run. It
        uses a simple awk program to list the sheets.*/
 
-    snprintf(sname, sizeof sname, "%s%s", xl->dirname, "/sheets.txt");
+    snprintf(sname, sizeof(sname), "%s%s", xl->dirname, "/sheets.txt");
     if ((fp = fopen(sname, "r")) == NULL) {
 	printf("Error in %s:\n", __func__);
 	perror(sname);
@@ -133,7 +125,7 @@ void setsheetnames(XLfile *xl) {
 }
 
 FILE *opensheet(XLfile *xl, char *sheet) {
-    char sname[BUFSIZ];
+    char sname[PATH_MAX];
     FILE *fp;
 
     snprintf(sname, sizeof(sname), "%s%s%s%s", xl->dirname, "/", sheet, ".txt");

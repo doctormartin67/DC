@@ -1,5 +1,6 @@
 #ifndef HASHTABLE
 #define HASHTABLE
+#include "libraryheader.h"
 
 typedef struct list {
     struct list *next;
