@@ -71,8 +71,8 @@ char *findss(XLfile *xl, int index) {
     int count = 0;
     char *value; // value of cell to return (string)
     // create the name of the txt file to find the string
-    char *shstr = "/ss.txt";
-    snprintf(sname, sizeof(sname), "%s%s", xl->dirname, shstr);
+    strcpy(sname, xl->dirname);
+    strcat(sname, "/ss.txt");
     snprintf(sindex, sizeof(sindex), "%d:\t", index);
     if ((fp = fopen(sname, "r")) == NULL) {
 	printf("Error in %s:\n", __func__);
@@ -105,7 +105,8 @@ void setsheetnames(XLfile *xl) {
     /* sheets.txt is a file that is created in the bash script before C is run. It
        uses a simple awk program to list the sheets.*/
 
-    snprintf(sname, sizeof(sname), "%s%s", xl->dirname, "/sheets.txt");
+    strcpy(sname, xl->dirname);
+    strcat(sname, "/sheets.txt");
     if ((fp = fopen(sname, "r")) == NULL) {
 	printf("Error in %s:\n", __func__);
 	perror(sname);
@@ -125,7 +126,7 @@ void setsheetnames(XLfile *xl) {
 }
 
 FILE *opensheet(XLfile *xl, char *sheet) {
-    char sname[PATH_MAX];
+    char sname[PATH_MAX + NAME_MAX + 1];
     FILE *fp;
 
     snprintf(sname, sizeof(sname), "%s%s%s%s", xl->dirname, "/", sheet, ".txt");
