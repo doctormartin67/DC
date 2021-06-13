@@ -119,19 +119,22 @@ double gensum(GenMatrix amount[], unsigned short EREE, int loop) {
 void setkey(DataSet *ds)
 {
     XLfile *xl;
+    xmlXPathObjectPtr nodeset;
     xmlDocPtr *sheet;
     xmlNodeSetPtr nodes;
     xmlNodePtr node;
     xmlNodePtr childnode;
     char **xls;
-    char *s;
+    xmlChar *key = NULL, *t = NULL, *s = NULL;
     int value = 1; 
     xl = ds->xl;
     xls = xl->sheetname;
     sheet = xl->sheets;
+
     while (*xls != NULL)
     {
-	if ((nodes = getnodeset(*sheet, BAD_CAST XPATH)->nodesetval) == NULL)
+	nodeset = getnodeset(*sheet, BAD_CAST XPATH);
+	if ((nodes = nodeset->nodesetval) == NULL)
 	    errExit(__func__, "there are no nodes in sheet [%s]\n", *xls);
 
 	for (int j = 0; j < nodes->nodeNr; j++)
@@ -139,26 +142,33 @@ void setkey(DataSet *ds)
 	    node = nodes->nodeTab[j];
 	    if ((childnode = node->children) == NULL)
 		continue;
-
-	    s = (char *)xmlNodeListGetString(*sheet, childnode->children, 1);
-	    printf("s = %s\n", s);
-	    if (xmlStrcmp(xmlGetProp(node, BAD_CAST "t"), BAD_CAST "s") == 0)
-		s = findss(xl, atoi(s));
-	    printf("s = %s\n", s);
-
-	    if (strcasecmp(s, "KEY")) 
+	    s = xmlGetProp(node, BAD_CAST "t");
+	    if (xmlStrcmp(s, BAD_CAST "s") == 0)
 	    {
-		free(s);
+		t = xmlNodeListGetString(*sheet, childnode->children, 1);
+		key = (xmlChar *)findss(xl, atoi((const char *)t));
+		xmlFree(t);
+		xmlFree(s);
+	    }
+	    else
+	    {
+		xmlFree(s);
 		continue;
 	    }
 
-	    char *temp = (char *)xmlGetProp(node, BAD_CAST "r");
+	    if (strcasecmp((const char *)key, "KEY")) 
+	    {
+		free(key);
+		continue;
+	    }
+
+	    xmlChar *temp = s = xmlGetProp(node, BAD_CAST "r");
 	    char *kc = ds->keycolumn;
 	    while (!isdigit(*temp))
 		*kc++ = *temp++;
 	    *kc = '\0';
-	    value = atoi(temp);
-	    free(s);
+	    value = atoi((const char *)temp);
+
 	    strcpy(ds->datasheet, *xls);
 	    ds->keyrow = value;
 
@@ -171,6 +181,10 @@ void setkey(DataSet *ds)
 		    ds->datasheet, ds->keycolumn, ds->keyrow);
 	    printf("Setting datasheet to: %s\n", ds->datasheet);
 	    printf("Data starts at cell: %s%d\n", ds->keycolumn, ds->keyrow);
+
+	    free(s);
+	    free(key);
+	    xmlXPathFreeObject(nodeset);
 	    return;
 	}
 	xls++;
