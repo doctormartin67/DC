@@ -69,6 +69,41 @@ main.o: main.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/libxml2/libxml/parser.h \
+ /usr/include/libxml2/libxml/xmlversion.h \
+ /usr/include/libxml2/libxml/xmlexports.h \
+ /usr/include/libxml2/libxml/tree.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/libxml2/libxml/xmlstring.h \
+ /usr/include/libxml2/libxml/xmlregexp.h \
+ /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+ /usr/include/libxml2/libxml/valid.h \
+ /usr/include/libxml2/libxml/xmlerror.h \
+ /usr/include/libxml2/libxml/list.h \
+ /usr/include/libxml2/libxml/xmlautomata.h \
+ /usr/include/libxml2/libxml/entities.h \
+ /usr/include/libxml2/libxml/encoding.h /usr/include/iconv.h \
+ /usr/include/unicode/ucnv.h /usr/include/unicode/ucnv_err.h \
+ /usr/include/unicode/utypes.h /usr/include/unicode/umachine.h \
+ /usr/include/unicode/ptypes.h /usr/include/unicode/platform.h \
+ /usr/include/unicode/uconfig.h /usr/include/unicode/uvernum.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/unicode/urename.h /usr/include/unicode/uversion.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/unicode/utf.h /usr/include/unicode/utf8.h \
+ /usr/include/unicode/utf16.h /usr/include/unicode/utf_old.h \
+ /usr/include/unicode/uenum.h /usr/include/unicode/localpointer.h \
+ /usr/include/libxml2/libxml/xmlIO.h \
+ /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX2.h \
+ /usr/include/libxml2/libxml/xlink.h \
+ /usr/include/libxml2/libxml/xmlmemory.h \
+ /usr/include/libxml2/libxml/threads.h \
+ /usr/include/libxml2/libxml/xpath.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h DCProgram.h \
  /home/doctormartin67/Projects/library/hashtable.h
@@ -136,6 +171,41 @@ lifetables.o: /home/doctormartin67/Projects/work/tables/lifetables.c \
  /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/libxml2/libxml/parser.h \
+ /usr/include/libxml2/libxml/xmlversion.h \
+ /usr/include/libxml2/libxml/xmlexports.h \
+ /usr/include/libxml2/libxml/tree.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/libxml2/libxml/xmlstring.h \
+ /usr/include/libxml2/libxml/xmlregexp.h \
+ /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+ /usr/include/libxml2/libxml/valid.h \
+ /usr/include/libxml2/libxml/xmlerror.h \
+ /usr/include/libxml2/libxml/list.h \
+ /usr/include/libxml2/libxml/xmlautomata.h \
+ /usr/include/libxml2/libxml/entities.h \
+ /usr/include/libxml2/libxml/encoding.h /usr/include/iconv.h \
+ /usr/include/unicode/ucnv.h /usr/include/unicode/ucnv_err.h \
+ /usr/include/unicode/utypes.h /usr/include/unicode/umachine.h \
+ /usr/include/unicode/ptypes.h /usr/include/unicode/platform.h \
+ /usr/include/unicode/uconfig.h /usr/include/unicode/uvernum.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/unicode/urename.h /usr/include/unicode/uversion.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/unicode/utf.h /usr/include/unicode/utf8.h \
+ /usr/include/unicode/utf16.h /usr/include/unicode/utf_old.h \
+ /usr/include/unicode/uenum.h /usr/include/unicode/localpointer.h \
+ /usr/include/libxml2/libxml/xmlIO.h \
+ /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX2.h \
+ /usr/include/libxml2/libxml/xlink.h \
+ /usr/include/libxml2/libxml/xmlmemory.h \
+ /usr/include/libxml2/libxml/threads.h \
+ /usr/include/libxml2/libxml/xpath.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h
 actuarialfunctions.o: \
@@ -211,6 +281,41 @@ actuarialfunctions.o: \
  /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/libxml2/libxml/parser.h \
+ /usr/include/libxml2/libxml/xmlversion.h \
+ /usr/include/libxml2/libxml/xmlexports.h \
+ /usr/include/libxml2/libxml/tree.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/libxml2/libxml/xmlstring.h \
+ /usr/include/libxml2/libxml/xmlregexp.h \
+ /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+ /usr/include/libxml2/libxml/valid.h \
+ /usr/include/libxml2/libxml/xmlerror.h \
+ /usr/include/libxml2/libxml/list.h \
+ /usr/include/libxml2/libxml/xmlautomata.h \
+ /usr/include/libxml2/libxml/entities.h \
+ /usr/include/libxml2/libxml/encoding.h /usr/include/iconv.h \
+ /usr/include/unicode/ucnv.h /usr/include/unicode/ucnv_err.h \
+ /usr/include/unicode/utypes.h /usr/include/unicode/umachine.h \
+ /usr/include/unicode/ptypes.h /usr/include/unicode/platform.h \
+ /usr/include/unicode/uconfig.h /usr/include/unicode/uvernum.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/unicode/urename.h /usr/include/unicode/uversion.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/unicode/utf.h /usr/include/unicode/utf8.h \
+ /usr/include/unicode/utf16.h /usr/include/unicode/utf_old.h \
+ /usr/include/unicode/uenum.h /usr/include/unicode/localpointer.h \
+ /usr/include/libxml2/libxml/xmlIO.h \
+ /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX2.h \
+ /usr/include/libxml2/libxml/xlink.h \
+ /usr/include/libxml2/libxml/xmlmemory.h \
+ /usr/include/libxml2/libxml/threads.h \
+ /usr/include/libxml2/libxml/xpath.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h DCProgram.h \
  /home/doctormartin67/Projects/library/hashtable.h
@@ -290,13 +395,47 @@ DCProgram.o: DCProgram.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
+ /usr/include/libxml2/libxml/parser.h \
+ /usr/include/libxml2/libxml/xmlversion.h \
+ /usr/include/libxml2/libxml/xmlexports.h \
+ /usr/include/libxml2/libxml/tree.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
+ /usr/include/libxml2/libxml/xmlstring.h \
+ /usr/include/libxml2/libxml/xmlregexp.h \
+ /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+ /usr/include/libxml2/libxml/valid.h \
+ /usr/include/libxml2/libxml/xmlerror.h \
+ /usr/include/libxml2/libxml/list.h \
+ /usr/include/libxml2/libxml/xmlautomata.h \
+ /usr/include/libxml2/libxml/entities.h \
+ /usr/include/libxml2/libxml/encoding.h /usr/include/iconv.h \
+ /usr/include/unicode/ucnv.h /usr/include/unicode/ucnv_err.h \
+ /usr/include/unicode/utypes.h /usr/include/unicode/umachine.h \
+ /usr/include/unicode/ptypes.h /usr/include/unicode/platform.h \
+ /usr/include/unicode/uconfig.h /usr/include/unicode/uvernum.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/unicode/urename.h /usr/include/unicode/uversion.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/unicode/utf.h /usr/include/unicode/utf8.h \
+ /usr/include/unicode/utf16.h /usr/include/unicode/utf_old.h \
+ /usr/include/unicode/uenum.h /usr/include/unicode/localpointer.h \
+ /usr/include/libxml2/libxml/xmlIO.h \
+ /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX2.h \
+ /usr/include/libxml2/libxml/xlink.h \
+ /usr/include/libxml2/libxml/xmlmemory.h \
+ /usr/include/libxml2/libxml/threads.h \
+ /usr/include/libxml2/libxml/xpath.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /usr/local/include/xlsxwriter.h /usr/local/include/xlsxwriter/workbook.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h /usr/include/stdint.h \
- /usr/include/x86_64-linux-gnu/bits/wchar.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
  /usr/local/include/xlsxwriter/worksheet.h \
  /usr/local/include/xlsxwriter/shared_strings.h \
  /usr/local/include/xlsxwriter/common.h /usr/include/time.h \
@@ -380,6 +519,41 @@ client.o: client.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/libxml2/libxml/parser.h \
+ /usr/include/libxml2/libxml/xmlversion.h \
+ /usr/include/libxml2/libxml/xmlexports.h \
+ /usr/include/libxml2/libxml/tree.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/libxml2/libxml/xmlstring.h \
+ /usr/include/libxml2/libxml/xmlregexp.h \
+ /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+ /usr/include/libxml2/libxml/valid.h \
+ /usr/include/libxml2/libxml/xmlerror.h \
+ /usr/include/libxml2/libxml/list.h \
+ /usr/include/libxml2/libxml/xmlautomata.h \
+ /usr/include/libxml2/libxml/entities.h \
+ /usr/include/libxml2/libxml/encoding.h /usr/include/iconv.h \
+ /usr/include/unicode/ucnv.h /usr/include/unicode/ucnv_err.h \
+ /usr/include/unicode/utypes.h /usr/include/unicode/umachine.h \
+ /usr/include/unicode/ptypes.h /usr/include/unicode/platform.h \
+ /usr/include/unicode/uconfig.h /usr/include/unicode/uvernum.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/unicode/urename.h /usr/include/unicode/uversion.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/unicode/utf.h /usr/include/unicode/utf8.h \
+ /usr/include/unicode/utf16.h /usr/include/unicode/utf_old.h \
+ /usr/include/unicode/uenum.h /usr/include/unicode/localpointer.h \
+ /usr/include/libxml2/libxml/xmlIO.h \
+ /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX2.h \
+ /usr/include/libxml2/libxml/xlink.h \
+ /usr/include/libxml2/libxml/xmlmemory.h \
+ /usr/include/libxml2/libxml/threads.h \
+ /usr/include/libxml2/libxml/xpath.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
  /home/doctormartin67/Projects/library/hashtable.h \
@@ -447,7 +621,42 @@ helperfunctions.o: \
  /usr/include/x86_64-linux-gnu/sys/stat.h \
  /usr/include/x86_64-linux-gnu/bits/stat.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
- /usr/include/ctype.h /home/doctormartin67/Projects/library/hashtable.h
+ /usr/include/ctype.h /usr/include/libxml2/libxml/parser.h \
+ /usr/include/libxml2/libxml/xmlversion.h \
+ /usr/include/libxml2/libxml/xmlexports.h \
+ /usr/include/libxml2/libxml/tree.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/libxml2/libxml/xmlstring.h \
+ /usr/include/libxml2/libxml/xmlregexp.h \
+ /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+ /usr/include/libxml2/libxml/valid.h \
+ /usr/include/libxml2/libxml/xmlerror.h \
+ /usr/include/libxml2/libxml/list.h \
+ /usr/include/libxml2/libxml/xmlautomata.h \
+ /usr/include/libxml2/libxml/entities.h \
+ /usr/include/libxml2/libxml/encoding.h /usr/include/iconv.h \
+ /usr/include/unicode/ucnv.h /usr/include/unicode/ucnv_err.h \
+ /usr/include/unicode/utypes.h /usr/include/unicode/umachine.h \
+ /usr/include/unicode/ptypes.h /usr/include/unicode/platform.h \
+ /usr/include/unicode/uconfig.h /usr/include/unicode/uvernum.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/unicode/urename.h /usr/include/unicode/uversion.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/unicode/utf.h /usr/include/unicode/utf8.h \
+ /usr/include/unicode/utf16.h /usr/include/unicode/utf_old.h \
+ /usr/include/unicode/uenum.h /usr/include/unicode/localpointer.h \
+ /usr/include/libxml2/libxml/xmlIO.h \
+ /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX2.h \
+ /usr/include/libxml2/libxml/xlink.h \
+ /usr/include/libxml2/libxml/xmlmemory.h \
+ /usr/include/libxml2/libxml/threads.h \
+ /usr/include/libxml2/libxml/xpath.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
+ /home/doctormartin67/Projects/library/hashtable.h
 XLfunctions.o: /home/doctormartin67/Projects/library/XLfunctions.c \
  /usr/include/stdc-predef.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
@@ -511,6 +720,41 @@ XLfunctions.o: /home/doctormartin67/Projects/library/XLfunctions.c \
  /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/libxml2/libxml/parser.h \
+ /usr/include/libxml2/libxml/xmlversion.h \
+ /usr/include/libxml2/libxml/xmlexports.h \
+ /usr/include/libxml2/libxml/tree.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/libxml2/libxml/xmlstring.h \
+ /usr/include/libxml2/libxml/xmlregexp.h \
+ /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+ /usr/include/libxml2/libxml/valid.h \
+ /usr/include/libxml2/libxml/xmlerror.h \
+ /usr/include/libxml2/libxml/list.h \
+ /usr/include/libxml2/libxml/xmlautomata.h \
+ /usr/include/libxml2/libxml/entities.h \
+ /usr/include/libxml2/libxml/encoding.h /usr/include/iconv.h \
+ /usr/include/unicode/ucnv.h /usr/include/unicode/ucnv_err.h \
+ /usr/include/unicode/utypes.h /usr/include/unicode/umachine.h \
+ /usr/include/unicode/ptypes.h /usr/include/unicode/platform.h \
+ /usr/include/unicode/uconfig.h /usr/include/unicode/uvernum.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/unicode/urename.h /usr/include/unicode/uversion.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/unicode/utf.h /usr/include/unicode/utf8.h \
+ /usr/include/unicode/utf16.h /usr/include/unicode/utf_old.h \
+ /usr/include/unicode/uenum.h /usr/include/unicode/localpointer.h \
+ /usr/include/libxml2/libxml/xmlIO.h \
+ /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX2.h \
+ /usr/include/libxml2/libxml/xlink.h \
+ /usr/include/libxml2/libxml/xmlmemory.h \
+ /usr/include/libxml2/libxml/threads.h \
+ /usr/include/libxml2/libxml/xpath.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
  /home/doctormartin67/Projects/library/hashtable.h
 hashtable.o: /home/doctormartin67/Projects/library/hashtable.c \
  /usr/include/stdc-predef.h \
@@ -575,7 +819,42 @@ hashtable.o: /home/doctormartin67/Projects/library/hashtable.c \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h /usr/include/errno.h \
  /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
- /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h
+ /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/libxml2/libxml/parser.h \
+ /usr/include/libxml2/libxml/xmlversion.h \
+ /usr/include/libxml2/libxml/xmlexports.h \
+ /usr/include/libxml2/libxml/tree.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/libxml2/libxml/xmlstring.h \
+ /usr/include/libxml2/libxml/xmlregexp.h \
+ /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+ /usr/include/libxml2/libxml/valid.h \
+ /usr/include/libxml2/libxml/xmlerror.h \
+ /usr/include/libxml2/libxml/list.h \
+ /usr/include/libxml2/libxml/xmlautomata.h \
+ /usr/include/libxml2/libxml/entities.h \
+ /usr/include/libxml2/libxml/encoding.h /usr/include/iconv.h \
+ /usr/include/unicode/ucnv.h /usr/include/unicode/ucnv_err.h \
+ /usr/include/unicode/utypes.h /usr/include/unicode/umachine.h \
+ /usr/include/unicode/ptypes.h /usr/include/unicode/platform.h \
+ /usr/include/unicode/uconfig.h /usr/include/unicode/uvernum.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/unicode/urename.h /usr/include/unicode/uversion.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/unicode/utf.h /usr/include/unicode/utf8.h \
+ /usr/include/unicode/utf16.h /usr/include/unicode/utf_old.h \
+ /usr/include/unicode/uenum.h /usr/include/unicode/localpointer.h \
+ /usr/include/libxml2/libxml/xmlIO.h \
+ /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX2.h \
+ /usr/include/libxml2/libxml/xlink.h \
+ /usr/include/libxml2/libxml/xmlmemory.h \
+ /usr/include/libxml2/libxml/threads.h \
+ /usr/include/libxml2/libxml/xpath.h \
+ /usr/include/libxml2/libxml/xpathInternals.h
 userinterface.o: userinterface.c /usr/include/stdc-predef.h \
  /usr/include/gtk-3.0/gtk/gtk.h /usr/include/gtk-3.0/gdk/gdk.h \
  /usr/include/gtk-3.0/gdk/gdkconfig.h /usr/local/include/glib-2.0/glib.h \
@@ -1298,6 +1577,34 @@ userinterface.o: userinterface.c /usr/include/stdc-predef.h \
  DCProgram.h /home/doctormartin67/Projects/library/libraryheader.h \
  /usr/include/x86_64-linux-gnu/sys/stat.h \
  /usr/include/x86_64-linux-gnu/bits/stat.h /usr/include/ctype.h \
+ /usr/include/libxml2/libxml/parser.h \
+ /usr/include/libxml2/libxml/xmlversion.h \
+ /usr/include/libxml2/libxml/xmlexports.h \
+ /usr/include/libxml2/libxml/tree.h \
+ /usr/include/libxml2/libxml/xmlstring.h \
+ /usr/include/libxml2/libxml/xmlregexp.h \
+ /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+ /usr/include/libxml2/libxml/valid.h \
+ /usr/include/libxml2/libxml/xmlerror.h \
+ /usr/include/libxml2/libxml/list.h \
+ /usr/include/libxml2/libxml/xmlautomata.h \
+ /usr/include/libxml2/libxml/entities.h \
+ /usr/include/libxml2/libxml/encoding.h /usr/include/iconv.h \
+ /usr/include/unicode/ucnv.h /usr/include/unicode/ucnv_err.h \
+ /usr/include/unicode/utypes.h /usr/include/unicode/umachine.h \
+ /usr/include/unicode/ptypes.h /usr/include/unicode/platform.h \
+ /usr/include/unicode/uconfig.h /usr/include/unicode/uvernum.h \
+ /usr/include/unicode/urename.h /usr/include/unicode/uversion.h \
+ /usr/include/unicode/utf.h /usr/include/unicode/utf8.h \
+ /usr/include/unicode/utf16.h /usr/include/unicode/utf_old.h \
+ /usr/include/unicode/uenum.h /usr/include/unicode/localpointer.h \
+ /usr/include/libxml2/libxml/xmlIO.h \
+ /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX2.h \
+ /usr/include/libxml2/libxml/xlink.h \
+ /usr/include/libxml2/libxml/xmlmemory.h \
+ /usr/include/libxml2/libxml/threads.h \
+ /usr/include/libxml2/libxml/xpath.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
  /home/doctormartin67/Projects/library/hashtable.h

@@ -13,6 +13,7 @@ INCLUDE = -I. -I$(LIBPATH) -I$(TABLEPATH) -I$(ACTPATH)
 BINPATH = /home/doctormartin67/bin
 
 # objects:
+XML = `xml2-config --cflags` `xml2-config --libs`
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -rdynamic
 MISCOBJS = $(TABLEPATH)/lifetables.o $(ACTPATH)/actuarialfunctions.o DCProgram.o client.o
 LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/XLfunctions.o $(LIBPATH)/hashtable.o
@@ -40,7 +41,7 @@ LDFLAGS = -lm -lxlsxwriter#libraries to include: -lm is Math, -lxlsxwriter is an
 
 # targets:
 $(EXEC) debug: $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
-	$(CC) -o $(EXEC) $^ $(LDFLAGS) $(GPROFFLAGS) $(GTK)
+	$(CC) -o $(EXEC) $^ $(LDFLAGS) $(GPROFFLAGS) $(GTK) $(XML)
 	$(CP) $(EXEC) $(BINPATH)
 	$(CP) $(LIBPATH)/$(SCRIPT) $(BINPATH)
 
@@ -53,10 +54,10 @@ clean:
 
 # dependencies:
 %.o: %.c
-	$(CC) $(INCLUDE) -c $< -o $@ $(GTK) $(CFLAGS) 
+	$(CC) $(INCLUDE) -c $< -o $@ $(GTK) $(XML) $(CFLAGS) 
 
 # clever way to add all dependencies, see page 723 of C in a nutshell.
 dependencies: $(EXEC).c $(MISCOBJS:.o=.c) $(LIBOBJS:.o=.c) $(GTKOBJS:.o=.c)
-	$(CC) -M $(INCLUDE) $(GTK) $^ > $@
+	$(CC) -M $(INCLUDE) $(GTK) $(XML) $^ > $@
 
 include dependencies
