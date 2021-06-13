@@ -2,7 +2,7 @@
 
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, const char *s) {
-    char temp[PATH_MAX +NAME_MAX + 1];
+    char temp[PATH_MAX + NAME_MAX + 1];
     char *pt = temp;
 
     strcpy(temp, s);
@@ -14,11 +14,16 @@ void setXLvals(XLfile *xl, const char *s) {
     }
     *pt = '\0';
     strcpy(xl->dirname, temp);
-    strcat(temp, "/xl/workbook.xml");
+
+    snprintf(temp, sizeof(temp), "%s%s", xl->dirname, "/xl/workbook.xml");
     xl->workbook = getxmlDoc(temp);
+
+    snprintf(temp, sizeof(temp), "%s%s", xl->dirname, "/xl/sharedStrings.xml");
+    xl->sharedStrings = getxmlDoc(temp);
 
     xl->sheetname = calloc(MAXSHEETS, sizeof(char *));
     setsheetnames(xl);
+    xl->sheets = calloc(MAXSHEETS, sizeof(xmlDocPtr));
 
     char **t = xl->sheetname;
     for (int i = 0; *t != NULL; i++, t++) {

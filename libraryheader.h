@@ -24,12 +24,14 @@
 #define NSPREFIX "main"
 #define NSURI "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 #define XPATH "//main:c"
+#define XPATHSS "//main:si"
 
 typedef struct excel {
     char fname[PATH_MAX];
     char dirname[PATH_MAX];
     char **sheetname;
     xmlDocPtr workbook;
+    xmlDocPtr sharedStrings;
     xmlDocPtr *sheets;
 } XLfile;
 
