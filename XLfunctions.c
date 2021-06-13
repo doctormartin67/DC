@@ -2,7 +2,7 @@
 
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, const char *s) {
-    char temp[PATH_MAX];
+    char temp[PATH_MAX +NAME_MAX + 1];
     char *pt = temp;
 
     strcpy(temp, s);
@@ -14,7 +14,18 @@ void setXLvals(XLfile *xl, const char *s) {
     }
     *pt = '\0';
     strcpy(xl->dirname, temp);
+    strcat(temp, "/xl/workbook.xml");
+    xl->workbook = getxmlDoc(temp);
+
+    xl->sheetname = calloc(MAXSHEETS, sizeof(char *));
     setsheetnames(xl);
+
+    char **t = xl->sheetname;
+    for (int i = 0; *t != NULL; i++, t++) {
+	snprintf(temp, sizeof(temp), 
+		"%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", i + 1, ".xml");
+	xl->sheets[i] = getxmlDoc(temp);
+    }
 }
 
 /* fp is an open sheet, usually the sheet containing the data to evaluate 
@@ -32,30 +43,6 @@ char *cell(FILE *fp, const char *s, XLfile *xl) {
 	return value;
     }
     return NULL;
-}
-
-int findsheetID(XLfile *xl, const char *s) {
-
-    int sheet = 0;
-    while (*(xl->sheetname + sheet) != NULL) {
-	if (strcmp(*(xl->sheetname + sheet), s) == 0)
-	    return sheet + 1;
-	sheet++;
-    }
-
-    printf("Sheet name \"%s\" not found.\n", s);
-    printf("Make sure you spelt it correctly, it is case sensitive.\n");
-    printf("The following sheets were found:\n");
-    printf("---------------------\n");
-    sheet = 0;
-    while (*(xl->sheetname + sheet) != NULL) {
-	printf(">%s<\n", *(xl->sheetname + sheet));
-	sheet++;
-    }
-    printf("---------------------\n");
-    printf("Please select one of the above sheets (excluding > and <).\n");
-    printf("Returning 0...\n");
-    return 0;
 }
 
 /* the excel zip has an xml file with all the string literals
@@ -96,33 +83,22 @@ char *findss(XLfile *xl, int index) {
     return NULL;
 }
 
-void setsheetnames(XLfile *xl) {
-    FILE *fp;
-    char line[BUFSIZ];
-    char sname[PATH_MAX];
-    int i, sheet = 0;
+void setsheetnames(XLfile *xl)
+{
+    char **xls = xl->sheetname;
+    xmlNodePtr p = xmlDocGetRootElement(xl->workbook);
 
-    /* sheets.txt is a file that is created in the bash script before C is run. It
-       uses a simple awk program to list the sheets.*/
+    if (p == NULL)
+	errExit(__func__, "Empty document\n");
 
-    strcpy(sname, xl->dirname);
-    strcat(sname, "/sheets.txt");
-    if ((fp = fopen(sname, "r")) == NULL) {
-	printf("Error in %s:\n", __func__);
-	perror(sname);
-	exit(1);
-    }
-    while (fgets(line, BUFSIZ, fp) != NULL) {
-	i = 0;
-	// Remove the '\n' character at the end of the sheet name.
-	while (line[i++] != '\n')
-	    ;
-	line[i-1] = '\0';
-	*(xl->sheetname + sheet++) = strdup(line);
-    }
-    // final pointer is just a null pointer
-    *(xl->sheetname + sheet) = NULL;
-    fclose(fp);
+    if (xmlStrcmp(p->name, (const xmlChar *) "workbook"))
+	errExit(__func__, "root node != workbook\n");
+
+    for (p = p->children; p != NULL; p = p->next)
+	if ((!xmlStrcmp(p->name, (const xmlChar *)"sheets")))
+	    for (xmlNodePtr ps = p->children; ps != NULL; ps = ps->next)
+		*xls++ = (char *)xmlGetProp(ps, (const xmlChar *)"name");
+    *xls = NULL;
 }
 
 FILE *opensheet(XLfile *xl, char *sheet) {

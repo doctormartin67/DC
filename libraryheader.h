@@ -10,12 +10,27 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <libxml/parser.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 #include "hashtable.h"
+
+#ifdef _WINDOWS
+#define strcasecmp stricmp
+#endif
+
+#define MAXSHEETS 256
+
+#define NSPREFIX "main"
+#define NSURI "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+#define XPATH "//main:c"
 
 typedef struct excel {
     char fname[PATH_MAX];
     char dirname[PATH_MAX];
-    char *sheetname[PATH_MAX];
+    char **sheetname;
+    xmlDocPtr workbook;
+    xmlDocPtr *sheets;
 } XLfile;
 
 //---This section is for Date functionality---
@@ -43,6 +58,9 @@ int DIRexists(const char *dname);
 double min(int, ...);
 double max(int, ...);
 double sum(double a[], int length); // sum all elements of array
+void errExit(const char *func, const char *format, ...);
+xmlDocPtr getxmlDoc(const char *docname);
+xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath);
 
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, const char *s);
@@ -59,7 +77,6 @@ char *cell(FILE *fp, const char *s, XLfile *xl);
    in the sheet xml files they are listed as a number and so we
    need to retrieve the strings given this number
  */
-int findsheetID(XLfile *xl, const char *s);
 char *findss(XLfile *xl, int index);
 void setsheetnames(XLfile *xl);
 FILE *opensheet(XLfile *xl, char *sheet);

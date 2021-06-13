@@ -4,4 +4,4 @@ BEGIN {
     RS = "(Id[0-9]\"/>)|(<sheets>)";
     FS = "\"";
 }
-/sheet name/ {print $2};
+/sheet name/ {s = $2; sub("\&amp;", "\&", s); print s};

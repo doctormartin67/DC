@@ -8,7 +8,8 @@
 #include "libraryheader.h"
 #include <ctype.h>
 
-char *trim(char *s) {
+char *trim(char *s)
+{
     char *t;
     t = s;
     while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') {
@@ -24,7 +25,8 @@ char *trim(char *s) {
     return t;
 }
 
-void upper(char *s) {
+void upper(char *s)
+{
     while(*s) {
 	*s = toupper(*s);
 	s++;
@@ -32,7 +34,8 @@ void upper(char *s) {
 }
 
 // replace all occurences of string oldW with newW in s
-char *replace(const char *s, const char *oldW, 	const char *newW) { 
+char *replace(const char *s, const char *oldW, 	const char *newW)
+{
     char *result; 
     int i, cnt = 0; 
     int newWlen = strlen(newW); 
@@ -81,7 +84,8 @@ int FILEexists(const char *fname)
 }
 
 // Check if DIR exists
-int DIRexists(const char *dname) {
+int DIRexists(const char *dname)
+{
     DIR* dir = opendir(dname);
     if (dir) {
 	/* Directory FILEexists. */
@@ -103,7 +107,8 @@ int DIRexists(const char *dname) {
    REMEMBER TO FREE THE RETURN VALUE WHEN YOU ARE
    FINISHED WITH IT!
  */
-char *strinside(const char *s, const char *begin, const char *end) {
+char *strinside(const char *s, const char *begin, const char *end)
+{
     char *pb; //pointer to begin in s
     char *pe; //pointer to end in s
     char *value; //malloc result that we will return
@@ -138,7 +143,8 @@ char *strinside(const char *s, const char *begin, const char *end) {
 }
 
 // MAKE SURE YOU INPUT DOUBLE AS ARGUMENTS OR YOU WILL HAVE UNDEFINED BEHAVIOUR!
-double min(int argc, ...) {
+double min(int argc, ...)
+{
     va_list valist;
     double value;
     double temp;
@@ -160,7 +166,8 @@ double min(int argc, ...) {
 }
 
 // MAKE SURE YOU INPUT DOUBLE AS ARGUMENTS OR YOU WILL HAVE UNDEFINED BEHAVIOUR!
-double max(int argc, ...) {
+double max(int argc, ...)
+{
     va_list valist;
     double value;
     double temp;
@@ -181,9 +188,58 @@ double max(int argc, ...) {
     return value;
 }
 
-double sum(double a[], int length) {
+double sum(double a[], int length)
+{
     double value = 0;
     for (int i = 0; i < length; i++)
 	value += *a++;
     return value;
+}
+
+void errExit(const char *func, const char *format, ...)
+{
+    char errMsg[BUFSIZ];
+    va_list arglist;
+    va_start(arglist, format);
+
+    vsnprintf(errMsg, BUFSIZ, format, arglist);
+    fprintf(stderr, "ERROR in [%s]: %s\n", func, errMsg);
+    exit(EXIT_FAILURE);
+}
+
+/* xml functions */
+xmlDocPtr getxmlDoc(const char *docname)
+{
+    xmlDocPtr doc;
+    doc = xmlParseFile(docname);
+
+    if (doc == NULL)
+	errExit(__func__, "Unable to parse [%s]\n", docname);
+
+    return doc;
+}
+
+xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath)
+{
+    xmlXPathContextPtr context;
+    xmlXPathObjectPtr result;
+    context = xmlXPathNewContext(doc);
+
+    if (context == NULL)
+	errExit(__func__, "xmlXPathNewContext returned NULL");
+    if (xmlXPathRegisterNs(context,  BAD_CAST NSPREFIX, BAD_CAST NSURI) != 0)
+	errExit(__func__,"Unable to register NS with prefix");
+
+    result = xmlXPathEvalExpression(xpath, context);
+    xmlXPathFreeContext(context);
+
+    if (result == NULL)
+	errExit(__func__, "xmlXPathEvalExpression returned NULL");
+    if(xmlXPathNodeSetIsEmpty(result->nodesetval))
+    {
+	xmlXPathFreeObject(result);
+	printf("No result\n");
+	return NULL;
+    }
+    return result;
 }
