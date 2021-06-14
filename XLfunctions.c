@@ -55,37 +55,50 @@ char *cell(FILE *fp, const char *s, XLfile *xl) {
    in the sheet xml files they are listed as a number and so we
    need to retrieve the strings given this number
  */
-char *findss(XLfile *xl, int index) {
-    FILE *fp;
-    char line[BUFSIZ];
-    char sname[PATH_MAX];
-    char sindex[16]; //used to convert int to string
-    int count = 0;
-    char *value; // value of cell to return (string)
-    // create the name of the txt file to find the string
-    strcpy(sname, xl->dirname);
-    strcat(sname, "/ss.txt");
-    snprintf(sindex, sizeof(sindex), "%d:\t", index);
-    if ((fp = fopen(sname, "r")) == NULL) {
-	printf("Error in %s:\n", __func__);
-	perror(sname);
-	exit(1);
-    }
-    while (fgets(line, sizeof(line), fp) != NULL) {
+char *findss(XLfile *xl, int index)
+{
+    char *s; // value of cell to return (string)
+    xmlXPathObjectPtr nodeset;
+    xmlDocPtr sheet;
+    xmlNodeSetPtr nodes;
+    xmlNodePtr node;
+    xmlNodePtr childnode;
 
-	if (strstr(line, sindex) == NULL) {
-	    count++;
-	    continue;
+    sheet = xl->sharedStrings;
+    nodeset = getnodeset(sheet, (xmlChar *)XPATHSS);
+
+    if ((nodes = nodeset->nodesetval) == NULL)
+	errExit(__func__, "there are no nodes in sharedStrings.xml\n");
+
+    node = nodes->nodeTab[index];
+    if ((childnode = node->children) == NULL)
+	errExit(__func__, "The nodes have no childs, but the childs hold the string values\n");
+
+    if (!xmlStrcmp(childnode->name, (const xmlChar *)"t"))
+	s = (char *)xmlNodeListGetString(sheet, childnode->children, 1);
+    else if (!xmlStrcmp(childnode->name, (const xmlChar *)"r"))
+    {
+	char temp[BUFSIZ];
+	strcpy(temp, "");
+	for(; childnode != NULL; childnode = childnode->next)
+	{
+	    xmlNodePtr gcn = childnode->children; /*grandchild node */
+	    while (gcn != NULL && xmlStrcmp(gcn->name, (const xmlChar *)"t"))
+		gcn = gcn->next;
+
+	    if (gcn == NULL)
+		errExit(__func__, "no \"t\" element in sharedStrings.xml\n");
+
+	    s = (char *)xmlNodeListGetString(sheet, gcn->children, 1);
+	    strcat(temp, s);
+	    xmlFree(s);
 	}
-	if(count == index) {
-	    value = strinside(line, "\t", "\n");
-	    fclose(fp);
-	    return value;
-	}
+	s = strdup(temp);
     }
-    fclose(fp);
-    printf("Sadly, didn't find the correct string, returning NULL.\n");
-    return NULL;
+    else
+	errExit(__func__, "Unknown element [%s]\n", childnode->name);
+
+    return s;
 }
 
 void setsheetnames(XLfile *xl)
