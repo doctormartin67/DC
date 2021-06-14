@@ -125,7 +125,7 @@ void setkey(DataSet *ds)
     xmlNodePtr node;
     xmlNodePtr childnode;
     char **xls;
-    xmlChar *key = NULL, *t = NULL, *s = NULL;
+    char *key = NULL, *t = NULL, *s = NULL;
     int value = 1; 
     xl = ds->xl;
     xls = xl->sheetname;
@@ -133,7 +133,7 @@ void setkey(DataSet *ds)
 
     while (*xls != NULL)
     {
-	nodeset = getnodeset(*sheet, BAD_CAST XPATH);
+	nodeset = getnodeset(*sheet, (xmlChar *)XPATH);
 	if ((nodes = nodeset->nodesetval) == NULL)
 	    errExit(__func__, "there are no nodes in sheet [%s]\n", *xls);
 
@@ -142,11 +142,11 @@ void setkey(DataSet *ds)
 	    node = nodes->nodeTab[j];
 	    if ((childnode = node->children) == NULL)
 		continue;
-	    s = xmlGetProp(node, BAD_CAST "t");
-	    if (xmlStrcmp(s, BAD_CAST "s") == 0)
+	    s = (char *)xmlGetProp(node, (xmlChar *)"t");
+	    if (xmlStrcmp((xmlChar *)s, (const xmlChar *)"s") == 0)
 	    {
-		t = xmlNodeListGetString(*sheet, childnode->children, 1);
-		key = (xmlChar *)findss(xl, atoi((const char *)t));
+		t = (char *)xmlNodeListGetString(*sheet, childnode->children, 1);
+		key = findss(xl, atoi(t));
 		xmlFree(t);
 		xmlFree(s);
 	    }
@@ -156,18 +156,18 @@ void setkey(DataSet *ds)
 		continue;
 	    }
 
-	    if (strcasecmp((const char *)key, "KEY")) 
+	    if (strcasecmp(key, "KEY")) 
 	    {
 		free(key);
 		continue;
 	    }
 
-	    xmlChar *temp = s = xmlGetProp(node, BAD_CAST "r");
+	    char *temp = s = (char *)xmlGetProp(node, (const xmlChar *)"r");
 	    char *kc = ds->keycolumn;
 	    while (!isdigit(*temp))
 		*kc++ = *temp++;
 	    *kc = '\0';
-	    value = atoi((const char *)temp);
+	    value = atoi(temp);
 
 	    strcpy(ds->datasheet, *xls);
 	    ds->keyrow = value;
@@ -182,7 +182,7 @@ void setkey(DataSet *ds)
 	    printf("Setting datasheet to: %s\n", ds->datasheet);
 	    printf("Data starts at cell: %s%d\n", ds->keycolumn, ds->keyrow);
 
-	    free(s);
+	    xmlFree(s);
 	    free(key);
 	    xmlXPathFreeObject(nodeset);
 	    return;
