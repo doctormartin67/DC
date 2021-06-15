@@ -25,6 +25,7 @@
 #define NSURI "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 #define XPATH "//main:c"
 #define XPATHSS "//main:si"
+#define XPATHDATA "//main:row"
 
 typedef struct excel {
     char fname[PATH_MAX];
@@ -72,7 +73,8 @@ void setXLvals(XLfile *xl, const char *s);
    sheet is the number of the sheet to open. Returns NULL when no
    value in cell.
  */
-char *cell(FILE *fp, const char *s, XLfile *xl);
+char *cell(XLfile *xl, xmlDocPtr sheet, const char *s);
+unsigned int getrow(const char *cell);
 
 /* the excel zip has an xml file with all the string literals
    called sharedStrings.

@@ -37,16 +37,77 @@ void setXLvals(XLfile *xl, const char *s) {
    s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
  */
-char *cell(FILE *fp, const char *s, XLfile *xl) {
-    char line[BUFSIZ];
-    char *value; // value of cell to return (string)
+char *cell(XLfile *xl, xmlDocPtr sheet, const char *s) {
+    xmlXPathObjectPtr nodeset;
+    xmlNodeSetPtr nodes;
+    xmlNodePtr node;
+    xmlNodePtr childnode;
+    xmlChar *scell, *t;
+    char *v = NULL, *row;
+    int r = getrow(s);
 
-    fseek(fp, 0, SEEK_SET);
-    while (fgets(line, BUFSIZ, fp) != NULL) {
-	if ((value = valueincell(xl, line, s)) == NULL)
-	    continue;
-	return value;
+    nodeset = getnodeset(sheet, (xmlChar *)XPATHDATA);
+
+    if ((nodes = nodeset->nodesetval) == NULL)
+	errExit(__func__, "there are no nodes in the data sheet\n");
+
+    for (node = *nodes->nodeTab; node != NULL; node = node->next)
+    {
+	/* find node with row */
+	row = (char *)xmlGetProp(node, (xmlChar *)"r");
+	if (atoi(row) == r)
+	{
+	    xmlFree(row);
+	    break;
+	}
     }
+    if (node == NULL)
+	return NULL;
+
+    if ((node = node->children) == NULL)
+	errExit(__func__, "no value found in cell [%s]\n", s);
+
+    for (; node != NULL; node = node->next)
+    {
+	/* find cell in found row */
+	scell = xmlGetProp(node, (xmlChar *)"r");
+	if (!xmlStrcmp(scell, (xmlChar *)s))
+	{
+	    xmlFree(scell);
+	    break;
+	}
+    }
+    if (node == NULL)
+	return NULL;
+
+    if (node->children == NULL)
+	errExit(__func__, "no value found in cell [%s]\n", s);
+
+    for(childnode = node->children; childnode != NULL; childnode = childnode->next)
+    {
+	if (!xmlStrcmp(childnode->name, (xmlChar *)"v"))	
+	{
+	    v = (char *)xmlNodeListGetString(sheet, childnode->children, 1);
+	    break;
+	}
+    }
+    if (v == NULL)
+	errExit(__func__, "no element <v> for cell [%s]\n", s);
+
+    t = xmlGetProp(node, (xmlChar *)"t");
+    if (!xmlStrcmp(t, (xmlChar *)"n"))
+    {
+	xmlFree(t);
+	return v;
+    }
+    else if (!xmlStrcmp(t, (xmlChar *)"s"))
+    {
+	int temp = atoi(v);
+	xmlFree(v);
+	return findss(xl, temp);
+    }
+    else
+	errExit(__func__, "Unknown element [%s]", t);
     return NULL;
 }
 
@@ -132,7 +193,20 @@ FILE *opensheet(XLfile *xl, char *sheet) {
     return fp;
 }
 
-void nextcol(char *next) {
+/* This function will return the row of a given excel cell,
+   for example 11 in the case of "B11" */
+unsigned int getrow(const char *cell)
+{
+    while (!isdigit(*cell))
+	cell++;
+
+    if (*cell == '\0')
+	errExit(__func__, "%s is not a valid cell, no row found\n", cell);
+    return atoi(cell);
+}
+
+void nextcol(char *next)
+{
     char *npt = next;
     int i = 0, j = 0, endindex = 0, finalindex = 0;
     /* endindex is the last index of the letters
