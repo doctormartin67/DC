@@ -169,7 +169,9 @@ typedef struct {
 		   the keys are to use in the hashtable */
     char keycolumn[4];
     char **keys; // This points to the array of keys in excel
+    xmlNodePtr keynode;
     char datasheet[256]; // This is the sheet where the data lies
+    xmlDocPtr sheet;
     XLfile *xl;
     Hashtable **Data; // This will be set using createData function below
     int membercnt;

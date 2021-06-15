@@ -6,6 +6,11 @@
 void setDSvals(XLfile *xl, DataSet *ds) {
     ds->xl = xl;
     setkey(ds);
+    char **xls = xl->sheetname;
+    int i = 0;
+    while(strcmp(xls[i++], ds->datasheet))
+	;
+    ds->sheet = xl->sheets[i];
     countMembers(ds);
     createData(ds);
 }
@@ -168,6 +173,7 @@ void setkey(DataSet *ds)
 		*kc++ = *temp++;
 	    *kc = '\0';
 	    value = atoi(temp);
+	    ds->keynode = node->parent;
 
 	    strcpy(ds->datasheet, *xls);
 	    ds->keyrow = value;
@@ -199,30 +205,23 @@ void setkey(DataSet *ds)
     ds->keycolumn[0] = 'A';
 }
 
-void countMembers(DataSet *ds) {
-    FILE *fp;
-    char column[4];
-    int irow;
-    char srow[16];
-    char currentCell[10];
-    char *temp;
+void countMembers(DataSet *ds)
+{
+    char *row;
+    int r = ds->keyrow;
+    int count = ds->keyrow;
+    xmlNodePtr node = ds->keynode;
 
-    fp = opensheet(ds->xl, ds->datasheet);
-
-    strcpy(column, ds->keycolumn);
-    irow = ds->keyrow;
-    snprintf(srow, sizeof(srow), "%d", irow);
-    strcpy(currentCell, column);
-    strcat(currentCell, srow);
-    while ((temp = cell(fp, currentCell, ds->xl)) != NULL) {
-	snprintf(srow, sizeof(srow), "%d", ++irow);
-	strcpy(currentCell, column);
-	strcat(currentCell, srow);
-	free(temp);
+    while (node != NULL && count == r)
+    {
+	row = (char *)xmlGetProp(node, (xmlChar *)"r");
+	r = atoi(row);
+	count++;
+	r++;
+	node = node->next;
     }
-    ds->membercnt = irow - 1 - ds->keyrow;
+    ds->membercnt = count - 1 - ds->keyrow;
     printf("Amount of affiliates in data: %d\n", ds->membercnt);
-    fclose(fp);
 }
 
 /* Excel is just a bunch of cells of the form O11, DC103, ...
@@ -268,14 +267,14 @@ void createData(DataSet *ds) {
     // Set the keys
     int countkeys = 0;
     ds->keys = (char **)malloc(BUFSIZ/8 * sizeof(char *));
-    *ds->keys = cell(fp, keyCell, ds->xl);
+    *ds->keys = cell(ds->xl, ds->sheet, keyCell);
 
     while (*(ds->keys + countkeys) != NULL || (countkeys > BUFSIZ/8 - 1)) {
 
 	// Here we update cell for loop, for example O11 becomes P11
 	countkeys++;
 	nextcol(keyCell);
-	*(ds->keys + countkeys) = cell(fp, keyCell, ds->xl);
+	*(ds->keys + countkeys) = cell(ds->xl, ds->sheet, keyCell);
     }
 
     // Check for double keys
@@ -301,7 +300,7 @@ void createData(DataSet *ds) {
     for (int i = 0; i < ds->membercnt; i++) {
 
 	// Set the initial data (KEY)
-	data = cell(fp, dataCell, ds->xl);
+	data = cell(ds->xl, ds->sheet, dataCell);
 	lookup(*(ds->keys), data, *(ds->Data + i));
 	nextcol(dataCell);
 	// Set index of keys to 1 at the start of loop
