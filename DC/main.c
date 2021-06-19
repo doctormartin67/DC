@@ -12,6 +12,8 @@ int main(int argc, char *argv[]) {
 	exit(0);
     }
 
+    createXLzip(argv[1]);
+    exit(0);
     XLfile xl;
     DataSet ds;
 

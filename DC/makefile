@@ -19,7 +19,6 @@ MISCOBJS = $(TABLEPATH)/lifetables.o $(ACTPATH)/actuarialfunctions.o DCProgram.o
 LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/XLfunctions.o $(LIBPATH)/hashtable.o
 GTKOBJS = userinterface.o
 EXEC = main
-SCRIPT = runDC
 
 # flags: 
 # -g if you want to debug, 
@@ -43,7 +42,6 @@ LDFLAGS = -lm -lxlsxwriter#libraries to include: -lm is Math, -lxlsxwriter is an
 $(EXEC) debug: $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
 	$(CC) -o $(EXEC) $^ $(LDFLAGS) $(GPROFFLAGS) $(GTK) $(XML)
 	$(CP) $(EXEC) $(BINPATH)
-	$(CP) $(LIBPATH)/$(SCRIPT) $(BINPATH)
 
 $(EXEC): CFLAGS += $(OPTFLAGS)
 

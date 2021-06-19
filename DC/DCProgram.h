@@ -2,7 +2,6 @@
 #define DCPROGRAM
 
 #include "libraryheader.h"
-#include "hashtable.h"
 
 //---Define BIT constants---
 //-  status BITS  -
