@@ -181,7 +181,6 @@ void countMembers(DataSet *ds)
    reference cell O11 as an example going further.*/
 
 void createData(DataSet *ds) {
-    FILE *fp;
     char column[4]; // This holds the column of the beginning of our data cell, for example O
     int irow; // This holds the row of the beginning of our data cell, for example 11
     char srow[16]; /* This holds the row in string form of the beginning of our data cell, 
@@ -190,10 +189,6 @@ void createData(DataSet *ds) {
     char dataCell[10]; /* This will hold the cell of data corresponding to a key
 			  for the hashtable, for example O12.*/
     char *data; // This will hold the value of the data, for example 2.391,30.
-    char line[BUFSIZ];
-
-    // This opens the data sheet (made with awk).
-    fp = opensheet(ds->xl, ds->datasheet);
 
     // Here we set the initial key cell, for example B11
     strcpy(column, ds->keycolumn);
@@ -213,15 +208,13 @@ void createData(DataSet *ds) {
 
     for (int k = 0; k < ds->membercnt; k++)
 	// https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-8.html
-	*(ds->Data + k) = newHashtable(233, 0); // 179 * 1.3 = 232.7 -> 233 is a prime
+	ds->Data[k] = newHashtable(233, 0); // 179 * 1.3 = 232.7 -> 233 is a prime
 
     // Set the keys
     int countkeys = 0;
     ds->keys = (char **)calloc(BUFSIZ/8, sizeof(char *));
     char **pkey = ds->keys;
-    xmlNode offsetnode;
-    memset(&offsetnode, 0, sizeof(xmlNode));
-    *pkey = cell(ds->xl, ds->sheet, keyCell, &offsetnode);
+    *pkey = cell(ds->xl, ds->sheet, keyCell);
 
     while (*pkey != NULL)
      {
@@ -229,52 +222,43 @@ void createData(DataSet *ds) {
 	if (++countkeys >= BUFSIZ/8)
 	    errExit(__func__, "Data has too many keys\n");;
 	nextcol(keyCell);
-	*++pkey = cell(ds->xl, ds->sheet, keyCell, &offsetnode);
+	*++pkey = cell(ds->xl, ds->sheet, keyCell);
     }
 
     // Check for double keys
-    int k = 0;
-    int l = k + 1;
     int cntdouble = 0;
-    while (*(ds->keys + k) != NULL) {
-	while (*(ds->keys + l) != NULL) {
-	    if (strcmp(*(ds->keys + k), *(ds->keys + l)) == 0) {
+    pkey = ds->keys;
+    char **pkey2 = pkey + 1;
+    while (*pkey != NULL)
+    {
+	while (*pkey2 != NULL)
+	{
+	    if (strcmp(*pkey, *pkey2) == 0)
+	    {
 		char temp[BUFSIZ/256];
-		printf("Warning: %s is a double\n", *(ds->keys + l));
-		snprintf(temp, sizeof(temp), "%s%d", *(ds->keys + l), ++cntdouble + 1);
-		strcpy(*(ds->keys + l), temp);
-		printf("Changed it to %s\n",  *(ds->keys + l));
+		printf("Warning: %s is a double\n", *pkey2);
+		snprintf(temp, sizeof(temp), "%s%d", *pkey2, ++cntdouble + 1);
+		strcpy(*pkey2, temp);
+		printf("Changed it to %s\n",  *pkey2);
 	    }
-	    l++;
+	    pkey2++;
 	}
-	l = ++k + 1;
+	pkey2 = ++pkey + 1;
     }
 
     // start populating Hashtable
     printf("Creating Data...\n");
-    for (int i = 0; i < ds->membercnt; i++) {
-
-	memset(&offsetnode, 0, sizeof(xmlNode));
+    for (int i = 0; i < ds->membercnt; i++)
+    {
 	// Set the initial data (KEY)
-	data = cell(ds->xl, ds->sheet, dataCell, &offsetnode);
+	data = cell(ds->xl, ds->sheet, dataCell);
 	lookup(*(ds->keys), data, *(ds->Data + i));
 	nextcol(dataCell);
 	// Set index of keys to 1 at the start of loop
 	countkeys = 1;
 	while (*(ds->keys + countkeys) != NULL) {
 
-	    /* get a line from data file, if the data cell we are looking
-	       for is not found (== NULL) then there is nothing in the cell 
-	       in the excel file. We therefore set the data to 0 and go to
-	       next data cell.*/
-	    if (fgets(line, sizeof(line), fp) == NULL) {
-		printf("Error in %s: should never reach the end of the file before", __func__);
-		printf("all the members were created.\n");
-		exit(1);
-	    }
-
-	    while ((data = cell(ds->xl, ds->sheet, dataCell, &offsetnode)) == NULL) {
-
+	    while ((data = cell(ds->xl, ds->sheet, dataCell)) == NULL) {
 		lookup(*(ds->keys + countkeys), "0", *(ds->Data + i));
 		// Here we update cell for loop, for example O11 becomes P11
 		countkeys++;
@@ -296,7 +280,6 @@ void createData(DataSet *ds) {
 
     }
     printf("Creation complete\n");
-    fclose(fp);
 }
 
 int printresults(DataSet *ds, int tc) {
