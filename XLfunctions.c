@@ -40,7 +40,7 @@ void setXLvals(XLfile *xl, const char *s) {
    s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
  */
-char *cell(XLfile *xl, unsigned int sheet, const char *s, xmlNodePtr offsetnode) {
+char *cell(XLfile *xl, unsigned int sheet, const char *s) {
     xmlXPathObjectPtr nodeset;
     xmlNodeSetPtr nodes;
     xmlNodePtr node;
@@ -49,35 +49,26 @@ char *cell(XLfile *xl, unsigned int sheet, const char *s, xmlNodePtr offsetnode)
     char *v = NULL, *row;
     int r = getrow(s);
 
-    /* we will usually use an offset node to traverse the xml file, otherwise it would take
-       too long to set all the excel values */
-    if (!offsetnode->name)
+    nodeset = xl->nodesets[sheet];
+    nodes = nodeset->nodesetval;
+
+    for (node = *nodes->nodeTab; node != NULL; node = node->next)
     {
-	nodeset = xl->nodesets[sheet];
-	nodes = nodeset->nodesetval;
-
-	for (node = *nodes->nodeTab; node != NULL; node = node->next)
+	/* find node with row */
+	row = (char *)xmlGetProp(node, (const xmlChar *)"r");
+	if (atoi(row) == r)
 	{
-	    /* find node with row */
-	    row = (char *)xmlGetProp(node, (const xmlChar *)"r");
-	    if (atoi(row) == r)
-	    {
-		free(row);
-		break;
-	    }
-	    else
-		free(row);
+	    free(row);
+	    break;
 	}
-	if (node == NULL)
-	    return NULL;
-
-	if ((node = node->children) == NULL)
-	    errExit(__func__, "no value found in cell [%s]\n", s);
-
-	*offsetnode = *node->parent;
+	else
+	    free(row);
     }
-    else
-	node = offsetnode->children;
+    if (node == NULL)
+	return NULL;
+
+    if ((node = node->children) == NULL)
+	errExit(__func__, "no value found in cell [%s]\n", s);
 
     for (; node != NULL; node = node->next)
     {
@@ -199,22 +190,6 @@ void setnodes(XLfile *xl)
 	if ((xl->nodesets[i]->nodesetval) == NULL)
 	    errExit(__func__, "there are no nodes in sheet [%s]\n", xl->sheetname[i]);
     }
-
-
-}
-
-FILE *opensheet(XLfile *xl, char *sheet)
-{
-    char sname[PATH_MAX + NAME_MAX + 1];
-    FILE *fp;
-
-    snprintf(sname, sizeof(sname), "%s%s%s%s", xl->dirname, "/", sheet, ".txt");
-    if ((fp = fopen(sname, "r")) == NULL) {
-	printf("Error in %s:\n", __func__);
-	perror(sname);
-	exit(1);
-    }
-    return fp;
 }
 
 /* This function will return the row of a given excel cell,

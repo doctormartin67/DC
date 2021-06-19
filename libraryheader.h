@@ -76,7 +76,7 @@ void setXLvals(XLfile *xl, const char *s);
    sheet is the number of the sheet to open. Returns NULL when no
    value in cell.
  */
-char *cell(XLfile *xl, unsigned int sheet, const char *s, xmlNodePtr offsetnode);
+char *cell(XLfile *xl, unsigned int sheet, const char *s);
 unsigned int getrow(const char *cell);
 
 /* the excel zip has an xml file with all the string literals
