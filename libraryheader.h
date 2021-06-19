@@ -23,17 +23,19 @@
 
 #define NSPREFIX "main"
 #define NSURI "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-#define XPATH "//main:c"
-#define XPATHSS "//main:si"
-#define XPATHDATA "//main:row"
+#define XPATHSS "//main:si" /* used for sharedStrings.xml file */
+#define XPATHDATA "//main:row" /* used for all the sheet[0-9].xml files */
 
 typedef struct excel {
     char fname[PATH_MAX];
     char dirname[PATH_MAX];
     char **sheetname;
+    unsigned int sheetcnt;
     xmlDocPtr workbook;
     xmlDocPtr sharedStrings;
+    xmlXPathObjectPtr nodesetss;
     xmlDocPtr *sheets;
+    xmlXPathObjectPtr *nodesets;
 } XLfile;
 
 //---This section is for Date functionality---
@@ -64,6 +66,7 @@ double sum(double a[], int length); // sum all elements of array
 void errExit(const char *func, const char *format, ...);
 xmlDocPtr getxmlDoc(const char *docname);
 xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath);
+void setnodes(XLfile *xl);
 
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, const char *s);
@@ -73,7 +76,7 @@ void setXLvals(XLfile *xl, const char *s);
    sheet is the number of the sheet to open. Returns NULL when no
    value in cell.
  */
-char *cell(XLfile *xl, xmlDocPtr sheet, const char *s);
+char *cell(XLfile *xl, unsigned int sheet, const char *s, xmlNodePtr offsetnode);
 unsigned int getrow(const char *cell);
 
 /* the excel zip has an xml file with all the string literals
@@ -85,6 +88,5 @@ char *findss(XLfile *xl, int index);
 void setsheetnames(XLfile *xl);
 FILE *opensheet(XLfile *xl, char *sheet);
 void nextcol(char *next);
-char *valueincell(XLfile *xl, const char *line, const char *find);
 
 #endif

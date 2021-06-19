@@ -26,18 +26,21 @@ void setXLvals(XLfile *xl, const char *s) {
     xl->sheets = calloc(MAXSHEETS, sizeof(xmlDocPtr));
 
     char **t = xl->sheetname;
-    for (int i = 0; *t != NULL; i++, t++) {
+    int i;
+    for (i = 0; *t != NULL; i++, t++) {
 	snprintf(temp, sizeof(temp), 
 		"%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", i + 1, ".xml");
 	xl->sheets[i] = getxmlDoc(temp);
     }
+    xl->sheetcnt = i;
+    setnodes(xl);
 }
 
 /* fp is an open sheet, usually the sheet containing the data to evaluate 
    s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
  */
-char *cell(XLfile *xl, xmlDocPtr sheet, const char *s) {
+char *cell(XLfile *xl, unsigned int sheet, const char *s, xmlNodePtr offsetnode) {
     xmlXPathObjectPtr nodeset;
     xmlNodeSetPtr nodes;
     xmlNodePtr node;
@@ -46,68 +49,76 @@ char *cell(XLfile *xl, xmlDocPtr sheet, const char *s) {
     char *v = NULL, *row;
     int r = getrow(s);
 
-    nodeset = getnodeset(sheet, (xmlChar *)XPATHDATA);
-
-    if ((nodes = nodeset->nodesetval) == NULL)
-	errExit(__func__, "there are no nodes in the data sheet\n");
-
-    for (node = *nodes->nodeTab; node != NULL; node = node->next)
+    /* we will usually use an offset node to traverse the xml file, otherwise it would take
+       too long to set all the excel values */
+    if (!offsetnode->name)
     {
-	/* find node with row */
-	row = (char *)xmlGetProp(node, (xmlChar *)"r");
-	if (atoi(row) == r)
-	{
-	    xmlFree(row);
-	    break;
-	}
-    }
-    if (node == NULL)
-	return NULL;
+	nodeset = xl->nodesets[sheet];
+	nodes = nodeset->nodesetval;
 
-    if ((node = node->children) == NULL)
-	errExit(__func__, "no value found in cell [%s]\n", s);
+	for (node = *nodes->nodeTab; node != NULL; node = node->next)
+	{
+	    /* find node with row */
+	    row = (char *)xmlGetProp(node, (const xmlChar *)"r");
+	    if (atoi(row) == r)
+	    {
+		free(row);
+		break;
+	    }
+	    else
+		free(row);
+	}
+	if (node == NULL)
+	    return NULL;
+
+	if ((node = node->children) == NULL)
+	    errExit(__func__, "no value found in cell [%s]\n", s);
+
+	*offsetnode = *node->parent;
+    }
+    else
+	node = offsetnode->children;
 
     for (; node != NULL; node = node->next)
     {
 	/* find cell in found row */
-	scell = xmlGetProp(node, (xmlChar *)"r");
+	scell = xmlGetProp(node, (const xmlChar *)"r");
 	if (!xmlStrcmp(scell, (xmlChar *)s))
 	{
 	    xmlFree(scell);
 	    break;
 	}
+	else
+	    xmlFree(scell);
     }
-    if (node == NULL)
+
+    if (node == NULL || node->children == NULL)
 	return NULL;
 
-    if (node->children == NULL)
-	errExit(__func__, "no value found in cell [%s]\n", s);
-
-    for(childnode = node->children; childnode != NULL; childnode = childnode->next)
+    for (childnode = node->children; childnode != NULL; childnode = childnode->next)
     {
-	if (!xmlStrcmp(childnode->name, (xmlChar *)"v"))	
+	if (!xmlStrcmp(childnode->name, (const xmlChar *)"v"))	
 	{
-	    v = (char *)xmlNodeListGetString(sheet, childnode->children, 1);
+	    v = (char *)xmlNodeGetContent(childnode);
 	    break;
 	}
     }
     if (v == NULL)
 	errExit(__func__, "no element <v> for cell [%s]\n", s);
 
-    t = xmlGetProp(node, (xmlChar *)"t");
-    if (!xmlStrcmp(t, (xmlChar *)"n"))
+    t = xmlGetProp(node, (const xmlChar *)"t");
+    if (!xmlStrcmp(t, (const xmlChar *)"n"))
     {
 	xmlFree(t);
 	return v;
     }
-    else if (!xmlStrcmp(t, (xmlChar *)"s"))
+    else 
     {
 	int temp = atoi(v);
 	xmlFree(v);
+	xmlFree(t);
 	return findss(xl, temp);
     }
-    else
-	errExit(__func__, "Unknown element [%s]", t);
     return NULL;
 }
 
@@ -120,23 +131,19 @@ char *findss(XLfile *xl, int index)
 {
     char *s; // value of cell to return (string)
     xmlXPathObjectPtr nodeset;
-    xmlDocPtr sheet;
     xmlNodeSetPtr nodes;
     xmlNodePtr node;
     xmlNodePtr childnode;
 
-    sheet = xl->sharedStrings;
-    nodeset = getnodeset(sheet, (xmlChar *)XPATHSS);
-
-    if ((nodes = nodeset->nodesetval) == NULL)
-	errExit(__func__, "there are no nodes in sharedStrings.xml\n");
-
+    nodeset = xl->nodesetss;
+    nodes = nodeset->nodesetval;
     node = nodes->nodeTab[index];
+
     if ((childnode = node->children) == NULL)
 	errExit(__func__, "The nodes have no childs, but the childs hold the string values\n");
 
     if (!xmlStrcmp(childnode->name, (const xmlChar *)"t"))
-	s = (char *)xmlNodeListGetString(sheet, childnode->children, 1);
+	s = (char *)xmlNodeGetContent(childnode);
     else if (!xmlStrcmp(childnode->name, (const xmlChar *)"r"))
     {
 	char temp[BUFSIZ];
@@ -150,7 +157,7 @@ char *findss(XLfile *xl, int index)
 	    if (gcn == NULL)
 		errExit(__func__, "no \"t\" element in sharedStrings.xml\n");
 
-	    s = (char *)xmlNodeListGetString(sheet, gcn->children, 1);
+	    s = (char *)xmlNodeGetContent(gcn);
 	    strcat(temp, s);
 	    xmlFree(s);
 	}
@@ -180,7 +187,24 @@ void setsheetnames(XLfile *xl)
     *xls = NULL;
 }
 
-FILE *opensheet(XLfile *xl, char *sheet) {
+void setnodes(XLfile *xl)
+{
+    xl->nodesetss = getnodeset(xl->sharedStrings, (xmlChar *)XPATHSS);
+    if ((xl->nodesetss->nodesetval) == NULL)
+	errExit(__func__, "there are no nodes in sharedStrings.xml\n");
+
+    for (unsigned int i = 0; i < xl->sheetcnt; i++)
+    {
+	xl->nodesets[i] = getnodeset(xl->sheets[i], (xmlChar *)XPATHDATA);
+	if ((xl->nodesets[i]->nodesetval) == NULL)
+	    errExit(__func__, "there are no nodes in sheet [%s]\n", xl->sheetname[i]);
+    }
+
+
+}
+
+FILE *opensheet(XLfile *xl, char *sheet)
+{
     char sname[PATH_MAX + NAME_MAX + 1];
     FILE *fp;
 
@@ -237,31 +261,6 @@ void nextcol(char *next)
     }
     if (i >= 0)
 	(*npt)++;
-}
-
-
-char *valueincell(XLfile *xl, const char *line, const char *find) {
-    char *t;
-    char *ss; // string to determine whether I need to call findss or not
-    char *value; // value of cell to return (string)
-
-    // the line should contain the cell at the start
-    while (*find)
-	if (*line++ != *find++)
-	    return NULL;
-
-    ss = strinside(line, "t=\"", "\">");
-    if ((t = strinside(line, "<v>", "</v>")) == NULL) {
-	printf("Error in %s: %s does not contain <v> and/or </v>\n", __func__, line);
-	exit(1);
-    }
-    if (ss != NULL && strcmp(ss, "s") == 0)
-	value = findss(xl, atoi(t));
-    else
-	value = strdup(t);
-    free(t);
-    free(ss);
-    return value;
 }
 
 //---Date Functionality---
