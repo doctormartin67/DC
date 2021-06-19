@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include "libraryheader.h"
-#include <ctype.h>
 
 char *trim(char *s)
 {
@@ -242,4 +234,118 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath)
 	return NULL;
     }
     return result;
+}
+
+void createXLzip(const char *s)
+{
+    char t[strlen(s) + 1];
+    char *pt = t;
+    const char *ps = s;
+    char dirname[strlen(s) + 1];
+
+    if (strstr(s, ".xls") == NULL)
+	errExit(__func__, "[%s] not a valid excel file\n", s);
+
+    while (*ps != '.' && *ps != '\0')
+	*pt++ = *ps++;
+    *pt = '\0';
+    strcpy(dirname, t);
+
+    strcat(t, ".zip");
+    
+    /* remove previous zip file, if it exists */
+    rmrf(t);
+
+    if (cp(t, s) != 0)
+    {
+	perror("cp");
+	errExit(__func__, "Failed to create zip file [%s]\n", t);
+    }
+
+    /* remove previous folder, if it exists */
+    rmrf(dirname);
+
+    if (mkdir(dirname, S_IRWXU | S_IRWXG | S_IRWXO) == -1)
+	errExit(__func__, "Error making directory [%s]\n", dirname);
+}
+
+int rmrf(const char *s)
+{
+    int flags = FTW_CHDIR | FTW_DEPTH | FTW_MOUNT | FTW_PHYS;
+    if (nftw(s, rm, 10, flags) == -1)
+    {
+	/* ignore no such file or directory error */
+	if (errno == ENOENT || errno == ENOTDIR)
+	    return 0;
+	else
+	{
+	    perror("nftw");
+	    errExit(__func__, "nftw failed\n");
+	}
+    }
+    return 0;
+}
+
+int rm(const char *s, const struct stat *sbuf, int type, struct FTW *ftwb)
+{
+    remove(s);
+}
+
+int cp(const char *to, const char *from)
+{
+    int fd_to, fd_from;
+    char buf[4096];
+    ssize_t nread;
+    int saved_errno;
+
+    fd_from = open(from, O_RDONLY);
+    if (fd_from < 0)
+	return -1;
+
+    fd_to = open(to, O_WRONLY | O_CREAT | O_EXCL, 0777);
+    if (fd_to < 0)
+	goto out_error;
+
+    while (nread = read(fd_from, buf, sizeof buf), nread > 0)
+    {
+	char *out_ptr = buf;
+	ssize_t nwritten;
+
+	do {
+	    nwritten = write(fd_to, out_ptr, nread);
+
+	    if (nwritten >= 0)
+	    {
+		nread -= nwritten;
+		out_ptr += nwritten;
+	    }
+	    else if (errno != EINTR)
+	    {
+		goto out_error;
+	    }
+	} while (nread > 0);
+    }
+
+    if (nread == 0)
+    {
+	if (close(fd_to) < 0)
+	{
+	    fd_to = -1;
+	    goto out_error;
+	}
+	close(fd_from);
+
+	/* Success! */
+	return 0;
+    }
+
+out_error:
+    saved_errno = errno;
+
+    close(fd_from);
+    if (fd_to >= 0)
+	close(fd_to);
+
+    errno = saved_errno;
+    return -1;
 }

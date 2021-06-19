@@ -49,35 +49,6 @@ else
 	exit 0
 fi
 
-#Create a .txt file with the sheets of the excel file listed.
-
-if [[ -d ${lib} ]]
-then
-	awk -f "${lib}/sheets.awk" "${XLdir}/xl/workbook.xml" > "${XLdir}/sheets.txt"
-else
-	echo "${lib} does not exist."
-fi
-
-#Create a .txt file with the strings of the excel file received from the sharedStrings.xml file
-
-if [[ -d ${lib} ]]
-then
-	awk -f "${lib}/ss.awk" "${XLdir}/xl/sharedStrings.xml" > "${XLdir}/ss.txt"
-else
-	echo "${lib} does not exist."
-fi
-
-#Create a more readable txt file for C to extract excel cells
-
-i=1
-sheet=
-while [[ -f "${XLdir}/xl/worksheets/sheet${i}.xml" ]]
-do
-	sheet=$(awk "NR == ${i} {print}" "${XLdir}/sheets.txt")
-	awk -f "${lib}/DM.awk" "${XLdir}/xl/worksheets/sheet${i}.xml" > "${XLdir}/${sheet}.txt"
-	((i++))
-done
-
 #Start the program run
 
 main "${1}"
