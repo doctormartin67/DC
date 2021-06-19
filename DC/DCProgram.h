@@ -171,7 +171,7 @@ typedef struct {
     char **keys; // This points to the array of keys in excel
     xmlNodePtr keynode;
     char datasheet[256]; // This is the sheet where the data lies
-    xmlDocPtr sheet;
+    unsigned int sheet; // This is the index of the sheet where the data lies
     XLfile *xl;
     Hashtable **Data; // This will be set using createData function below
     int membercnt;

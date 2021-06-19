@@ -1,19 +1,33 @@
 Flat profile:
 
 Each sample counts as 0.01 seconds.
- no time accumulated
-
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  Ts/call  Ts/call  name    
-  0.00      0.00     0.00      344     0.00     0.00  getnodeset
-  0.00      0.00     0.00      333     0.00     0.00  findss
-  0.00      0.00     0.00        1     0.00     0.00  DIRexists
-  0.00      0.00     0.00        1     0.00     0.00  countMembers
-  0.00      0.00     0.00        1     0.00     0.00  errExit
-  0.00      0.00     0.00        1     0.00     0.00  setDSvals
-  0.00      0.00     0.00        1     0.00     0.00  setXLvals
-  0.00      0.00     0.00        1     0.00     0.00  setkey
-  0.00      0.00     0.00        1     0.00     0.00  setsheetnames
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 33.34      0.01     0.01   145644     0.00     0.00  lookup
+ 33.34      0.02     0.01    57102     0.00     0.00  cell
+ 33.34      0.03     0.01     4134     0.00     0.00  setGenMatrix
+  0.00      0.03     0.00   950980     0.00     0.00  isleapyear
+  0.00      0.03     0.00   145644     0.00     0.00  upper
+  0.00      0.03     0.00    88722     0.00     0.00  getcmval
+  0.00      0.03     0.00    57102     0.00     0.00  getrow
+  0.00      0.03     0.00    57101     0.00     0.00  nextcol
+  0.00      0.03     0.00     2568     0.00     0.00  findss
+  0.00      0.03     0.00     1908     0.00     0.00  newDate
+  0.00      0.03     0.00     1629     0.00     0.00  setdate
+  0.00      0.03     0.00      318     0.00     0.00  newHashtable
+  0.00      0.03     0.00        7     0.00     0.00  getxmlDoc
+  0.00      0.03     0.00        6     0.00     0.00  getnodeset
+  0.00      0.03     0.00        1     0.00     0.00  FILEexists
+  0.00      0.03     0.00        1     0.00     0.00  countMembers
+  0.00      0.03     0.00        1     0.00    13.91  createData
+  0.00      0.03     0.00        1     0.00     0.00  opensheet
+  0.00      0.03     0.00        1     0.00    16.09  setCMvals
+  0.00      0.03     0.00        1     0.00    13.91  setDSvals
+  0.00      0.03     0.00        1     0.00     0.00  setXLvals
+  0.00      0.03     0.00        1     0.00     0.00  setkey
+  0.00      0.03     0.00        1     0.00     0.00  setnodes
+  0.00      0.03     0.00        1     0.00     0.00  setsheetnames
+  0.00      0.03     0.00        1     0.00     0.00  userinterface
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -51,46 +65,117 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) no time propagated
+granularity: each sample hit covers 2 byte(s) for 33.33% of 0.03 seconds
 
 index % time    self  children    called     name
-                0.00    0.00       2/344         setXLvals [7]
-                0.00    0.00       4/344         setkey [8]
-                0.00    0.00       5/344         cell [31]
-                0.00    0.00     333/344         findss [2]
-[1]      0.0    0.00    0.00     344         getnodeset [1]
+                                                 <spontaneous>
+[1]    100.0    0.00    0.03                 main [1]
+                0.00    0.02       1/1           setCMvals [2]
+                0.00    0.01       1/1           setDSvals [5]
+                0.00    0.00       1/1           setXLvals [22]
+                0.00    0.00       1/1           userinterface [26]
 -----------------------------------------------
-                0.00    0.00     333/333         setkey [8]
-[2]      0.0    0.00    0.00     333         findss [2]
-                0.00    0.00     333/344         getnodeset [1]
+                0.00    0.02       1/1           main [1]
+[2]     53.6    0.00    0.02       1         setCMvals [2]
+                0.01    0.00    4134/4134        setGenMatrix [3]
+                0.00    0.00   22578/88722       getcmval [8]
+                0.00    0.00    1908/1908        newDate [14]
 -----------------------------------------------
-                0.00    0.00       1/1           setXLvals [7]
-[3]      0.0    0.00    0.00       1         DIRexists [3]
+                0.01    0.00    4134/4134        setCMvals [2]
+[3]     48.5    0.01    0.00    4134         setGenMatrix [3]
+                0.00    0.00   66144/88722       getcmval [8]
 -----------------------------------------------
-                0.00    0.00       1/1           setDSvals [6]
-[4]      0.0    0.00    0.00       1         countMembers [4]
+                0.00    0.01       1/1           setDSvals [5]
+[4]     46.4    0.00    0.01       1         createData [4]
+                0.01    0.00   57102/57102       cell [7]
+                0.00    0.00   56922/145644      lookup [6]
+                0.00    0.00   57101/57101       nextcol [12]
+                0.00    0.00     318/318         newHashtable [16]
+                0.00    0.00       1/1           opensheet [21]
 -----------------------------------------------
-                0.00    0.00       1/1           createData [32]
-[5]      0.0    0.00    0.00       1         errExit [5]
+                0.00    0.01       1/1           main [1]
+[5]     46.4    0.00    0.01       1         setDSvals [5]
+                0.00    0.01       1/1           createData [4]
+                0.00    0.00       1/1           setkey [23]
+                0.00    0.00       1/1           countMembers [20]
 -----------------------------------------------
-                0.00    0.00       1/1           main [50]
-[6]      0.0    0.00    0.00       1         setDSvals [6]
-                0.00    0.00       1/1           setkey [8]
-                0.00    0.00       1/1           countMembers [4]
+                0.00    0.00   56922/145644      createData [4]
+                0.01    0.00   88722/145644      getcmval [8]
+[6]     33.3    0.01    0.00  145644         lookup [6]
+                0.00    0.00  145644/145644      upper [10]
 -----------------------------------------------
-                0.00    0.00       1/1           main [50]
-[7]      0.0    0.00    0.00       1         setXLvals [7]
-                0.00    0.00       2/344         getnodeset [1]
-                0.00    0.00       1/1           DIRexists [3]
-                0.00    0.00       1/1           setsheetnames [9]
+                0.01    0.00   57102/57102       createData [4]
+[7]     33.3    0.01    0.00   57102         cell [7]
+                0.00    0.00   57102/57102       getrow [11]
+                0.00    0.00    2568/2568        findss [13]
 -----------------------------------------------
-                0.00    0.00       1/1           setDSvals [6]
-[8]      0.0    0.00    0.00       1         setkey [8]
-                0.00    0.00     333/333         findss [2]
-                0.00    0.00       4/344         getnodeset [1]
+                0.00    0.00   22578/88722       setCMvals [2]
+                0.00    0.00   66144/88722       setGenMatrix [3]
+[8]     20.3    0.00    0.01   88722         getcmval [8]
+                0.01    0.00   88722/145644      lookup [6]
 -----------------------------------------------
-                0.00    0.00       1/1           setXLvals [7]
-[9]      0.0    0.00    0.00       1         setsheetnames [9]
+                0.00    0.00    3816/950980      newDate [14]
+                0.00    0.00  947164/950980      setdate [15]
+[9]      0.0    0.00    0.00  950980         isleapyear [9]
+-----------------------------------------------
+                0.00    0.00  145644/145644      lookup [6]
+[10]     0.0    0.00    0.00  145644         upper [10]
+-----------------------------------------------
+                0.00    0.00   57102/57102       cell [7]
+[11]     0.0    0.00    0.00   57102         getrow [11]
+-----------------------------------------------
+                0.00    0.00   57101/57101       createData [4]
+[12]     0.0    0.00    0.00   57101         nextcol [12]
+-----------------------------------------------
+                0.00    0.00    2568/2568        cell [7]
+[13]     0.0    0.00    0.00    2568         findss [13]
+-----------------------------------------------
+                0.00    0.00    1908/1908        setCMvals [2]
+[14]     0.0    0.00    0.00    1908         newDate [14]
+                0.00    0.00    3816/950980      isleapyear [9]
+                0.00    0.00    1629/1629        setdate [15]
+-----------------------------------------------
+                0.00    0.00    1629/1629        newDate [14]
+[15]     0.0    0.00    0.00    1629         setdate [15]
+                0.00    0.00  947164/950980      isleapyear [9]
+-----------------------------------------------
+                0.00    0.00     318/318         createData [4]
+[16]     0.0    0.00    0.00     318         newHashtable [16]
+-----------------------------------------------
+                0.00    0.00       7/7           setXLvals [22]
+[17]     0.0    0.00    0.00       7         getxmlDoc [17]
+-----------------------------------------------
+                0.00    0.00       6/6           setnodes [24]
+[18]     0.0    0.00    0.00       6         getnodeset [18]
+-----------------------------------------------
+                0.00    0.00       1/1           setXLvals [22]
+[19]     0.0    0.00    0.00       1         FILEexists [19]
+-----------------------------------------------
+                0.00    0.00       1/1           setDSvals [5]
+[20]     0.0    0.00    0.00       1         countMembers [20]
+-----------------------------------------------
+                0.00    0.00       1/1           createData [4]
+[21]     0.0    0.00    0.00       1         opensheet [21]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[22]     0.0    0.00    0.00       1         setXLvals [22]
+                0.00    0.00       7/7           getxmlDoc [17]
+                0.00    0.00       1/1           FILEexists [19]
+                0.00    0.00       1/1           setsheetnames [25]
+                0.00    0.00       1/1           setnodes [24]
+-----------------------------------------------
+                0.00    0.00       1/1           setDSvals [5]
+[23]     0.0    0.00    0.00       1         setkey [23]
+-----------------------------------------------
+                0.00    0.00       1/1           setXLvals [22]
+[24]     0.0    0.00    0.00       1         setnodes [24]
+                0.00    0.00       6/6           getnodeset [18]
+-----------------------------------------------
+                0.00    0.00       1/1           setXLvals [22]
+[25]     0.0    0.00    0.00       1         setsheetnames [25]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[26]     0.0    0.00    0.00       1         userinterface [26]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -183,6 +268,12 @@ notice and this notice are preserved.
 
 Index by function name
 
-   [3] DIRexists               [2] findss                  [7] setXLvals
-   [4] countMembers            [1] getnodeset              [8] setkey
-   [5] errExit                 [6] setDSvals               [9] setsheetnames
+  [19] FILEexists              [9] isleapyear             [22] setXLvals
+   [7] cell                    [6] lookup                 [15] setdate
+  [20] countMembers           [14] newDate                [23] setkey
+   [4] createData             [16] newHashtable           [24] setnodes
+  [13] findss                 [12] nextcol                [25] setsheetnames
+   [8] getcmval               [21] opensheet              [10] upper
+  [18] getnodeset              [2] setCMvals              [26] userinterface
+  [11] getrow                  [5] setDSvals
+  [17] getxmlDoc               [3] setGenMatrix

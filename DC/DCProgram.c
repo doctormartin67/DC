@@ -6,11 +6,6 @@
 void setDSvals(XLfile *xl, DataSet *ds) {
     ds->xl = xl;
     setkey(ds);
-    char **xls = xl->sheetname;
-    int i = 0;
-    while(strcmp(xls[i++], ds->datasheet))
-	;
-    ds->sheet = xl->sheets[i];
     countMembers(ds);
     createData(ds);
 }
@@ -118,91 +113,47 @@ double gensum(GenMatrix amount[], unsigned short EREE, int loop) {
     }
     return sum;
 }
-/* used to find the row where the keys lie for the data to be used
-   for calculations. If the word KEY isn't found in the data then
-   1 is returned */
+
+/* THIS FUNCTION NEEDS UPDATING SO THAT THE USER OF THE INTERFACES INPUTS THE START OF DATA */
 void setkey(DataSet *ds)
 {
-    XLfile *xl;
+    XLfile *xl = ds->xl;
+    char keyCell[32];
+    char *row;
+    char **xls = xl->sheetname;
+    unsigned int i;
     xmlXPathObjectPtr nodeset;
-    xmlDocPtr *sheet;
     xmlNodeSetPtr nodes;
     xmlNodePtr node;
-    xmlNodePtr childnode;
-    char **xls;
-    char *key = NULL, *t = NULL, *s = NULL;
-    int value = 1; 
-    xl = ds->xl;
-    xls = xl->sheetname;
-    sheet = xl->sheets;
 
-    while (*xls != NULL)
+    strcpy(ds->keycolumn, "B"); /* This will be changed eventually to use input from user!!! */
+    ds->keyrow = 11; /* This will be changed eventually to use input from user!!! */
+    strcpy(ds->datasheet, "Data"); /* This will be changed eventually to use input from user!!! */
+    for (i = 0; i < xl->sheetcnt; i++)
+	if (!strcmp(xls[i], ds->datasheet))
+	    break;
+    if ((ds->sheet = i) == xl->sheetcnt)
+	errExit(__func__, "sheet [%s] does not exist\n", ds->datasheet);
+
+    snprintf(keyCell, sizeof(keyCell), "%s%d", ds->keycolumn, ds->keyrow);
+
+    nodeset = xl->nodesets[ds->sheet];
+    nodes = nodeset->nodesetval;
+
+    /* set key node */
+    for (node = *nodes->nodeTab; node != NULL; node = node->next)
     {
-	nodeset = getnodeset(*sheet, (xmlChar *)XPATH);
-	if ((nodes = nodeset->nodesetval) == NULL)
-	    errExit(__func__, "there are no nodes in sheet [%s]\n", *xls);
-
-	for (int j = 0; j < nodes->nodeNr; j++)
+	/* find node with row */
+	row = (char *)xmlGetProp(node, (const xmlChar *)"r");
+	if (atoi(row) == ds->keyrow)
 	{
-	    node = nodes->nodeTab[j];
-	    if ((childnode = node->children) == NULL)
-		continue;
-	    s = (char *)xmlGetProp(node, (xmlChar *)"t");
-	    if (xmlStrcmp((xmlChar *)s, (const xmlChar *)"s") == 0)
-	    {
-		t = (char *)xmlNodeListGetString(*sheet, childnode->children, 1);
-		key = findss(xl, atoi(t));
-		xmlFree(t);
-		xmlFree(s);
-	    }
-	    else
-	    {
-		xmlFree(s);
-		continue;
-	    }
-
-	    if (strcasecmp(key, "KEY")) 
-	    {
-		free(key);
-		continue;
-	    }
-
-	    char *temp = s = (char *)xmlGetProp(node, (const xmlChar *)"r");
-	    char *kc = ds->keycolumn;
-	    while (!isdigit(*temp))
-		*kc++ = *temp++;
-	    *kc = '\0';
-	    value = atoi(temp);
-	    ds->keynode = node->parent;
-
-	    strcpy(ds->datasheet, *xls);
-	    ds->keyrow = value;
-
-	    if (strlen(ds->keycolumn) > 3)
-		errExit(__func__, 
-			"the key column: %s has a length larger than 3 which should not be " 
-			"possible in excel, exiting program.\n", ds->keycolumn);
-
-	    printf("Found KEY in\nsheet: %s\ncell: %s%d\n",
-		    ds->datasheet, ds->keycolumn, ds->keyrow);
-	    printf("Setting datasheet to: %s\n", ds->datasheet);
-	    printf("Data starts at cell: %s%d\n", ds->keycolumn, ds->keyrow);
-
-	    xmlFree(s);
-	    free(key);
-	    xmlXPathFreeObject(nodeset);
-	    return;
+	    xmlFree(row);
+	    break;
 	}
-	xls++;
-	sheet++;
     }
-    printf("warning: KEY was not found anywhere, ");
-    printf("row 1 is therefore assumed for the key row, ");
-    printf("column A is assumed as key column and ");
-    printf("\"sheet1\" is assumed as the data sheet name\n");
-    strcpy(ds->datasheet, *xl->sheetname);
-    ds->keyrow = value;
-    ds->keycolumn[0] = 'A';
+
+    if ((ds->keynode = node) == NULL)
+	errExit(__func__, "key cell [%s] incorrect\n", keyCell);
 }
 
 void countMembers(DataSet *ds)
@@ -259,22 +210,26 @@ void createData(DataSet *ds) {
 
     // Allocate memory for data matrix and initialise to NULL pointer
     ds->Data = (Hashtable **)calloc(ds->membercnt, sizeof(Hashtable *));
-    for (int k = 0; k < ds->membercnt; k++) {
+
+    for (int k = 0; k < ds->membercnt; k++)
 	// https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-8.html
 	*(ds->Data + k) = newHashtable(233, 0); // 179 * 1.3 = 232.7 -> 233 is a prime
-    }
 
     // Set the keys
     int countkeys = 0;
-    ds->keys = (char **)malloc(BUFSIZ/8 * sizeof(char *));
-    *ds->keys = cell(ds->xl, ds->sheet, keyCell);
+    ds->keys = (char **)calloc(BUFSIZ/8, sizeof(char *));
+    char **pkey = ds->keys;
+    xmlNode offsetnode;
+    memset(&offsetnode, 0, sizeof(xmlNode));
+    *pkey = cell(ds->xl, ds->sheet, keyCell, &offsetnode);
 
-    while (*(ds->keys + countkeys) != NULL || (countkeys > BUFSIZ/8 - 1)) {
-
+    while (*pkey != NULL)
+     {
 	// Here we update cell for loop, for example O11 becomes P11
-	countkeys++;
+	if (++countkeys >= BUFSIZ/8)
+	    errExit(__func__, "Data has too many keys\n");;
 	nextcol(keyCell);
-	*(ds->keys + countkeys) = cell(ds->xl, ds->sheet, keyCell);
+	*++pkey = cell(ds->xl, ds->sheet, keyCell, &offsetnode);
     }
 
     // Check for double keys
@@ -299,8 +254,9 @@ void createData(DataSet *ds) {
     printf("Creating Data...\n");
     for (int i = 0; i < ds->membercnt; i++) {
 
+	memset(&offsetnode, 0, sizeof(xmlNode));
 	// Set the initial data (KEY)
-	data = cell(ds->xl, ds->sheet, dataCell);
+	data = cell(ds->xl, ds->sheet, dataCell, &offsetnode);
 	lookup(*(ds->keys), data, *(ds->Data + i));
 	nextcol(dataCell);
 	// Set index of keys to 1 at the start of loop
@@ -317,7 +273,7 @@ void createData(DataSet *ds) {
 		exit(1);
 	    }
 
-	    while ((data = valueincell(ds->xl, line, dataCell)) == NULL) {
+	    while ((data = cell(ds->xl, ds->sheet, dataCell, &offsetnode)) == NULL) {
 
 		lookup(*(ds->keys + countkeys), "0", *(ds->Data + i));
 		// Here we update cell for loop, for example O11 becomes P11
