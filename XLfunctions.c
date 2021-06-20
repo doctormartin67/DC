@@ -7,11 +7,8 @@ void setXLvals(XLfile *xl, const char *s) {
 
     strcpy(temp, s);
     strcpy(xl->fname, temp);
-    if ((pt = strstr(temp, ".xls")) == NULL || !FILEexists(temp)) {// not an excel file
-	printf("Please select an valid excel file.\n");
-	printf("Exiting program.\n");
-	exit(0);
-    }
+    if ((pt = strstr(temp, ".xls")) == NULL || !FILEexists(temp)) // not an excel file
+	errExit(__func__, "[%s] not an excel file\n", s);
     *pt = '\0';
     strcpy(xl->dirname, temp);
 

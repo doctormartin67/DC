@@ -242,6 +242,7 @@ void createXLzip(const char *s)
     char *pt = t;
     const char *ps = s;
     char dirname[strlen(s) + 1];
+    char cmd[BUFSIZ];
 
     if (strstr(s, ".xls") == NULL)
 	errExit(__func__, "[%s] not a valid excel file\n", s);
@@ -267,6 +268,12 @@ void createXLzip(const char *s)
 
     if (mkdir(dirname, S_IRWXU | S_IRWXG | S_IRWXO) == -1)
 	errExit(__func__, "Error making directory [%s]\n", dirname);
+
+    snprintf(cmd, sizeof(cmd), "%s%s%s%s%c", "unzip -q '", t, "' -d '", dirname, '\'');
+
+    /* THIS IS NOT PORTABLE !!! */
+    if (system(cmd) == -1)
+	errExit(__func__, "system command [%s] failed, are you on windows?\n", cmd);
 }
 
 int rmrf(const char *s)
