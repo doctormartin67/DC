@@ -13,7 +13,6 @@ int main(int argc, char *argv[]) {
     }
 
     createXLzip(argv[1]);
-    exit(0);
     XLfile xl;
     DataSet ds;
 
@@ -47,7 +46,7 @@ void runonerun(DataSet *ds) {
     // create excel file to print results
     int tc = 2; // Test case
     tc -= 1; // Index is one less than given test case
-    printresults(ds, tc);
+    printresults(ds);
 }
 
 void runmember(CurrentMember *cm) {

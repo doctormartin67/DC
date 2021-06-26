@@ -14,7 +14,7 @@ void setDSvals(XLfile *xl, DataSet *ds) {
 void setCMvals(DataSet *ds) {
     CurrentMember *cm;
     ds->cm = (CurrentMember *)calloc(ds->membercnt, sizeof(CurrentMember));
-    cm = ds->cm;
+    if ((cm = ds->cm) == NULL) errExit("[%s] calloc returned NULL\n", __func__);
     printf("Setting all the values for the affiliates...\n");
     for (int i = 0; i < ds->membercnt; i++) {
 	cm[i].Data = *(ds->Data + i);
@@ -101,6 +101,7 @@ void setCMvals(DataSet *ds) {
 	if (strcmp(getcmval(&cm[i], "CCRA"), "1") == 0)  cm[i].extra += CCRA;
 
 	cm[i].DOC = (Date **)calloc(MAXPROJ, sizeof(Date *));
+	if (cm[i].DOC == NULL) errExit("[%s] calloc returned NULL\n", __func__);
     }
     printf("Setting values completed.\n");
 }
@@ -133,7 +134,7 @@ void setkey(DataSet *ds)
 	if (!strcmp(xls[i], ds->datasheet))
 	    break;
     if ((ds->sheet = i) == xl->sheetcnt)
-	errExit(__func__, "sheet [%s] does not exist\n", ds->datasheet);
+	errExit("[%s] sheet [%s] does not exist\n", __func__, ds->datasheet);
 
     snprintf(keyCell, sizeof(keyCell), "%s%d", ds->keycolumn, ds->keyrow);
 
@@ -153,7 +154,7 @@ void setkey(DataSet *ds)
     }
 
     if ((ds->keynode = node) == NULL)
-	errExit(__func__, "key cell [%s] incorrect\n", keyCell);
+	errExit("[%s] key cell [%s] incorrect\n", __func__, keyCell);
 }
 
 void countMembers(DataSet *ds)
@@ -205,6 +206,7 @@ void createData(DataSet *ds) {
 
     // Allocate memory for data matrix and initialise to NULL pointer
     ds->Data = (Hashtable **)calloc(ds->membercnt, sizeof(Hashtable *));
+    if (ds->Data == NULL) errExit("[%s] calloc returned NULL\n", __func__);
 
     for (int k = 0; k < ds->membercnt; k++)
 	// https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-8.html
@@ -213,6 +215,7 @@ void createData(DataSet *ds) {
     // Set the keys
     int countkeys = 0;
     ds->keys = (char **)calloc(BUFSIZ/8, sizeof(char *));
+    if (ds->keys == NULL) errExit("[%s] calloc returned NULL\n", __func__);
     char **pkey = ds->keys;
     *pkey = cell(ds->xl, ds->sheet, keyCell);
 
@@ -220,7 +223,7 @@ void createData(DataSet *ds) {
      {
 	// Here we update cell for loop, for example O11 becomes P11
 	if (++countkeys >= BUFSIZ/8)
-	    errExit(__func__, "Data has too many keys\n");;
+	    errExit("[%s] Data has too many keys\n", __func__);;
 	nextcol(keyCell);
 	*++pkey = cell(ds->xl, ds->sheet, keyCell);
     }
@@ -282,19 +285,72 @@ void createData(DataSet *ds) {
     printf("Creation complete\n");
 }
 
-int printresults(DataSet *ds, int tc) {
+int printresults(DataSet *ds) {
     char results[PATH_MAX];
-    char temp[64]; // to store temporary strings for field names and such.
     int row = 0;
     int col = 0;  
 
     strcpy(results, ds->xl->dirname);
     strcat(results, "/results.xlsx");
     lxw_workbook  *workbook  = workbook_new(results);
-    lxw_worksheet *worksheet = workbook_add_worksheet(workbook, "Testcases");
-    // ***Print Testcases***
+    lxw_worksheet *worksheet = workbook_add_worksheet(workbook, "dataTY");
+    printf("Printing Data...\n");
+    while (*(ds->keys + col) != NULL) {
+	worksheet_write_string(worksheet, row, col, *(ds->keys + col), NULL);
+	while (row < ds->membercnt) {
+	    worksheet_write_string(worksheet, row+1, col,
+		    lookup(*(ds->keys + col), NULL, *(ds->Data + row))->value, NULL);
+	    row++;
+	}
+	col++;
+	row = 0;
+    }
+    printf("Printing Data complete.\n");
+    printf("Printing results...\n");
+
+    worksheet_write_string(worksheet, row, ++col, "DR", NULL);
+    worksheet_write_string(worksheet, row, col+1, "DC NC", NULL);
+    worksheet_write_string(worksheet, row, col+2, "Method Standard", NULL);
+    worksheet_write_string(worksheet, row, col+3, "Method DBO", NULL);
+    worksheet_write_string(worksheet, row, col+4, "Method Assets", NULL);
+    worksheet_write_string(worksheet, row, col+5, "Method Death", NULL);
+    worksheet_write_string(worksheet, row, col+6, "Admin Cost", NULL);
+    worksheet_write_string(worksheet, row, col+7, "Age", NULL);
+    worksheet_write_string(worksheet, row, col+8, "Salary Scale", NULL);
+    CurrentMember *cm = ds->cm; // address of test case member
+    while (row < ds->membercnt) {
+	worksheet_write_number(worksheet, row+1, col, ass.DR, NULL);
+	worksheet_write_number(worksheet, row+1, col+1, ass.DR, NULL);
+	worksheet_write_string(worksheet, row+1, col+2, 
+		(ass.method & mIAS ? "IAS" : "FAS"), NULL);
+	worksheet_write_string(worksheet, row+1, col+3, 
+		(ass.method & mTUC ? "TUC" : "PUC"), NULL);
+	worksheet_write_string(worksheet, row+1, col+4, 
+		(ass.method & mRES ? "RES" : 
+		 (ass.method & mPAR115 ? "PAR115" : "PAR113")), NULL);
+	worksheet_write_number(worksheet, row+1, col+5, 
+		(ass.method & mDTH ? 1 : 0), NULL);
+	worksheet_write_number(worksheet, row+1, col+6, tff.admincost, NULL);
+	worksheet_write_number(worksheet, row+1, col+7, *cm[row].age, NULL);
+	worksheet_write_number(worksheet, row+1, col+8, salaryscale(&cm[row], 1), NULL);
+	row++;
+    }
+    printf("Printing results complete.\n");
+    return workbook_close(workbook);
+}
+
+int printtc(DataSet *ds, unsigned int tc)
+{
+    char results[PATH_MAX];
+    char temp[64]; // to store temporary strings for field names and such.
+    int row = 0;
+    int col = 0;  
+
+    strcpy(results, ds->xl->dirname);
+    strcat(results, "/testcase.xlsx");
+    lxw_workbook  *workbook  = workbook_new(results);
+    lxw_worksheet *worksheet = workbook_add_worksheet(workbook, "Testcase");
     printf("Printing Testcases...\n");
-    // at the moment the first member is considered the sole testcase
     //-  Titles of variables  -
     worksheet_write_string(worksheet, row, col++, "KEY", NULL);
     worksheet_write_string(worksheet, row, col++, "DOC", NULL);
@@ -530,62 +586,15 @@ int printresults(DataSet *ds, int tc) {
 
 	row++;
     }
-    // ***End Print Testcases***
-    // ***Print Data***
-    row = col = 0;
-    worksheet = workbook_add_worksheet(workbook, "dataTY");
-    printf("Printing Data...\n");
-    while (*(ds->keys + col) != NULL) {
-	worksheet_write_string(worksheet, row, col, *(ds->keys + col), NULL);
-	while (row < ds->membercnt) {
-	    worksheet_write_string(worksheet, row+1, col,
-		    lookup(*(ds->keys + col), NULL, *(ds->Data + row))->value, NULL);
-	    row++;
-	}
-	col++;
-	row = 0;
-    }
-    printf("Printing Data complete.\n");
-    printf("Printing results...\n");
-
-    worksheet_write_string(worksheet, row, ++col, "DR", NULL);
-    worksheet_write_string(worksheet, row, col+1, "DC NC", NULL);
-    worksheet_write_string(worksheet, row, col+2, "Method Standard", NULL);
-    worksheet_write_string(worksheet, row, col+3, "Method DBO", NULL);
-    worksheet_write_string(worksheet, row, col+4, "Method Assets", NULL);
-    worksheet_write_string(worksheet, row, col+5, "Method Death", NULL);
-    worksheet_write_string(worksheet, row, col+6, "Admin Cost", NULL);
-    worksheet_write_string(worksheet, row, col+7, "Age", NULL);
-    worksheet_write_string(worksheet, row, col+8, "Salary Scale", NULL);
-    while (row < ds->membercnt) {
-	worksheet_write_number(worksheet, row+1, col, ass.DR, NULL);
-	worksheet_write_number(worksheet, row+1, col+1, ass.DR, NULL);
-	worksheet_write_string(worksheet, row+1, col+2, 
-		(ass.method & mIAS ? "IAS" : "FAS"), NULL);
-	worksheet_write_string(worksheet, row+1, col+3, 
-		(ass.method & mTUC ? "TUC" : "PUC"), NULL);
-	worksheet_write_string(worksheet, row+1, col+4, 
-		(ass.method & mRES ? "RES" : 
-		 (ass.method & mPAR115 ? "PAR115" : "PAR113")), NULL);
-	worksheet_write_number(worksheet, row+1, col+5, 
-		(ass.method & mDTH ? 1 : 0), NULL);
-	worksheet_write_number(worksheet, row+1, col+6, tff.admincost, NULL);
-	worksheet_write_number(worksheet, row+1, col+7, *cm[row].age, NULL);
-	worksheet_write_number(worksheet, row+1, col+8, salaryscale(&cm[row], 1), NULL);
-	row++;
-    }
-    row = 0;
-
-    printf("Printing results complete.\n");
-    printf("Printing complete.\n");
-    // ***End Print Data***
-
+    printf("Printing test case complete.\n");
     return workbook_close(workbook);
 }
 
-char *getcmval(CurrentMember *cm, const char *value) {
+char *getcmval(CurrentMember *cm, const char *value)
+{
     List *h;
-    if ((h = lookup(value, NULL, cm->Data)) == NULL) {
+    if ((h = lookup(value, NULL, cm->Data)) == NULL)
+    {
 	printf("warning: '%s' not found in the set of keys given, ", value);
 	printf("make sure your column name is correct\n");
 	printf("Using 0 by default.\n");

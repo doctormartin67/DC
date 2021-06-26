@@ -1,10 +1,11 @@
-#include <gtk/gtk.h>
-#include <threads.h>
+#include <pthread.h>
 #include "DCProgram.h"
 
 #define GLADEFILE "DCProgram.glade"
 
+static unsigned short running;
 static DataSet *ds;
+static pthread_t thrun;
 
 void runmember(CurrentMember *cm);
 static GtkWidget *runchoice; /* used for combo box text to choose which run option */
@@ -16,7 +17,7 @@ void on_SIinterpreterbutton_clicked(GtkButton *b, gpointer *p);
 gboolean on_asswindow_delete_event(GtkWidget *, GdkEvent *, gpointer);
 
 /* helper functions */
-static int runth(void *);
+static void *run(void *);
 
 void userinterface(DataSet *pds) {
     GtkBuilder *builder;
@@ -50,39 +51,48 @@ void on_SIradiobutton_toggled(GtkRadioButton *rb, GtkWidget *w) {
     gtk_widget_set_sensitive(w, state);
 }
 
-void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl) {
-    static thrd_t *th = NULL; 
-    if (th == NULL) {
+void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
+{
+    if (!running)
+    {
+	running = TRUE;
+	int s = 0;
 	char *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(runchoice));
-	if (strcmp("Run one run", choice) == 0) {
-	    th = malloc(sizeof(thrd_t));
+	if (strcmp("Run one run", choice) == 0)
+	{
 	    currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
-	    (void)thrd_create(th, runth, (void *)pl);
-	    (void)thrd_detach(*th);
-	    printf("Thread created in %s\n", __func__);
+	    s = pthread_create(&thrun, NULL, run, (void *)pl);
+	    if (s != 0)
+		errExitEN(s, "[%s] unable to create thread\n", __func__);
+
+	    s = pthread_detach(thrun);
+	    if (s != 0)
+		errExitEN(s, "[%s] unable to detach thread\n", __func__);
 	}
     }
-    else {
-	/* this still needs improved when I've read about threads in the new book!!! */
-	printf("Program still running, button doesn't do anything\n");
-    }
+    else
+	printf("Program is running, wait for it to end\n");
 }
 
-void on_interpreterbutton_clicked(GtkButton *b, gpointer *w) {
+void on_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
     gtk_widget_show_all(GTK_WIDGET(w));
 }
 
-gboolean on_asswindow_delete_event(GtkWidget *w, GdkEvent *e, gpointer data) {
+gboolean on_asswindow_delete_event(GtkWidget *w, GdkEvent *e, gpointer data)
+{
     gtk_widget_hide(w);
     return TRUE;
 }
 
 /* helper functions */
-static int runth(void *pl) {
-    char text[128];
+static void *run(void *pl)
+{
+    char text[BUFSIZ];
     CurrentMember *cm = ds->cm;
 
-    for (int i = 0; i < ds->membercnt; i++) {
+    for (int i = 0; i < ds->membercnt; i++)
+    {
 	setassumptions(cm + i);
 	runmember(cm + i);
 	snprintf(text, sizeof(text), 
@@ -91,8 +101,11 @@ static int runth(void *pl) {
     }
 
     // create excel file to print results
-    int tc = 5; // Test case
+    int tc = 318; // Test case
     tc -= 1; // Index is one less than given test case
-    printresults(ds, tc);
-    return 0;
+    printresults(ds);
+    printtc(ds, tc);
+
+    running = FALSE;
+    return (void *)0;
 }
