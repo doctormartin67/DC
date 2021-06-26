@@ -1,6 +1,7 @@
 #include "hashtable.h"
 
-List *lookup(const char *t, const char *value, Hashtable *ht) {
+List *lookup(const char *t, const char *value, Hashtable *ht)
+{
     List *pht;
     register unsigned long hashval;
     char *s, key[strlen(t) + 1];
@@ -19,7 +20,8 @@ List *lookup(const char *t, const char *value, Hashtable *ht) {
 
 
     // search item in list
-    for (pht = ht->list[hashval]; pht != NULL; pht = pht->next) {
+    for (pht = ht->list[hashval]; pht != NULL; pht = pht->next)
+    {
 	if (strcmp(key, pht->key) == 0)
 	    break;
     }
@@ -30,33 +32,34 @@ List *lookup(const char *t, const char *value, Hashtable *ht) {
 
     // if key has never been set, create new entry and set key and value for new entry
     // otherwhise, remove current entry and set with new value
-    if (pht == NULL) {
+    if (pht == NULL)
+    {
 	pht = (List *) malloc(sizeof(*pht));
-	if (pht == NULL || (pht->key = strdup(key)) == NULL) {
-	    perror(__func__);
-	    exit(1);
-	}
+	if (pht == NULL || (pht->key = strdup(key)) == NULL)
+	    errExit("[%s] [malloc|strdup] returned NULL\n", __func__);
 	pht->next = ht->list[hashval];
 	ht->list[hashval] = pht;
     }
     else
 	free((void *)pht->value);
-    if ((pht->value = strdup(value)) == NULL) {
-	perror(__func__);
-	exit(1);
-    }
+    if ((pht->value = strdup(value)) == NULL)
+	errExit("[%s] [strdup] returned NULL\n", __func__);
     return pht;
 }
 
-Hashtable *newHashtable(unsigned long n, unsigned short casesens) {
+Hashtable *newHashtable(unsigned long n, unsigned short casesens)
+{
     Hashtable *ht;
 
-    if ((ht = (Hashtable *)malloc(sizeof(Hashtable))) == NULL) {
-	perror(__func__);
-	exit(1);
+    if ((ht = (Hashtable *)malloc(sizeof(Hashtable))) == NULL)
+    {
+	errExit("[%s] unable to create hashtable(%ld, %d)\n", __func__, n, casesens);
+	return NULL; /* should never reach here!! */
     }
-    else {
-	ht->list = (List **)calloc(n, sizeof(List *));
+    else
+    {
+	if ((ht->list = (List **)calloc(n, sizeof(List *))) == NULL)
+	    errExit("[%s] unable to create list\n", __func__);
 	ht->hashsize = n;
 	ht->casesens = casesens;
 	return ht;

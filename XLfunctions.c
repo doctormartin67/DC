@@ -7,8 +7,8 @@ void setXLvals(XLfile *xl, const char *s) {
 
     strcpy(temp, s);
     strcpy(xl->fname, temp);
-    if ((pt = strstr(temp, ".xls")) == NULL || !FILEexists(temp)) // not an excel file
-	errExit(__func__, "[%s] not an excel file\n", s);
+    if ((pt = strstr(temp, ".xls")) == NULL) // not an excel file
+	errExit("[%s] [%s] not an excel file\n", __func__, s);
     *pt = '\0';
     strcpy(xl->dirname, temp);
 
@@ -19,8 +19,10 @@ void setXLvals(XLfile *xl, const char *s) {
     xl->sharedStrings = getxmlDoc(temp);
 
     xl->sheetname = calloc(MAXSHEETS, sizeof(char *));
+    if (xl->sheetname == NULL) errExit("[%s] calloc returned NULL\n", __func__);
     setsheetnames(xl);
     xl->sheets = calloc(MAXSHEETS, sizeof(xmlDocPtr));
+    if (xl->sheets == NULL) errExit("[%s] calloc returned NULL\n", __func__);
 
     char **t = xl->sheetname;
     int i;
@@ -65,7 +67,7 @@ char *cell(XLfile *xl, unsigned int sheet, const char *s) {
 	return NULL;
 
     if ((node = node->children) == NULL)
-	errExit(__func__, "no value found in cell [%s]\n", s);
+	errExit("[%s] no value found in cell [%s]\n", __func__, s);
 
     for (; node != NULL; node = node->next)
     {
@@ -92,7 +94,7 @@ char *cell(XLfile *xl, unsigned int sheet, const char *s) {
 	}
     }
     if (v == NULL)
-	errExit(__func__, "no element <v> for cell [%s]\n", s);
+	errExit("[%s] no element <v> for cell [%s]\n", __func__, s);
 
     t = xmlGetProp(node, (const xmlChar *)"t");
     if (!xmlStrcmp(t, (const xmlChar *)"n"))
@@ -128,7 +130,8 @@ char *findss(XLfile *xl, int index)
     node = nodes->nodeTab[index];
 
     if ((childnode = node->children) == NULL)
-	errExit(__func__, "The nodes have no childs, but the childs hold the string values\n");
+	errExit("[%s] The nodes have no childs, but the childs hold the string values\n", 
+		__func__);
 
     if (!xmlStrcmp(childnode->name, (const xmlChar *)"t"))
 	s = (char *)xmlNodeGetContent(childnode);
@@ -143,7 +146,7 @@ char *findss(XLfile *xl, int index)
 		gcn = gcn->next;
 
 	    if (gcn == NULL)
-		errExit(__func__, "no \"t\" element in sharedStrings.xml\n");
+		errExit("[%s] no \"t\" element in sharedStrings.xml\n", __func__);
 
 	    s = (char *)xmlNodeGetContent(gcn);
 	    strcat(temp, s);
@@ -152,7 +155,7 @@ char *findss(XLfile *xl, int index)
 	s = strdup(temp);
     }
     else
-	errExit(__func__, "Unknown element [%s]\n", childnode->name);
+	errExit("[%s] Unknown element [%s]\n", __func__, childnode->name);
 
     return s;
 }
@@ -163,10 +166,10 @@ void setsheetnames(XLfile *xl)
     xmlNodePtr p = xmlDocGetRootElement(xl->workbook);
 
     if (p == NULL)
-	errExit(__func__, "Empty document\n");
+	errExit("[%s] Empty document\n", __func__);
 
     if (xmlStrcmp(p->name, (const xmlChar *) "workbook"))
-	errExit(__func__, "root node != workbook\n");
+	errExit("[%s] root node != workbook\n", __func__);
 
     for (p = p->children; p != NULL; p = p->next)
 	if ((!xmlStrcmp(p->name, (const xmlChar *)"sheets")))
@@ -179,13 +182,13 @@ void setnodes(XLfile *xl)
 {
     xl->nodesetss = getnodeset(xl->sharedStrings, (xmlChar *)XPATHSS);
     if ((xl->nodesetss->nodesetval) == NULL)
-	errExit(__func__, "there are no nodes in sharedStrings.xml\n");
+	errExit("[%s] there are no nodes in sharedStrings.xml\n", __func__);
 
     for (unsigned int i = 0; i < xl->sheetcnt; i++)
     {
 	xl->nodesets[i] = getnodeset(xl->sheets[i], (xmlChar *)XPATHDATA);
 	if ((xl->nodesets[i]->nodesetval) == NULL)
-	    errExit(__func__, "there are no nodes in sheet [%s]\n", xl->sheetname[i]);
+	    errExit("[%s] there are no nodes in sheet [%s]\n", __func__,  xl->sheetname[i]);
     }
 }
 
@@ -197,7 +200,7 @@ unsigned int getrow(const char *cell)
 	cell++;
 
     if (*cell == '\0')
-	errExit(__func__, "%s is not a valid cell, no row found\n", cell);
+	errExit("[%s] %s is not a valid cell, no row found\n", __func__, cell);
     return atoi(cell);
 }
 
@@ -308,6 +311,7 @@ Date *newDate(unsigned int XLday, int year, int month, int day) {
     int tyear = year;
 
     Date *temp = (Date *)malloc(sizeof(Date));
+    if (temp == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
     if (tday > (isleapyear(tyear) ? leapdays[tmonth] : commondays[tmonth])) {
 	tmonth++;

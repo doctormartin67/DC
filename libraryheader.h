@@ -1,8 +1,6 @@
 #ifndef LIBRARY_HEADER
 #define LIBRARY_HEADER
 
-#define _XOPEN_SOURCE 500
-#include <ftw.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/stat.h>
@@ -18,6 +16,7 @@
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
+#include <gtk/gtk.h>
 #include "hashtable.h"
 
 #ifdef _WINDOWS
@@ -30,7 +29,6 @@
 #define NSURI "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 #define XPATHSS "//main:si" /* used for sharedStrings.xml file */
 #define XPATHDATA "//main:row" /* used for all the sheet[0-9].xml files */
-
 
 typedef struct excel {
     char fname[PATH_MAX];
@@ -64,20 +62,16 @@ char *trim(char *);
 void upper(char *);
 char *strinside(const char *s, const char *begin, const char *end);
 char *replace(const char *str, const char *orig, const char *rep);
-int FILEexists(const char *fname);
 int DIRexists(const char *dname);
 double min(int, ...);
 double max(int, ...);
 double sum(double a[], int length); // sum all elements of array
-void errExit(const char *func, const char *format, ...);
+void errExit(const char *format, ...);
+void errExitEN(int errnum, const char *format, ...);
 xmlDocPtr getxmlDoc(const char *docname);
 xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath);
 void setnodes(XLfile *xl);
 void createXLzip(const char *s);
-int rmrf(const char *s);
-int rm(const char *s, const struct stat *sbuf, int type, struct FTW *ftwb);
-int cp(const char *to, const char *from);
-
 // s is the name of the excel file to set the values of
 void setXLvals(XLfile *xl, const char *s);
 

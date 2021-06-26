@@ -1,5 +1,8 @@
 #include "libraryheader.h"
 
+static void outputError(unsigned useErr, int err, unsigned flushStdout,
+	const char *format, va_list ap);
+
 char *trim(char *s)
 {
     char *t;
@@ -46,6 +49,7 @@ char *replace(const char *s, const char *oldW, 	const char *newW)
 
     // Making new string of enough length 
     result = (char *) malloc(i + cnt * (newWlen - oldWlen) + 1); 
+    if (result == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
     i = 0; 
     while (*s) { 
@@ -61,18 +65,6 @@ char *replace(const char *s, const char *oldW, 	const char *newW)
 
     result[i] = '\0'; 
     return result; 
-}
-
-// Check if file exists
-int FILEexists(const char *fname)
-{
-    FILE *file;
-    if ((file = fopen(fname, "r")))
-    {
-	fclose(file);
-	return 1;
-    }
-    return 0;
 }
 
 // Check if DIR exists
@@ -101,9 +93,9 @@ int DIRexists(const char *dname)
  */
 char *strinside(const char *s, const char *begin, const char *end)
 {
-    char *pb; //pointer to begin in s
-    char *pe; //pointer to end in s
-    char *value; //malloc result that we will return
+    char *pb; // pointer to begin in s
+    char *pe; // pointer to end in s
+    char *value; // calloc result that we will return
     int i, length; 
     if ((pb = strstr(s, begin)) == NULL) {
 	return NULL;
@@ -126,6 +118,7 @@ char *strinside(const char *s, const char *begin, const char *end)
      */
     length = pe - pb + 1;
     value = (char *)calloc(length, sizeof(char));
+    if (value == NULL) errExit("[%s] calloc returned NULL\n", __func__);
     for (i = 0; i < length; i++) {
 	value[i] = *pb++;
     }
@@ -188,14 +181,45 @@ double sum(double a[], int length)
     return value;
 }
 
-void errExit(const char *func, const char *format, ...)
+static void outputError(unsigned useErr, int err, unsigned flushStdout, 
+	const char *format, va_list ap)
 {
-    char errMsg[BUFSIZ];
-    va_list arglist;
-    va_start(arglist, format);
+    char buf[BUFSIZ * 4], userMsg[BUFSIZ], errText[BUFSIZ];
 
-    vsnprintf(errMsg, BUFSIZ, format, arglist);
-    fprintf(stderr, "ERROR in [%s]: %s\n", func, errMsg);
+    vsnprintf(userMsg, BUFSIZ, format, ap);
+
+    if (useErr)
+	snprintf(errText, sizeof(errText), " [%s]", strerror(err));
+    else
+	snprintf(errText, sizeof(errText), ":");
+
+    snprintf(buf, sizeof(buf), "ERROR%s %s\n", errText, userMsg);
+
+    if (flushStdout)
+	fflush(stdout);
+    fputs(buf, stderr);
+    fflush(stderr);
+}
+void errExit(const char *format, ...)
+{
+    va_list arglist;
+
+    va_start(arglist, format);
+    outputError(1, errno, 1, format, arglist);
+    va_end(arglist);
+
+    exit(EXIT_FAILURE);
+}
+
+/* same as errExit but used when diagnosing Pthreads */
+void errExitEN(int errnum, const char *format, ...)
+{
+    va_list arglist;
+
+    va_start(arglist, format);
+    outputError(1, errnum, 1, format, arglist);
+    va_end(arglist);
+
     exit(EXIT_FAILURE);
 }
 
@@ -206,7 +230,7 @@ xmlDocPtr getxmlDoc(const char *docname)
     doc = xmlParseFile(docname);
 
     if (doc == NULL)
-	errExit(__func__, "Unable to parse [%s]\n", docname);
+	errExit("[%s] Unable to parse [%s]\n", __func__, docname);
 
     return doc;
 }
@@ -218,15 +242,15 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath)
     context = xmlXPathNewContext(doc);
 
     if (context == NULL)
-	errExit(__func__, "xmlXPathNewContext returned NULL");
+	errExit("[%s] xmlXPathNewContext returned NULL\n", __func__);
     if (xmlXPathRegisterNs(context,  BAD_CAST NSPREFIX, BAD_CAST NSURI) != 0)
-	errExit(__func__,"Unable to register NS with prefix");
+	errExit("[%s] Unable to register NS with prefix\n", __func__);
 
     result = xmlXPathEvalExpression(xpath, context);
     xmlXPathFreeContext(context);
 
     if (result == NULL)
-	errExit(__func__, "xmlXPathEvalExpression returned NULL");
+	errExit("[%s] xmlXPathEvalExpression returned NULL\n", __func__);
     if(xmlXPathNodeSetIsEmpty(result->nodesetval))
     {
 	xmlXPathFreeObject(result);
@@ -240,14 +264,18 @@ void createXLzip(const char *s)
 {
     char t[strlen(s) + 1];
     char *pt = t;
-    const char *ps = s;
+    const char *prevpxls = s, *pxls, *ps = s;
     char dirname[strlen(s) + 1];
     char cmd[BUFSIZ];
 
-    if (strstr(s, ".xls") == NULL)
-	errExit(__func__, "[%s] not a valid excel file\n", s);
+    /* find final occurrence of ".xls", usually it should only occur once, but you never know */
+    while ((prevpxls = strstr(prevpxls, ".xls")) != NULL)
+	pxls = prevpxls++;
 
-    while (*ps != '.' && *ps != '\0')
+    if (pxls == NULL)
+	errExit("[%s] [%s] not a valid excel file\n", __func__, s);
+
+    while (ps < pxls)
 	*pt++ = *ps++;
     *pt = '\0';
     strcpy(dirname, t);
@@ -255,104 +283,31 @@ void createXLzip(const char *s)
     strcat(t, ".zip");
     
     /* remove previous zip file, if it exists */
-    rmrf(t);
+    snprintf(cmd, sizeof(cmd), "%s%s%c", "rm -rf '", t, '\'');
 
-    if (cp(t, s) != 0)
-    {
-	perror("cp");
-	errExit(__func__, "Failed to create zip file [%s]\n", t);
-    }
+    /* THIS IS NOT PORTABLE !!! */
+    if (system(cmd) != 0)
+	errExit("[%s] system command [%s] failed, are you on windows?\n", __func__, cmd);
+
+    snprintf(cmd, sizeof(cmd), "%s%s%c%s%s%c", "cp '", s, '\'', " '", t, '\'');
+
+    /* THIS IS NOT PORTABLE !!! */
+    if (system(cmd) != 0)
+	errExit("[%s] system command [%s] failed, are you on windows?\n", __func__, cmd);
 
     /* remove previous folder, if it exists */
-    rmrf(dirname);
+    snprintf(cmd, sizeof(cmd), "%s%s%c", "rm -rf '", dirname, '\'');
+
+    /* THIS IS NOT PORTABLE !!! */
+    if (system(cmd) != 0)
+	errExit("[%s] system command [%s] failed, are you on windows?\n", __func__, cmd);
 
     if (mkdir(dirname, S_IRWXU | S_IRWXG | S_IRWXO) == -1)
-	errExit(__func__, "Error making directory [%s]\n", dirname);
+	errExit("[%s] Error making directory [%s]\n", __func__, dirname);
 
     snprintf(cmd, sizeof(cmd), "%s%s%s%s%c", "unzip -q '", t, "' -d '", dirname, '\'');
 
     /* THIS IS NOT PORTABLE !!! */
-    if (system(cmd) == -1)
-	errExit(__func__, "system command [%s] failed, are you on windows?\n", cmd);
-}
-
-int rmrf(const char *s)
-{
-    int flags = FTW_CHDIR | FTW_DEPTH | FTW_MOUNT | FTW_PHYS;
-    if (nftw(s, rm, 10, flags) == -1)
-    {
-	/* ignore no such file or directory error */
-	if (errno == ENOENT || errno == ENOTDIR)
-	    return 0;
-	else
-	{
-	    perror("nftw");
-	    errExit(__func__, "nftw failed\n");
-	}
-    }
-    return 0;
-}
-
-int rm(const char *s, const struct stat *sbuf, int type, struct FTW *ftwb)
-{
-    remove(s);
-}
-
-int cp(const char *to, const char *from)
-{
-    int fd_to, fd_from;
-    char buf[4096];
-    ssize_t nread;
-    int saved_errno;
-
-    fd_from = open(from, O_RDONLY);
-    if (fd_from < 0)
-	return -1;
-
-    fd_to = open(to, O_WRONLY | O_CREAT | O_EXCL, 0777);
-    if (fd_to < 0)
-	goto out_error;
-
-    while (nread = read(fd_from, buf, sizeof buf), nread > 0)
-    {
-	char *out_ptr = buf;
-	ssize_t nwritten;
-
-	do {
-	    nwritten = write(fd_to, out_ptr, nread);
-
-	    if (nwritten >= 0)
-	    {
-		nread -= nwritten;
-		out_ptr += nwritten;
-	    }
-	    else if (errno != EINTR)
-	    {
-		goto out_error;
-	    }
-	} while (nread > 0);
-    }
-
-    if (nread == 0)
-    {
-	if (close(fd_to) < 0)
-	{
-	    fd_to = -1;
-	    goto out_error;
-	}
-	close(fd_from);
-
-	/* Success! */
-	return 0;
-    }
-
-out_error:
-    saved_errno = errno;
-
-    close(fd_from);
-    if (fd_to >= 0)
-	close(fd_to);
-
-    errno = saved_errno;
-    return -1;
+    if (system(cmd) != 0)
+	errExit("[%s] system command [%s] failed, are you on windows?\n", __func__, cmd);
 }
