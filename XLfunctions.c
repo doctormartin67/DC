@@ -73,7 +73,7 @@ char *cell(XLfile *xl, unsigned int sheet, const char *s) {
     {
 	/* find cell in found row */
 	scell = xmlGetProp(node, (const xmlChar *)"r");
-	if (!xmlStrcmp(scell, (xmlChar *)s))
+	if (xmlStrcmp(scell, (xmlChar *)s) == 0)
 	{
 	    xmlFree(scell);
 	    break;
@@ -87,7 +87,7 @@ char *cell(XLfile *xl, unsigned int sheet, const char *s) {
 
     for (childnode = node->children; childnode != NULL; childnode = childnode->next)
     {
-	if (!xmlStrcmp(childnode->name, (const xmlChar *)"v"))	
+	if (xmlStrcmp(childnode->name, (const xmlChar *)"v") == 0)
 	{
 	    v = (char *)xmlNodeGetContent(childnode);
 	    break;
@@ -97,17 +97,17 @@ char *cell(XLfile *xl, unsigned int sheet, const char *s) {
 	errExit("[%s] no element <v> for cell [%s]\n", __func__, s);
 
     t = xmlGetProp(node, (const xmlChar *)"t");
-    if (!xmlStrcmp(t, (const xmlChar *)"n"))
-    {
-	xmlFree(t);
-	return v;
-    }
-    else 
+    if (xmlStrcmp(t, (const xmlChar *)"s") == 0)
     {
 	int temp = atoi(v);
 	xmlFree(v);
 	xmlFree(t);
 	return findss(xl, temp);
+    }
+    else 
+    {
+	xmlFree(t);
+	return v;
     }
     return NULL;
 }
