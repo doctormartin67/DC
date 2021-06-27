@@ -287,6 +287,7 @@ void createData(DataSet *ds) {
 
 int printresults(DataSet *ds) {
     char results[PATH_MAX];
+    char temp[BUFSIZ];
     int row = 0;
     int col = 0;  
 
@@ -317,6 +318,31 @@ int printresults(DataSet *ds) {
     worksheet_write_string(worksheet, row, col+6, "Admin Cost", NULL);
     worksheet_write_string(worksheet, row, col+7, "Age", NULL);
     worksheet_write_string(worksheet, row, col+8, "Salary Scale", NULL);
+
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB DTH RISKPART");
+    worksheet_write_string(worksheet, row, col+10, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB DTH RESPART");
+    worksheet_write_string(worksheet, row, col+11, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB RET");
+    worksheet_write_string(worksheet, row, col+12, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB Assets");
+    worksheet_write_string(worksheet, row, col+13, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB Art24");
+    worksheet_write_string(worksheet, row, col+14, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB DBO");
+    worksheet_write_string(worksheet, row, col+15, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": NC DTH RISKPART");
+    worksheet_write_string(worksheet, row, col+16, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": NC DTH RESPART");
+    worksheet_write_string(worksheet, row, col+17, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": NC RET");
+    worksheet_write_string(worksheet, row, col+18, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": ER CONTR");
+    worksheet_write_string(worksheet, row, col+19, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": EE CONTR");
+    worksheet_write_string(worksheet, row, col+20, temp, NULL);
+    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": Service Cost");
+    worksheet_write_string(worksheet, row, col+21, temp, NULL);
     CurrentMember *cm = ds->cm; // address of test case member
     while (row < ds->membercnt) {
 	worksheet_write_number(worksheet, row+1, col, ass.DR, NULL);

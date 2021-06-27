@@ -83,6 +83,7 @@ The interpreter is case insensitive (meaning you could write select case, Select
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">10</property>
         <child>
           <object class="GtkNotebook">
             <property name="visible">True</property>
@@ -1024,6 +1025,7 @@ the salary will increase with 0.032 each year.</property>
                   <item translatable="yes">Run reconciliation</item>
                   <item translatable="yes">Run test case</item>
                 </items>
+                <signal name="changed" handler="on_runchoice_changed" swapped="no"/>
                 <child internal-child="entry">
                   <object class="GtkEntry">
                     <property name="can_focus">False</property>
@@ -1086,6 +1088,46 @@ the salary will increase with 0.032 each year.</property>
           </packing>
         </child>
         <child>
+          <object class="GtkBox" id="testcasebox">
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="width_request">150</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Test case:</property>
+                <attributes>
+                  <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="testcase">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="tooltip_text" translatable="yes">Choose a test case to run</property>
+                <property name="text" translatable="yes">1</property>
+                <property name="placeholder_text" translatable="yes">f.e. 4</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -1103,7 +1145,7 @@ Contact: Joseph Ralston - joseph.ralston@aon.com</property>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">4</property>
           </packing>
         </child>
       </object>

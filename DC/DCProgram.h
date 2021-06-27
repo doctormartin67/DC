@@ -210,9 +210,16 @@ enum runs {runLY, runUpdateInflation, runUpdateDR, runRF,
     runNewData, runNewMethodology, runNewMortality,
     runNewTurnover, runNewNRA, runNewInflation, runNewSS,
     runNewDR, runNewRF, runSensitivities};
-enum sensruns {runsensDRminus = 21, runsensDRplus, runsensInflationminus,
+enum sensruns {runsensDuration = 21, runsensDRminus, runsensDRplus, runsensInflationminus,
     runsensInflationplus, runsensSSminus, runsensSSplus,
-    runsensAgeCorrminus, runsensAgeCorrplus, runsensDuration};
+    runsensAgeCorrminus, runsensAgeCorrplus};
+static const char *runnames[] = {"Reported Last Year", "Update Inflation",
+    "Update Discount Rate", "Roll Forward", "New Data", "New Methodology", "New Mortality",
+    "New Turnover", "New NRA", "New Inflation", "New Salary Increase", "New Discount Rate", 
+    "New Roll Forward", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", 
+    "Sensitivity Duration", "Sensitivity Discount Rate -", "Sensitivity Discount Rate +", 
+    "Sensitivity Inflation -", "Sensitivity Inflation +", "Sensitivity Salary Increase -", 
+    "Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
 unsigned short currrun; // Current run
 void setassumptions(CurrentMember *cm);
 double salaryscale(CurrentMember *cm, int k);

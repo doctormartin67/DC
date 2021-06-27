@@ -37,7 +37,6 @@ void runonerun(DataSet *ds) {
 
     printf("Running members...\n");
     for (int i = 0; i < ds->membercnt; i++) {
-	setassumptions(cm + i); 
 	runmember(cm + i);
 	printf("Person %d run\n", i + 1);
     }
@@ -50,6 +49,7 @@ void runonerun(DataSet *ds) {
 }
 
 void runmember(CurrentMember *cm) {
+    setassumptions(cm); 
     //***INITIALISE VARIABLES (k = 0)***
     //-  Dates and age  -
     *cm->DOC = cm->DOS;
