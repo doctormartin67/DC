@@ -7,6 +7,17 @@
 enum {DBO, NC, IC, ASSETS};
 enum {DEF, IMM}; // deferred or immediate payment
 
+typedef struct {
+    double res;
+    double cap;
+    double prem; 
+    double deltacap; 
+    double capdth;
+    double age; 
+    double RA; 
+    LifeTable *lt;
+} CalcInput;
+
 /*
 Definitions:
 - lt is the name of a life table that gets put in a hashtable to be called.
@@ -59,14 +70,10 @@ void evolRES(CurrentMember *cm, int EREE, int gen, int k);
 void evolART24(CurrentMember *cm, int k);
 
 // calculate the capital life (lump sum) given reserves and contributions
-double calcCAP(CurrentMember *cm, 
-	double res, double prem, double deltacap, double capdth,
-	double age, double RA, LifeTable *lt);
+double calcCAP(CurrentMember *cm, CalcInput *);
 
 // calculate the reserves given capital life (lump sum) and contributions
-double calcRES(CurrentMember *cm, int k,
-	double cap, double prem, double deltacap, double capdth,
-	double age, LifeTable *lt);
+double calcRES(CurrentMember *cm, CalcInput *);
 
 // update all the DBO's, NC's, IC's and plan assets at iteration k
 void evolDBONCIC(CurrentMember *cm, int k, 

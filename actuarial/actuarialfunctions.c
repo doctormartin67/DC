@@ -181,227 +181,278 @@ void evolCAPDTH(CurrentMember *cm, int EREE, int gen, int k) {
 }
 
 void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
-    double cap;
-    double RA;
     double i;
     double Ex;
+    CalcInput *CI = malloc(sizeof(CalcInput));
 
     //---PUC RESERVES---
-    RA = (k+1 > MAXPROJBEFOREPROL ? NRA(cm, k+1) : cm->NRA);
+    CI->res = cm->RES[PUC][EREE][gen][k];
+    CI->prem = cm->PREMIUM[EREE][gen][k];
+    CI->deltacap = cm->DELTACAP[EREE][k];
+    CI->capdth = cm->CAPDTH[EREE][gen][k];
+    CI->age = cm->age[k];
+    CI->lt = &tff.ltINS[EREE][gen];
+    CI->RA = (k+1 > MAXPROJBEFOREPROL ? NRA(cm, k+1) : cm->NRA);
+    CI->cap = calcCAP(cm, CI);
 
-    cap = calcCAP(cm, 
-	    cm->RES[PUC][EREE][gen][k],
-	    cm->PREMIUM[EREE][gen][k],
-	    cm->DELTACAP[EREE][k],
-	    cm->CAPDTH[EREE][gen][k], cm->age[k], RA, &tff.ltINS[EREE][gen]);
-    cm->RES[PUC][EREE][gen][k+1] = calcRES(cm, k+1,
-	    cap,
-	    cm->PREMIUM[EREE][gen][k],
-	    cm->DELTACAP[EREE][k],
-	    cm->CAPDTH[EREE][gen][k+1],
-	    cm->age[k+1], &tff.ltINS[EREE][gen]);
+    CI->capdth = cm->CAPDTH[EREE][gen][k+1];
+    CI->age = cm->age[k+1];
+
+    cm->RES[PUC][EREE][gen][k+1] = calcRES(cm, CI);
+
     //-  Capital life  -
-    cm->CAP[EREE][gen][k] = cap;
+    cm->CAP[EREE][gen][k] = CI->cap;
 
     //-  RESERVES PROFIT SHARING  -
-    cap = calcCAP(cm, 
-	    cm->RESPS[PUC][EREE][gen][k],
-	    0, 0, 0,
-	    cm->age[k], RA, &tff.ltINS[EREE][gen]);
-    cm->RESPS[PUC][EREE][gen][k+1] = calcRES(cm, k+1,
-	    cap,
-	    0, 0, 0,
-	    cm->age[k+1], &tff.ltINS[EREE][gen]);
-    cm->CAPPS[EREE][gen][k] = cap;
+    CI->res = cm->RESPS[PUC][EREE][gen][k];
+    CI->prem = 0;
+    CI->deltacap = 0;
+    CI->capdth = 0;
+    CI->age = cm->age[k];
+    CI->cap = calcCAP(cm, CI);
+
+    CI->age = cm->age[k+1];
+
+    cm->RESPS[PUC][EREE][gen][k+1] = calcRES(cm, CI);
+    cm->CAPPS[EREE][gen][k] = CI->cap;
 
     //-  Reduced Capital  -
-    RA = (k+1 > MAXPROJBEFOREPROL ? NRA(cm, k+1) : cm->NRA);
-    cap = calcCAP(cm, 
-	    cm->RES[PUC][EREE][gen][k+1],
-	    0,
-	    cm->DELTACAP[EREE][k+1],
-	    cm->CAPDTH[EREE][gen][k+1], cm->age[k+1], RA, &tff.ltAfterTRM[EREE][gen]);
-    cm->REDCAP[PUC][EREE][gen][k+1] = calcCAP(cm, 
-	    cap,
-	    0, 0,
-	    cm->CAPDTH[EREE][gen][k+1],
-	    RA, NRA(cm, k+1), &tff.ltProlongAfterTRM[EREE]);
+    CI->res = cm->RES[PUC][EREE][gen][k+1];
+    CI->prem = 0;
+    CI->deltacap = cm->DELTACAP[EREE][k+1];
+    CI->capdth = cm->CAPDTH[EREE][gen][k+1];
+    CI->age = cm->age[k+1];
+    CI->lt = &tff.ltAfterTRM[EREE][gen];
+    CI->cap = calcCAP(cm, CI);
+
+    CI->res = CI->cap;
+    CI->prem = 0;
+    CI->deltacap = 0;
+    CI->age = CI->RA;
+    CI->RA = NRA(cm, k+1);
+    CI->lt = &tff.ltProlongAfterTRM[EREE];
+    cm->REDCAP[PUC][EREE][gen][k+1] = calcCAP(cm, CI);
+
     // Profit sharing
-    cap = calcCAP(cm, 
-	    cm->RESPS[PUC][EREE][gen][k+1],
-	    0, 0, 0,
-	    cm->age[k+1], RA, &tff.ltAfterTRM[EREE][gen]);
-    cm->REDCAP[PUC][EREE][gen][k+1] += calcCAP(cm, 
-	    cap,
-	    0, 0, 0,
-	    RA, NRA(cm, k+1), &tff.ltProlongAfterTRM[EREE]);
+    CI->res = cm->RESPS[PUC][EREE][gen][k+1];
+    CI->prem = 0;
+    CI->deltacap = 0;
+    CI->capdth = 0;
+    CI->age = cm->age[k+1];
+    CI->lt = &tff.ltAfterTRM[EREE][gen];
+    CI->RA = (k+1 > MAXPROJBEFOREPROL ? NRA(cm, k+1) : cm->NRA);
+    CI->cap = calcCAP(cm, CI);
+
+    CI->res = CI->cap;
+    CI->age = CI->RA;
+    CI->RA = NRA(cm, k+1);
+    CI->lt = &tff.ltProlongAfterTRM[EREE];
+    cm->REDCAP[PUC][EREE][gen][k+1] += calcCAP(cm, CI);
 
     //---TUC RESERVES---
-    RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
+    CI->RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
     i = cm->TAUX[EREE][gen];
-    Ex = nEx(tff.ltINS[EREE][gen].lt, i, tff.costRES, RA, min(2, NRA(cm, k), cm->NRA), 0);
+    Ex = nEx(tff.ltINS[EREE][gen].lt, i, tff.costRES, CI->RA, min(2, NRA(cm, k), cm->NRA), 0);
 
-    cap = calcCAP(cm, 
-	    cm->RES[PUC][EREE][gen][1],
-	    0, 0,
-	    cm->CAPDTH[EREE][gen][1], cm->age[1], RA, &tff.ltINS[EREE][gen]) +
-	cm->DELTACAP[EREE][0] * (RA - cm->age[1]) * 12 * Ex;
-    cm->RES[TUC][EREE][gen][k+1] = calcCAP(cm, 
-	    cap,
-	    0, 0,
-	    cm->CAPDTH[EREE][gen][1],
-	    RA, cm->age[k+1], &tff.ltProlong[EREE]);
+    CI->res = cm->RES[PUC][EREE][gen][1];
+    CI->prem = 0;
+    CI->deltacap = 0;
+    CI->capdth = cm->CAPDTH[EREE][gen][1];
+    CI->age = cm->age[1];
+    CI->lt = &tff.ltINS[EREE][gen];
+
+    CI->cap = calcCAP(cm, CI) + cm->DELTACAP[EREE][0] * (CI->RA - cm->age[1]) * 12 * Ex;
+    CI->age = cm->age[k+1];
+    CI->lt = &tff.ltProlong[EREE];
+    cm->RES[TUC][EREE][gen][k+1] = calcCAP(cm, CI);
 
     //-  RESERVES PROFIT SHARING  -
     cm->RESPS[TUC][EREE][gen][k+1] = cm->RESPS[PUC][EREE][gen][k+1];
 
     //-  Reduced Capital  -
     if (cm->tariff == MIXED || cm->tariff == UKMT) {
-	RA = min(2, NRA(cm, k+1), cm->NRA);
-	cap = calcCAP(cm, 
-		cm->RES[PUC][EREE][gen][1],
-		0, 0,
-		cm->CAPDTH[EREE][gen][1], cm->age[1], RA, &tff.ltAfterTRM[EREE][gen]) +
-	    cm->DELTACAP[EREE][0] * (cm->NRA - cm->age[1]) * 12;
-	cm->REDCAP[TUC][EREE][gen][k+1] = calcCAP(cm, 
-		cap,
-		0, 0,
-		cm->CAPDTH[EREE][gen][1],
-		RA, cm->NRA, &tff.ltProlongAfterTRM[EREE]);
+	CI->RA = min(2, NRA(cm, k+1), cm->NRA);
+	CI->age = cm->age[1];
+	CI->lt = &tff.ltAfterTRM[EREE][gen];
+	CI->cap = calcCAP(cm, CI) + cm->DELTACAP[EREE][0] * (cm->NRA - cm->age[1]) * 12;
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = cm->NRA;
+	CI->lt = &tff.ltProlongAfterTRM[EREE];
+	cm->REDCAP[TUC][EREE][gen][k+1] = calcCAP(cm, CI);
+
 	// Profit sharing
-	cap = calcCAP(cm, 
-		cm->RESPS[PUC][EREE][gen][1],
-		0, 0, 0, cm->age[1], RA, &tff.ltAfterTRM[EREE][gen]);
-	cm->REDCAP[TUC][EREE][gen][k+1] += calcCAP(cm, 
-		cap,
-		0, 0, 0,
-		RA, cm->NRA, &tff.ltProlongAfterTRM[EREE]);    
+	CI->res = cm->RESPS[PUC][EREE][gen][1];
+	CI->capdth = 0;
+	CI->age = cm->age[1];
+	CI->RA = min(2, NRA(cm, k+1), cm->NRA);
+	CI->lt = &tff.ltAfterTRM[EREE][gen];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = cm->NRA;
+	CI->lt = &tff.ltProlongAfterTRM[EREE];
+	cm->REDCAP[TUC][EREE][gen][k+1] += calcCAP(cm, CI);    
     }
     else {
-	cap = calcCAP(cm, 
-		cm->RES[PUC][EREE][gen][1],
-		0, 0,
-		cm->CAPDTH[EREE][gen][1], cm->age[1], RA, &tff.ltINS[EREE][gen]);
-	cap = calcCAP(cm, 
-		cap, 0, 0,
-		cm->CAPDTH[EREE][gen][1], RA, min(2, NRA(cm, k+1), cm->NRA),
-		&tff.ltAfterTRM[EREE][gen]) +
-	    cm->DELTACAP[EREE][0] * (cm->NRA - cm->age[1]) * 12;
-	cap = calcCAP(cm, 
-		cap, 0, 0,
-		cm->CAPDTH[EREE][gen][1], min(2, NRA(cm, k+1), cm->NRA),
-		max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
-		&tff.ltProlong[EREE]);
-	cm->REDCAP[TUC][EREE][gen][k+1] = calcCAP(cm, 
-		cap,
-		0, 0,
-		cm->CAPDTH[EREE][gen][1],
-		max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
-		NRA(cm, k+1), &tff.ltProlongAfterTRM[EREE]);
+	CI->res = cm->RES[PUC][EREE][gen][1];
+	CI->capdth = cm->CAPDTH[EREE][gen][1];
+	CI->age = cm->age[1];
+	CI->RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
+	CI->lt = &tff.ltINS[EREE][gen];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = min(2, NRA(cm, k+1), cm->NRA);
+	CI->lt = &tff.ltAfterTRM[EREE][gen];
+	CI->cap = calcCAP(cm, CI) + cm->DELTACAP[EREE][0] * (cm->NRA - cm->age[1]) * 12;
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]);
+	CI->lt = &tff.ltProlong[EREE];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = NRA(cm, k+1);
+	CI->lt = &tff.ltProlongAfterTRM[EREE];
+	cm->REDCAP[TUC][EREE][gen][k+1] = calcCAP(cm, CI);
+
 	// Profit sharing
-	cap = calcCAP(cm, 
-		cm->RESPS[PUC][EREE][gen][1],
-		0, 0, 0,
-		cm->age[1], RA, &tff.ltINS[EREE][gen]);
-	cap = calcCAP(cm, 
-		cap, 0, 0, 0,
-		RA, min(2, NRA(cm, k+1), cm->NRA),
-		&tff.ltAfterTRM[EREE][gen]);
-	cap = calcCAP(cm, 
-		cap, 0, 0, 0,
-		min(2, NRA(cm, k+1), cm->NRA),
-		max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
-		&tff.ltProlong[EREE]);
-	cm->REDCAP[TUC][EREE][gen][k+1] += calcCAP(cm, 
-		cap,
-		0, 0, 0,
-		max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
-		NRA(cm, k+1), &tff.ltProlongAfterTRM[EREE]);
+	CI->res = cm->RESPS[PUC][EREE][gen][1];
+	CI->capdth = 0;
+	CI->age = cm->age[1];
+	CI->RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
+	CI->lt = &tff.ltINS[EREE][gen];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = min(2, NRA(cm, k+1), cm->NRA);
+	CI->lt = &tff.ltAfterTRM[EREE][gen];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]);
+	CI->lt = &tff.ltProlong[EREE];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = NRA(cm, k+1);
+	CI->lt = &tff.ltProlongAfterTRM[EREE];
+	cm->REDCAP[TUC][EREE][gen][k+1] += calcCAP(cm, CI);
     }
     //---TUCPS_1 RESERVES---
-    RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
-    cap = calcCAP(cm, 
-	    cm->RES[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)],
-	    0, 0,
-	    cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
-	    cm->age[(int)min(2, (double)k+1, 2.0)], RA, &tff.ltINS[EREE][gen]) +
-	cm->DELTACAP[EREE][0] * (RA - cm->age[(int)min(2, (double)k+1, 2.0)]) * 12 * Ex;
-    cm->RES[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, 
-	    cap,
-	    0, 0,
-	    cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
-	    RA, cm->age[k+1], &tff.ltProlong[EREE]);
+    CI->res = cm->RES[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)],
+    CI->age = cm->age[(int)min(2, (double)k+1, 2.0)];
+    CI->prem = 0;
+    CI->deltacap = 0;
+    CI->capdth = cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)];
+    CI->RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
+    CI->lt = &tff.ltINS[EREE][gen];
+    CI->cap = calcCAP(cm, CI) + cm->DELTACAP[EREE][0] * (CI->RA - CI->age) * 12 * Ex;
+
+    CI->res = CI->cap;
+    CI->capdth = cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)];
+    CI->age = CI->RA;
+    CI->RA = cm->age[k+1];
+    CI->lt = &tff.ltProlong[EREE];
+
+    cm->RES[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, CI);
 
     //-  RESERVES PROFIT SHARING  -
     cm->RESPS[TUCPS_1][EREE][gen][k+1] = cm->RESPS[PUC][EREE][gen][k+1];
 
     //-  Reduced Capital  -
     if (cm->tariff == MIXED || cm->tariff == UKMT) {
-	RA = min(2, NRA(cm, k+1), cm->NRA);
-	cap = calcCAP(cm, 
-		cm->RES[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		0, 0,
-		cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		cm->age[(int)min(2, (double)k+1, 2.0)], RA, &tff.ltAfterTRM[EREE][gen]) +
-	    cm->DELTACAP[EREE][0] * (cm->NRA - cm->age[(int)min(2, (double)k+1, 2.0)]) * 12;
-	cm->REDCAP[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, 
-		cap,
-		0, 0,
-		cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		RA, cm->NRA, &tff.ltProlongAfterTRM[EREE]);
+	CI->RA = min(2, NRA(cm, k+1), cm->NRA);
+	CI->res = cm->RES[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)];
+	CI->prem = 0;
+	CI->deltacap = 0;
+	CI->capdth = cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)];
+	CI->age = cm->age[(int)min(2, (double)k+1, 2.0)]; 
+	CI->lt = &tff.ltAfterTRM[EREE][gen];
+	CI->cap = calcCAP(cm, CI) + cm->DELTACAP[EREE][0] * (cm->NRA - CI->age) * 12;
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = cm->NRA;
+	CI->lt = &tff.ltProlongAfterTRM[EREE];
+	cm->REDCAP[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, CI);
+
 	// Profit sharing
-	cap = calcCAP(cm, 
-		cm->RESPS[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		0, 0, 0, cm->age[(int)min(2, (double)k+1, 2.0)], RA, &tff.ltAfterTRM[EREE][gen]);
-	cm->REDCAP[TUCPS_1][EREE][gen][k+1] += calcCAP(cm, 
-		cap,
-		0, 0, 0,
-		RA, cm->NRA, &tff.ltProlongAfterTRM[EREE]);    
+	CI->res = cm->RESPS[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)];
+	CI->capdth = 0;
+	CI->age = cm->age[(int)min(2, (double)k+1, 2.0)]; 
+	CI->RA = min(2, NRA(cm, k+1), cm->NRA);
+	CI->lt = &tff.ltAfterTRM[EREE][gen];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = cm->NRA;
+	CI->lt = &tff.ltProlongAfterTRM[EREE];
+	cm->REDCAP[TUCPS_1][EREE][gen][k+1] += calcCAP(cm, CI);    
     }
     else {
-	RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
-	cap = calcCAP(cm, 
-		cm->RES[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		0, 0,
-		cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		cm->age[(int)min(2, (double)k+1, 2.0)], RA, &tff.ltINS[EREE][gen]);
-	cap = calcCAP(cm, 
-		cap, 0, 0,
-		cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		RA, min(2, NRA(cm, k+1), cm->NRA),
-		&tff.ltAfterTRM[EREE][gen]) +
-	    cm->DELTACAP[EREE][0] * (cm->NRA - cm->age[(int)min(2, (double)k+1, 2.0)]) * 12;
-	cap = calcCAP(cm, 
-		cap, 0, 0,
-		cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		min(2, NRA(cm, k+1), cm->NRA),
-		max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
-		&tff.ltProlong[EREE]);
-	cm->REDCAP[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, 
-		cap,
-		0, 0,
-		cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
-		NRA(cm, k+1), &tff.ltProlongAfterTRM[EREE]);
+	CI->RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
+	CI->res = cm->RES[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)];
+	CI->prem = 0;
+	CI->deltacap = 0;
+	CI->capdth = cm->CAPDTH[EREE][gen][(int)min(2, (double)k+1, 2.0)];
+	CI->age = cm->age[(int)min(2, (double)k+1, 2.0)]; 
+	CI->lt = &tff.ltAfterTRM[EREE][gen];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = min(2, NRA(cm, k+1), cm->NRA);
+	CI->cap = calcCAP(cm, CI) + cm->DELTACAP[EREE][0] * (cm->NRA - CI->age) * 12;
+
+	CI->res = CI->cap;
+	CI->age = min(2, NRA(cm, k+1), cm->NRA);
+	CI->RA = max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]);
+	CI->lt = &tff.ltProlong[EREE];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = NRA(cm, k+1);
+	CI->lt = &tff.ltProlongAfterTRM[EREE];
+	cm->REDCAP[TUCPS_1][EREE][gen][k+1] = calcCAP(cm, CI);
+
 	// Profit sharing
-	cap = calcCAP(cm, 
-		cm->RESPS[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)],
-		0, 0, 0,
-		cm->age[(int)min(2, (double)k+1, 2.0)], RA, &tff.ltINS[EREE][gen]);
-	cap = calcCAP(cm, 
-		cap, 0, 0, 0,
-		RA, min(2, NRA(cm, k+1), cm->NRA),
-		&tff.ltAfterTRM[EREE][gen]);
-	cap = calcCAP(cm, 
-		cap, 0, 0, 0,
-		min(2, NRA(cm, k+1), cm->NRA),
-		max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
-		&tff.ltProlong[EREE]);
-	cm->REDCAP[TUCPS_1][EREE][gen][k+1] += calcCAP(cm, 
-		cap,
-		0, 0, 0,
-		max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]),
-		NRA(cm, k+1), &tff.ltProlongAfterTRM[EREE]);
+	CI->res = cm->RESPS[PUC][EREE][gen][(int)min(2, (double)k+1, 2.0)];
+	CI->capdth = 0;
+	CI->age = cm->age[(int)min(2, (double)k+1, 2.0)]; 
+	CI->RA = min(3, NRA(cm, k+1), cm->NRA, cm->age[k+1]);
+	CI->lt = &tff.ltINS[EREE][gen];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = min(2, NRA(cm, k+1), cm->NRA);
+	CI->lt = &tff.ltAfterTRM[EREE][gen];
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = max(2, min(2, NRA(cm, k+1), cm->NRA), cm->age[k+1]);
+	CI->lt = &tff.ltProlong[EREE];
+
+	CI->cap = calcCAP(cm, CI);
+
+	CI->res = CI->cap;
+	CI->age = CI->RA;
+	CI->RA = NRA(cm, k+1);
+	CI->lt = &tff.ltProlongAfterTRM[EREE];
+	cm->REDCAP[TUCPS_1][EREE][gen][k+1] += calcCAP(cm, CI);
     }
 }
 
@@ -456,9 +507,11 @@ void evolART24(CurrentMember *cm, int k) {
     }
 }
 
-double calcCAP(CurrentMember *cm, 
-	double res, double prem, double deltacap, double capdth,
-	double age, double RA, LifeTable *lt) {
+double calcCAP(CurrentMember *cm, CalcInput *CI)
+{
+    double res = CI->res, prem = CI->prem, deltacap = CI->deltacap, 
+	   capdth = CI->capdth, age = CI->age, RA = CI->RA;
+    LifeTable *lt = CI->lt;
 
     double i;
     double Ex;
@@ -478,7 +531,8 @@ double calcCAP(CurrentMember *cm,
     Ex = nEx(lt->lt, i, tff.costRES, age, RA, 0);
     ax = axn(lt->lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
 
-    switch(cm->tariff) {
+    switch(cm->tariff)
+    {
 	case UKMS :
 	    value = (res + prem * (1 - tff.admincost) * ax) / Ex +
 		deltacap * (RA - age) * 12;
@@ -513,11 +567,11 @@ double calcCAP(CurrentMember *cm,
     return value;
 }
 
-double calcRES(CurrentMember *cm, int k,
-	double cap, double prem, double deltacap, double capdth,
-	double age, LifeTable *lt) {
-
-    double RA;
+double calcRES(CurrentMember *cm, CalcInput *CI)
+{
+    double cap = CI->cap, prem = CI->prem, deltacap = CI->deltacap, 
+	   capdth = CI->capdth, age = CI->age, RA = CI->RA;
+    LifeTable *lt = CI->lt;
     double i;
     double Ex;
     double ax;
@@ -532,12 +586,12 @@ double calcRES(CurrentMember *cm, int k,
 
     double value;
 
-    RA = (k > MAXPROJBEFOREPROL ? NRA(cm, k) : cm->NRA);
     i = lt->i;
     Ex = nEx(lt->lt, i, tff.costRES, age, RA, 0);
     ax = axn(lt->lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
 
-    switch(cm->tariff) {
+    switch(cm->tariff)
+    {
 	case UKMS :
 	    value = (cap - deltacap * (RA - age) * 12) * Ex -
 		prem * (1 - tff.admincost) * ax;
