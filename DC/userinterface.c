@@ -62,7 +62,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
     if (!running)
     {
 	running = TRUE;
-	int s = 0;
+	int s = 0; /* used for error printing */
 	char *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(runchoice));
 	if (strcmp("Run one run", choice) == 0)
 	{

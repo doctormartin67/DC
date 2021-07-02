@@ -3,7 +3,8 @@
 #include "libraryheader.h"
 #include "xlsxwriter.h"
 
-void setDSvals(XLfile *xl, DataSet *ds) {
+void setDSvals(XLfile *xl, DataSet *ds)
+{
     ds->xl = xl;
     setkey(ds);
     countMembers(ds);
@@ -11,12 +12,14 @@ void setDSvals(XLfile *xl, DataSet *ds) {
 }
 
 // initialise all variables from data (hashtable)
-void setCMvals(DataSet *ds) {
+void setCMvals(DataSet *ds)
+{
     CurrentMember *cm;
     ds->cm = (CurrentMember *)calloc(ds->membercnt, sizeof(CurrentMember));
     if ((cm = ds->cm) == NULL) errExit("[%s] calloc returned NULL\n", __func__);
     printf("Setting all the values for the affiliates...\n");
-    for (int i = 0; i < ds->membercnt; i++) {
+    for (int i = 0; i < ds->membercnt; i++)
+    {
 	cm[i].Data = *(ds->Data + i);
 	cm[i].key = getcmval(&cm[i], "KEY");
 	cm[i].regl = getcmval(&cm[i], "NO REGLEMENT");
@@ -49,7 +52,8 @@ void setCMvals(DataSet *ds) {
 	cm[i].contrINV = atof(getcmval(&cm[i], "Contr INV"));
 
 	// define article 24 from data
-	for (int j = 0; j < TUCPS_1 + 1; j++) {
+	for (int j = 0; j < TUCPS_1 + 1; j++)
+	{
 	    cm[i].ART24[j][ER][ART24GEN1][0] = atof(getcmval(&cm[i], "ART24_A_GEN1"));
 	    cm[i].ART24[j][ER][ART24GEN2][0] = atof(getcmval(&cm[i], "ART24_A_GEN2"));
 	    cm[i].ART24[j][EE][ART24GEN1][0] = atof(getcmval(&cm[i], "ART24_C_GEN1"));
@@ -62,12 +66,14 @@ void setCMvals(DataSet *ds) {
 	setGenMatrix(&cm[i], cm[i].CAP, "CAP");
 	setGenMatrix(&cm[i], cm[i].CAPPS, "CAPPS");
 	setGenMatrix(&cm[i], cm[i].CAPDTH, "CAPDTH");
-	for (int k = 0; k < TUCPS_1 + 1; k++) {
+	for (int k = 0; k < TUCPS_1 + 1; k++)
+	{
 	    setGenMatrix(&cm[i], cm[i].RES[k], "RES");
 	    setGenMatrix(&cm[i], cm[i].RESPS[k], "RESPS");
 	    setGenMatrix(&cm[i], cm[i].REDCAP[k], "CAPRED");
 	}
-	for (int j = 0; j < MAXGEN; j++) {
+	for (int j = 0; j < MAXGEN; j++)
+	{
 	    char tempER[32];
 	    char tempEE[32];      
 	    snprintf(tempER, sizeof(tempER), "%s%d", "TAUX_A_GEN", j + 1);
@@ -80,7 +86,8 @@ void setCMvals(DataSet *ds) {
 	cm[i].DELTACAP[ER][0] = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
 	cm[i].DELTACAP[EE][0] = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
 	cm[i].X10 = atof(getcmval(&cm[i], "X/10"));
-	if (cm[i].tariff == MIXED && cm[i].X10 == 0) {
+	if (cm[i].tariff == MIXED && cm[i].X10 == 0)
+	{
 	    printf("Warning: X/10 equals zero for %s but he has a MIXED contract\n", cm[i].key);
 	    printf("X/10 will be taken as 1 by default.\n");
 	    cm[i].X10 = 1;
@@ -106,12 +113,13 @@ void setCMvals(DataSet *ds) {
     printf("Setting values completed.\n");
 }
 
-double gensum(GenMatrix amount[], unsigned short EREE, int loop) {
+double gensum(GenMatrix amount[], unsigned short EREE, int loop)
+{
     double sum = 0;
 
-    for (int i = 0; i < MAXGEN; i++) {
+    for (int i = 0; i < MAXGEN; i++)
 	sum += amount[EREE][i][loop];
-    }
+
     return sum;
 }
 
@@ -181,7 +189,8 @@ void countMembers(DataSet *ds)
    hashtables, where we will store all the cells for our data. We will 
    reference cell O11 as an example going further.*/
 
-void createData(DataSet *ds) {
+void createData(DataSet *ds)
+{
     char column[4]; // This holds the column of the beginning of our data cell, for example O
     int irow; // This holds the row of the beginning of our data cell, for example 11
     char srow[16]; /* This holds the row in string form of the beginning of our data cell, 
@@ -259,9 +268,11 @@ void createData(DataSet *ds) {
 	nextcol(dataCell);
 	// Set index of keys to 1 at the start of loop
 	countkeys = 1;
-	while (*(ds->keys + countkeys) != NULL) {
+	while (*(ds->keys + countkeys) != NULL)
+	{
 
-	    while ((data = cell(ds->xl, ds->sheet, dataCell)) == NULL) {
+	    while ((data = cell(ds->xl, ds->sheet, dataCell)) == NULL)
+	    {
 		lookup(*(ds->keys + countkeys), "0", *(ds->Data + i));
 		// Here we update cell for loop, for example O11 becomes P11
 		countkeys++;
@@ -285,20 +296,24 @@ void createData(DataSet *ds) {
     printf("Creation complete\n");
 }
 
-int printresults(DataSet *ds) {
+int printresults(DataSet *ds)
+{
     char results[PATH_MAX];
-    char temp[BUFSIZ];
     int row = 0;
     int col = 0;  
+    int index = 0;
 
     strcpy(results, ds->xl->dirname);
     strcat(results, "/results.xlsx");
     lxw_workbook  *workbook  = workbook_new(results);
     lxw_worksheet *worksheet = workbook_add_worksheet(workbook, "dataTY");
+    worksheet_set_column(worksheet, 0, 250, 20, NULL);
     printf("Printing Data...\n");
-    while (*(ds->keys + col) != NULL) {
+    while (*(ds->keys + col) != NULL)
+    {
 	worksheet_write_string(worksheet, row, col, *(ds->keys + col), NULL);
-	while (row < ds->membercnt) {
+	while (row < ds->membercnt)
+	{
 	    worksheet_write_string(worksheet, row+1, col,
 		    lookup(*(ds->keys + col), NULL, *(ds->Data + row))->value, NULL);
 	    row++;
@@ -309,57 +324,187 @@ int printresults(DataSet *ds) {
     printf("Printing Data complete.\n");
     printf("Printing results...\n");
 
-    worksheet_write_string(worksheet, row, ++col, "DR", NULL);
-    worksheet_write_string(worksheet, row, col+1, "DC NC", NULL);
-    worksheet_write_string(worksheet, row, col+2, "Method Standard", NULL);
-    worksheet_write_string(worksheet, row, col+3, "Method DBO", NULL);
-    worksheet_write_string(worksheet, row, col+4, "Method Assets", NULL);
-    worksheet_write_string(worksheet, row, col+5, "Method Death", NULL);
-    worksheet_write_string(worksheet, row, col+6, "Admin Cost", NULL);
-    worksheet_write_string(worksheet, row, col+7, "Age", NULL);
-    worksheet_write_string(worksheet, row, col+8, "Salary Scale", NULL);
+    col++;
+    worksheet_write_string(worksheet, row, col+index++, "DR", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "DC NC", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "Method Standard", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "Method DBO", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "Method Assets", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "Method Death", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "Admin Cost", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "Age", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "Salary Scale", NULL);
 
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB DTH RISKPART");
-    worksheet_write_string(worksheet, row, col+10, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB DTH RESPART");
-    worksheet_write_string(worksheet, row, col+11, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB RET");
-    worksheet_write_string(worksheet, row, col+12, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB Assets");
-    worksheet_write_string(worksheet, row, col+13, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB Art24");
-    worksheet_write_string(worksheet, row, col+14, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": LIAB DBO");
-    worksheet_write_string(worksheet, row, col+15, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": NC DTH RISKPART");
-    worksheet_write_string(worksheet, row, col+16, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": NC DTH RESPART");
-    worksheet_write_string(worksheet, row, col+17, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": NC RET");
-    worksheet_write_string(worksheet, row, col+18, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": ER CONTR");
-    worksheet_write_string(worksheet, row, col+19, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": EE CONTR");
-    worksheet_write_string(worksheet, row, col+20, temp, NULL);
-    snprintf(temp, sizeof(temp), "%s%s", runnames[currrun], ": Service Cost");
-    worksheet_write_string(worksheet, row, col+21, temp, NULL);
+    index++;
+    worksheet_write_string(worksheet, row, col+index++, "LIAB_RET_PUC_PAR", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "LIAB_RET_PUC_RES", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "LIAB_RET_TUC_PAR", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "LIAB_RET_TUC_RES", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "NC_RET_PUC_PAR", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "NC_RET_PUC_RES", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "NC_RET_TUC_PAR", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "NC_RET_TUC_RES", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "ExpERContr", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "ExpEEContr", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "LIAB_DTH_RESPART", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "LIAB_DTH_RISKPART", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "NC_DTH_RESPART", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "NC_DTH_RISKPART", NULL);
+    index++;
+    worksheet_write_string(worksheet, row, col+index++, "Assets_PAR115", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "Assets_PAR113", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "Assets_RES", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "DBO_PUC_PAR", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "SC_ER_PUC_PAR", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "DBO_TUC_PAR", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "SC_ER_TUC_PAR", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "DBO_PUC_RES", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "SC_ER_PUC_RES", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "DBO_TUC_RES", NULL);
+    worksheet_write_string(worksheet, row, col+index++, "SC_ER_TUC_RES", NULL);
+
     CurrentMember *cm = ds->cm; // address of test case member
-    while (row < ds->membercnt) {
-	worksheet_write_number(worksheet, row+1, col, ass.DR, NULL);
-	worksheet_write_number(worksheet, row+1, col+1, ass.DR, NULL);
-	worksheet_write_string(worksheet, row+1, col+2, 
+    while (row < ds->membercnt)
+    {
+	index = 0;
+	worksheet_write_number(worksheet, row+1, col+index++, ass.DR, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, ass.DR, NULL);
+	worksheet_write_string(worksheet, row+1, col+index++, 
 		(ass.method & mIAS ? "IAS" : "FAS"), NULL);
-	worksheet_write_string(worksheet, row+1, col+3, 
+	worksheet_write_string(worksheet, row+1, col+index++, 
 		(ass.method & mTUC ? "TUC" : "PUC"), NULL);
-	worksheet_write_string(worksheet, row+1, col+4, 
+	worksheet_write_string(worksheet, row+1, col+index++, 
 		(ass.method & mRES ? "RES" : 
 		 (ass.method & mPAR115 ? "PAR115" : "PAR113")), NULL);
-	worksheet_write_number(worksheet, row+1, col+5, 
+	worksheet_write_number(worksheet, row+1, col+index++, 
 		(ass.method & mDTH ? 1 : 0), NULL);
-	worksheet_write_number(worksheet, row+1, col+6, tff.admincost, NULL);
-	worksheet_write_number(worksheet, row+1, col+7, *cm[row].age, NULL);
-	worksheet_write_number(worksheet, row+1, col+8, salaryscale(&cm[row], 1), NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, tff.admincost, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, *cm->age, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, salaryscale(cm, 1), NULL);
+	index++;
+
+	double DBORETPUCPAR = sum(cm->DBORET[PUC][PAR115], MAXPROJ);
+	double DBORETPUCRES = sum(cm->DBORET[PUC][MATHRES], MAXPROJ);
+	double DBORETTUCPAR = sum(cm->DBORET[TUC][PAR115], MAXPROJ);
+	double DBORETTUCRES = sum(cm->DBORET[TUC][MATHRES], MAXPROJ);
+
+	double NCRETPUCPAR = sum(cm->NCRET[PUC][PAR115], MAXPROJ);
+	double NCRETPUCRES = sum(cm->NCRET[PUC][MATHRES], MAXPROJ);
+	double NCRETTUCPAR = sum(cm->NCRET[TUC][PAR115], MAXPROJ);
+	double NCRETTUCRES = sum(cm->NCRET[TUC][MATHRES], MAXPROJ);
+
+	double ICNCRETPUCPAR = sum(cm->ICNCRET[PUC][PAR115], MAXPROJ);
+	double ICNCRETPUCRES = sum(cm->ICNCRET[PUC][MATHRES], MAXPROJ);
+	double ICNCRETTUCPAR = sum(cm->ICNCRET[TUC][PAR115], MAXPROJ);
+	double ICNCRETTUCRES = sum(cm->ICNCRET[TUC][MATHRES], MAXPROJ);
+
+	double ExpERContr = 
+	    max(2, 0.0, min(2, 1.0, NRA(cm, 1) - cm->age[1])) * gensum(cm->PREMIUM, ER, 1);
+	double ExpEEContr = 
+	    max(2, 0.0, min(2, 1.0, NRA(cm, 1) - cm->age[1])) * gensum(cm->PREMIUM, EE, 1);
+
+	double DBODTHRESPART = sum(cm->DBODTHRESPart, MAXPROJ);
+	double DBODTHRiskPART = sum(cm->DBODTHRiskPart, MAXPROJ);
+	double NCDTHRESPART = sum(cm->NCDTHRESPart, MAXPROJ);
+	double NCDTHRiskPART = sum(cm->NCDTHRiskPart, MAXPROJ);
+
+	double assetsPAR115 = sum(cm->assets[PAR115], MAXPROJ);
+	double assetsPAR113 = sum(cm->assets[PAR113], MAXPROJ);
+	double assetsRES = sum(cm->assets[MATHRES], MAXPROJ);
+
+	double ART24TOT = cm->ART24[PUC][ER][ART24GEN1][1] + cm->ART24[PUC][ER][ART24GEN2][1] +
+	    cm->ART24[PUC][EE][ART24GEN1][1] + cm->ART24[PUC][EE][ART24GEN2][1];
+
+	double ICNCDTHRESPART = sum(cm->ICNCDTHRESPart, MAXPROJ); 
+	double ICNCDTHRiskPART = sum(cm->ICNCDTHRiskPart, MAXPROJ); 
+
+	/* Liability */
+	worksheet_write_number(worksheet, row+1, col+index++, DBORETPUCPAR, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, DBORETPUCRES, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, DBORETTUCPAR, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, DBORETTUCRES, NULL);
+
+	/* Normal Cost */
+	worksheet_write_number(worksheet, row+1, col+index++, NCRETPUCPAR, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, NCRETPUCRES, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, NCRETTUCPAR, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, NCRETTUCRES, NULL);
+
+	/* Expected contributions */
+	worksheet_write_number(worksheet, row+1, col+index++, ExpERContr, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, ExpEEContr, NULL);
+
+	/* Death */
+	worksheet_write_number(worksheet, row+1, col+index++, DBODTHRESPART, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, DBODTHRiskPART, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, NCDTHRESPART, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, NCDTHRiskPART, NULL);
+
+	index++;
+	/* Assets */
+	worksheet_write_number(worksheet, row+1, col+index++, assetsPAR115, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, assetsPAR113, NULL);
+	worksheet_write_number(worksheet, row+1, col+index++, assetsRES, NULL);
+
+	/* DBO + SC */
+	/* DBO RET PUC PAR */
+	worksheet_write_number(worksheet, row+1, col+index++, 
+		max(2, 
+		    DBORETPUCPAR, 
+		    (ass.method & PAR113 ? assetsPAR113 : assetsPAR115)), 
+		NULL);
+	/* SC ER PUC PAR */
+	worksheet_write_number(worksheet, row+1, col+index++, 
+		max(2, 
+		    0.0, 
+		    NCRETPUCPAR + ICNCRETPUCPAR - ExpEEContr), 
+		NULL);
+	/* DBO RET TUC PAR */
+	worksheet_write_number(worksheet, row+1, col+index++, 
+		max(2, 
+		    DBORETTUCPAR, 
+		    (ass.method & PAR113 ? assetsPAR113 : assetsPAR115)), 
+		NULL);
+	/* SC ER TUC PAR */
+	worksheet_write_number(worksheet, row+1, col+index++, 
+		max(2, 
+		    (ass.method & mmaxERContr ? ExpERContr * (1 - tff.admincost) / 
+		     (1 + ass.taxes) : 0.0), 
+		    NCRETTUCPAR + ICNCRETTUCPAR - ExpEEContr), 
+		NULL);
+	/* DBO RET PUC RES */
+	worksheet_write_number(worksheet, row+1, col+index++, 
+		max(3, 
+		    DBORETPUCRES + (ass.method & mDTH ? DBODTHRESPART : 0.0), 
+		    assetsRES, 
+		    ART24TOT) + (ass.method & mDTH ? DBODTHRiskPART : 0.0), 
+		NULL);
+	/* SC ER PUC RES */
+	worksheet_write_number(worksheet, row+1, col+index++, 
+		max(2, 
+		    0.0,
+		    NCRETPUCRES + ICNCRETPUCRES + 
+		    (ass.method & mDTH ? NCDTHRESPART + ICNCDTHRESPART : 0.0) - ExpEEContr + 
+		    (ass.method & mDTH ? NCDTHRiskPART + ICNCDTHRiskPART : 0.0)), 
+		NULL);
+	/* DBO RET TUC RES */
+	worksheet_write_number(worksheet, row+1, col+index++, 
+		max(3, 
+		    DBORETTUCRES + (ass.method & mDTH ? DBODTHRESPART : 0.0), 
+		    assetsRES, 
+		    ART24TOT) + (ass.method & mDTH ? DBODTHRiskPART : 0.0), 
+		NULL);
+	/* SC ER TUC RES */
+	worksheet_write_number(worksheet, row+1, col+index++, 
+		max(2, 
+		    (ass.method & mmaxERContr ? ExpERContr * (1 - tff.admincost) / 
+		     (1 + ass.taxes) : 0.0),
+		    NCRETTUCRES + ICNCRETTUCRES + 
+		    (ass.method & mDTH ? NCDTHRESPART + ICNCDTHRESPART : 0.0) - ExpEEContr) +
+		    (ass.method & mDTH ? NCDTHRiskPART + ICNCDTHRiskPART : 0.0),
+		NULL);
 	row++;
+	cm++;
     }
     printf("Printing results complete.\n");
     return workbook_close(workbook);
@@ -371,12 +516,17 @@ int printtc(DataSet *ds, unsigned int tc)
     char temp[64]; // to store temporary strings for field names and such.
     int row = 0;
     int col = 0;  
+    int index = 0;  
 
+    snprintf(temp, sizeof(temp), "TestCase%d", tc + 1);
     strcpy(results, ds->xl->dirname);
-    strcat(results, "/testcase.xlsx");
-    lxw_workbook  *workbook  = workbook_new(results);
-    lxw_worksheet *worksheet = workbook_add_worksheet(workbook, "Testcase");
-    printf("Printing Testcases...\n");
+    strcat(results, "/");
+    strcat(results, temp);
+    strcat(results, ".xlsx");
+    lxw_workbook *workbook = workbook_new(results);
+
+    lxw_worksheet *worksheet = workbook_add_worksheet(workbook, temp);
+    printf("Printing Testcase...\n");
     //-  Titles of variables  -
     worksheet_write_string(worksheet, row, col++, "KEY", NULL);
     worksheet_write_string(worksheet, row, col++, "DOC", NULL);
@@ -390,8 +540,10 @@ int printtc(DataSet *ds, unsigned int tc)
     worksheet_write_string(worksheet, row, col++, "DTH RES Part", NULL);
     worksheet_write_string(worksheet, row, col++, "Contr C", NULL);
 
-    for (int i = 0; i < MAXGEN; i++) {
-	for (int j = 0; j < 2; j++) {  /* Employer and Employee */
+    for (int i = 0; i < MAXGEN; i++)
+    {
+	for (int j = 0; j < 2; j++) /* Employer and Employee */
+	{
 	    snprintf(temp, sizeof(temp), "CAP GEN %d %c", i + 1, (j == ER ? 'A' : 'C'));
 	    worksheet_write_string(worksheet, row, col + 4*i + 32*j, temp, NULL);
 	    snprintf(temp, sizeof(temp), "PREMIUM GEN %d %c", i + 1, (j == ER ? 'A' : 'C'));
@@ -420,9 +572,12 @@ int printtc(DataSet *ds, unsigned int tc)
     col++;
 
     // Article 24
-    for (int j = 0; j < TUCPS_1 + 1; j++) {
-	for (int i = 0; i < 2; i++) { // generation
-	    for (int k = 0; k < 2; k++) { /* Employer and Employee */
+    for (int j = 0; j < TUCPS_1 + 1; j++)
+    {
+	for (int i = 0; i < 2; i++) // generation
+	{
+	    for (int k = 0; k < 2; k++) /* Employer and Employee */
+	    {
 		snprintf(temp, sizeof(temp), "ART24 GEN %d %c %s",
 			i + 1, (k == ER ? 'A' : 'C'),
 			(j == PUC ? "PUC" : (j == TUC ? "TUC" : "TUC PS+1")));
@@ -444,7 +599,8 @@ int printtc(DataSet *ds, unsigned int tc)
     worksheet_write_string(worksheet, row, col++, "v^n", NULL);
 
     for (int i = 0; i < 2; i++)
-	for (int j = 0; j < 3; j++) {
+	for (int j = 0; j < 3; j++)
+	{
 	    snprintf(temp, sizeof(temp), "DBO RET %s %s",
 		    (i == PUC ? "PUC" : "TUC"),
 		    (j == PAR115 ? "PAR115" : (j == MATHRES ? "RES" : "PAR113")));
@@ -466,12 +622,14 @@ int printtc(DataSet *ds, unsigned int tc)
 
     // EBP
     for (int j = 0; j < 3; j++) 
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < 2; i++)
+	{
 	    snprintf(temp, sizeof(temp), "PBO NC CF %s %s",
 		    (i == PUC ? "PUC" : "TUC"),
 		    (j == PAR115 ? "PAR115" : (j == MATHRES ? "RES" : "PAR113")));
 	    worksheet_write_string(worksheet, row, col + j + 3*i, temp, NULL);
-	    for (int k = 0; k < 2; k++) {
+	    for (int k = 0; k < 2; k++)
+	    {
 		snprintf(temp, sizeof(temp), "EBP %s %s %s",
 			(k == TBO ? "TBO" : "PBO"),
 			(i == PUC ? "PUC" : "TUC"),
@@ -491,122 +649,151 @@ int printtc(DataSet *ds, unsigned int tc)
     lxw_format *format = workbook_add_format(workbook);
     char DOCformat[] = "dd/mm/yyyy";
     format_set_num_format(format, DOCformat);
-    worksheet_set_column(worksheet, 0, 100, 15, NULL);
+    worksheet_set_column(worksheet, 0, 200, 20, NULL);
     CurrentMember *cm = &ds->cm[tc]; // address of test case member
 
-    while (row < MAXPROJ) {
+    while (row < MAXPROJ)
+    {
+	index = 0;
 	DOC.year = cm->DOC[row]->year;
 	DOC.month = cm->DOC[row]->month;
 	DOC.day = cm->DOC[row]->day;
 	DOC.hour = DOC.min = DOC.sec = 0;
-	worksheet_write_string(worksheet, row+1, col, cm->key, NULL);
-	worksheet_write_datetime(worksheet, row+1, col+1, &DOC, format);
-	worksheet_write_number(worksheet, row+1, col+2, cm->age[row], NULL);
-	worksheet_write_number(worksheet, row+1, col+4, cm->sal[row], NULL);
-	worksheet_write_number(worksheet, row+1, col+8, gensum(cm->PREMIUM, ER, row), NULL);
-	worksheet_write_number(worksheet, row+1, col+12, cm->CAPDTHRiskPart[row], NULL);
-	worksheet_write_number(worksheet, row+1, col+13, cm->CAPDTHRESPart[row], NULL);
-	worksheet_write_number(worksheet, row+1, col+14, gensum(cm->PREMIUM, EE, row), NULL);
-	for (int i = 0; i < MAXGEN; i++) {
-	    for (int j = 0; j < 2; j++) { 
-		worksheet_write_number(worksheet, row+1, col+15 + 4*i + 32*j,
+	worksheet_write_string(worksheet, row+1, col + index++, cm->key, NULL);
+	worksheet_write_datetime(worksheet, row+1, col + index++, &DOC, format);
+	worksheet_write_number(worksheet, row+1, col + index++, cm->age[row], NULL);
+	index++;
+	worksheet_write_number(worksheet, row+1, col + index++, cm->sal[row], NULL);
+	index += 3;
+	worksheet_write_number(worksheet, row+1, col + index++, gensum(cm->PREMIUM, ER, row), 
+		NULL);
+	index += 3;
+	worksheet_write_number(worksheet, row+1, col + index++, cm->CAPDTHRiskPart[row], NULL);
+	worksheet_write_number(worksheet, row+1, col + index++, cm->CAPDTHRESPart[row], NULL);
+	worksheet_write_number(worksheet, row+1, col + index++, gensum(cm->PREMIUM, EE, row), 
+		NULL);
+	for (int i = 0; i < MAXGEN; i++)
+	{
+	    for (int j = 0; j < 2; j++)
+	    {
+		worksheet_write_number(worksheet, row+1, col + index + 4*i + 32*j,
 			cm->CAP[j][i][row], NULL);
-		worksheet_write_number(worksheet, row+1, col+16 + 4*i + 32*j,
+		worksheet_write_number(worksheet, row+1, col + index + 1 + 4*i + 32*j,
 			cm->PREMIUM[j][i][row], NULL);
-		worksheet_write_number(worksheet, row+1, col+17 + 4*i + 32*j,
+		worksheet_write_number(worksheet, row+1, col + index + 2 + 4*i + 32*j,
 			cm->RESPS[PUC][j][i][row], NULL);
-		worksheet_write_number(worksheet, row+1, col+18 + 4*i + 32*j,
+		worksheet_write_number(worksheet, row+1, col + index + 3 + 4*i + 32*j,
 			cm->RES[PUC][j][i][row], NULL);
 	    }
 	}
+
+	index += 3 + 4*7 + 32;
+	index += 2;
 	// Total Reserves
-	worksheet_write_number(worksheet, row+1, col+80,
+	worksheet_write_number(worksheet, row+1, col + index++,
 		gensum(cm->RES[PUC], ER, row) +
 		gensum(cm->RESPS[PUC], ER, row), NULL);
-	worksheet_write_number(worksheet, row+1, col+81,
+	worksheet_write_number(worksheet, row+1, col + index++,
 		gensum(cm->RES[PUC], EE, row) +
 		gensum(cm->RESPS[PUC], EE, row), NULL);
 
 	// REDCAP
-	worksheet_write_number(worksheet, row+1, col+82,
+	worksheet_write_number(worksheet, row+1, col + index++,
 		gensum(cm->REDCAP[PUC], ER, row) +
 		gensum(cm->REDCAP[PUC], EE, row), NULL);
-	worksheet_write_number(worksheet, row+1, col+83,
+	worksheet_write_number(worksheet, row+1, col + index++,
 		gensum(cm->REDCAP[TUC], ER, row) +
 		gensum(cm->REDCAP[TUC], EE, row), NULL);
-	worksheet_write_number(worksheet, row+1, col+84,
+	worksheet_write_number(worksheet, row+1, col + index++,
 		gensum(cm->REDCAP[TUCPS_1], ER, row) +
 		gensum(cm->REDCAP[TUCPS_1], EE, row), NULL);
 
 	// RESERVES
-	worksheet_write_number(worksheet, row+1, col+85,
+	worksheet_write_number(worksheet, row+1, col + index++,
 		gensum(cm->RES[PUC], ER, row) +
 		gensum(cm->RES[PUC], EE, row) +
 		gensum(cm->RESPS[PUC], ER, row) +
 		gensum(cm->RESPS[PUC], EE, row), NULL);
-	worksheet_write_number(worksheet, row+1, col+86,
+	worksheet_write_number(worksheet, row+1, col + index++,
 		gensum(cm->RES[TUC], ER, row) +
 		gensum(cm->RES[TUC], EE, row) +
 		gensum(cm->RESPS[TUC], ER, row) +
 		gensum(cm->RESPS[TUC], EE, row), NULL);
-	worksheet_write_number(worksheet, row+1, col+87,
+	worksheet_write_number(worksheet, row+1, col + index++,
 		gensum(cm->RES[TUCPS_1], ER, row) +
 		gensum(cm->RES[TUCPS_1], EE, row) +
 		gensum(cm->RESPS[TUCPS_1], ER, row) +
 		gensum(cm->RESPS[TUCPS_1], EE, row), NULL);
 
+	index++;
 	// Article 24
-	for (int j = 0; j < TUCPS_1 + 1; j++) {
-	    for (int i = 0; i < 2; i++) { // generation
-		for (int k = 0; k < 2; k++) { 
-		    worksheet_write_number(worksheet, row+1, col+89 + 2*j + i + 6*k,
+	for (int j = 0; j < TUCPS_1 + 1; j++)
+	    for (int i = 0; i < 2; i++) // generation
+		for (int k = 0; k < 2; k++)
+		    worksheet_write_number(worksheet, row+1, col + index + 2*j + i + 6*k,
 			    cm->ART24[j][k][i][row], NULL);
-		}
-	    }
-	}
 
+	index += 2*2 + 1 + 6;
+	index += 10;
 	// DBO calculation
 	// These variables are shifted one row down because the first row is not used
-	if (row+1 < MAXPROJ) {
-	    worksheet_write_number(worksheet, row+2, col+110, cm->FF[row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+111, cm->qx[row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+112, cm->wxdef[row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+113, cm->wximm[row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+114, cm->retx[row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+115, cm->kPx[row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+116, cm->nPk[row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+117, cm->vk[row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+118, cm->vn[row+1], NULL);
+	if (row+1 < MAXPROJ)
+	{
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->FF[row+1], NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->qx[row+1], NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->wxdef[row+1], NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->wximm[row+1], NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->retx[row+1], NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->kPx[row+1], NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->nPk[row+1], NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->vk[row+1], NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->vn[row+1], NULL);
 
 	    for (int i = 0; i < 2; i++)
-		for (int j = 0; j < 3; j++) {
+		for (int j = 0; j < 3; j++)
+		{
 		    worksheet_write_number(worksheet,
-			    row+2, col+119 + j + 3*i, cm->DBORET[i][j][row+1], NULL);
+			    row+2, col + index + j + 3*i, cm->DBORET[i][j][row+1], NULL);
 		    worksheet_write_number(worksheet,
-			    row+2, col+125 + j + 3*i, cm->NCRET[i][j][row+1], NULL);
+			    row+2, col + index + 6 + j + 3*i, cm->NCRET[i][j][row+1], NULL);
 		}
 
+	    index += 6 + 2 + 3;
+	    index++;
 	    // Assets
-	    worksheet_write_number(worksheet, row+2, col+131, cm->assets[PAR115][row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+132, cm->assets[PAR113][row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+133, cm->DBODTHRiskPart[row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+134, cm->DBODTHRESPart[row+1] , NULL);
-	    worksheet_write_number(worksheet, row+2, col+135, cm->NCDTHRiskPart[row+1] , NULL);
-	    worksheet_write_number(worksheet, row+2, col+136, cm->NCDTHRESPart[row+1] , NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->assets[PAR115][row+1], 
+		    NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->assets[PAR113][row+1], 
+		    NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->DBODTHRiskPart[row+1], 
+		    NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->DBODTHRESPart[row+1] , 
+		    NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->NCDTHRiskPart[row+1] , 
+		    NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->NCDTHRESPart[row+1] , 
+		    NULL);
 
 	    // EBP
 	    for (int j = 0; j < 3; j++) 
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 2; i++)
+		{
 		    worksheet_write_number(worksheet, 
-			    row+2, col+137 + j + 3*i, cm->PBONCCF[i][j][row+1], NULL);
-		    for (int k = 0; k < 2; k++) {
+			    row+2, col + index + j + 3*i, cm->PBONCCF[i][j][row+1], NULL);
+		    for (int k = 0; k < 2; k++)
 			worksheet_write_number(worksheet, 
-				row+2, col+143 + j + 3*i + 6*k, cm->EBP[i][j][k][row+1], NULL);
-		    }	       
+				row+2, col + index + 6 + j + 3*i + 6*k, cm->EBP[i][j][k][row+1],
+				NULL);
 		}
-	    worksheet_write_number(worksheet, row+2, col+155, cm->EBPDTH[TBO][row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+156, cm->EBPDTH[PBO][row+1], NULL);
-	    worksheet_write_number(worksheet, row+2, col+157, cm->PBODTHNCCF[row+1], NULL);
+
+	    index += 6 + 2 + 3 + 6;
+	    index++;
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->EBPDTH[TBO][row+1], 
+		    NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->EBPDTH[PBO][row+1], 
+		    NULL);
+	    worksheet_write_number(worksheet, row+2, col + index++, cm->PBODTHNCCF[row+1], 
+		    NULL);
 	}
 	// END SHIFTED VARIABLES
 
@@ -631,11 +818,14 @@ char *getcmval(CurrentMember *cm, const char *value)
 }
 
 // Example if cm->PREMIUM then s = PREMIUM and we loop through PREMIUM_EREE_GENj
-void setGenMatrix(CurrentMember *cm, GenMatrix var[], char *s) {
+void setGenMatrix(CurrentMember *cm, GenMatrix var[], char *s)
+{
     char temp[32];
 
-    for (int j = 0; j < MAXGEN; j++) {
-	for (int EREE = 0; EREE < 2; EREE++) {
+    for (int j = 0; j < MAXGEN; j++)
+    {
+	for (int EREE = 0; EREE < 2; EREE++)
+	{
 	    snprintf(temp, sizeof(temp), "%s%c%c%s%d",
 		    s, '_', (EREE == ER ? 'A' : 'C'), "_GEN", j + 1);
 	    var[EREE][j][0] = atof(getcmval(cm, temp));
@@ -643,30 +833,37 @@ void setGenMatrix(CurrentMember *cm, GenMatrix var[], char *s) {
     }
 }
 
-double salaryscale(CurrentMember *cm, int k) {
+double salaryscale(CurrentMember *cm, int k)
+{
     return (*ass.SS)(cm, k);
 }
 
-double calcA(CurrentMember *cm, int k) {
+double calcA(CurrentMember *cm, int k)
+{
     return (*ass.calcA)(cm, k);
 }
 
-double calcC(CurrentMember *cm, int k) {
+double calcC(CurrentMember *cm, int k)
+{
     return (*ass.calcC)(cm, k);
 }
 
-double calcDTH(CurrentMember *cm, int k) {
+double calcDTH(CurrentMember *cm, int k)
+{
     return (*ass.calcDTH)(cm, k);
 }
 
-double NRA(CurrentMember *cm, int k) {
+double NRA(CurrentMember *cm, int k)
+{
     return (*ass.NRA)(cm, k);
 }
 
-double wxdef(CurrentMember *cm, int k) {
+double wxdef(CurrentMember *cm, int k)
+{
     return (*ass.wxdef)(cm, k);
 }
 
-double retx(CurrentMember *cm, int k) {
+double retx(CurrentMember *cm, int k)
+{
     return (*ass.retx)(cm, k);
 }

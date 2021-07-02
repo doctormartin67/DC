@@ -19,7 +19,7 @@
 			   case we have PUC methodology) */
 #define mmaxPUCTUC 0x10 // used to set bit on if we take maximum of PUC and TUC
 #define mRES 0x20 // used to set bit on in case assets are mathematical reserves
-#define mPAR115 0x40 // used to set bit on in case assets are paragraph 115
+#define mPAR115 0x30 // used to set bit on in case assets are paragraph 115
 // if neither mRES, mPAR115 bits are on, then we take paragraph 113
 
 //-  extra BITS  -
