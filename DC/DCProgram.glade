@@ -29,7 +29,7 @@ The interpreter understands the following variables:
 	- cat (corresponds to column CATEGORY in the data)
 	- reg (corresponds to column NO REGLEMENT in the data)
 	- x (This is the assumption in question)
-The interpreter only understands "Select Case, but you can use it in the same way that VBA works. 
+The interpreter only understands "Select Case", but you can use it in the same way that VBA works. 
 For example:
 Select Case age
 	Case Is &lt; 40
@@ -54,7 +54,7 @@ The interpreter is case insensitive (meaning you could write select case, Select
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkTextView">
+              <object class="GtkTextView" id="SS">
                 <property name="height_request">200</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -228,10 +228,11 @@ All the values used should be decimal numbers, not percentage
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry">
+                                  <object class="GtkEntry" id="DOC">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="tooltip_text" translatable="yes">This is the date of calculation, f.e. 01/01/2021.</property>
+                                    <property name="max_length">10</property>
                                     <property name="placeholder_text" translatable="yes">dd/mm/yyyy</property>
                                   </object>
                                   <packing>
@@ -269,7 +270,7 @@ All the values used should be decimal numbers, not percentage
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry">
+                                  <object class="GtkEntry" id="DR">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="tooltip_text" translatable="yes">This is the discount rate, f.e. 0.02</property>
@@ -310,10 +311,11 @@ All the values used should be decimal numbers, not percentage
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry">
+                                  <object class="GtkEntry" id="agecorr">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="tooltip_text" translatable="yes">This is the age correction, f.e. -5</property>
+                                    <property name="max_length">3</property>
                                     <property name="placeholder_text" translatable="yes">f.e. -5</property>
                                   </object>
                                   <packing>
@@ -351,7 +353,7 @@ All the values used should be decimal numbers, not percentage
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry">
+                                  <object class="GtkEntry" id="infl">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="tooltip_text" translatable="yes">This is the inflation, f.e. 0.018</property>
@@ -392,7 +394,7 @@ All the values used should be decimal numbers, not percentage
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry">
+                                  <object class="GtkEntry" id="TRM_PercDef">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="tooltip_text" translatable="yes">This is the amount of percent that is assumed to have deferred payment. Usually this is 100% and thus 1 should be filled in.</property>
@@ -434,7 +436,7 @@ All the values used should be decimal numbers, not percentage
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry">
+                                  <object class="GtkEntry" id="DR113">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="tooltip_text" translatable="yes">This is the discount rate for the assets in case of paragraph 113, f.e. 0.023. If the assets are not paragraph 113 then this doesn't need to be filled in.</property>
@@ -699,7 +701,7 @@ the salary will increase with 0.032 each year.</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBoxText">
+                                  <object class="GtkComboBoxText" id="standard">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="active">0</property>
@@ -743,13 +745,13 @@ the salary will increase with 0.032 each year.</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBoxText">
+                                  <object class="GtkComboBoxText" id="assets">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="active">0</property>
                                     <items>
                                       <item translatable="yes">PARAGRAPH</item>
-                                      <item translatable="yes">FAS</item>
+                                      <item translatable="yes">RESERVES</item>
                                     </items>
                                   </object>
                                   <packing>
@@ -787,7 +789,7 @@ the salary will increase with 0.032 each year.</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBoxText">
+                                  <object class="GtkComboBoxText" id="paragraph">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="active">0</property>
@@ -831,7 +833,7 @@ the salary will increase with 0.032 each year.</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBoxText">
+                                  <object class="GtkComboBoxText" id="PUCTUC">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="active">0</property>
@@ -875,7 +877,7 @@ the salary will increase with 0.032 each year.</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBoxText">
+                                  <object class="GtkComboBoxText" id="cashflows">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="active">0</property>
@@ -920,7 +922,7 @@ the salary will increase with 0.032 each year.</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBoxText">
+                                  <object class="GtkComboBoxText" id="evaluateDTH">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="tooltip_text" translatable="yes">This determines whether or not death benefit is valued.</property>

@@ -3,11 +3,47 @@
 
 #define GLADEFILE "DCProgram.glade"
 
+typedef struct {
+    /* --- Assumptions --- */
+    char DOC[16];
+    char DR[16];
+    char agecorr[16];
+    char infl[16];
+    char TRM_PercDef[16];
+    char DR113[16];
+    char SS[BUFSIZ]; /* This could be a large text describing salary scale with select cases */
+    /* turnover still needs to be added !!! */
+
+    /* --- Methodology --- */
+    char standard[16];
+    char assets[16];
+    char paragraph[16];
+    char PUCTUC[16];
+    char cashflows[16];
+    char evaluateDTH[16];
+} UserInput;
+
 static unsigned short running;
 static DataSet *ds;
 static pthread_t thrun;
 
-void runmember(CurrentMember *cm);
+static UserInput UI;
+static GtkEntry *DOC;
+static GtkEntry *DR;
+static GtkEntry *agecorr;
+static GtkEntry *infl;
+static GtkEntry *TRM_PercDef;
+static GtkEntry *DR113;
+static GtkEntry *fixedSIentry;
+static GtkTextView *SS;
+static GtkComboBoxText *standard;
+static GtkComboBoxText *assets;
+static GtkComboBoxText *paragraph;
+static GtkComboBoxText *PUCTUC;
+static GtkComboBoxText *cashflows;
+static GtkComboBoxText *evaluateDTH;
+
+extern void runmember(CurrentMember *cm);
 static GtkWidget *runchoice; /* used for combo box text to choose which run option */
 static GtkWidget *testcasebox; /* used to hide and show box with test case input */
 static GtkEntry *testcase; /* this is the actual test case to run */
@@ -22,6 +58,7 @@ gboolean on_asswindow_delete_event(GtkWidget *, GdkEvent *, gpointer);
 /* helper functions */
 static void *run(void *);
 static void *runtc(void *pl);
+void setUIvals(void);
 
 void userinterface(DataSet *pds) {
     GtkBuilder *builder;
@@ -38,6 +75,22 @@ void userinterface(DataSet *pds) {
     runchoice = GTK_WIDGET(gtk_builder_get_object(builder, "runchoice"));
     testcasebox = GTK_WIDGET(gtk_builder_get_object(builder, "testcasebox"));
     testcase = GTK_ENTRY(gtk_builder_get_object(builder, "testcase"));
+
+    /* User Input */
+    DOC = GTK_ENTRY(gtk_builder_get_object(builder, "DOC"));
+    DR = GTK_ENTRY(gtk_builder_get_object(builder, "DR"));
+    agecorr = GTK_ENTRY(gtk_builder_get_object(builder, "agecorr"));
+    infl = GTK_ENTRY(gtk_builder_get_object(builder, "infl"));
+    TRM_PercDef = GTK_ENTRY(gtk_builder_get_object(builder, "TRM_PercDef"));
+    DR113 = GTK_ENTRY(gtk_builder_get_object(builder, "DR113"));
+    fixedSIentry = GTK_ENTRY(gtk_builder_get_object(builder, "fixedSIentry"));
+    SS = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "SS"));
+    standard = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "standard"));
+    assets = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "assets"));
+    paragraph = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "paragraph"));
+    PUCTUC = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "PUCTUC"));
+    cashflows = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "cashflows"));
+    evaluateDTH = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "evaluateDTH"));
 
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
@@ -61,6 +114,9 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
     if (!running)
     {
+	/* Set User Input values and check them before we start running!! */
+	setUIvals();
+
 	running = TRUE;
 	int s = 0; /* used for error printing */
 	char *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(runchoice));
@@ -155,4 +211,34 @@ static void *runtc(void *pl)
 
     running = FALSE;
     return (void *)0;
+}
+
+void setUIvals(void)
+{
+    snprintf(UI.DOC, sizeof(UI.DOC), "%s", gtk_entry_get_text(DOC));
+    snprintf(UI.DR, sizeof(UI.DR), "%s", gtk_entry_get_text(DR));
+    snprintf(UI.agecorr, sizeof(UI.agecorr), "%s", gtk_entry_get_text(agecorr));
+    snprintf(UI.infl, sizeof(UI.infl), "%s", gtk_entry_get_text(infl));
+    snprintf(UI.TRM_PercDef, sizeof(UI.TRM_PercDef), "%s", gtk_entry_get_text(TRM_PercDef));
+    snprintf(UI.DR113, sizeof(UI.DR113), "%s", gtk_entry_get_text(DR113));
+
+    /* Text view is rather tedious to retrieve text from, this is why this seems so random */
+    GtkTextBuffer *temp = gtk_text_view_get_buffer(SS);
+    GtkTextIter begin, end;
+    gtk_text_buffer_get_iter_at_offset(temp, &begin, (gint)0);
+    gtk_text_buffer_get_iter_at_offset(temp, &end, (gint)-1);
+    snprintf(UI.SS, sizeof(UI.SS), "%s", gtk_text_buffer_get_text(temp, &begin, &end, TRUE));
+
+    snprintf(UI.standard, sizeof(UI.standard), "%s",
+	    gtk_combo_box_text_get_active_text(standard));
+    snprintf(UI.assets, sizeof(UI.assets), "%s", 
+	    gtk_combo_box_text_get_active_text(assets));
+    snprintf(UI.paragraph, sizeof(UI.paragraph), "%s", 
+	    gtk_combo_box_text_get_active_text(paragraph));
+    snprintf(UI.PUCTUC, sizeof(UI.PUCTUC), "%s", 
+	    gtk_combo_box_text_get_active_text(PUCTUC));
+    snprintf(UI.cashflows, sizeof(UI.cashflows), "%s", 
+	    gtk_combo_box_text_get_active_text(cashflows));
+    snprintf(UI.evaluateDTH, sizeof(UI.evaluateDTH), "%s", 
+	    gtk_combo_box_text_get_active_text(evaluateDTH));
 }
