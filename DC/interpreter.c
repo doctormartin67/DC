@@ -1,18 +1,21 @@
-#include <assert.h>
 #include "interpreter.h"
 
-static unsigned isgarbage(int c);
 static Cmpfunc cmpnum;
 static Cmpfunc cmpstr;
 
-char *strclean(const char *s) {
+char *strclean(const char *s)
+{
     char *t = calloc(strlen(s) + 1, sizeof(char));
+    if (t == NULL) errExit("[%s] calloc returned NULL\n", __func__);
+
     char *pt = t;
 
-    while (*s) {
+    while (*s)
+    {
 	if (!isgarbage(*s))
 	    *pt++ = *s++;
-	else {
+	else
+	{
 	    *pt++ = ' ';
 	    while (isgarbage(*s))
 		s++;
@@ -25,23 +28,27 @@ char *strclean(const char *s) {
     /* END SELECT needs to be replaced with something else, because I need a unique identifier
        to find the beginning and end of a select case. If there is a case after end select, then
        strstr(s, "SELECT CASE") would find this when in fact this isn't the beginning of a select
-       case, it's the end of the previous one. I chose "END SELECT67" */
+       case, it's the end of the previous one. I chose "END SELEC67" */
     pt = t;
-    t = replace(t, "END SELECT", "END SELEC67");
+    t = replace(t, "END SELECT", ES);
     free(pt);
     return trim(t);
 }
 
-CaseTree *buildTree(const char *s) {
+CaseTree *buildTree(const char *s)
+{
     char *t = strdup(s);
     char *c, *sc, *es, *x;
     CaseTree *ct = (CaseTree *)malloc(sizeof(CaseTree));
+    if (ct == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
-    if ((t = strstr(t, SC)) == NULL) {
-	printf("Error in %s: Something went wrong with error checking in UI, there are no cases "
-		"in the assumption, so user should have chosen fixed amount for assumption.\n"
+    if ((t = strstr(t, SC)) == NULL)
+    {
+	printf("Warning in %s: there are no cases in the assumption, "
+		"so user should have chosen fixed amount for assumption.\n"
 		, __func__); 	
-	exit(1);
+	free(ct);
+	return NULL;
     }
 
     /* at the root there is a rule (f.e. age, cat, reg, ...) */
@@ -50,7 +57,8 @@ CaseTree *buildTree(const char *s) {
 	ct->rule[i] = *t++;
     ct->rule[RULESIZE] = '\0';
 
-    for (CaseTree *pct = ct; pct != NULL; pct = pct->next) {
+    for (CaseTree *pct = ct; pct != NULL; pct = pct->next)
+    {
 	t += strlen(C);
 	pct->cond = t;
 
@@ -64,28 +72,32 @@ CaseTree *buildTree(const char *s) {
 	*(t - 1) = '\0';
 	pct->expr = t;
 
-	if (strncmp(t, SC, strlen(SC)) == 0) {
+	if (strncmp(t, SC, strlen(SC)) == 0)
+	{
 	    char *prevt = t++;
 
 	    /* select cases can be nested, we need to find the final end select of this tree */
 	    int nests = 1;
 
-	    while (nests) {
+	    while (nests)
+	    {
 		sc = strstr(t, SC);
 		es = strstr(t, ES);
-		if (sc == NULL || sc > es) {
+		if (sc == NULL || sc > es)
+		{
 		    t = es;
 		    nests--;
 		}
-		else {
+		else
+		{
 		    t = sc;
 		    nests++;
 		}
 		t++;
 	    }
 
-	    /* when nests hits zero, t should be at end select ( the +1 is because we add 1 to t in
-	       the while loop */
+	    /* when nests hits zero, t should be at end select 
+	    (the +1 is because we add 1 to t in the while loop) */
 	    assert(t == es + 1);
 
 	    t += strlen(ES) - 1;
@@ -98,13 +110,16 @@ CaseTree *buildTree(const char *s) {
 	c = strstr(t, C);
 	es = strstr(t, ES);
 
-	if (c == NULL || es < c) {
+	if (c == NULL || es < c)
+	{
 	    t = es;
 	    pct->next = NULL;
 	}
-	else {
+	else
+	{
 	    t = c;
-	    pct->next = (CaseTree *)malloc(sizeof(CaseTree));
+	    if ((pct->next = (CaseTree *)malloc(sizeof(CaseTree))) == NULL)
+		errExit("[%s] malloc return NULL\n", __func__);
 	    strcpy(pct->next->rule, pct->rule);
 	}
 	*(t - 1) = '\0';
@@ -113,10 +128,12 @@ CaseTree *buildTree(const char *s) {
     return ct;
 }
 
-void printTree(CaseTree *ct) {
+void printTree(CaseTree *ct)
+{
     printf("%s\n", ct->rule);
 
-    while (ct != NULL) {
+    while (ct != NULL)
+    {
 	printf("%s\n", ct->cond);
 	if (ct->child == NULL)
 	    printf("%s\n", ct->expr);
@@ -126,7 +143,8 @@ void printTree(CaseTree *ct) {
     }
 }
 
-static unsigned cmpnum(CaseTree *ct, const void *pf) {
+static int cmpnum(CaseTree *ct, const void *pf)
+{
     double f = *((double *)pf);
     char tmp[strlen(ct->cond) + 1];
     strcpy(tmp, ct->cond);
@@ -138,12 +156,12 @@ static unsigned cmpnum(CaseTree *ct, const void *pf) {
 	    n++;
 
     char *cond = strtok(tmp, ",");     
-    while (n--) {
-
+    while (n--)
+    {
 	/* in case there is a "TO" operator */
 	char *to;
-	if ((to = strstr(cond, "TO")) != NULL) {
-
+	if ((to = strstr(cond, "TO")) != NULL)
+	{
 	    while (!isdigit(*cond))
 		cond++; 
 	    while (!isdigit(*to))
@@ -154,47 +172,48 @@ static unsigned cmpnum(CaseTree *ct, const void *pf) {
 	}
 
 	/* in case of "<" or "<=" */
-	else if ((to = strchr(cond, '<')) != NULL) {
-
+	else if ((to = strchr(cond, '<')) != NULL)
+	{
 	    while (!isdigit(*cond))
 		cond++;
 
-	    if (*++to == '=') {
+	    if (*++to == '=')
+	    {
 		if (f <= atof(cond))
 		    return 1;
 	    }
-	    else {
+	    else
+	    {
 		if (f < atof(cond))
 		    return 1;
 	    }
-
 	}
 
 	/* in case of ">" or ">=" */
-	else if ((to = strchr(cond, '>')) != NULL) {
-
+	else if ((to = strchr(cond, '>')) != NULL)
+	{
 	    while (!isdigit(*cond))
 		cond++;
 
-	    if (*++to == '=') {
+	    if (*++to == '=')
+	    {
 		if (f >= atof(cond))
 		    return 1;
 	    }
-	    else {
+	    else
+	    {
 		if (f > atof(cond))
 		    return 1;
 	    }
-
 	}
 
 	/* if there is an else */
-	else if ((to = strstr(cond, "ELSE")) != NULL) {
+	else if ((to = strstr(cond, "ELSE")) != NULL)
 	    return 1;
-	}
 
 	/* in case it's just a fixed amount */
-	else {
-
+	else
+	{
 	    while (!isdigit(*cond))
 		cond++;
 
@@ -204,11 +223,11 @@ static unsigned cmpnum(CaseTree *ct, const void *pf) {
 
 	cond = strtok(NULL, ",");
     }
-
     return 0;
 }
 
-static unsigned cmpstr(CaseTree *ct, const void *s) {
+static int cmpstr(CaseTree *ct, const void *s)
+{
     char tmp[strlen(ct->cond)+1];
     strcpy(tmp, ct->cond);
     char *pt = tmp;
@@ -219,50 +238,60 @@ static unsigned cmpstr(CaseTree *ct, const void *s) {
 	    n++;
 
     char *cond = strtok(tmp, ",");     
-    while (n--) {
+    while (n--)
+    {
 	cond = strinside(cond, "\"", "\"");
-	if (strcmp(cond, (char *)s) == 0) {
+	if (strcmp(cond, (char *)s) == 0)
+	{
 	    free(cond);
 	    return 1;
 	}
 	free(cond);
 	cond = strtok(NULL, ",");
     }
-
     return 0;
 }
 
-double interpret(CaseTree *ct, double age, char *reg, char *cat) {
+double interpret(CaseTree *ct, double age, const char *reg, const char *cat)
+{
     double x = 0.0;
     Cmpfunc *cf;
     void *v;
-    for (CaseTree *pct = ct; pct != NULL; ) {
-
-	if (strcmp(pct->rule, "AGE") == 0) {
+    for (CaseTree *pct = ct; pct != NULL; )
+    {
+	if (strcmp(pct->rule, "AGE") == 0)
+	{
 	    cf = cmpnum;
 	    v = &age;
 	}
-	else if (strcmp(pct->rule, "REG") == 0) { 
+	else if (strcmp(pct->rule, "REG") == 0) 
+	{
 	    cf = cmpstr;
 	    v = reg;
 	}
-	else if (strcmp(pct->rule, "CAT") == 0) { 
+	else if (strcmp(pct->rule, "CAT") == 0)
+	{
 	    cf = cmpstr;
 	    v = cat;
 	}
-	else {
-	    printf("Error in %s: Unknown rule \"%s\"\n", __func__, pct->rule);
-	    exit(1);
+	else 
+	{
+	    /* should never reach here because this should have been 
+	       checked before program is run */
+	    errExit("[%s]: Unknown rule \"%s\"\n", __func__, pct->rule);
 	}
 
-	if (cf(pct, v)) {
-	    if ((pct->child) == NULL) {
+	if (cf(pct, v))
+	{
+	    if ((pct->child) == NULL)
+	    {
 		while (!isdigit(*pct->expr))
 		    pct->expr++;
 		x = atof(pct->expr);
 		return x;
 	    }
-	    else {
+	    else
+	    {
 		pct = pct->child;
 		continue;
 	    }
@@ -275,8 +304,4 @@ double interpret(CaseTree *ct, double age, char *reg, char *cat) {
     printTree(ct);
     printf("The assumption will be equal to zero in this case.\n");
     return x;
-}
-
-static unsigned isgarbage(int c) {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ':';
 }

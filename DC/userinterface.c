@@ -23,7 +23,11 @@ typedef struct {
     char evaluateDTH[16];
 } UserInput;
 
-static unsigned short running;
+typedef enum {dateErr, floatErr, agecorrErr} Err;
+
+static const char *validMsg[] = {"[dd/mm/yyyy]", "^[+-]?[0-9]+\\.?[0-9]*", "[+-]?[0-9][0-9]?"};
+
+static unsigned short running; /* determines whether program is running or not */
 static DataSet *ds;
 static pthread_t thrun;
 
@@ -43,6 +47,8 @@ static GtkComboBoxText *PUCTUC;
 static GtkComboBoxText *cashflows;
 static GtkComboBoxText *evaluateDTH;
 
+static GtkToggleButton *fixedSIradiobutton;
+
 extern void runmember(CurrentMember *cm);
 static GtkWidget *runchoice; /* used for combo box text to choose which run option */
 static GtkWidget *testcasebox; /* used to hide and show box with test case input */
@@ -59,6 +65,8 @@ gboolean on_asswindow_delete_event(GtkWidget *, GdkEvent *, gpointer);
 static void *run(void *);
 static void *runtc(void *pl);
 void setUIvals(void);
+unsigned short validateUI(void);
+void setMsgErr(char msg[], const char *input, const char UIs[], Err err);
 
 void userinterface(DataSet *pds) {
     GtkBuilder *builder;
@@ -72,6 +80,11 @@ void userinterface(DataSet *pds) {
     builder = gtk_builder_new_from_file(GLADEFILE);
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+
+    fixedSIradiobutton = GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, 
+		"fixedSIradiobutton"));
+
+    /* what to run */
     runchoice = GTK_WIDGET(gtk_builder_get_object(builder, "runchoice"));
     testcasebox = GTK_WIDGET(gtk_builder_get_object(builder, "testcasebox"));
     testcase = GTK_ENTRY(gtk_builder_get_object(builder, "testcase"));
@@ -114,38 +127,42 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
     if (!running)
     {
-	/* Set User Input values and check them before we start running!! */
+	/* Set User Input values and check them before we start running */
 	setUIvals();
-
-	running = TRUE;
-	int s = 0; /* used for error printing */
-	char *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(runchoice));
-	if (strcmp("Run one run", choice) == 0)
+	if (validateUI())
 	{
-	    currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
-	    s = pthread_create(&thrun, NULL, run, (void *)pl);
-	    if (s != 0)
-		errExitEN(s, "[%s] unable to create thread\n", __func__);
+	    running = TRUE;
+	    int s = 0; /* used for error printing */
+	    char *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(runchoice));
+	    if (strcmp("Run one run", choice) == 0)
+	    {
+		// This needs updating when I start with reconciliation runs!!
+		currrun = runNewRF; 
+		s = pthread_create(&thrun, NULL, run, (void *)pl);
+		if (s != 0)
+		    errExitEN(s, "[%s] unable to create thread\n", __func__);
 
-	    s = pthread_detach(thrun);
-	    if (s != 0)
-		errExitEN(s, "[%s] unable to detach thread\n", __func__);
-	}
-	else if (strcmp("Run test case", choice) == 0)
-	{
-	    currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
-	    s = pthread_create(&thrun, NULL, runtc, (void *)pl);
-	    if (s != 0)
-		errExitEN(s, "[%s] unable to create thread\n", __func__);
+		s = pthread_detach(thrun);
+		if (s != 0)
+		    errExitEN(s, "[%s] unable to detach thread\n", __func__);
+	    }
+	    else if (strcmp("Run test case", choice) == 0)
+	    {
+		// This needs updating when I start with reconciliation runs!!
+		currrun = runNewRF; 
+		s = pthread_create(&thrun, NULL, runtc, (void *)pl);
+		if (s != 0)
+		    errExitEN(s, "[%s] unable to create thread\n", __func__);
 
-	    s = pthread_detach(thrun);
-	    if (s != 0)
-		errExitEN(s, "[%s] unable to detach thread\n", __func__);
+		s = pthread_detach(thrun);
+		if (s != 0)
+		    errExitEN(s, "[%s] unable to detach thread\n", __func__);
+	    }
+	    else if (strcmp("Run reconciliation", choice) == 0)
+		printf("something else\n");
+	    else
+		errExit("[%s] should never reach here\n", __func__);
 	}
-	else if (strcmp("Run reconciliation", choice) == 0)
-	    printf("something else\n");
-	else
-	    errExit("[%s] should never reach here\n", __func__);
     }
     else
 	printf("Program is running, wait for it to end\n");
@@ -222,12 +239,17 @@ void setUIvals(void)
     snprintf(UI.TRM_PercDef, sizeof(UI.TRM_PercDef), "%s", gtk_entry_get_text(TRM_PercDef));
     snprintf(UI.DR113, sizeof(UI.DR113), "%s", gtk_entry_get_text(DR113));
 
-    /* Text view is rather tedious to retrieve text from, this is why this seems so random */
-    GtkTextBuffer *temp = gtk_text_view_get_buffer(SS);
-    GtkTextIter begin, end;
-    gtk_text_buffer_get_iter_at_offset(temp, &begin, (gint)0);
-    gtk_text_buffer_get_iter_at_offset(temp, &end, (gint)-1);
-    snprintf(UI.SS, sizeof(UI.SS), "%s", gtk_text_buffer_get_text(temp, &begin, &end, TRUE));
+    if (gtk_toggle_button_get_active(fixedSIradiobutton))
+	snprintf(UI.SS, sizeof(UI.SS), "%s", gtk_entry_get_text(fixedSIentry));
+    else 
+    { 
+	/* Text view is rather tedious to retrieve text from, this is why this seems so random */
+	GtkTextBuffer *temp = gtk_text_view_get_buffer(SS);
+	GtkTextIter begin, end;
+	gtk_text_buffer_get_iter_at_offset(temp, &begin, (gint)0);
+	gtk_text_buffer_get_iter_at_offset(temp, &end, (gint)-1);
+	snprintf(UI.SS, sizeof(UI.SS), "%s", gtk_text_buffer_get_text(temp, &begin, &end, TRUE));
+    }
 
     snprintf(UI.standard, sizeof(UI.standard), "%s",
 	    gtk_combo_box_text_get_active_text(standard));
@@ -241,4 +263,91 @@ void setUIvals(void)
 	    gtk_combo_box_text_get_active_text(cashflows));
     snprintf(UI.evaluateDTH, sizeof(UI.evaluateDTH), "%s", 
 	    gtk_combo_box_text_get_active_text(evaluateDTH));
+}
+
+unsigned short validateUI(void)
+{
+    char msg[BUFSIZ] = "The following invalid data was found:\n\n";
+    char temp[BUFSIZ];
+    int cntErr = 0;
+
+    /* ----- Check DOC -----*/
+    char *day, *month, *year;
+    strcpy(temp, UI.DOC);
+
+    day = strtok(temp, "/");
+    month = strtok(NULL, "/");
+    year = strtok(NULL, "");
+
+    if (day == NULL || month == NULL || year == NULL)
+    {
+	setMsgErr(msg, "DOC", UI.DOC, dateErr);
+	cntErr++;
+    }
+    else
+    {
+	Date *tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
+	if (tempDate == NULL)
+	{
+	    setMsgErr(msg, "DOC", UI.DOC, dateErr);
+	    cntErr++;
+	}
+	free(tempDate);
+    }
+
+    /* ----- Check DR -----*/
+    if (!isfloat(UI.DR))
+    {
+	setMsgErr(msg, "DR", UI.DR, floatErr);
+	cntErr++;
+    }
+
+    /* ----- Check Age Correction -----*/
+    if (!isint(UI.agecorr))
+    {
+	setMsgErr(msg, "Age Correction", UI.agecorr, agecorrErr);
+	cntErr++;
+    }
+
+    /* ----- Check Inflation -----*/
+    if (!isfloat(UI.infl))
+    {
+	setMsgErr(msg, "Inflation", UI.infl, floatErr);
+	cntErr++;
+    }
+
+    /* ----- Check Termination percentage -----*/
+    if (!isfloat(UI.TRM_PercDef))
+    {
+	setMsgErr(msg, "Termination % (usually 1)", UI.TRM_PercDef, floatErr);
+	cntErr++;
+    }
+
+    /* ----- Check DR 113 -----*/
+    if (!isfloat(UI.DR113))
+    {
+	setMsgErr(msg, "DR $113", UI.DR113, floatErr);
+	cntErr++;
+    }
+
+    /* ----- Check Salary Increase -----*/
+    if (gtk_toggle_button_get_active(fixedSIradiobutton))
+    {
+	if (!isfloat(UI.SS))
+	{
+	    setMsgErr(msg, "Salary Increase", UI.SS, floatErr);
+	    cntErr++;
+	}
+    }
+
+    printf("%s\n", msg);
+    return 0;
+}
+
+void setMsgErr(char msg[], const char *input, const char UIs[], Err err)
+{
+    char temp[BUFSIZ];
+    snprintf(temp, BUFSIZ, 
+	    "%s%s: [%s], but should be of the form %s\n", msg, input, UIs, validMsg[err]);
+    strcpy(msg, temp);
 }
