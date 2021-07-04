@@ -28,6 +28,61 @@ void upper(char *s)
     }
 }
 
+int isfloat(const char *s)
+{
+    while (isgarbage(*s))
+	s++;    
+
+    if(*s == '+' || *s == '-')
+	s++;
+
+    if (!isdigit(*s))
+	return 0;
+
+    while (isdigit(*s))
+	s++;
+
+    if (*s == '\0')
+	return 1;
+    else if (*s == '.')
+	s++;
+    else
+	return 0;
+
+    while (isdigit(*s))
+	s++;
+
+    if (*s == '\0')
+	return 1;
+    else
+	return 0;
+}
+
+int isint(const char *s)
+{
+    while (isgarbage(*s))
+	s++;    
+
+    if(*s == '+' || *s == '-')
+	s++;
+
+    if (!isdigit(*s))
+	return 0;
+
+    while (isdigit(*s))
+	s++;
+
+    if (*s == '\0')
+	return 1;
+    else
+	return 0;
+}
+
+int isgarbage(int c) 
+{
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ':';
+}
+
 // replace all occurences of string oldW with newW in s
 char *replace(const char *s, const char *oldW, 	const char *newW)
 {
@@ -38,8 +93,10 @@ char *replace(const char *s, const char *oldW, 	const char *newW)
 
     // Counting the number of times old word 
     // occur in the string 
-    for (i = 0; s[i] != '\0'; i++) { 
-	if (strstr(&s[i], oldW) == &s[i]) { 
+    for (i = 0; s[i] != '\0'; i++)
+    {
+	if (strstr(&s[i], oldW) == &s[i])
+	{
 	    cnt++; 
 
 	    // Jumping to index after the old word. 
@@ -52,9 +109,11 @@ char *replace(const char *s, const char *oldW, 	const char *newW)
     if (result == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
     i = 0; 
-    while (*s) { 
+    while (*s)
+    {
 	// compare the substring with the result 
-	if (strstr(s, oldW) == s) { 
+	if (strstr(s, oldW) == s)
+	{
 	    strcpy(&result[i], newW); 
 	    i += newWlen; 
 	    s += oldWlen; 

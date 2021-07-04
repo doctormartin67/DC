@@ -305,7 +305,8 @@ void setdate(Date *date) {
 
 /* if XLday is 0 then this will create a date with the given day, month and year. Otherwise it
    will create it with the given XLday.*/
-Date *newDate(unsigned int XLday, int year, int month, int day) {
+Date *newDate(unsigned int XLday, int year, int month, int day)
+{
     int tday = day;
     int tmonth = month;
     int tyear = year;
@@ -313,36 +314,44 @@ Date *newDate(unsigned int XLday, int year, int month, int day) {
     Date *temp = (Date *)malloc(sizeof(Date));
     if (temp == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
-    if (tday > (isleapyear(tyear) ? leapdays[tmonth] : commondays[tmonth])) {
+    if (tday > (isleapyear(tyear) ? leapdays[tmonth] : commondays[tmonth]))
+    {
 	tmonth++;
 	tday = 1;
     }
-    if (tmonth > DEC) {
+    if (tmonth > DEC)
+    {
 	tyear++;
 	tmonth = JAN;
     }
 
-    if (XLday == 0) {
+    if (XLday == 0)
+    {
 	temp->day = tday;
 	temp->month = tmonth;
 	temp->year = tyear;
     }
-    else {
+    else
+    {
 	temp->XLday = XLday;
 	setdate(temp);
     }
 
     // Error checking
-    if (temp->day > (isleapyear(temp->year) ? leapdays[temp->month] : commondays[temp->month])) {
-	printf("Error in newDate: %d is not a valid day of month %d\n",
-		temp->day, temp->month);
-	printf("Exiting program\n");
-	exit(1);
+    if (temp->day > (isleapyear(temp->year) ? leapdays[temp->month] : commondays[temp->month]))
+    {
+	free(temp);
+	return NULL;
     }
-    if (temp->month > DEC) {
-	printf("Error in newDate: there are no %d months\n", temp->month);
-	printf("Exiting program\n");
-	exit(1);
+    if (temp->day < 1 || temp->day > 31)
+    {
+	free(temp);
+	return NULL;
+    }
+    if (temp->month < 1 || temp->month > DEC)
+    {
+	free(temp);
+	return NULL;
     }
 
     return temp;
@@ -394,5 +403,8 @@ double calcyears(Date *d1, Date *d2, int m) {
 }
 
 void printDate(Date *d) {
-    printf("%d/%d/%d\n", d->day, d->month, d->year);
+    if (d)
+	printf("%d/%d/%d\n", d->day, d->month, d->year);
+    else
+	printf("(null)\n");
 }

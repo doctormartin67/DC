@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <errno.h>
+#include <assert.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
@@ -60,6 +61,9 @@ void printDate(Date *d);
 //---Library Functions---
 char *trim(char *);
 void upper(char *);
+int isfloat(const char *);
+int isint(const char *);
+int isgarbage(int c);
 char *strinside(const char *s, const char *begin, const char *end);
 char *replace(const char *str, const char *orig, const char *rep);
 int DIRexists(const char *dname);
