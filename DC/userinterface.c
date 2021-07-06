@@ -60,6 +60,7 @@ void on_startstopbutton_clicked(GtkButton *, GtkWidget *);
 void on_SIinterpreterbutton_clicked(GtkButton *b, gpointer *p);
 void on_runchoice_changed(GtkComboBox *cb, gpointer *p);
 gboolean on_asswindow_delete_event(GtkWidget *, GdkEvent *, gpointer);
+void on_close_button_press_event(void);
 
 /* helper functions */
 static void *run(void *);
@@ -186,6 +187,11 @@ gboolean on_asswindow_delete_event(GtkWidget *w, GdkEvent *e, gpointer data)
 {
     gtk_widget_hide(w);
     return TRUE;
+}
+
+void on_close_button_press_event(void)
+{
+    gtk_main_quit();
 }
 
 /* helper functions */
