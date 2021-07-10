@@ -23,36 +23,29 @@ typedef struct {
     char evaluateDTH[16];
 } UserInput;
 
-typedef enum {dateErr, floatErr, agecorrErr} Err;
+/* Used for error messages for user input */
+typedef enum {DATEERR, FLOATERR, AGECORRERR} Err;
+
+/* This will be used as indices for the widget array */
+enum {DOC, DR, AGECORR, INFL, TRM_PERCDEF, DR113, FIXEDSIENTRY, SS, STANDARD, ASSETS, 
+    PARAGRAPH, PUCTUC, CASHFLOWS, EVALUATEDTH, FIXEDSIRADIOBUTTON, RUNCHOICE, TESTCASEBOX, 
+    TESTCASE, OPENDCFILE, WINDOW, ASSWINDOW}; 
 
 static const char *validMsg[] = {"[dd/mm/yyyy]", "^[+-]?[0-9]+\\.?[0-9]*", "[+-]?[0-9][0-9]?"};
+
+static const char *widgetname[] = {"DOC", "DR", "agecorr", "infl", "TRM_PercDef", "DR113", 
+    "fixedSIentry", "SS", "standard", "assets", "paragraph", "PUCTUC", "cashflows", 
+    "evaluateDTH",  "fixedSIradiobutton", "runchoice", "testcasebox", "testcase", "openDCFile", 
+    "window", "asswindow"};
+static GtkWidget *widgets[128];
 
 static unsigned short running; /* determines whether program is running or not */
 static DataSet *ds;
 static pthread_t thrun;
 
 static UserInput UI;
-static GtkEntry *DOC;
-static GtkEntry *DR;
-static GtkEntry *agecorr;
-static GtkEntry *infl;
-static GtkEntry *TRM_PercDef;
-static GtkEntry *DR113;
-static GtkEntry *fixedSIentry;
-static GtkTextView *SS;
-static GtkComboBoxText *standard;
-static GtkComboBoxText *assets;
-static GtkComboBoxText *paragraph;
-static GtkComboBoxText *PUCTUC;
-static GtkComboBoxText *cashflows;
-static GtkComboBoxText *evaluateDTH;
-
-static GtkToggleButton *fixedSIradiobutton;
 
 extern void runmember(CurrentMember *cm);
-static GtkWidget *runchoice; /* used for combo box text to choose which run option */
-static GtkWidget *testcasebox; /* used to hide and show box with test case input */
-static GtkEntry *testcase; /* this is the actual test case to run */
 
 /* signal functions */
 void on_SIradiobutton_toggled(GtkRadioButton *, GtkWidget *);
@@ -61,56 +54,37 @@ void on_SIinterpreterbutton_clicked(GtkButton *b, gpointer *p);
 void on_runchoice_changed(GtkComboBox *cb, gpointer *p);
 gboolean on_asswindow_delete_event(GtkWidget *, GdkEvent *, gpointer);
 void on_close_button_press_event(void);
+void on_openDC_activate(GtkMenuItem *m);
+void on_saveDC_activate(GtkMenuItem *m);
+void on_saveasDC_activate(GtkMenuItem *m);
 
 /* helper functions */
+static GtkWidget *buildWidget(const char *);
 static void *run(void *);
 static void *runtc(void *pl);
 void setUIvals(void);
 unsigned short validateUI(void);
 void setMsgErr(char msg[], const char *input, const char UIs[], Err err);
 
-void userinterface(DataSet *pds) {
-    GtkBuilder *builder;
-    GtkWidget *window, *asswindow;
-
+void userinterface(DataSet *pds)
+{
+    unsigned short widgetcnt;
     ds = pds;
 
     /* Initialize GTK+ and all of its supporting libraries. */
     gtk_init(NULL, NULL);
 
-    builder = gtk_builder_new_from_file(GLADEFILE);
+    /* initialise widgets */
+    widgetcnt = sizeof(widgetname)/sizeof(const char *);
+    if (widgetcnt > sizeof(widgets)/sizeof(widgets[0]))
+	errExit("[%s] [widgets] array is too small, increase the size in the code\n");
 
-    window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+    for (int i = 0; i < widgetcnt; i++)
+	widgets[i] = buildWidget(widgetname[i]);
 
-    fixedSIradiobutton = GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, 
-		"fixedSIradiobutton"));
+    g_signal_connect(widgets[WINDOW], "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    /* what to run */
-    runchoice = GTK_WIDGET(gtk_builder_get_object(builder, "runchoice"));
-    testcasebox = GTK_WIDGET(gtk_builder_get_object(builder, "testcasebox"));
-    testcase = GTK_ENTRY(gtk_builder_get_object(builder, "testcase"));
-
-    /* User Input */
-    DOC = GTK_ENTRY(gtk_builder_get_object(builder, "DOC"));
-    DR = GTK_ENTRY(gtk_builder_get_object(builder, "DR"));
-    agecorr = GTK_ENTRY(gtk_builder_get_object(builder, "agecorr"));
-    infl = GTK_ENTRY(gtk_builder_get_object(builder, "infl"));
-    TRM_PercDef = GTK_ENTRY(gtk_builder_get_object(builder, "TRM_PercDef"));
-    DR113 = GTK_ENTRY(gtk_builder_get_object(builder, "DR113"));
-    fixedSIentry = GTK_ENTRY(gtk_builder_get_object(builder, "fixedSIentry"));
-    SS = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "SS"));
-    standard = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "standard"));
-    assets = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "assets"));
-    paragraph = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "paragraph"));
-    PUCTUC = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "PUCTUC"));
-    cashflows = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "cashflows"));
-    evaluateDTH = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "evaluateDTH"));
-
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
-    gtk_builder_connect_signals(builder, (void *)NULL);
-
-    gtk_widget_show(window);
+    gtk_widget_show(widgets[WINDOW]);
 
     /* Hand control over to the main loop. */
     /* It will continue to run until gtk_main_quit() is called or the application
@@ -134,7 +108,8 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 	{
 	    running = TRUE;
 	    int s = 0; /* used for error printing */
-	    char *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(runchoice));
+	    char *choice = gtk_combo_box_text_get_active_text(
+		    GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
 	    if (strcmp("Run one run", choice) == 0)
 	    {
 		// This needs updating when I start with reconciliation runs!!
@@ -176,11 +151,11 @@ void on_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 
 void on_runchoice_changed(GtkComboBox *cb, gpointer *p)
 {
-    char *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(runchoice));
+    char *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
     if (strcmp("Run test case", choice) == 0)
-	gtk_widget_show_all(GTK_WIDGET(testcasebox));
+	gtk_widget_show_all(widgets[TESTCASEBOX]);
     else
-	gtk_widget_hide(GTK_WIDGET(testcasebox));
+	gtk_widget_hide(widgets[TESTCASEBOX]);
 }
 
 gboolean on_asswindow_delete_event(GtkWidget *w, GdkEvent *e, gpointer data)
@@ -193,12 +168,44 @@ void on_close_button_press_event(void)
 {
     gtk_main_quit();
 }
+void on_openDC_activate(GtkMenuItem *m)
+{
+    gint res;
+
+    res = gtk_dialog_run(GTK_DIALOG(widgets[OPENDCFILE])); 
+    if (res == GTK_RESPONSE_ACCEPT)
+    {
+	printf("open accepted\n");
+    }
+    else
+    {
+	printf("open cancelled\n");
+    }
+    printf("open activated\n");
+}
+
+void on_saveDC_activate(GtkMenuItem *m)
+{
+    printf("save activated\n");
+}
+
+void on_saveasDC_activate(GtkMenuItem *m)
+{
+    printf("saveas activated\n");
+}
 
 /* helper functions */
+static GtkWidget *buildWidget(const char *w)
+{
+    GtkBuilder *builder = gtk_builder_new_from_file(GLADEFILE);
+    gtk_builder_connect_signals(builder, (void *)NULL);
+    return GTK_WIDGET(gtk_builder_get_object(builder, w));
+}
+
 static void *run(void *pl)
 {
     char text[BUFSIZ];
-    int tc = atoi(gtk_entry_get_text(testcase)); // Test case
+    int tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]))); 
     CurrentMember *cm = ds->cm;
 
     for (int i = 0; i < ds->membercnt; i++)
@@ -221,7 +228,7 @@ static void *run(void *pl)
 static void *runtc(void *pl)
 {
     char text[BUFSIZ];
-    int tc = atoi(gtk_entry_get_text(testcase)); // Test case
+    int tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]))); 
     tc -= 1; // Index is one less than given test case
     CurrentMember *cm = ds->cm;
 
@@ -238,19 +245,22 @@ static void *runtc(void *pl)
 
 void setUIvals(void)
 {
-    snprintf(UI.DOC, sizeof(UI.DOC), "%s", gtk_entry_get_text(DOC));
-    snprintf(UI.DR, sizeof(UI.DR), "%s", gtk_entry_get_text(DR));
-    snprintf(UI.agecorr, sizeof(UI.agecorr), "%s", gtk_entry_get_text(agecorr));
-    snprintf(UI.infl, sizeof(UI.infl), "%s", gtk_entry_get_text(infl));
-    snprintf(UI.TRM_PercDef, sizeof(UI.TRM_PercDef), "%s", gtk_entry_get_text(TRM_PercDef));
-    snprintf(UI.DR113, sizeof(UI.DR113), "%s", gtk_entry_get_text(DR113));
+    snprintf(UI.DOC, sizeof(UI.DOC), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DOC])));
+    snprintf(UI.DR, sizeof(UI.DR), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DR])));
+    snprintf(UI.agecorr, sizeof(UI.agecorr), "%s", 
+	    gtk_entry_get_text(GTK_ENTRY(widgets[AGECORR])));
+    snprintf(UI.infl, sizeof(UI.infl), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[INFL])));
+    snprintf(UI.TRM_PercDef, sizeof(UI.TRM_PercDef), "%s", 
+	    gtk_entry_get_text(GTK_ENTRY(widgets[TRM_PERCDEF])));
+    snprintf(UI.DR113, sizeof(UI.DR113), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DR113])));
 
-    if (gtk_toggle_button_get_active(fixedSIradiobutton))
-	snprintf(UI.SS, sizeof(UI.SS), "%s", gtk_entry_get_text(fixedSIentry));
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widgets[FIXEDSIRADIOBUTTON])))
+	snprintf(UI.SS, sizeof(UI.SS), "%s", 
+		gtk_entry_get_text(GTK_ENTRY(widgets[FIXEDSIENTRY])));
     else 
     { 
 	/* Text view is rather tedious to retrieve text from, this is why this seems so random */
-	GtkTextBuffer *temp = gtk_text_view_get_buffer(SS);
+	GtkTextBuffer *temp = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widgets[SS]));
 	GtkTextIter begin, end;
 	gtk_text_buffer_get_iter_at_offset(temp, &begin, (gint)0);
 	gtk_text_buffer_get_iter_at_offset(temp, &end, (gint)-1);
@@ -258,17 +268,17 @@ void setUIvals(void)
     }
 
     snprintf(UI.standard, sizeof(UI.standard), "%s",
-	    gtk_combo_box_text_get_active_text(standard));
+	    gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[STANDARD])));
     snprintf(UI.assets, sizeof(UI.assets), "%s", 
-	    gtk_combo_box_text_get_active_text(assets));
+	    gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[ASSETS])));
     snprintf(UI.paragraph, sizeof(UI.paragraph), "%s", 
-	    gtk_combo_box_text_get_active_text(paragraph));
+	    gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[PARAGRAPH])));
     snprintf(UI.PUCTUC, sizeof(UI.PUCTUC), "%s", 
-	    gtk_combo_box_text_get_active_text(PUCTUC));
+	    gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[PUCTUC])));
     snprintf(UI.cashflows, sizeof(UI.cashflows), "%s", 
-	    gtk_combo_box_text_get_active_text(cashflows));
+	    gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[CASHFLOWS])));
     snprintf(UI.evaluateDTH, sizeof(UI.evaluateDTH), "%s", 
-	    gtk_combo_box_text_get_active_text(evaluateDTH));
+	    gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[EVALUATEDTH])));
 }
 
 unsigned short validateUI(void)
@@ -287,7 +297,7 @@ unsigned short validateUI(void)
 
     if (day == NULL || month == NULL || year == NULL)
     {
-	setMsgErr(msg, "DOC", UI.DOC, dateErr);
+	setMsgErr(msg, "DOC", UI.DOC, DATEERR);
 	cntErr++;
     }
     else
@@ -295,7 +305,7 @@ unsigned short validateUI(void)
 	Date *tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
 	if (tempDate == NULL)
 	{
-	    setMsgErr(msg, "DOC", UI.DOC, dateErr);
+	    setMsgErr(msg, "DOC", UI.DOC, DATEERR);
 	    cntErr++;
 	}
 	free(tempDate);
@@ -304,44 +314,44 @@ unsigned short validateUI(void)
     /* ----- Check DR -----*/
     if (!isfloat(UI.DR))
     {
-	setMsgErr(msg, "DR", UI.DR, floatErr);
+	setMsgErr(msg, "DR", UI.DR, FLOATERR);
 	cntErr++;
     }
 
     /* ----- Check Age Correction -----*/
     if (!isint(UI.agecorr))
     {
-	setMsgErr(msg, "Age Correction", UI.agecorr, agecorrErr);
+	setMsgErr(msg, "Age Correction", UI.agecorr, AGECORRERR);
 	cntErr++;
     }
 
     /* ----- Check Inflation -----*/
     if (!isfloat(UI.infl))
     {
-	setMsgErr(msg, "Inflation", UI.infl, floatErr);
+	setMsgErr(msg, "Inflation", UI.infl, FLOATERR);
 	cntErr++;
     }
 
     /* ----- Check Termination percentage -----*/
     if (!isfloat(UI.TRM_PercDef))
     {
-	setMsgErr(msg, "Termination % (usually 1)", UI.TRM_PercDef, floatErr);
+	setMsgErr(msg, "Termination % (usually 1)", UI.TRM_PercDef, FLOATERR);
 	cntErr++;
     }
 
     /* ----- Check DR 113 -----*/
     if (!isfloat(UI.DR113))
     {
-	setMsgErr(msg, "DR $113", UI.DR113, floatErr);
+	setMsgErr(msg, "DR $113", UI.DR113, FLOATERR);
 	cntErr++;
     }
 
     /* ----- Check Salary Increase -----*/
-    if (gtk_toggle_button_get_active(fixedSIradiobutton))
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widgets[FIXEDSIRADIOBUTTON])))
     {
 	if (!isfloat(UI.SS))
 	{
-	    setMsgErr(msg, "Salary Increase", UI.SS, floatErr);
+	    setMsgErr(msg, "Salary Increase", UI.SS, FLOATERR);
 	    cntErr++;
 	}
     }
