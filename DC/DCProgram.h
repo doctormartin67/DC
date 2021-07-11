@@ -2,6 +2,7 @@
 #define DCPROGRAM
 
 #include "libraryheader.h"
+#include "inputdata.h"
 
 //---Define BIT constants---
 //-  status BITS  -
@@ -233,7 +234,9 @@ double retx(CurrentMember *cm, int k);
 //---Tariff Structure---
 
 typedef struct {
-    unsigned int lt; // there is an array of strings containing the names of lifetables. I reference the array elements by using the index defined with an enum lifetables.
+    unsigned int lt; /* there is an array of strings containing the names of lifetables. 
+			I reference the array elements by using the index defined with an 
+			enum lifetables. */
     double i; // Insurance rate (This changes for prolongation table for example)
 } LifeTable;
 
@@ -256,8 +259,8 @@ Tariff tff; // Tariff structure
 //---Setter declarations---
 void setDSvals(XLfile *xl, DataSet *ds);
 void setCMvals(DataSet *ds);
-void setGenMatrix(CurrentMember *cm, GenMatrix var[], char *s);
-char *getcmval(CurrentMember *cm, const char *value);
+void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn);
+char *getcmval(CurrentMember *cm, DataColumn, int EREE, int gen);
 /* This function will allocate memory based on membercnt for the underlying
    Hashtable used for the data.*/
 void createData(DataSet *ds);

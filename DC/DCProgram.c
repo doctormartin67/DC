@@ -17,95 +17,92 @@ void setCMvals(DataSet *ds)
     CurrentMember *cm;
     ds->cm = (CurrentMember *)calloc(ds->membercnt, sizeof(CurrentMember));
     if ((cm = ds->cm) == NULL) errExit("[%s] calloc returned NULL\n", __func__);
+
     printf("Setting all the values for the affiliates...\n");
     for (int i = 0; i < ds->membercnt; i++)
     {
 	cm[i].Data = *(ds->Data + i);
-	cm[i].key = getcmval(&cm[i], "KEY");
-	cm[i].regl = getcmval(&cm[i], "NO REGLEMENT");
-	cm[i].name = getcmval(&cm[i], "NAAM");
-	cm[i].contract = getcmval(&cm[i], "CONTRACT");
+	cm[i].key = getcmval(&cm[i], KEY, -1, -1);
+	cm[i].regl = getcmval(&cm[i], NOREGLEMENT, -1, -1);
+	cm[i].name = getcmval(&cm[i], NAAM, -1, -1);
+	cm[i].contract = getcmval(&cm[i], CONTRACT, -1, -1);
 	cm[i].status = 0;
-	if (strcmp(getcmval(&cm[i], "STATUS"), "ACT") == 0)  cm[i].status += ACT;
-	if (strcmp(getcmval(&cm[i], "ACTIVE CONTRACT"), "1") == 0)  cm[i].status += ACTCON;
-	if (strcmp(getcmval(&cm[i], "SEX"), "1") == 0)  cm[i].status += MALE;
-	if (strcmp(getcmval(&cm[i], "MS"), "M") == 0)  cm[i].status += MARRIED;
-	cm[i].DOB = newDate((unsigned short)atoi(getcmval(&cm[i], "DOB")), 0, 0, 0);
-	cm[i].DOE = newDate((unsigned short)atoi(getcmval(&cm[i], "DOE")), 0, 0, 0);
-	cm[i].DOL = newDate((unsigned short)atoi(getcmval(&cm[i], "DOL")), 0, 0, 0);
-	cm[i].DOS = newDate((unsigned short)atoi(getcmval(&cm[i], "DOS")), 0, 0, 0);
-	cm[i].DOA = newDate((unsigned short)atoi(getcmval(&cm[i], "DOA")), 0, 0, 0);
-	cm[i].DOR = newDate((unsigned short)atoi(getcmval(&cm[i], "DOR")), 0, 0, 0);
-	cm[i].category = getcmval(&cm[i], "CATEGORIE");
-	cm[i].sal[0] = atof(getcmval(&cm[i], "SAL"));
-	cm[i].PG = atof(getcmval(&cm[i], "PG"));
-	cm[i].PT = atof(getcmval(&cm[i], "PT"));
-	cm[i].NRA = atof(getcmval(&cm[i], "NRA"));
-	cm[i].kids = (unsigned short)atoi(getcmval(&cm[i], "# ENF"));
+	if (strcmp(getcmval(&cm[i], STATUS, -1, -1), "ACT") == 0)  cm[i].status += ACT;
+	if (strcmp(getcmval(&cm[i], ACTIVECONTRACT, -1, -1), "1") == 0)  cm[i].status += ACTCON;
+	if (strcmp(getcmval(&cm[i], SEX, -1, -1), "1") == 0)  cm[i].status += MALE;
+	if (strcmp(getcmval(&cm[i], MS, -1, -1), "M") == 0)  cm[i].status += MARRIED;
+	cm[i].DOB = newDate((unsigned int)atoi(getcmval(&cm[i], DOB, -1, -1)), 0, 0, 0);
+	cm[i].DOE = newDate((unsigned int)atoi(getcmval(&cm[i], DOE, -1, -1)), 0, 0, 0);
+	cm[i].DOL = newDate((unsigned int)atoi(getcmval(&cm[i], DOL, -1, -1)), 0, 0, 0);
+	cm[i].DOS = newDate((unsigned int)atoi(getcmval(&cm[i], DOS, -1, -1)), 0, 0, 0);
+	cm[i].DOA = newDate((unsigned int)atoi(getcmval(&cm[i], DOA, -1, -1)), 0, 0, 0);
+	cm[i].DOR = newDate((unsigned int)atoi(getcmval(&cm[i], DOR, -1, -1)), 0, 0, 0);
+	cm[i].category = getcmval(&cm[i], CATEGORIE, -1, -1);
+	cm[i].sal[0] = atof(getcmval(&cm[i], SAL, -1, -1));
+	cm[i].PG = atof(getcmval(&cm[i], PG, -1, -1));
+	cm[i].PT = atof(getcmval(&cm[i], PT, -1, -1));
+	cm[i].NRA = atof(getcmval(&cm[i], RA, -1, -1));
+	cm[i].kids = (unsigned short)atoi(getcmval(&cm[i], ENF, -1, -1));
 	cm[i].tariff = 0;
-	if (strcmp(getcmval(&cm[i], "TARIEF"), "UKMS") == 0)  cm[i].tariff = UKMS;
-	if (strcmp(getcmval(&cm[i], "TARIEF"), "UKZT") == 0)  cm[i].tariff = UKZT;
-	if (strcmp(getcmval(&cm[i], "TARIEF"), "UKMT") == 0)  cm[i].tariff = UKMT;
-	if (strcmp(getcmval(&cm[i], "TARIEF"), "MIXED") == 0)  cm[i].tariff = MIXED;
-	cm[i].KO = atof(getcmval(&cm[i], "KO"));
-	cm[i].annINV = atof(getcmval(&cm[i], "Rent INV"));
-	cm[i].contrINV = atof(getcmval(&cm[i], "Contr INV"));
+	if (strcmp(getcmval(&cm[i], TARIEF, -1, -1), "UKMS") == 0)  cm[i].tariff = UKMS;
+	if (strcmp(getcmval(&cm[i], TARIEF, -1, -1), "UKZT") == 0)  cm[i].tariff = UKZT;
+	if (strcmp(getcmval(&cm[i], TARIEF, -1, -1), "UKMT") == 0)  cm[i].tariff = UKMT;
+	if (strcmp(getcmval(&cm[i], TARIEF, -1, -1), "MIXED") == 0)  cm[i].tariff = MIXED;
+	cm[i].KO = atof(getcmval(&cm[i], KO, -1, -1));
+	cm[i].annINV = atof(getcmval(&cm[i], RENTINV, -1, -1));
+	cm[i].contrINV = atof(getcmval(&cm[i], CONTRINV, -1, -1));
 
 	// define article 24 from data
 	for (int j = 0; j < TUCPS_1 + 1; j++)
 	{
-	    cm[i].ART24[j][ER][ART24GEN1][0] = atof(getcmval(&cm[i], "ART24_A_GEN1"));
-	    cm[i].ART24[j][ER][ART24GEN2][0] = atof(getcmval(&cm[i], "ART24_A_GEN2"));
-	    cm[i].ART24[j][EE][ART24GEN1][0] = atof(getcmval(&cm[i], "ART24_C_GEN1"));
-	    cm[i].ART24[j][EE][ART24GEN2][0] = atof(getcmval(&cm[i], "ART24_C_GEN2"));
+	    cm[i].ART24[j][ER][ART24GEN1][0] = atof(getcmval(&cm[i], ART24_A_GEN1, -1, -1));
+	    cm[i].ART24[j][ER][ART24GEN2][0] = atof(getcmval(&cm[i], ART24_A_GEN2, -1, -1));
+	    cm[i].ART24[j][EE][ART24GEN1][0] = atof(getcmval(&cm[i], ART24_C_GEN1, -1, -1));
+	    cm[i].ART24[j][EE][ART24GEN2][0] = atof(getcmval(&cm[i], ART24_C_GEN2, -1, -1));
 	}
 
 	// all variables that have generations, employer and employee
 	//-  VARIABLES WITH MAXGEN  -
-	setGenMatrix(&cm[i], cm[i].PREMIUM, "PREMIUM");
-	setGenMatrix(&cm[i], cm[i].CAP, "CAP");
-	setGenMatrix(&cm[i], cm[i].CAPPS, "CAPPS");
-	setGenMatrix(&cm[i], cm[i].CAPDTH, "CAPDTH");
+	setGenMatrix(&cm[i], cm[i].PREMIUM, PREMIUM);
+	setGenMatrix(&cm[i], cm[i].CAP, CAP);
+	setGenMatrix(&cm[i], cm[i].CAPPS, CAPPS);
+	setGenMatrix(&cm[i], cm[i].CAPDTH, CAPDTH);
 	for (int k = 0; k < TUCPS_1 + 1; k++)
 	{
-	    setGenMatrix(&cm[i], cm[i].RES[k], "RES");
-	    setGenMatrix(&cm[i], cm[i].RESPS[k], "RESPS");
-	    setGenMatrix(&cm[i], cm[i].REDCAP[k], "CAPRED");
+	    setGenMatrix(&cm[i], cm[i].RES[k], RES);
+	    setGenMatrix(&cm[i], cm[i].RESPS[k], RESPS);
+	    setGenMatrix(&cm[i], cm[i].REDCAP[k], CAPRED);
 	}
 	for (int j = 0; j < MAXGEN; j++)
 	{
-	    char tempER[32];
-	    char tempEE[32];      
-	    snprintf(tempER, sizeof(tempER), "%s%d", "TAUX_A_GEN", j + 1);
-	    snprintf(tempEE, sizeof(tempEE), "%s%d", "TAUX_C_GEN", j + 1);
-	    cm[i].TAUX[ER][j] = atof(getcmval(&cm[i], tempER));
-	    cm[i].TAUX[EE][j] = atof(getcmval(&cm[i], tempEE));      
+	    cm[i].TAUX[ER][j] = atof(getcmval(&cm[i], TAUX, ER, j + 1));
+	    cm[i].TAUX[EE][j] = atof(getcmval(&cm[i], TAUX, EE, j + 1));      
 	}
 
 	//-  MISCELLANEOUS  -
-	cm[i].DELTACAP[ER][0] = atof(getcmval(&cm[i], "DELTA_CAP_A_GEN1"));
-	cm[i].DELTACAP[EE][0] = atof(getcmval(&cm[i], "DELTA_CAP_C_GEN1"));
-	cm[i].X10 = atof(getcmval(&cm[i], "X/10"));
+	cm[i].DELTACAP[ER][0] = atof(getcmval(&cm[i], DELTA_CAP_A_GEN1, -1, -1));
+	cm[i].DELTACAP[EE][0] = atof(getcmval(&cm[i], DELTA_CAP_C_GEN1, -1, -1));
+	cm[i].X10 = atof(getcmval(&cm[i], X10, -1, -1));
 	if (cm[i].tariff == MIXED && cm[i].X10 == 0)
 	{
 	    printf("Warning: X/10 equals zero for %s but he has a MIXED contract\n", cm[i].key);
 	    printf("X/10 will be taken as 1 by default.\n");
 	    cm[i].X10 = 1;
 	}
-	cm[i].CAO = atof(getcmval(&cm[i], "CAO"));
-	cm[i].ORU = getcmval(&cm[i], "ORU");
-	cm[i].CHOICEDTH = getcmval(&cm[i], "CHOICE DTH");
-	cm[i].CHOICEINVS = getcmval(&cm[i], "CHOICE INV SICKNESS");
-	cm[i].CHOICEINVW = getcmval(&cm[i], "CHOICE INV WORK");
-	cm[i].contrDTH = atof(getcmval(&cm[i], "Contr_D"));
-	cm[i].percSALKO = atof(getcmval(&cm[i], "%ofSALforKO"));
-	cm[i].indexINV = getcmval(&cm[i], "INV INDEXATION");
-	cm[i].GRDGR = getcmval(&cm[i], "GR/DGR");
-	cm[i].plan = getcmval(&cm[i], "plan");
-	cm[i].baranc = atof(getcmval(&cm[i], "Baremische ancienniteit"));
+	cm[i].CAO = atof(getcmval(&cm[i], CAO, -1, -1));
+	cm[i].ORU = getcmval(&cm[i], ORU, -1, -1);
+	cm[i].CHOICEDTH = getcmval(&cm[i], CHOICEDTH, -1, -1);
+	cm[i].CHOICEINVS = getcmval(&cm[i], CHOICEINVS, -1, -1);
+	cm[i].CHOICEINVW = getcmval(&cm[i], CHOICEINVW, -1, -1);
+	cm[i].contrDTH = atof(getcmval(&cm[i], CONTRD, -1, -1));
+	cm[i].percSALKO = atof(getcmval(&cm[i], PERCOFSALFORKO, -1, -1));
+	cm[i].indexINV = getcmval(&cm[i], INVINDEXATION, -1, -1);
+	cm[i].GRDGR = getcmval(&cm[i], GRDGR, -1, -1);
+	cm[i].plan = getcmval(&cm[i], PLAN, -1, -1);
+	cm[i].baranc = atof(getcmval(&cm[i], BARANC, -1, -1));
 	cm[i].extra = 0;
-	if (strcmp(getcmval(&cm[i], "increaseSalFirstYear"), "1") == 0)  cm[i].extra += INCSAL;
-	if (strcmp(getcmval(&cm[i], "CCRA"), "1") == 0)  cm[i].extra += CCRA;
+	if (strcmp(getcmval(&cm[i], INCSALFIRSTYEAR, -1, -1), "1") == 0)  cm[i].extra += INCSAL;
+	if (strcmp(getcmval(&cm[i], PREP, -1, -1), "1") == 0)  cm[i].extra += CCRA;
 
 	cm[i].DOC = (Date **)calloc(MAXPROJ, sizeof(Date *));
 	if (cm[i].DOC == NULL) errExit("[%s] calloc returned NULL\n", __func__);
@@ -803,8 +800,18 @@ int printtc(DataSet *ds, unsigned int tc)
     return workbook_close(workbook);
 }
 
-char *getcmval(CurrentMember *cm, const char *value)
+char *getcmval(CurrentMember *cm, DataColumn dc, int EREE, int gen)
 {
+    char value[BUFSIZ];
+    strcpy(value, colnames[dc]);
+    
+    if (EREE >= 0 && gen > 0)
+    {
+	char temp[32];
+	snprintf(temp, sizeof(temp), "%c%c%s%d", '_', (EREE == ER ? 'A' : 'C'), "_GEN", gen);
+	strcat(value, temp);
+    }
+
     List *h;
     if ((h = lookup(value, NULL, cm->Data)) == NULL)
     {
@@ -818,19 +825,11 @@ char *getcmval(CurrentMember *cm, const char *value)
 }
 
 // Example if cm->PREMIUM then s = PREMIUM and we loop through PREMIUM_EREE_GENj
-void setGenMatrix(CurrentMember *cm, GenMatrix var[], char *s)
+void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn dc)
 {
-    char temp[32];
-
     for (int j = 0; j < MAXGEN; j++)
-    {
 	for (int EREE = 0; EREE < 2; EREE++)
-	{
-	    snprintf(temp, sizeof(temp), "%s%c%c%s%d",
-		    s, '_', (EREE == ER ? 'A' : 'C'), "_GEN", j + 1);
-	    var[EREE][j][0] = atof(getcmval(cm, temp));
-	}
-    }
+	    var[EREE][j][0] = atof(getcmval(cm, dc, EREE, j + 1));
 }
 
 double salaryscale(CurrentMember *cm, int k)

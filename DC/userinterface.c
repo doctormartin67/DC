@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include "DCProgram.h"
+#include "inputerrors.h"
 
 #define GLADEFILE "DCProgram.glade"
 
@@ -29,21 +30,15 @@ typedef struct {
     gint evaluateDTH;
 } UserInput;
 
-/* Used for error messages for user input */
-typedef enum {DATEERR, FLOATERR, AGECORRERR, CELLERR} Err;
-
 /* This will be used as indices for the widget array */
 enum {SHEETNAME, KEYCELL, DOC, DR, AGECORR, INFL, TRM_PERCDEF, DR113, FIXEDSIENTRY, SS, 
     STANDARD, ASSETS, PARAGRAPH, PUCTUC, CASHFLOWS, EVALUATEDTH, FIXEDSIRADIOBUTTON, RUNCHOICE,
-    TESTCASEBOX, TESTCASE, OPENDCFILE, SAVEASDCFILE, OPENEXCELFILE, WINDOW, ASSWINDOW}; 
-
-static const char *validMsg[] = {"[dd/mm/yyyy]", "^[+-]?[0-9]+\\.?[0-9]*$", 
-    "^[+-]?[0-9][0-9]?$", "^[A-Z][A-Z]?[A-Z]?[1-9][0-9]*$"};
+    TESTCASEBOX, TESTCASE, OPENDCFILE, SAVEASDCFILE, OPENEXCELFILE, WINDOW, ASSWINDOW, MSGERR}; 
 
 static const char *widgetname[] = {"sheetname", "keycell", "DOC", "DR", "agecorr", "infl", 
     "TRM_PercDef", "DR113", "fixedSIentry", "SS", "standard", "assets", "paragraph", "PUCTUC", 
     "cashflows", "evaluateDTH",  "fixedSIradiobutton", "runchoice", "testcasebox", "testcase", 
-    "openDCFile", "saveasDCFile", "openExcelFile", "window", "asswindow"};
+    "openDCFile", "saveasDCFile", "openExcelFile", "window", "asswindow", "MsgErr"};
 static GtkWidget *widgets[128];
 static GtkBuilder *builder;
 
@@ -52,6 +47,7 @@ static DataSet *ds;
 static pthread_t thrun;
 
 static UserInput UI;
+static char MsgErr[BUFSIZ];
 
 extern void runmember(CurrentMember *cm);
 
@@ -73,8 +69,7 @@ static void *run(void *);
 static void *runtc(void *pl);
 static void setUIvals(void);
 static void updateUI(void);
-static int validateUI(void);
-static void setMsgErr(char msg[], const char *input, const char UIs[], Err err);
+static Status validateUI(void);
 
 void userinterface(DataSet *pds)
 {
@@ -113,11 +108,13 @@ void on_SIradiobutton_toggled(GtkRadioButton *rb, GtkWidget *w) {
 
 void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
+    printf("[%s] pressed\n", gtk_button_get_label(b));
+
     if (!running)
     {
 	/* Set User Input values and check them before we start running */
 	setUIvals();
-	if (validateUI())
+	if (validateUI() == OK)
 	{
 	    running = TRUE;
 	    int s = 0; /* used for error printing */
@@ -152,6 +149,15 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 	    else
 		errExit("[%s] should never reach here\n", __func__);
 	}
+	else
+	{
+	    GtkDialog *dialog;
+	    dialog = GTK_DIALOG(widgets[MSGERR]);
+	    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", MsgErr);
+	    gtk_widget_show(GTK_WIDGET(dialog));
+	    gtk_dialog_run(dialog); 
+	    gtk_widget_hide(GTK_WIDGET(dialog));
+	}
     }
     else
 	printf("Program is running, wait for it to end\n");
@@ -159,20 +165,31 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 
 void on_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
+    printf("[%s] pressed\n", gtk_button_get_label(b));
     gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_runchoice_changed(GtkComboBox *cb, gpointer *p)
 {
-    char *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
+    if (p != NULL) printf("unused pointer [%p]\n", p);
+
+    char *choice; 
+    if (cb == GTK_COMBO_BOX(widgets[RUNCHOICE]))
+	choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
+    else
+	errExit("[%s] something went wrong with GtkComboBox\n", __func__);
+
     if (strcmp("Run test case", choice) == 0)
 	gtk_widget_show_all(widgets[TESTCASEBOX]);
     else
 	gtk_widget_hide(widgets[TESTCASEBOX]);
 }
 
-gboolean on_asswindow_delete_event(GtkWidget *w, GdkEvent *e, gpointer data)
+gboolean on_asswindow_delete_event(GtkWidget *w, GdkEvent *e, gpointer p)
 {
+    if (p != NULL) printf("unused pointer [%p]\n", p);
+    printf("GdkEventType [%d]\n", gdk_event_get_event_type(e));
+
     gtk_widget_hide(w);
     return TRUE;
 }
@@ -181,6 +198,7 @@ void on_close_button_press_event(void)
 {
     gtk_main_quit();
 }
+
 void on_openDC_activate(GtkMenuItem *m)
 {
     GtkDialog *dialog;
@@ -214,7 +232,7 @@ void on_openDC_activate(GtkMenuItem *m)
     }
     else
     {
-	printf("open cancelled\n");
+	printf("Cancelled [%s]\n", gtk_menu_item_get_label(m));
     }
 
     gtk_widget_hide(GTK_WIDGET(dialog));
@@ -222,7 +240,7 @@ void on_openDC_activate(GtkMenuItem *m)
 
 void on_saveDC_activate(GtkMenuItem *m)
 {
-    printf("save activated\n");
+    printf("[%s] activated\n", gtk_menu_item_get_label(m));
 }
 
 void on_saveasDC_activate(GtkMenuItem *m)
@@ -273,7 +291,7 @@ void on_saveasDC_activate(GtkMenuItem *m)
     }
     else
     {
-	printf("saveas cancelled\n");
+	printf("Cancelled [%s]\n", gtk_menu_item_get_label(m));
     }
 
     gtk_widget_hide(GTK_WIDGET(dialog));
@@ -281,6 +299,9 @@ void on_saveasDC_activate(GtkMenuItem *m)
 
 void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 {
+    if (p != NULL) printf("unused pointer [%p]\n", p);
+    printf("dialog [%s] closed\n", gtk_file_chooser_button_get_title(b));
+
     GtkDialog *dialog;
     char *filename;
 
@@ -397,11 +418,11 @@ static void updateUI(void)
     gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]), UI.evaluateDTH);
 }
 
-static int validateUI(void)
+static Status validateUI(void)
 {
-    char msg[BUFSIZ] = "The following invalid data was found:\n\n";
+    char msg[BUFSIZ] = "";
     char temp[BUFSIZ];
-    int cntErr = 0;
+    Status status = OK;
 
     /* ----- Check keycell -----*/
     int colcnt = 0;
@@ -413,7 +434,7 @@ static int validateUI(void)
     if (temp[0] < 'A' || temp[0] > 'Z')
     {
 	setMsgErr(msg, "Key Cell", UI.keycell, CELLERR);
-	cntErr++;
+	status = ERROR;
     }
     else
     {
@@ -429,13 +450,13 @@ static int validateUI(void)
 	if (colcnt > 3)
 	{
 	    setMsgErr(msg, "Key Cell", UI.keycell, CELLERR);
-	    cntErr++;
+	    status = ERROR;
 	}
 
 	if (*pt == '\0')
 	{
 	    setMsgErr(msg, "Key Cell", UI.keycell, CELLERR);
-	    cntErr++;
+	    status = ERROR;
 	}
 	
 	while (isdigit(*pt))
@@ -444,7 +465,7 @@ static int validateUI(void)
 	if (*pt != '\0')
 	{
 	    setMsgErr(msg, "Key Cell", UI.keycell, CELLERR);
-	    cntErr++;
+	    status = ERROR;
 	}
     }
 
@@ -459,7 +480,7 @@ static int validateUI(void)
     if (day == NULL || month == NULL || year == NULL)
     {
 	setMsgErr(msg, "DOC", UI.DOC, DATEERR);
-	cntErr++;
+	status = ERROR;
     }
     else
     {
@@ -467,7 +488,7 @@ static int validateUI(void)
 	if (tempDate == NULL)
 	{
 	    setMsgErr(msg, "DOC", UI.DOC, DATEERR);
-	    cntErr++;
+	    status = ERROR;
 	}
 	free(tempDate);
     }
@@ -476,55 +497,47 @@ static int validateUI(void)
     if (!isfloat(UI.DR))
     {
 	setMsgErr(msg, "DR", UI.DR, FLOATERR);
-	cntErr++;
+	status = ERROR;
     }
 
     /* ----- Check Age Correction -----*/
     if (!isint(UI.agecorr))
     {
 	setMsgErr(msg, "Age Correction", UI.agecorr, AGECORRERR);
-	cntErr++;
+	status = ERROR;
     }
 
     /* ----- Check Inflation -----*/
     if (!isfloat(UI.infl))
     {
 	setMsgErr(msg, "Inflation", UI.infl, FLOATERR);
-	cntErr++;
+	status = ERROR;
     }
 
     /* ----- Check Termination percentage -----*/
     if (!isfloat(UI.TRM_PercDef))
     {
 	setMsgErr(msg, "Termination % (usually 1)", UI.TRM_PercDef, FLOATERR);
-	cntErr++;
+	status = ERROR;
     }
 
     /* ----- Check DR 113 -----*/
     if (!isfloat(UI.DR113))
     {
 	setMsgErr(msg, "DR $113", UI.DR113, FLOATERR);
-	cntErr++;
+	if (status == OK) status = WARNING;
     }
 
     /* ----- Check Salary Increase -----*/
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widgets[FIXEDSIRADIOBUTTON])))
     {
-	if (!isfloat(UI.SS))
+	if (!isfloat(UI.SI))
 	{
-	    setMsgErr(msg, "Salary Increase", UI.SS, FLOATERR);
-	    cntErr++;
+	    setMsgErr(msg, "Salary Increase", UI.SI, FLOATERR);
+	    status = ERROR;
 	}
     }
 
-    printf("%s\n", msg);
-    return 0;
-}
-
-static void setMsgErr(char msg[], const char *input, const char UIs[], Err err)
-{
-    char temp[BUFSIZ];
-    snprintf(temp, BUFSIZ, 
-	    "%s%s: [%s], but should be of the form %s\n", msg, input, UIs, validMsg[err]);
-    strcpy(msg, temp);
+    strcpy(MsgErr, msg);
+    return status;
 }

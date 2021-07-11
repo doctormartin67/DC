@@ -2,6 +2,48 @@
 <!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkMessageDialog" id="MsgErr">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Error message</property>
+    <property name="type_hint">dialog</property>
+    <property name="text" translatable="yes">Invalid user input found:</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="homogeneous">True</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="button7">
+                <property name="label">gtk-ok</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="-5">button7</action-widget>
+    </action-widgets>
+  </object>
   <object class="GtkWindow" id="asswindow">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Interpreter</property>
@@ -820,6 +862,7 @@ All the values used should be decimal numbers, not percentage
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="tooltip_text" translatable="yes">This is the discount rate for the assets in case of paragraph 113, f.e. 0.023. If the assets are not paragraph 113 then this doesn't need to be filled in.</property>
+                                            <property name="text" translatable="yes">0.023</property>
                                             <property name="placeholder_text" translatable="yes">f.e. 0.023</property>
                                           </object>
                                           <packing>

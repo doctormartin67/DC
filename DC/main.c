@@ -1,13 +1,13 @@
 #include "actuarialfunctions.h"
 
-enum {UI = 1}; // set to 0 if you dont want the user interface, eventually this wont be possible
-
 void userinterface(DataSet *ds);
 void runmember(CurrentMember *cm);
 void runonerun(DataSet *ds);
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
+int main(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
 	printf("Syntax: main \"Excel file\"\n");
 	exit(0);
     }
@@ -22,33 +22,13 @@ int main(int argc, char *argv[]) {
     setDSvals(&xl, &ds);
     setCMvals(&ds);
 
-    if (UI)
-	userinterface(&ds);
-    else
-	runonerun(&ds);
+    userinterface(&ds);
 
     return 0;
 }
 
-void runonerun(DataSet *ds) {
-    // Here the loop of all affiliates will start.
-    currrun = runNewRF; // This needs updating when I start with reconciliation runs!!
-    CurrentMember *cm = ds->cm;
-
-    printf("Running members...\n");
-    for (int i = 0; i < ds->membercnt; i++) {
-	runmember(cm + i);
-	printf("Person %d run\n", i + 1);
-    }
-    printf("Run complete\n");
-
-    // create excel file to print results
-    int tc = 2; // Test case
-    tc -= 1; // Index is one less than given test case
-    printresults(ds);
-}
-
-void runmember(CurrentMember *cm) {
+void runmember(CurrentMember *cm)
+{
     setassumptions(cm); 
     //***INITIALISE VARIABLES (k = 0)***
     //-  Dates and age  -
@@ -61,11 +41,14 @@ void runmember(CurrentMember *cm) {
     cm->AFSL[0] = 0;
 
     //-  Expected Benefits Paid  -
-    for (int l = 0; l < MAXPROJ; l++) {
+    for (int l = 0; l < MAXPROJ; l++)
+    {
 	cm->PBODTHNCCF[l] = 0;
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < 2; i++)
+	{
 	    cm->EBPDTH[i][l] = 0;
-	    for (int j = 0; j < 3; j++) {
+	    for (int j = 0; j < 3; j++)
+	    {
 		cm->PBONCCF[i][j][l] = 0;
 		for (int k = 0; k < 2; k++) 
 		    cm->EBP[i][j][k][l] = 0;
@@ -80,9 +63,11 @@ void runmember(CurrentMember *cm) {
     cm->CAPDTHRiskPart[0] = calcDTH(cm, 0); 
 
     //-  Premium  -
-    for (int EREE = 0; EREE < 2; EREE++) {
+    for (int EREE = 0; EREE < 2; EREE++)
+    {
 	*cm->PREMIUM[EREE][MAXGEN-1] = (EREE == ER ? calcA(cm, 0) : calcC(cm, 0));
-	for (int j = 0; j < MAXGEN-1; j++) {
+	for (int j = 0; j < MAXGEN-1; j++)
+	{
 	    *cm->PREMIUM[EREE][MAXGEN-1] =
 		max(2, 0.0, *cm->PREMIUM[EREE][MAXGEN-1] - *cm->PREMIUM[EREE][j]);
 	}
@@ -90,7 +75,8 @@ void runmember(CurrentMember *cm) {
     //***END INITIALISATION***  
     //---BEGIN LOOP---
     // This loops through all the years of an affiliate and makes the calculations.
-    for (int k = 1; k < MAXPROJ; k++) {
+    for (int k = 1; k < MAXPROJ; k++)
+    {
 	if (k > 1)
 	    cm->DOC[k] = minDate(3,
 		    newDate(0, cm->DOB->year + NRA(cm, k-1), cm->DOB->month + 1, 1),
@@ -109,7 +95,8 @@ void runmember(CurrentMember *cm) {
 		    newDate(0, cm->DOC[k]->year +
 			((cm->DOC[k]->month >= cm->DOC[1]->month) ? 1 : 0),
 			cm->DOC[1]->month, 1));
-	if (k > MAXPROJBEFOREPROL) {
+	if (k > MAXPROJBEFOREPROL)
+	{
 	    cm->DOC[k] = minDate(2,
 		    newDate(0, cm->DOB->year + NRA(cm, k-1), cm->DOB->month + 1, 1),
 		    newDate(0, cm->DOC[k-1]->year +
@@ -122,20 +109,25 @@ void runmember(CurrentMember *cm) {
 			cm->DOC[1]->month, 1));
 	    // Set Prolongation values
 	    // All values get put in last generation (MAXGEN)
-	    if (k == MAXPROJBEFOREPROL + 1) {
+	    if (k == MAXPROJBEFOREPROL + 1)
+	    {
 		int l; // Method
-		for (int EREE = 0; EREE < 2; EREE++) {
+		for (int EREE = 0; EREE < 2; EREE++)
+		{
 		    cm->PREMIUM[EREE][MAXGEN-1][k-1] = gensum(cm->PREMIUM, EREE, k-1);
 		    cm->CAPDTH[EREE][MAXGEN-1][k-1] = gensum(cm->CAPDTH, EREE, k-1);
-		    for (l = 0; l < TUCPS_1 + 1; l++) {
+		    for (l = 0; l < TUCPS_1 + 1; l++)
+		    {
 			cm->RES[l][EREE][MAXGEN-1][k-1] = gensum(cm->RES[l], EREE, k-1);
 			cm->RESPS[l][EREE][MAXGEN-1][k-1] = gensum(cm->RESPS[l], EREE, k-1);	    
 		    }
 		    cm->DELTACAP[EREE][k-1] = 0;
-		    for (int j = 0; j < MAXGEN-1; j++) {
+		    for (int j = 0; j < MAXGEN-1; j++)
+		    {
 			cm->PREMIUM[EREE][j][k-1] = 0;
 			cm->CAPDTH[EREE][j][k-1] = 0;
-			for (l = 0; l < TUCPS_1 + 1; l++) {
+			for (l = 0; l < TUCPS_1 + 1; l++)
+			{
 			    cm->RES[l][EREE][j][k-1] = 0;
 			    cm->RESPS[l][EREE][j][k-1] = 0;
 			} 
@@ -157,8 +149,10 @@ void runmember(CurrentMember *cm) {
 
 	//***RESERVES EVOLUTION***
 	// Employer-Employee
-	for (int EREE = ER; EREE < EE + 1; EREE++) {
-	    for (int gen = 0; gen < MAXGEN; gen++) {
+	for (int EREE = ER; EREE < EE + 1; EREE++)
+	{
+	    for (int gen = 0; gen < MAXGEN; gen++)
+	    {
 		/* here all the functions will use the k-1 value to calculate the kth value*/
 		cm->DELTACAP[EREE][k] = cm->DELTACAP[EREE][k-1];
 		evolCAPDTH(cm, EREE, gen, k-1);
@@ -174,10 +168,13 @@ void runmember(CurrentMember *cm) {
 	double axcost;
 	double RPCAP;
 	double RPRES;
-	for (int EREE = 0; EREE < EE + 1; EREE++) {
-	    for (int j = 0; j < MAXGEN; j++) {
+	for (int EREE = 0; EREE < EE + 1; EREE++)
+	{
+	    for (int j = 0; j < MAXGEN; j++)
+	    {
 		cm->PREMIUM[EREE][j][k] = (EREE == ER ? calcA(cm, k) : calcC(cm, k));
-		for (int l = 0; l < j; l++) {
+		for (int l = 0; l < j; l++)
+		{
 		    cm->PREMIUM[EREE][j][k] = cm->PREMIUM[EREE][j][k] - cm->PREMIUM[EREE][l][k];
 		}
 		cm->PREMIUM[EREE][j][k] =
@@ -186,7 +183,8 @@ void runmember(CurrentMember *cm) {
 		//-  Risk Premium (only for MIXED)  -
 		if (cm->age[k] == cm->age[k-1] || (cm->tariff != MIXED))
 		    cm->RP[EREE][j][k-1] = 0;
-		else {
+		else
+		{
 		    Ax1 = Ax1n(tff.ltINS[EREE][j].lt, cm->TAUX[EREE][j], tff.costRES,
 			    cm->age[k-1], cm->age[k], 0);
 		    ax = axn(tff.ltINS[EREE][j].lt, cm->TAUX[EREE][j], tff.costRES,
@@ -210,7 +208,8 @@ void runmember(CurrentMember *cm) {
 	double RESTOT[TUCPS_1 + 1];
 	double REDCAPTOT[TUCPS_1 + 1];
 
-	for (int j = 0; j < TUCPS_1 + 1; j++) {
+	for (int j = 0; j < TUCPS_1 + 1; j++)
+	{
 	    ART24TOT[j] = cm->ART24[j][ER][ART24GEN1][k] + cm->ART24[j][ER][ART24GEN2][k] +
 		cm->ART24[j][EE][ART24GEN1][k] + cm->ART24[j][EE][ART24GEN2][k];
 	    RESTOT[j] = gensum(cm->RES[j], ER, k) + gensum(cm->RES[j], EE, k) +
@@ -225,7 +224,8 @@ void runmember(CurrentMember *cm) {
 	    cm->FF[k] = 1;
 	    cm->FFSC[k] = 0;
 	}
-	else {
+	else
+	{
 	    cm->FF[k] = cm->nDOA[1] / (cm->nDOA[k] == 0 ? 1 : cm->nDOA[k]);
 	    cm->FFSC[k] = (k == 1 ? 0 : (cm->age[2] - cm->age[1]) /
 		    (cm->nDOA[k] == 0 ? 1 : cm->nDOA[k]));
