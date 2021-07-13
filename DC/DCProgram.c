@@ -3,8 +3,12 @@
 #include "libraryheader.h"
 #include "xlsxwriter.h"
 
-DataSet *createDS(XLfile *xl)
+DataSet *createDS(const char *s)
 {
+    createXLzip(s); /* THIS IS NOT PORTABLE!! */
+
+    XLfile *xl = createXL(s);
+    Hashtable **ht;
     DataSet *ds = malloc(sizeof(DataSet));
     if (ds == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
@@ -13,106 +17,108 @@ DataSet *createDS(XLfile *xl)
     countMembers(ds);
     createData(ds);
 
+    ds->cm = (CurrentMember *)calloc(ds->membercnt, sizeof(CurrentMember));
+    if (ds->cm == NULL) errExit("[%s] calloc returned NULL\n", __func__);
+    ht = ds->Data;
+    printf("Setting all the values for the affiliates...\n");
+    for (int i = 0; i < ds->membercnt; i++)
+	ds->cm[i] = createCM(*ht++);
+    printf("Setting values completed.\n");
+
     return ds;
 }
 
 // initialise all variables from data (hashtable)
-void setCMvals(DataSet *ds)
+CurrentMember createCM(Hashtable *ht)
 {
-    CurrentMember *cm;
-    ds->cm = (CurrentMember *)calloc(ds->membercnt, sizeof(CurrentMember));
-    if ((cm = ds->cm) == NULL) errExit("[%s] calloc returned NULL\n", __func__);
+    CurrentMember cm;
+    cm.Data = ht;
+    cm.key = getcmval(&cm, KEY, -1, -1);
+    cm.regl = getcmval(&cm, NOREGLEMENT, -1, -1);
+    cm.name = getcmval(&cm, NAAM, -1, -1);
+    cm.contract = getcmval(&cm, CONTRACT, -1, -1);
+    cm.status = 0;
+    if (strcmp(getcmval(&cm, STATUS, -1, -1), "ACT") == 0)  cm.status += ACT;
+    if (strcmp(getcmval(&cm, ACTIVECONTRACT, -1, -1), "1") == 0)  cm.status += ACTCON;
+    if (strcmp(getcmval(&cm, SEX, -1, -1), "1") == 0)  cm.status += MALE;
+    if (strcmp(getcmval(&cm, MS, -1, -1), "M") == 0)  cm.status += MARRIED;
+    cm.DOB = newDate((unsigned int)atoi(getcmval(&cm, DOB, -1, -1)), 0, 0, 0);
+    cm.DOE = newDate((unsigned int)atoi(getcmval(&cm, DOE, -1, -1)), 0, 0, 0);
+    cm.DOL = newDate((unsigned int)atoi(getcmval(&cm, DOL, -1, -1)), 0, 0, 0);
+    cm.DOS = newDate((unsigned int)atoi(getcmval(&cm, DOS, -1, -1)), 0, 0, 0);
+    cm.DOA = newDate((unsigned int)atoi(getcmval(&cm, DOA, -1, -1)), 0, 0, 0);
+    cm.DOR = newDate((unsigned int)atoi(getcmval(&cm, DOR, -1, -1)), 0, 0, 0);
+    cm.category = getcmval(&cm, CATEGORIE, -1, -1);
+    cm.sal[0] = atof(getcmval(&cm, SAL, -1, -1));
+    cm.PG = atof(getcmval(&cm, PG, -1, -1));
+    cm.PT = atof(getcmval(&cm, PT, -1, -1));
+    cm.NRA = atof(getcmval(&cm, RA, -1, -1));
+    cm.kids = (unsigned short)atoi(getcmval(&cm, ENF, -1, -1));
+    cm.tariff = 0;
+    if (strcmp(getcmval(&cm, TARIEF, -1, -1), "UKMS") == 0)  cm.tariff = UKMS;
+    if (strcmp(getcmval(&cm, TARIEF, -1, -1), "UKZT") == 0)  cm.tariff = UKZT;
+    if (strcmp(getcmval(&cm, TARIEF, -1, -1), "UKMT") == 0)  cm.tariff = UKMT;
+    if (strcmp(getcmval(&cm, TARIEF, -1, -1), "MIXED") == 0)  cm.tariff = MIXED;
+    cm.KO = atof(getcmval(&cm, KO, -1, -1));
+    cm.annINV = atof(getcmval(&cm, RENTINV, -1, -1));
+    cm.contrINV = atof(getcmval(&cm, CONTRINV, -1, -1));
 
-    printf("Setting all the values for the affiliates...\n");
-    for (int i = 0; i < ds->membercnt; i++)
+    // define article 24 from data
+    for (int j = 0; j < TUCPS_1 + 1; j++)
     {
-	cm[i].Data = *(ds->Data + i);
-	cm[i].key = getcmval(&cm[i], KEY, -1, -1);
-	cm[i].regl = getcmval(&cm[i], NOREGLEMENT, -1, -1);
-	cm[i].name = getcmval(&cm[i], NAAM, -1, -1);
-	cm[i].contract = getcmval(&cm[i], CONTRACT, -1, -1);
-	cm[i].status = 0;
-	if (strcmp(getcmval(&cm[i], STATUS, -1, -1), "ACT") == 0)  cm[i].status += ACT;
-	if (strcmp(getcmval(&cm[i], ACTIVECONTRACT, -1, -1), "1") == 0)  cm[i].status += ACTCON;
-	if (strcmp(getcmval(&cm[i], SEX, -1, -1), "1") == 0)  cm[i].status += MALE;
-	if (strcmp(getcmval(&cm[i], MS, -1, -1), "M") == 0)  cm[i].status += MARRIED;
-	cm[i].DOB = newDate((unsigned int)atoi(getcmval(&cm[i], DOB, -1, -1)), 0, 0, 0);
-	cm[i].DOE = newDate((unsigned int)atoi(getcmval(&cm[i], DOE, -1, -1)), 0, 0, 0);
-	cm[i].DOL = newDate((unsigned int)atoi(getcmval(&cm[i], DOL, -1, -1)), 0, 0, 0);
-	cm[i].DOS = newDate((unsigned int)atoi(getcmval(&cm[i], DOS, -1, -1)), 0, 0, 0);
-	cm[i].DOA = newDate((unsigned int)atoi(getcmval(&cm[i], DOA, -1, -1)), 0, 0, 0);
-	cm[i].DOR = newDate((unsigned int)atoi(getcmval(&cm[i], DOR, -1, -1)), 0, 0, 0);
-	cm[i].category = getcmval(&cm[i], CATEGORIE, -1, -1);
-	cm[i].sal[0] = atof(getcmval(&cm[i], SAL, -1, -1));
-	cm[i].PG = atof(getcmval(&cm[i], PG, -1, -1));
-	cm[i].PT = atof(getcmval(&cm[i], PT, -1, -1));
-	cm[i].NRA = atof(getcmval(&cm[i], RA, -1, -1));
-	cm[i].kids = (unsigned short)atoi(getcmval(&cm[i], ENF, -1, -1));
-	cm[i].tariff = 0;
-	if (strcmp(getcmval(&cm[i], TARIEF, -1, -1), "UKMS") == 0)  cm[i].tariff = UKMS;
-	if (strcmp(getcmval(&cm[i], TARIEF, -1, -1), "UKZT") == 0)  cm[i].tariff = UKZT;
-	if (strcmp(getcmval(&cm[i], TARIEF, -1, -1), "UKMT") == 0)  cm[i].tariff = UKMT;
-	if (strcmp(getcmval(&cm[i], TARIEF, -1, -1), "MIXED") == 0)  cm[i].tariff = MIXED;
-	cm[i].KO = atof(getcmval(&cm[i], KO, -1, -1));
-	cm[i].annINV = atof(getcmval(&cm[i], RENTINV, -1, -1));
-	cm[i].contrINV = atof(getcmval(&cm[i], CONTRINV, -1, -1));
-
-	// define article 24 from data
-	for (int j = 0; j < TUCPS_1 + 1; j++)
-	{
-	    cm[i].ART24[j][ER][ART24GEN1][0] = atof(getcmval(&cm[i], ART24_A_GEN1, -1, -1));
-	    cm[i].ART24[j][ER][ART24GEN2][0] = atof(getcmval(&cm[i], ART24_A_GEN2, -1, -1));
-	    cm[i].ART24[j][EE][ART24GEN1][0] = atof(getcmval(&cm[i], ART24_C_GEN1, -1, -1));
-	    cm[i].ART24[j][EE][ART24GEN2][0] = atof(getcmval(&cm[i], ART24_C_GEN2, -1, -1));
-	}
-
-	// all variables that have generations, employer and employee
-	//-  VARIABLES WITH MAXGEN  -
-	setGenMatrix(&cm[i], cm[i].PREMIUM, PREMIUM);
-	setGenMatrix(&cm[i], cm[i].CAP, CAP);
-	setGenMatrix(&cm[i], cm[i].CAPPS, CAPPS);
-	setGenMatrix(&cm[i], cm[i].CAPDTH, CAPDTH);
-	for (int k = 0; k < TUCPS_1 + 1; k++)
-	{
-	    setGenMatrix(&cm[i], cm[i].RES[k], RES);
-	    setGenMatrix(&cm[i], cm[i].RESPS[k], RESPS);
-	    setGenMatrix(&cm[i], cm[i].REDCAP[k], CAPRED);
-	}
-	for (int j = 0; j < MAXGEN; j++)
-	{
-	    cm[i].TAUX[ER][j] = atof(getcmval(&cm[i], TAUX, ER, j + 1));
-	    cm[i].TAUX[EE][j] = atof(getcmval(&cm[i], TAUX, EE, j + 1));      
-	}
-
-	//-  MISCELLANEOUS  -
-	cm[i].DELTACAP[ER][0] = atof(getcmval(&cm[i], DELTA_CAP_A_GEN1, -1, -1));
-	cm[i].DELTACAP[EE][0] = atof(getcmval(&cm[i], DELTA_CAP_C_GEN1, -1, -1));
-	cm[i].X10 = atof(getcmval(&cm[i], X10, -1, -1));
-	if (cm[i].tariff == MIXED && cm[i].X10 == 0)
-	{
-	    printf("Warning: X/10 equals zero for %s but he has a MIXED contract\n", cm[i].key);
-	    printf("X/10 will be taken as 1 by default.\n");
-	    cm[i].X10 = 1;
-	}
-	cm[i].CAO = atof(getcmval(&cm[i], CAO, -1, -1));
-	cm[i].ORU = getcmval(&cm[i], ORU, -1, -1);
-	cm[i].CHOICEDTH = getcmval(&cm[i], CHOICEDTH, -1, -1);
-	cm[i].CHOICEINVS = getcmval(&cm[i], CHOICEINVS, -1, -1);
-	cm[i].CHOICEINVW = getcmval(&cm[i], CHOICEINVW, -1, -1);
-	cm[i].contrDTH = atof(getcmval(&cm[i], CONTRD, -1, -1));
-	cm[i].percSALKO = atof(getcmval(&cm[i], PERCOFSALFORKO, -1, -1));
-	cm[i].indexINV = getcmval(&cm[i], INVINDEXATION, -1, -1);
-	cm[i].GRDGR = getcmval(&cm[i], GRDGR, -1, -1);
-	cm[i].plan = getcmval(&cm[i], PLAN, -1, -1);
-	cm[i].baranc = atof(getcmval(&cm[i], BARANC, -1, -1));
-	cm[i].extra = 0;
-	if (strcmp(getcmval(&cm[i], INCSALFIRSTYEAR, -1, -1), "1") == 0)  cm[i].extra += INCSAL;
-	if (strcmp(getcmval(&cm[i], PREP, -1, -1), "1") == 0)  cm[i].extra += CCRA;
-
-	cm[i].DOC = (Date **)calloc(MAXPROJ, sizeof(Date *));
-	if (cm[i].DOC == NULL) errExit("[%s] calloc returned NULL\n", __func__);
+	cm.ART24[j][ER][ART24GEN1][0] = atof(getcmval(&cm, ART24_A_GEN1, -1, -1));
+	cm.ART24[j][ER][ART24GEN2][0] = atof(getcmval(&cm, ART24_A_GEN2, -1, -1));
+	cm.ART24[j][EE][ART24GEN1][0] = atof(getcmval(&cm, ART24_C_GEN1, -1, -1));
+	cm.ART24[j][EE][ART24GEN2][0] = atof(getcmval(&cm, ART24_C_GEN2, -1, -1));
     }
-    printf("Setting values completed.\n");
+
+    // all variables that have generations, employer and employee
+    //-  VARIABLES WITH MAXGEN  -
+    setGenMatrix(&cm, cm.PREMIUM, PREMIUM);
+    setGenMatrix(&cm, cm.CAP, CAP);
+    setGenMatrix(&cm, cm.CAPPS, CAPPS);
+    setGenMatrix(&cm, cm.CAPDTH, CAPDTH);
+    for (int k = 0; k < TUCPS_1 + 1; k++)
+    {
+	setGenMatrix(&cm, cm.RES[k], RES);
+	setGenMatrix(&cm, cm.RESPS[k], RESPS);
+	setGenMatrix(&cm, cm.REDCAP[k], CAPRED);
+    }
+    for (int j = 0; j < MAXGEN; j++)
+    {
+	cm.TAUX[ER][j] = atof(getcmval(&cm, TAUX, ER, j + 1));
+	cm.TAUX[EE][j] = atof(getcmval(&cm, TAUX, EE, j + 1));      
+    }
+
+    //-  MISCELLANEOUS  -
+    cm.DELTACAP[ER][0] = atof(getcmval(&cm, DELTA_CAP_A_GEN1, -1, -1));
+    cm.DELTACAP[EE][0] = atof(getcmval(&cm, DELTA_CAP_C_GEN1, -1, -1));
+    cm.X10 = atof(getcmval(&cm, X10, -1, -1));
+    if (cm.tariff == MIXED && cm.X10 == 0)
+    {
+	printf("Warning: X/10 equals zero for %s but he has a MIXED contract\n", cm.key);
+	printf("X/10 will be taken as 1 by default.\n");
+	cm.X10 = 1;
+    }
+    cm.CAO = atof(getcmval(&cm, CAO, -1, -1));
+    cm.ORU = getcmval(&cm, ORU, -1, -1);
+    cm.CHOICEDTH = getcmval(&cm, CHOICEDTH, -1, -1);
+    cm.CHOICEINVS = getcmval(&cm, CHOICEINVS, -1, -1);
+    cm.CHOICEINVW = getcmval(&cm, CHOICEINVW, -1, -1);
+    cm.contrDTH = atof(getcmval(&cm, CONTRD, -1, -1));
+    cm.percSALKO = atof(getcmval(&cm, PERCOFSALFORKO, -1, -1));
+    cm.indexINV = getcmval(&cm, INVINDEXATION, -1, -1);
+    cm.GRDGR = getcmval(&cm, GRDGR, -1, -1);
+    cm.plan = getcmval(&cm, PLAN, -1, -1);
+    cm.baranc = atof(getcmval(&cm, BARANC, -1, -1));
+    cm.extra = 0;
+    if (strcmp(getcmval(&cm, INCSALFIRSTYEAR, -1, -1), "1") == 0)  cm.extra += INCSAL;
+    if (strcmp(getcmval(&cm, PREP, -1, -1), "1") == 0)  cm.extra += CCRA;
+
+    cm.DOC = (Date **)calloc(MAXPROJ, sizeof(Date *));
+    if (cm.DOC == NULL) errExit("[%s] calloc returned NULL\n", __func__);
+
+    return cm;
 }
 
 double gensum(GenMatrix amount[], unsigned short EREE, int loop)
@@ -840,20 +846,31 @@ void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn dc)
 /* --- free memory functions --- */
 void freeDS(DataSet *ds)
 {
-    /* still to free: xl, Data, cm, ds itself */
-
-    /* free others */
     char **s = ds->keys;
     while (*s != NULL)
 	free(*s++);
     free(ds->keys);
+
+    /* to do: make freeHashtable function in hashtable.c */
     for (int i = 0; i < ds->membercnt; i++)
 	freeCM(&ds->cm[i]);
+    free(ds->cm);
+
+    freeXL(ds->xl);
+    free(ds);
 }
 
 void freeCM(CurrentMember *cm)
 {
-
+    free(cm->DOB);
+    free(cm->DOE);
+    free(cm->DOL);
+    free(cm->DOS);
+    free(cm->DOA);
+    free(cm->DOR);
+    for (int i = 0; i < MAXPROJ; i++)
+	free(cm->DOC[i]);
+    free(cm->DOC);
 }
 
 /* --- Assumptions functions --- */

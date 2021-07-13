@@ -257,8 +257,8 @@ typedef struct {
 Tariff tff; // Tariff structure
 
 //---Setter declarations---
-DataSet *createDS(XLfile *xl);
-void setCMvals(DataSet *ds);
+DataSet *createDS(const char *);
+CurrentMember createCM(Hashtable *);
 void freeDS(DataSet *ds);
 void freeCM(CurrentMember *cm);
 void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn);

@@ -354,6 +354,7 @@ static void *runtc(void *pl)
     tc -= 1; // Index is one less than given test case
     CurrentMember *cm = ds->cm;
 
+    printf("testcase: %s chosen\n", cm->key);
     runmember(cm + tc);
     snprintf(text, sizeof(text), "Test case %d has been run", tc + 1);
     gtk_label_set_text(GTK_LABEL(pl), text); 
