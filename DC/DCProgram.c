@@ -3,12 +3,17 @@
 #include "libraryheader.h"
 #include "xlsxwriter.h"
 
-void setDSvals(XLfile *xl, DataSet *ds)
+DataSet *createDS(XLfile *xl)
 {
+    DataSet *ds = malloc(sizeof(DataSet));
+    if (ds == NULL) errExit("[%s] malloc returned NULL\n", __func__);
+
     ds->xl = xl;
     setkey(ds);
     countMembers(ds);
     createData(ds);
+
+    return ds;
 }
 
 // initialise all variables from data (hashtable)
@@ -832,6 +837,26 @@ void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn dc)
 	    var[EREE][j][0] = atof(getcmval(cm, dc, EREE, j + 1));
 }
 
+/* --- free memory functions --- */
+void freeDS(DataSet *ds)
+{
+    /* still to free: xl, Data, cm, ds itself */
+
+    /* free others */
+    char **s = ds->keys;
+    while (*s != NULL)
+	free(*s++);
+    free(ds->keys);
+    for (int i = 0; i < ds->membercnt; i++)
+	freeCM(&ds->cm[i]);
+}
+
+void freeCM(CurrentMember *cm)
+{
+
+}
+
+/* --- Assumptions functions --- */
 double salaryscale(CurrentMember *cm, int k)
 {
     return (*ass.SS)(cm, k);

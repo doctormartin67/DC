@@ -33,12 +33,13 @@ typedef struct {
 /* This will be used as indices for the widget array */
 enum {SHEETNAME, KEYCELL, DOC, DR, AGECORR, INFL, TRM_PERCDEF, DR113, FIXEDSIENTRY, SS, 
     STANDARD, ASSETS, PARAGRAPH, PUCTUC, CASHFLOWS, EVALUATEDTH, FIXEDSIRADIOBUTTON, RUNCHOICE,
-    TESTCASEBOX, TESTCASE, OPENDCFILE, SAVEASDCFILE, OPENEXCELFILE, WINDOW, ASSWINDOW, MSGERR}; 
+    TESTCASEBOX, TESTCASE, OPENDCFILE, SAVEASDCFILE, OPENEXCELFILE, WINDOW, ASSWINDOW, MSGERR,
+    FILENAME}; 
 
 static const char *widgetname[] = {"sheetname", "keycell", "DOC", "DR", "agecorr", "infl", 
     "TRM_PercDef", "DR113", "fixedSIentry", "SS", "standard", "assets", "paragraph", "PUCTUC", 
     "cashflows", "evaluateDTH",  "fixedSIradiobutton", "runchoice", "testcasebox", "testcase", 
-    "openDCFile", "saveasDCFile", "openExcelFile", "window", "asswindow", "MsgErr"};
+    "openDCFile", "saveasDCFile", "openExcelFile", "window", "asswindow", "MsgErr", "filename"};
 static GtkWidget *widgets[128];
 static GtkBuilder *builder;
 
@@ -309,6 +310,10 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
     GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
     filename = gtk_file_chooser_get_filename(chooser);
     strcpy(UI.fname, filename);
+    printf("Excel to run: [%s]\n", UI.fname);
+    char temp[BUFSIZ];
+    snprintf(temp, sizeof(temp), "File set to run:\n%s", UI.fname);
+    gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), temp); 
 }
 
 /* helper functions */
@@ -394,6 +399,9 @@ static void setUIvals(void)
 static void updateUI(void)
 {
     /* --- Data --- */
+    char s[BUFSIZ];
+    snprintf(s, sizeof(s), "File set to run:\n%s", UI.fname);
+    gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), s); 
     gtk_entry_set_text(GTK_ENTRY(widgets[SHEETNAME]), UI.sheetname);
     gtk_entry_set_text(GTK_ENTRY(widgets[KEYCELL]), UI.keycell);
 

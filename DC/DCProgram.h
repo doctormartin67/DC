@@ -257,8 +257,10 @@ typedef struct {
 Tariff tff; // Tariff structure
 
 //---Setter declarations---
-void setDSvals(XLfile *xl, DataSet *ds);
+DataSet *createDS(XLfile *xl);
 void setCMvals(DataSet *ds);
+void freeDS(DataSet *ds);
+void freeCM(CurrentMember *cm);
 void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn);
 char *getcmval(CurrentMember *cm, DataColumn, int EREE, int gen);
 /* This function will allocate memory based on membercnt for the underlying

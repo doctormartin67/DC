@@ -13,16 +13,21 @@ int main(int argc, char *argv[])
     }
 
     createXLzip(argv[1]);
-    XLfile xl;
-    DataSet ds;
+    XLfile *xl;
+    DataSet *ds;
 
     /* These functions set all the necessary values of all the variables needed for the 
        calculations. */
-    setXLvals(&xl, argv[1]);
-    setDSvals(&xl, &ds);
-    setCMvals(&ds);
+    xl = createXL(argv[1]);
+    ds = createDS(xl);
+    setCMvals(ds);
 
-    userinterface(&ds);
+    /* testing freeXL */
+//    freeDS(ds);
+ //   exit(0);
+    /* end testing freeXL */
+
+    userinterface(ds);
 
     return 0;
 }

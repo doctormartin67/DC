@@ -479,6 +479,23 @@ The interpreter is case insensitive (meaning you could write select case, Select
                                       </packing>
                                     </child>
                                     <child>
+                                      <object class="GtkLabel" id="filename">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="margin_bottom">30</property>
+                                        <property name="label" translatable="yes">No file currently selected</property>
+                                        <property name="selectable">True</property>
+                                        <attributes>
+                                          <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
+                                        </attributes>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
                                       <object class="GtkBox">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
@@ -517,7 +534,7 @@ The interpreter is case insensitive (meaning you could write select case, Select
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
-                                        <property name="position">1</property>
+                                        <property name="position">2</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -560,7 +577,7 @@ The interpreter is case insensitive (meaning you could write select case, Select
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
-                                        <property name="position">2</property>
+                                        <property name="position">3</property>
                                       </packing>
                                     </child>
                                   </object>
