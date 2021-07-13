@@ -319,6 +319,29 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath)
     return result;
 }
 
+/* --- free memory function --- */
+
+void freeXL(XLfile *xl)
+{
+    /* free xml's */
+    xmlFreeDoc(xl->workbook);
+    xmlFreeDoc(xl->sharedStrings);
+    for (unsigned int i = 0; i < xl->sheetcnt; i++)
+    {
+	xmlFreeDoc(xl->sheets[i]);
+	xmlXPathFreeObject(xl->nodesets[i]);
+    }
+    free(xl->sheets);
+    free(xl->nodesets);
+    xmlXPathFreeObject(xl->nodesetss);
+
+    /* free others */
+    free(xl->sheetname);
+    free(xl);
+}
+
+/* --- NON PORTABLE FUNCTION --- */
+
 void createXLzip(const char *s)
 {
     char t[strlen(s) + 1];

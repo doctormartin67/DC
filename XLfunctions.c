@@ -1,7 +1,11 @@
 #include "libraryheader.h"
 
 // s is the name of the excel file to set the values of
-void setXLvals(XLfile *xl, const char *s) {
+XLfile *createXL(const char *s)
+{
+    XLfile *xl = malloc(sizeof(XLfile));
+    if (xl == NULL) errExit("[%s] malloc returned NULL\n", __func__);
+
     char temp[PATH_MAX + NAME_MAX + 1];
     char *pt = temp;
 
@@ -26,20 +30,24 @@ void setXLvals(XLfile *xl, const char *s) {
 
     char **t = xl->sheetname;
     int i;
-    for (i = 0; *t != NULL; i++, t++) {
+    for (i = 0; *t != NULL; i++, t++)
+    {
 	snprintf(temp, sizeof(temp), 
 		"%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", i + 1, ".xml");
 	xl->sheets[i] = getxmlDoc(temp);
     }
     xl->sheetcnt = i;
     setnodes(xl);
+
+    return xl;
 }
 
 /* fp is an open sheet, usually the sheet containing the data to evaluate 
    s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
  */
-char *cell(XLfile *xl, unsigned int sheet, const char *s) {
+char *cell(XLfile *xl, unsigned int sheet, const char *s)
+{
     xmlXPathObjectPtr nodeset;
     xmlNodeSetPtr nodes;
     xmlNodePtr node;
@@ -184,6 +192,7 @@ void setnodes(XLfile *xl)
     if ((xl->nodesetss->nodesetval) == NULL)
 	errExit("[%s] there are no nodes in sharedStrings.xml\n", __func__);
 
+    xl->nodesets = calloc(xl->sheetcnt, sizeof(xmlXPathObjectPtr));
     for (unsigned int i = 0; i < xl->sheetcnt; i++)
     {
 	xl->nodesets[i] = getnodeset(xl->sheets[i], (xmlChar *)XPATHDATA);
@@ -212,9 +221,11 @@ void nextcol(char *next)
        finalindex is the last index of the whole string*/
 
     // Find the final letter of the column.
-    while (!isdigit(*(next + i)) && *(next + i) != '\0') {
+    while (!isdigit(*(next + i)) && *(next + i) != '\0')
+    {
 	// Check if next is capital letters, if not then exit.
-	if (*(next + i) <= 'z' && *(next + i) >= 'a') {
+	if (*(next + i) <= 'z' && *(next + i) >= 'a')
+	{
 	    printf("Error: In excel columns always have capital letters and %s ", next);
 	    printf("are not all capital letters. Exiting...\n");
 	    exit(0);
@@ -226,8 +237,10 @@ void nextcol(char *next)
 	;
     finalindex = i; // used to shift all numbers to fit A at the end of letters
     i = endindex - 1;
-    while (*npt == 'Z') {
-	if (i-- == 0) {
+    while (*npt == 'Z')
+    {
+	if (i-- == 0)
+	{
 	    while (finalindex - j++ > endindex)
 		*(next + finalindex - j + 1) = *(next + finalindex - j);
 	    *(next + endindex) = 'A';
@@ -243,7 +256,8 @@ void nextcol(char *next)
 static const int commondays[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 static const int leapdays[] = {1, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-int isleapyear(int year) {
+int isleapyear(int year)
+{
     if (!(year%4 == 0))
 	return 0;
     else if (!(year%25 == 0))
@@ -253,7 +267,8 @@ int isleapyear(int year) {
     else return 1;
 }
 
-void setdate(Date *date) {
+void setdate(Date *date)
+{
     static unsigned int daytoday[BUFSIZ * 16]; // We save the searched days in this array
     static unsigned int daytomonth[BUFSIZ * 16]; // We save the searched months in this array
     static unsigned int daytoyear[BUFSIZ * 16]; // We save the searched years in this array
@@ -264,13 +279,15 @@ void setdate(Date *date) {
     // If the day has already been called and saved, then we just take it from the
     // array where we save it, otherwise calculate it.
     if (!(daytoyear[date->XLday] == 0) && !(daytomonth[date->XLday] == 0)
-	    && !(daytoday[date->XLday] == 0)) {
+	    && !(daytoday[date->XLday] == 0))
+    {
 	date->day = daytoday[date->XLday];
 	date->month = daytomonth[date->XLday];
 	date->year = daytoyear[date->XLday];	
     }
     else {
-	while (countday < date->XLday) {
+	while (countday < date->XLday)
+	{
 	    currentmonth = currentmonth%12;
 	    currentmonth++;
 
@@ -291,11 +308,13 @@ void setdate(Date *date) {
 	daytomonth[date->XLday] = currentmonth;
 	daytoyear[date->XLday] = countyear;
 
-	if ((date->day = daytoday[date->XLday]) > 31) {
+	if ((date->day = daytoday[date->XLday]) > 31)
+	{
 	    printf("Error in %s: %d is not a valid day.\n", __func__, date->day);
 	    exit(1);
 	}
-	if((date->month = daytomonth[date->XLday]) > 12) {
+	if((date->month = daytomonth[date->XLday]) > 12)
+	{
 	    printf("Error in %s: %d is not a valid day.\n", __func__, date->month);
 	    exit(1);
 	}
@@ -357,7 +376,8 @@ Date *newDate(unsigned int XLday, int year, int month, int day)
     return temp;
 }
 
-Date *minDate(int argc, ...) {
+Date *minDate(int argc, ...)
+{
     Date *min; // minimum to return
     Date *currmin; // current minimum
     va_list dates;
@@ -365,29 +385,36 @@ Date *minDate(int argc, ...) {
     va_start(dates, argc);
     min = va_arg(dates, Date *);
 
-    for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++)
+    {
 	currmin = va_arg(dates, Date *);
-	if (min->year > currmin->year) {
+	if (min->year > currmin->year)
+	{
 	    min = currmin;
 	}
-	else if (min->year == currmin->year) {
-	    if (min->month > currmin->month) {
+	else if (min->year == currmin->year)
+	{
+	    if (min->month > currmin->month)
+	    {
 		min = currmin;
 	    }
-	    else if (min->month == currmin->month) {
+	    else if (min->month == currmin->month)
+	    {
 		if (min->day > currmin->day)
 		    min = currmin;
 	    }
 	}
     }
     // Error checking
-    if (min->day > (isleapyear(min->year) ? leapdays[min->month] : commondays[min->month])) {
+    if (min->day > (isleapyear(min->year) ? leapdays[min->month] : commondays[min->month]))
+    {
 	printf("Error in newDate: %d is not a valid day of month %d\n",
 		min->day, min->month);
 	printf("Exiting program\n");
 	exit(1);
     }
-    if (min->month > DEC) {
+    if (min->month > DEC)
+    {
 	printf("Error in newDate: there are no %d months\n", min->month);
 	printf("Exiting program\n");
 	exit(1);
@@ -398,11 +425,13 @@ Date *minDate(int argc, ...) {
 
 // Calculate the time in years between two dates
 // m is the amount of months to subtract (usually 0 or 1)
-double calcyears(Date *d1, Date *d2, int m) {
+double calcyears(Date *d1, Date *d2, int m)
+{
     return d2->year - d1->year + (double)(d2->month - d1->month - m)/12;
 }
 
-void printDate(Date *d) {
+void printDate(Date *d)
+{
     if (d)
 	printf("%d/%d/%d\n", d->day, d->month, d->year);
     else

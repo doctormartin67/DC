@@ -77,7 +77,8 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath);
 void setnodes(XLfile *xl);
 void createXLzip(const char *s);
 // s is the name of the excel file to set the values of
-void setXLvals(XLfile *xl, const char *s);
+XLfile *createXL(const char *s);
+void freeXL(XLfile *xl);
 
 /* s is the name of the cell to retrieve value (for example B11).
    XLfile is a structure for the excel file properties.
