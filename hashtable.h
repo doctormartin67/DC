@@ -19,5 +19,7 @@ typedef struct {
 List *lookup(const char *key, const char *value, Hashtable *);
 // This allocates memory for n Hashtable pointers
 Hashtable *newHashtable(unsigned long n, unsigned short casesens);
+void freeHashtable(Hashtable *ht);
+void freeList(List *l);
 
 #endif

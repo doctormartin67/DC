@@ -34,7 +34,7 @@ List *lookup(const char *t, const char *value, Hashtable *ht)
     // otherwhise, remove current entry and set with new value
     if (pht == NULL)
     {
-	pht = (List *) malloc(sizeof(*pht));
+	pht = (List *)malloc(sizeof(*pht));
 	if (pht == NULL || (pht->key = strdup(key)) == NULL)
 	    errExit("[%s] [malloc|strdup] returned NULL\n", __func__);
 	pht->next = ht->list[hashval];
@@ -63,5 +63,25 @@ Hashtable *newHashtable(unsigned long n, unsigned short casesens)
 	ht->hashsize = n;
 	ht->casesens = casesens;
 	return ht;
+    }
+}
+
+void freeHashtable(Hashtable *ht)
+{
+    for (unsigned int i = 0; i < ht->hashsize; i++)
+	    freeList(ht->list[i]);
+
+    free(ht->list);
+    free(ht);
+}
+
+void freeList(List *l)
+{
+    if (l != NULL)
+    {
+	free(l->key);
+	free(l->value);
+	freeList(l->next);	
+	free(l);
     }
 }

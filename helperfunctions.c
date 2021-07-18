@@ -283,13 +283,12 @@ void errExitEN(int errnum, const char *format, ...)
 }
 
 /* xml functions */
+/* returns xmlDocPtr or NULL if docname could not be found */
 xmlDocPtr getxmlDoc(const char *docname)
 {
     xmlDocPtr doc;
-    doc = xmlParseFile(docname);
-
-    if (doc == NULL)
-	errExit("[%s] Unable to parse [%s]\n", __func__, docname);
+    if((doc = xmlParseFile(docname)) == NULL)
+	fprintf(stderr, "[%s] Unable to parse file [%s]\n", __func__, docname);
 
     return doc;
 }
@@ -346,7 +345,7 @@ void createXLzip(const char *s)
 {
     char t[strlen(s) + 1];
     char *pt = t;
-    const char *prevpxls = s, *pxls, *ps = s;
+    const char *prevpxls = s, *pxls = NULL, *ps = s;
     char dirname[strlen(s) + 1];
     char cmd[BUFSIZ];
 

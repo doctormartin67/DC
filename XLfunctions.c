@@ -6,6 +6,15 @@ XLfile *createXL(const char *s)
     XLfile *xl = malloc(sizeof(XLfile));
     if (xl == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
+    /* initialise XL file */
+    xl->sheetname = NULL;
+    xl->sheetcnt = 0;
+    xl->workbook = NULL;
+    xl->sharedStrings = NULL;
+    xl->nodesetss = NULL;
+    xl->sheets = NULL;
+    xl->nodesets = NULL;
+
     char temp[PATH_MAX + NAME_MAX + 1];
     char *pt = temp;
 
@@ -17,10 +26,18 @@ XLfile *createXL(const char *s)
     strcpy(xl->dirname, temp);
 
     snprintf(temp, sizeof(temp), "%s%s", xl->dirname, "/xl/workbook.xml");
-    xl->workbook = getxmlDoc(temp);
+    if ((xl->workbook = getxmlDoc(temp)) == NULL)
+    {
+	freeXL(xl);
+	return NULL;
+    }
 
     snprintf(temp, sizeof(temp), "%s%s", xl->dirname, "/xl/sharedStrings.xml");
-    xl->sharedStrings = getxmlDoc(temp);
+    if ((xl->sharedStrings = getxmlDoc(temp)) == NULL)
+    {
+	freeXL(xl);
+	return NULL;
+    }
 
     xl->sheetname = calloc(MAXSHEETS, sizeof(char *));
     if (xl->sheetname == NULL) errExit("[%s] calloc returned NULL\n", __func__);
@@ -34,7 +51,11 @@ XLfile *createXL(const char *s)
     {
 	snprintf(temp, sizeof(temp), 
 		"%s%s%d%s", xl->dirname, "/xl/worksheets/sheet", i + 1, ".xml");
-	xl->sheets[i] = getxmlDoc(temp);
+	if ((xl->sheets[i] = getxmlDoc(temp)) == NULL)
+	{
+	    freeXL(xl);
+	    return NULL;
+	}
     }
     xl->sheetcnt = i;
     setnodes(xl);
@@ -127,7 +148,7 @@ char *cell(XLfile *xl, unsigned int sheet, const char *s)
  */
 char *findss(XLfile *xl, int index)
 {
-    char *s; // value of cell to return (string)
+    char *s = NULL; // value of cell to return (string)
     xmlXPathObjectPtr nodeset;
     xmlNodeSetPtr nodes;
     xmlNodePtr node;
@@ -164,6 +185,9 @@ char *findss(XLfile *xl, int index)
     }
     else
 	errExit("[%s] Unknown element [%s]\n", __func__, childnode->name);
+
+    if (s == NULL)
+	printf("[%s] returned NULL unexpectedly\n", __func__);
 
     return s;
 }
