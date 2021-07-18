@@ -521,7 +521,7 @@ The interpreter is case insensitive (meaning you could write select case, Select
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="tooltip_text" translatable="yes">This is the name of the sheet that will hold the data that will be used for the calculations. In the excel check this sheet is called "Data".</property>
-                                            <property name="max_length">10</property>
+                                            <property name="max_length">31</property>
                                             <property name="text" translatable="yes">Data</property>
                                           </object>
                                           <packing>
@@ -713,6 +713,7 @@ All the values used should be decimal numbers, not percentage
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="tooltip_text" translatable="yes">This is the discount rate, f.e. 0.02</property>
+                                            <property name="max_length">15</property>
                                             <property name="placeholder_text" translatable="yes">f.e. 0.02</property>
                                           </object>
                                           <packing>
@@ -796,6 +797,7 @@ All the values used should be decimal numbers, not percentage
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="tooltip_text" translatable="yes">This is the inflation, f.e. 0.018</property>
+                                            <property name="max_length">15</property>
                                             <property name="placeholder_text" translatable="yes">f.e. 0.018</property>
                                           </object>
                                           <packing>
@@ -837,6 +839,7 @@ All the values used should be decimal numbers, not percentage
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="tooltip_text" translatable="yes">This is the amount of percent that is assumed to have deferred payment. Usually this is 100% and thus 1 should be filled in.</property>
+                                            <property name="max_length">15</property>
                                             <property name="text" translatable="yes">1</property>
                                             <property name="placeholder_text" translatable="yes">f.e. 1</property>
                                           </object>
@@ -879,7 +882,8 @@ All the values used should be decimal numbers, not percentage
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="tooltip_text" translatable="yes">This is the discount rate for the assets in case of paragraph 113, f.e. 0.023. If the assets are not paragraph 113 then this doesn't need to be filled in.</property>
-                                            <property name="text" translatable="yes">0.023</property>
+                                            <property name="max_length">15</property>
+                                            <property name="text" translatable="yes">0</property>
                                             <property name="placeholder_text" translatable="yes">f.e. 0.023</property>
                                           </object>
                                           <packing>
@@ -981,6 +985,7 @@ the salary will increase with 0.032 each year.</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="tooltip_text" translatable="yes">The amount filled in here is the salary increase on top of inflation.</property>
+                                            <property name="max_length">15</property>
                                             <property name="placeholder_text" translatable="yes">f.e. 0.005</property>
                                           </object>
                                           <packing>

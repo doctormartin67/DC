@@ -761,7 +761,7 @@ main.o: main.c /usr/include/stdc-predef.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h DCProgram.h \
- inputdata.h
+ inputdata.h validation.h
 lifetables.o: /home/doctormartin67/Projects/work/tables/lifetables.c \
  /usr/include/stdc-predef.h \
  /home/doctormartin67/Projects/work/tables/lifetables.h \
@@ -2283,7 +2283,8 @@ actuarialfunctions.o: \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h DCProgram.h \
- inputdata.h /home/doctormartin67/Projects/library/hashtable.h
+ inputdata.h validation.h \
+ /home/doctormartin67/Projects/library/hashtable.h
 DCProgram.o: DCProgram.c /usr/include/stdc-predef.h DCProgram.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
  /usr/include/stdio.h \
@@ -3058,7 +3059,8 @@ DCProgram.o: DCProgram.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h inputdata.h \
- /usr/local/include/xlsxwriter.h /usr/local/include/xlsxwriter/workbook.h \
+ validation.h /usr/local/include/xlsxwriter.h \
+ /usr/local/include/xlsxwriter/workbook.h \
  /usr/local/include/xlsxwriter/worksheet.h \
  /usr/local/include/xlsxwriter/shared_strings.h \
  /usr/local/include/xlsxwriter/common.h \
@@ -3830,8 +3832,8 @@ client.o: client.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h inputdata.h \
- /home/doctormartin67/Projects/work/tables/lifetables.h
-inputerrors.o: inputerrors.c /usr/include/stdc-predef.h \
+ validation.h /home/doctormartin67/Projects/work/tables/lifetables.h
+validation.o: validation.c /usr/include/stdc-predef.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
  /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
@@ -4584,7 +4586,7 @@ inputerrors.o: inputerrors.c /usr/include/stdc-predef.h \
  /usr/include/gtk-3.0/gtk/deprecated/gtkvseparator.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
- /home/doctormartin67/Projects/library/libraryheader.h inputerrors.h
+ /home/doctormartin67/Projects/library/libraryheader.h validation.h
 helperfunctions.o: \
  /home/doctormartin67/Projects/library/helperfunctions.c \
  /usr/include/stdc-predef.h \
@@ -7602,4 +7604,4 @@ userinterface.o: userinterface.c /usr/include/stdc-predef.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/libraryheader.h inputdata.h \
- inputerrors.h
+ validation.h

@@ -1,34 +1,10 @@
 #include <pthread.h>
 #include "DCProgram.h"
-#include "inputerrors.h"
 
 #define GLADEFILE "DCProgram.glade"
 
-typedef struct {
-    /* --- Data --- */
-    char fname[PATH_MAX];
-    char sheetname[64];
-    char keycell[11];
-    
-    /* --- Assumptions --- */
-    char DOC[16];
-    char DR[16];
-    char agecorr[16];
-    char infl[16];
-    char TRM_PercDef[16];
-    char DR113[16];
-    char SI[16];
-    char SS[BUFSIZ]; /* This could be a large text describing salary scale with select cases */
-    /* turnover still needs to be added !!! */
-
-    /* --- Methodology --- */
-    gint standard;
-    gint assets;
-    gint paragraph;
-    gint PUCTUC;
-    gint cashflows;
-    gint evaluateDTH;
-} UserInput;
+const char *validMsg[] = {"[dd/mm/yyyy]", "^[+-]?[0-9]+\\.?[0-9]*$", 
+    "^[+-]?[0-9][0-9]?$", "^[A-Z][A-Z]?[A-Z]?[1-9][0-9]*$"};
 
 /* This will be used as indices for the widget array */
 enum {SHEETNAME, KEYCELL, DOC, DR, AGECORR, INFL, TRM_PERCDEF, DR113, FIXEDSIENTRY, SS, 
@@ -47,8 +23,8 @@ static unsigned short running; /* determines whether program is running or not *
 static DataSet *ds;
 static pthread_t thrun;
 
-static UserInput UI;
-static char MsgErr[BUFSIZ];
+static UserInput UILY;
+static Validator validatorLY;
 
 extern void runmember(CurrentMember *cm);
 
@@ -68,15 +44,15 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *, gpointer);
 static GtkWidget *buildWidget(const char *);
 static void *run(void *);
 static void *runtc(void *pl);
-static void setUIvals(void);
-static void updateUI(void);
-static Status validateUI(void);
+static void setUIvals(UserInput *UI);
+static void updateUI(UserInput *UI);
+static void printUI(UserInput *UI);
+static void validateUI(Validator *, UserInput *);
+static void validateData(Validator *, UserInput *);
 
-void userinterface(DataSet *pds)
+void userinterface()
 {
     unsigned short widgetcnt;
-
-    ds = pds;
 
     /* Initialize GTK+ and all of its supporting libraries. */
     gtk_init(NULL, NULL);
@@ -94,7 +70,7 @@ void userinterface(DataSet *pds)
     g_signal_connect(widgets[WINDOW], "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     gtk_widget_show(widgets[WINDOW]);
-
+    
     /* Hand control over to the main loop. */
     /* It will continue to run until gtk_main_quit() is called or the application
        terminates. It sleeps and waits for signals to be emitted. */
@@ -114,8 +90,13 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
     if (!running)
     {
 	/* Set User Input values and check them before we start running */
-	setUIvals();
-	if (validateUI() == OK)
+	setUIvals(&UILY);
+
+	initValidator(&validatorLY);
+	validateUI(&validatorLY, &UILY); 
+	validateData(&validatorLY, &UILY);
+
+	if (validatorLY.status == OK)
 	{
 	    running = TRUE;
 	    int s = 0; /* used for error printing */
@@ -152,12 +133,16 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 	}
 	else
 	{
+	    char MsgErr[BUFSIZ];
+	    setMsgbuf(MsgErr, &validatorLY);
 	    GtkDialog *dialog;
 	    dialog = GTK_DIALOG(widgets[MSGERR]);
 	    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", MsgErr);
 	    gtk_widget_show(GTK_WIDGET(dialog));
 	    gtk_dialog_run(dialog); 
 	    gtk_widget_hide(GTK_WIDGET(dialog));
+
+	    freeDS(ds);
 	}
     }
     else
@@ -174,7 +159,7 @@ void on_runchoice_changed(GtkComboBox *cb, gpointer *p)
 {
     if (p != NULL) printf("unused pointer [%p]\n", p);
 
-    char *choice; 
+    char *choice = "";
     if (cb == GTK_COMBO_BOX(widgets[RUNCHOICE]))
 	choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
     else
@@ -218,10 +203,10 @@ void on_openDC_activate(GtkMenuItem *m)
 	FILE *fp = fopen(filename, "rb");
 	if (fp != NULL)
 	{
-	    if (fread(&UI, sizeof(UI), 1, fp) != 1)
+	    if (fread(&UILY, sizeof(UILY), 1, fp) != 1)
 		printf("[%s] not a correct .dc file\n", filename);
 	    else
-		updateUI();
+		updateUI(&UILY);
 	    if (fclose(fp) == EOF) 
 		errExit("[%s] unable to close file [%s]\n", __func__, filename);
 	}
@@ -237,6 +222,7 @@ void on_openDC_activate(GtkMenuItem *m)
     }
 
     gtk_widget_hide(GTK_WIDGET(dialog));
+    printUI(&UILY);
 }
 
 void on_saveDC_activate(GtkMenuItem *m)
@@ -249,7 +235,7 @@ void on_saveasDC_activate(GtkMenuItem *m)
     GtkDialog *dialog;
     gint res;
    
-    setUIvals();
+    setUIvals(&UILY);
     dialog = GTK_DIALOG(widgets[SAVEASDCFILE]);
     gtk_widget_show(GTK_WIDGET(dialog));
     res = gtk_dialog_run(dialog); 
@@ -279,7 +265,7 @@ void on_saveasDC_activate(GtkMenuItem *m)
 	FILE *fp = fopen(temp, "wb");
 	if (fp != NULL)
 	{
-	    if (fwrite(&UI, sizeof(UI), 1, fp) != 1)
+	    if (fwrite(&UILY, sizeof(UILY), 1, fp) != 1)
 		errExit("[%s] unable to write to file [%s]\n", __func__, temp);
 	    if (fclose(fp) == EOF) 
 		errExit("[%s] unable to close file [%s]\n", __func__, filename);
@@ -309,10 +295,10 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
     dialog = GTK_DIALOG(widgets[OPENEXCELFILE]);
     GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
     filename = gtk_file_chooser_get_filename(chooser);
-    strcpy(UI.fname, filename);
-    printf("Excel to run: [%s]\n", UI.fname);
+    strcpy(UILY.fname, filename);
+    printf("Excel to run: [%s]\n", UILY.fname);
     char temp[BUFSIZ];
-    snprintf(temp, sizeof(temp), "File set to run:\n%s", UI.fname);
+    snprintf(temp, sizeof(temp), "File set to run:\n%s", UILY.fname);
     gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), temp); 
 }
 
@@ -366,84 +352,110 @@ static void *runtc(void *pl)
     return (void *)0;
 }
 
-static void setUIvals(void)
+static void setUIvals(UserInput *UI)
 {
-    snprintf(UI.sheetname, sizeof(UI.sheetname), "%s", 
+    snprintf(UI->sheetname, sizeof(UI->sheetname), "%s", 
 	    gtk_entry_get_text(GTK_ENTRY(widgets[SHEETNAME])));
-    snprintf(UI.keycell, sizeof(UI.keycell), "%s", 
+    snprintf(UI->keycell, sizeof(UI->keycell), "%s", 
 	    gtk_entry_get_text(GTK_ENTRY(widgets[KEYCELL])));
-    snprintf(UI.DOC, sizeof(UI.DOC), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DOC])));
-    snprintf(UI.DR, sizeof(UI.DR), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DR])));
-    snprintf(UI.agecorr, sizeof(UI.agecorr), "%s", 
+    snprintf(UI->DOC, sizeof(UI->DOC), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DOC])));
+    snprintf(UI->DR, sizeof(UI->DR), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DR])));
+    snprintf(UI->agecorr, sizeof(UI->agecorr), "%s", 
 	    gtk_entry_get_text(GTK_ENTRY(widgets[AGECORR])));
-    snprintf(UI.infl, sizeof(UI.infl), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[INFL])));
-    snprintf(UI.TRM_PercDef, sizeof(UI.TRM_PercDef), "%s", 
+    snprintf(UI->infl, sizeof(UI->infl), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[INFL])));
+    snprintf(UI->TRM_PercDef, sizeof(UI->TRM_PercDef), "%s", 
 	    gtk_entry_get_text(GTK_ENTRY(widgets[TRM_PERCDEF])));
-    snprintf(UI.DR113, sizeof(UI.DR113), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DR113])));
+    snprintf(UI->DR113, sizeof(UI->DR113), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DR113])));
 
-    snprintf(UI.SI, sizeof(UI.SI), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[FIXEDSIENTRY])));
+    snprintf(UI->SI, sizeof(UI->SI), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[FIXEDSIENTRY])));
     /* Text view is rather tedious to retrieve text from, this is why this seems so random */
     GtkTextBuffer *temp = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widgets[SS]));
     GtkTextIter begin, end;
     gtk_text_buffer_get_iter_at_offset(temp, &begin, (gint)0);
     gtk_text_buffer_get_iter_at_offset(temp, &end, (gint)-1);
-    snprintf(UI.SS, sizeof(UI.SS), "%s", gtk_text_buffer_get_text(temp, &begin, &end, TRUE));
+    snprintf(UI->SS, sizeof(UI->SS), "%s", gtk_text_buffer_get_text(temp, &begin, &end, TRUE));
 
-    UI.standard = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[STANDARD]));
-    UI.assets = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[ASSETS]));
-    UI.paragraph = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[PARAGRAPH]));
-    UI.PUCTUC = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[PUCTUC]));
-    UI.cashflows = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[CASHFLOWS]));
-    UI.evaluateDTH = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]));
+    UI->standard = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[STANDARD]));
+    UI->assets = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[ASSETS]));
+    UI->paragraph = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[PARAGRAPH]));
+    UI->PUCTUC = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[PUCTUC]));
+    UI->cashflows = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[CASHFLOWS]));
+    UI->evaluateDTH = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]));
+
+    printUI(UI);
 }
 
-static void updateUI(void)
+static void updateUI(UserInput *UI)
 {
     /* --- Data --- */
     char s[BUFSIZ];
-    snprintf(s, sizeof(s), "File set to run:\n%s", UI.fname);
+    snprintf(s, sizeof(s), "File set to run:\n%s", UI->fname);
     gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), s); 
-    gtk_entry_set_text(GTK_ENTRY(widgets[SHEETNAME]), UI.sheetname);
-    gtk_entry_set_text(GTK_ENTRY(widgets[KEYCELL]), UI.keycell);
+    gtk_entry_set_text(GTK_ENTRY(widgets[SHEETNAME]), UI->sheetname);
+    gtk_entry_set_text(GTK_ENTRY(widgets[KEYCELL]), UI->keycell);
 
     /* --- Assumptions --- */
-    gtk_entry_set_text(GTK_ENTRY(widgets[DOC]), UI.DOC);
-    gtk_entry_set_text(GTK_ENTRY(widgets[DR]), UI.DR);
-    gtk_entry_set_text(GTK_ENTRY(widgets[AGECORR]), UI.agecorr);
-    gtk_entry_set_text(GTK_ENTRY(widgets[INFL]), UI.infl);
-    gtk_entry_set_text(GTK_ENTRY(widgets[TRM_PERCDEF]), UI.TRM_PercDef);
-    gtk_entry_set_text(GTK_ENTRY(widgets[DR113]), UI.DR113);
-    gtk_entry_set_text(GTK_ENTRY(widgets[FIXEDSIENTRY]), UI.SI);
+    gtk_entry_set_text(GTK_ENTRY(widgets[DOC]), UI->DOC);
+    gtk_entry_set_text(GTK_ENTRY(widgets[DR]), UI->DR);
+    gtk_entry_set_text(GTK_ENTRY(widgets[AGECORR]), UI->agecorr);
+    gtk_entry_set_text(GTK_ENTRY(widgets[INFL]), UI->infl);
+    gtk_entry_set_text(GTK_ENTRY(widgets[TRM_PERCDEF]), UI->TRM_PercDef);
+    gtk_entry_set_text(GTK_ENTRY(widgets[DR113]), UI->DR113);
+    gtk_entry_set_text(GTK_ENTRY(widgets[FIXEDSIENTRY]), UI->SI);
 
     GtkTextBuffer *temp = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widgets[SS]));
-    gtk_text_buffer_set_text(temp, UI.SS, -1);
+    gtk_text_buffer_set_text(temp, UI->SS, -1);
 
     /* --- Methodology --- */
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[STANDARD]), UI.standard);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[ASSETS]), UI.assets);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PARAGRAPH]), UI.paragraph);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PUCTUC]), UI.PUCTUC);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[CASHFLOWS]), UI.cashflows);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]), UI.evaluateDTH);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[STANDARD]), UI->standard);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[ASSETS]), UI->assets);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PARAGRAPH]), UI->paragraph);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PUCTUC]), UI->PUCTUC);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[CASHFLOWS]), UI->cashflows);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]), UI->evaluateDTH);
 }
 
-static Status validateUI(void)
+static void printUI(UserInput *UI)
 {
-    char msg[BUFSIZ] = "";
+    /* --- Data --- */
+    printf("file name [%s]\n", UI->fname);
+    printf("sheet name [%s]\n", UI->sheetname);
+    printf("keycell [%s]\n", UI->keycell);
+
+    /* --- Assumptions --- */
+    printf("DOC [%s]\n", UI->DOC);
+    printf("DR [%s]\n", UI->DR);
+    printf("agecorr [%s]\n", UI->agecorr);
+    printf("infl [%s]\n", UI->infl);
+    printf("TRM_PercDef [%s]\n", UI->TRM_PercDef);
+    printf("DR113 [%s]\n", UI->DR113);
+    printf("SI [%s]\n", UI->SI);
+    printf("SS [%s]\n", UI->SS);
+
+    /* --- Methodology --- */
+    printf("standard [%d]\n", UI->standard); 
+    printf("assets [%d]\n", UI->assets); 
+    printf("paragraph [%d]\n", UI->paragraph); 
+    printf("PUCTUC [%d]\n", UI->PUCTUC); 
+    printf("cashflows [%d]\n", UI->cashflows); 
+    printf("evaluateDTH [%d]\n", UI->evaluateDTH); 
+}
+
+static void validateUI(Validator *val, UserInput *UI)
+{
     char temp[BUFSIZ];
-    Status status = OK;
 
     /* ----- Check keycell -----*/
     int colcnt = 0;
-    strcpy(temp, UI.keycell);
+    strcpy(temp, UI->keycell);
     upper(temp);
-    strcpy(UI.keycell, temp);
-    gtk_entry_set_text(GTK_ENTRY(widgets[KEYCELL]), UI.keycell);
+    strcpy(UI->keycell, temp);
+    gtk_entry_set_text(GTK_ENTRY(widgets[KEYCELL]), UI->keycell);
 
     if (temp[0] < 'A' || temp[0] > 'Z')
     {
-	setMsgErr(msg, "Key Cell", UI.keycell, CELLERR);
-	status = ERROR;
+	updateValidation(val, ERROR, "KEY cell [%s], expected of the form %s", 
+		UI->keycell, validMsg[CELLERR]);
     }
     else
     {
@@ -458,14 +470,14 @@ static Status validateUI(void)
 
 	if (colcnt > 3)
 	{
-	    setMsgErr(msg, "Key Cell", UI.keycell, CELLERR);
-	    status = ERROR;
+	    updateValidation(val, ERROR, "KEY cell [%s], " "expected of the form %s", 
+		    UI->keycell, validMsg[CELLERR]);
 	}
 
 	if (*pt == '\0')
 	{
-	    setMsgErr(msg, "Key Cell", UI.keycell, CELLERR);
-	    status = ERROR;
+	    updateValidation(val, ERROR, "KEY cell [%s], " "expected of the form %s", 
+		    UI->keycell, validMsg[CELLERR]);
 	}
 	
 	while (isdigit(*pt))
@@ -473,14 +485,14 @@ static Status validateUI(void)
 	
 	if (*pt != '\0')
 	{
-	    setMsgErr(msg, "Key Cell", UI.keycell, CELLERR);
-	    status = ERROR;
+	    updateValidation(val, ERROR, "KEY cell [%s], " "expected of the form %s", 
+		    UI->keycell, validMsg[CELLERR]);
 	}
     }
 
     /* ----- Check DOC -----*/
     char *day, *month, *year;
-    strcpy(temp, UI.DOC);
+    strcpy(temp, UI->DOC);
 
     day = strtok(temp, "/");
     month = strtok(NULL, "/");
@@ -488,65 +500,68 @@ static Status validateUI(void)
 
     if (day == NULL || month == NULL || year == NULL)
     {
-	setMsgErr(msg, "DOC", UI.DOC, DATEERR);
-	status = ERROR;
+	updateValidation(val, ERROR, "DOC [%s], expected of the form %s", 
+		UI->DOC, validMsg[DATEERR]);
     }
     else
     {
 	Date *tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
 	if (tempDate == NULL)
 	{
-	    setMsgErr(msg, "DOC", UI.DOC, DATEERR);
-	    status = ERROR;
+	    updateValidation(val, ERROR, "DOC [%s], expected of the form %s", 
+		    UI->DOC, validMsg[DATEERR]);
 	}
 	free(tempDate);
     }
 
     /* ----- Check DR -----*/
-    if (!isfloat(UI.DR))
+    if (!isfloat(UI->DR))
     {
-	setMsgErr(msg, "DR", UI.DR, FLOATERR);
-	status = ERROR;
+	updateValidation(val, ERROR, "DR [%s], expected of the form %s", 
+		UI->DR, validMsg[FLOATERR]);
     }
 
     /* ----- Check Age Correction -----*/
-    if (!isint(UI.agecorr))
+    if (!isint(UI->agecorr))
     {
-	setMsgErr(msg, "Age Correction", UI.agecorr, AGECORRERR);
-	status = ERROR;
+	updateValidation(val, ERROR, "Age Correction [%s], expected of the form %s", 
+		UI->agecorr, validMsg[AGECORRERR]);
     }
 
     /* ----- Check Inflation -----*/
-    if (!isfloat(UI.infl))
+    if (!isfloat(UI->infl))
     {
-	setMsgErr(msg, "Inflation", UI.infl, FLOATERR);
-	status = ERROR;
+	updateValidation(val, ERROR, "Inflation [%s], expected of the form %s", 
+		UI->infl, validMsg[FLOATERR]);
     }
 
     /* ----- Check Termination percentage -----*/
-    if (!isfloat(UI.TRM_PercDef))
+    if (!isfloat(UI->TRM_PercDef))
     {
-	setMsgErr(msg, "Termination % (usually 1)", UI.TRM_PercDef, FLOATERR);
-	status = ERROR;
+	updateValidation(val, ERROR, "Termination % [%s] (usually 1), expected of the form %s", 
+		UI->TRM_PercDef, validMsg[FLOATERR]);
     }
 
     /* ----- Check DR 113 -----*/
-    if (!isfloat(UI.DR113))
+    if (!isfloat(UI->DR113))
     {
-	setMsgErr(msg, "DR $113", UI.DR113, FLOATERR);
-	if (status == OK) status = WARNING;
+	updateValidation(val, WARNING, "DR $113 [%s], expected of the form %s", 
+		UI->DR113, validMsg[FLOATERR]);
     }
 
     /* ----- Check Salary Increase -----*/
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widgets[FIXEDSIRADIOBUTTON])))
     {
-	if (!isfloat(UI.SI))
+	if (!isfloat(UI->SI))
 	{
-	    setMsgErr(msg, "Salary Increase", UI.SI, FLOATERR);
-	    status = ERROR;
+	    updateValidation(val, ERROR, "Salary Increase [%s], expected of the form %s", 
+		    UI->SI, validMsg[FLOATERR]);
 	}
     }
+}
 
-    strcpy(MsgErr, msg);
-    return status;
+static void validateData(Validator *val, UserInput *UI)
+{
+    if (val->status == OK)
+	ds = createDS(val, UI); 
 }

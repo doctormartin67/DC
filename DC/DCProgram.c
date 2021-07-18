@@ -3,16 +3,30 @@
 #include "libraryheader.h"
 #include "xlsxwriter.h"
 
-DataSet *createDS(const char *s)
+const char *colnames[MAXKEYS] = {"KEY", "NO REGLEMENT", "NAAM", "CONTRACT", "STATUS", 
+    "ACTIVE CONTRACT", "SEX", "MS", "DOB", "DOE", "DOL", "DOS", "DOA", "DOR", "CATEGORIE", 
+    "SAL", "PG", "PT", "NRA", "# ENF", "TARIEF", "KO", "Rent INV", "Contr INV", "ART24_A_GEN1", 
+    "ART24_A_GEN2", "ART24_C_GEN1", "ART24_C_GEN2", "PREMIUM", "CAP", "CAPPS", "CAPDTH", "RES",
+    "RESPS", "CAPRED", "TAUX", "DELTA_CAP_A_GEN1", "DELTA_CAP_C_GEN1", 
+    "X/10", "CAO", "ORU", "CHOICE DTH", "CHOICE INV SICKNESS", "CHOICE INV WORK", "Contr_D", 
+    "%ofSALforKO", "INV INDEXATION", "GR/DGR", "plan", "Baremische ancienniteit",
+    "increaseSalFirstYear", "CCRA"};
+
+DataSet *createDS(Validator *val, UserInput *UI)
 {
+    const char *s = UI->fname;
     createXLzip(s); /* THIS IS NOT PORTABLE!! */
 
     XLfile *xl = createXL(s);
+    if (xl == NULL)
+	errExit("[%s] createXL returned NULL\n", __func__);
     Hashtable **ht;
     DataSet *ds = malloc(sizeof(DataSet));
     if (ds == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
     ds->xl = xl;
+    ds->val = val;
+    ds->UI = UI;
     setkey(ds);
     countMembers(ds);
     createData(ds);
@@ -52,7 +66,7 @@ CurrentMember createCM(Hashtable *ht)
     cm.sal[0] = atof(getcmval(&cm, SAL, -1, -1));
     cm.PG = atof(getcmval(&cm, PG, -1, -1));
     cm.PT = atof(getcmval(&cm, PT, -1, -1));
-    cm.NRA = atof(getcmval(&cm, RA, -1, -1));
+    cm.NRA = atof(getcmval(&cm, NORMRA, -1, -1));
     cm.kids = (unsigned short)atoi(getcmval(&cm, ENF, -1, -1));
     cm.tariff = 0;
     if (strcmp(getcmval(&cm, TARIEF, -1, -1), "UKMS") == 0)  cm.tariff = UKMS;
@@ -231,7 +245,7 @@ void createData(DataSet *ds)
 
     // Set the keys
     int countkeys = 0;
-    ds->keys = (char **)calloc(BUFSIZ/8, sizeof(char *));
+    ds->keys = (char **)calloc(MAXKEYS, sizeof(char *));
     if (ds->keys == NULL) errExit("[%s] calloc returned NULL\n", __func__);
     char **pkey = ds->keys;
     *pkey = cell(ds->xl, ds->sheet, keyCell);
@@ -239,7 +253,7 @@ void createData(DataSet *ds)
     while (*pkey != NULL)
      {
 	// Here we update cell for loop, for example O11 becomes P11
-	if (++countkeys >= BUFSIZ/8)
+	if (++countkeys >= MAXKEYS)
 	    errExit("[%s] Data has too many keys\n", __func__);;
 	nextcol(keyCell);
 	*++pkey = cell(ds->xl, ds->sheet, keyCell);
@@ -846,6 +860,9 @@ void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn dc)
 /* --- free memory functions --- */
 void freeDS(DataSet *ds)
 {
+    if (ds == NULL)
+	return;
+
     char **s = ds->keys;
     while (*s != NULL)
 	free(*s++);
@@ -857,6 +874,10 @@ void freeDS(DataSet *ds)
     free(ds->cm);
 
     freeXL(ds->xl);
+    
+    for (int i = 0; i < ds->membercnt; i++)
+	freeHashtable(ds->Data[i]);
+    free(ds->Data);
     free(ds);
 }
 

@@ -3,6 +3,7 @@
 
 #include "libraryheader.h"
 #include "inputdata.h"
+#include "validation.h"
 
 //---Define BIT constants---
 //-  status BITS  -
@@ -55,7 +56,34 @@ static const double ART24TAUX[2][2] = {{0.0325, 0.0175}, {0.0375, 0.0175}};
 /* Current guarenteed rates that the employers need to guarentee on the 
    reserves of their employees by Belgian law (Employer-Employee, generation)*/
 
-typedef double GenMatrix[MAXGEN][MAXPROJ]; /* Each generation has an amount that evolves with k */
+typedef double GenMatrix[MAXGEN][MAXPROJ]; 
+
+//---Data Declarations---
+typedef struct {
+    /* --- Data --- */
+    char fname[PATH_MAX];
+    char sheetname[32];
+    char keycell[11];
+    
+    /* --- Assumptions --- */
+    char DOC[11];
+    char DR[16];
+    char agecorr[16];
+    char infl[16];
+    char TRM_PercDef[16];
+    char DR113[16];
+    char SI[16];
+    char SS[BUFSIZ]; /* This could be a large text describing salary scale with select cases */
+    /* turnover still needs to be added !!! */
+
+    /* --- Methodology --- */
+    gint standard;
+    gint assets;
+    gint paragraph;
+    gint PUCTUC;
+    gint cashflows;
+    gint evaluateDTH;
+} UserInput;
 
 typedef struct {
     Hashtable *Data; //Data for an affiliate is in the form of a hashtable
@@ -65,7 +93,8 @@ typedef struct {
     char *regl; // REGLEMENT
     char *name; // NAME
     char *contract; // CONTRACT number
-    unsigned short status; // 0000 0000 0000 0111 means single male active member and active contract
+    unsigned short status; /* 0000 0000 0000 0111 means single male active member and 
+			      active contract */
     Date *DOB; // date of birth
     Date *DOE; // date of entry
     Date *DOL; // date of leaving
@@ -161,9 +190,6 @@ typedef struct {
     double PBODTHNCCF[MAXPROJ]; // PBO Death Normal Cost Cashflows
 } CurrentMember;
 
-//---Useful functions for CurrentMembers---
-double gensum(GenMatrix amount[], unsigned short EREE, int loop);
-
 typedef struct {
     int keyrow; /* find the row in the excel file where 
 		   the keys are to use in the hashtable */
@@ -176,7 +202,14 @@ typedef struct {
     Hashtable **Data; // This will be set using createData function below
     int membercnt;
     CurrentMember *cm; // This is a pointer to the affiliates	 
+    UserInput *UI; /* this will point to the static UserInput struct created in 
+		      userinterface.c */
+    Validator *val; /* this will point to the static Validator struct created in 
+		      userinterface.c */
 } DataSet;
+
+//---Useful functions for CurrentMembers---
+double gensum(GenMatrix amount[], unsigned short EREE, int loop);
 
 //---Assumptions declarations---
 typedef struct {
@@ -232,7 +265,6 @@ double wxdef(CurrentMember *cm, int k);
 double retx(CurrentMember *cm, int k);
 
 //---Tariff Structure---
-
 typedef struct {
     unsigned int lt; /* there is an array of strings containing the names of lifetables. 
 			I reference the array elements by using the index defined with an 
@@ -256,8 +288,8 @@ typedef struct {
 
 Tariff tff; // Tariff structure
 
-//---Setter declarations---
-DataSet *createDS(const char *);
+//---Data Functions---
+DataSet *createDS(Validator *, UserInput *);
 CurrentMember createCM(Hashtable *);
 void freeDS(DataSet *ds);
 void freeCM(CurrentMember *cm);
@@ -266,13 +298,11 @@ char *getcmval(CurrentMember *cm, DataColumn, int EREE, int gen);
 /* This function will allocate memory based on membercnt for the underlying
    Hashtable used for the data.*/
 void createData(DataSet *ds);
-
-/* used to find the row and sheet where the keys lie for the data to be used
-   for calculations. If the word KEY isn't found in the data then
-   1 is returned */
 void setkey(DataSet *ds);
 void countMembers(DataSet *ds);
-int printresults(DataSet *ds); // tc = test case
+
+//---Results Functions---
+int printresults(DataSet *ds);
 int printtc(DataSet *ds, unsigned int tc); // tc = test case
 
 #endif

@@ -1,25 +1,12 @@
 #include "actuarialfunctions.h"
 
-void userinterface(DataSet *ds);
+void userinterface();
 void runmember(CurrentMember *cm);
 void runonerun(DataSet *ds);
 
-int main(int argc, char *argv[])
+int main(void)
 {
-    if (argc != 2)
-    {
-	printf("Syntax: main \"Excel file\"\n");
-	exit(0);
-    }
-
-    DataSet *ds = createDS(argv[1]);
-
-    /* testing freeDS */
-    freeDS(ds);
-    exit(0);
-    /* end testing freeDS */
-
-    userinterface(ds);
+    userinterface();
 
     return 0;
 }
