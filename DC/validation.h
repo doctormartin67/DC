@@ -1,7 +1,7 @@
 #ifndef VALIDATION
 #define VALIDATION
 
-typedef enum {OK, ERROR, WARNING} Status;
+typedef enum {OK, WARNING, ERROR} Status;
 
 /* these will be used as the indeces of validMsg array */
 typedef enum {DATEERR, FLOATERR, AGECORRERR, CELLERR} Err;

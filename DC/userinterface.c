@@ -143,6 +143,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 	    gtk_widget_hide(GTK_WIDGET(dialog));
 
 	    freeDS(ds);
+	    ds = NULL;
 	}
     }
     else
@@ -457,7 +458,7 @@ static void validateUI(Validator *val, UserInput *UI)
 	updateValidation(val, ERROR, "KEY cell [%s], expected of the form %s", 
 		UI->keycell, validMsg[CELLERR]);
     }
-    else
+    else if (strlen(temp) > 1)
     {
 	char *pt = &temp[1];
 	colcnt++;
@@ -489,6 +490,9 @@ static void validateUI(Validator *val, UserInput *UI)
 		    UI->keycell, validMsg[CELLERR]);
 	}
     }
+    else if (strlen(temp) == 1)
+	updateValidation(val, ERROR, "KEY cell [%s], " "expected of the form %s", 
+		UI->keycell, validMsg[CELLERR]);
 
     /* ----- Check DOC -----*/
     char *day, *month, *year;

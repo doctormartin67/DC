@@ -36,7 +36,7 @@ void updateValidation(Validator *val, Status status, const char *format, ...)
 
 void setMsgbuf(char buf[], Validator *val)
 {
-    unsigned int cnt;
+    unsigned int cnt = 0;
     char *s[MAXMSG];
     int maxbuf = 0;
 

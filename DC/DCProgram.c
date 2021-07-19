@@ -11,23 +11,42 @@ const char *colnames[MAXKEYS] = {"KEY", "NO REGLEMENT", "NAAM", "CONTRACT", "STA
     "X/10", "CAO", "ORU", "CHOICE DTH", "CHOICE INV SICKNESS", "CHOICE INV WORK", "Contr_D", 
     "%ofSALforKO", "INV INDEXATION", "GR/DGR", "plan", "Baremische ancienniteit",
     "increaseSalFirstYear", "CCRA"};
+static int colmissing[MAXKEYS];
 
 DataSet *createDS(Validator *val, UserInput *UI)
 {
     const char *s = UI->fname;
-    createXLzip(s); /* THIS IS NOT PORTABLE!! */
-
-    XLfile *xl = createXL(s);
-    if (xl == NULL)
-	errExit("[%s] createXL returned NULL\n", __func__);
     Hashtable **ht;
     DataSet *ds = malloc(sizeof(DataSet));
     if (ds == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
+    /* set all missing columns back to 0 when we try to import data again */
+    for (int i = 0; i < MAXKEYS; i++)
+	colmissing[i] = 0;
+
+    createXLzip(s); /* THIS IS NOT PORTABLE!! */
+
+    XLfile *xl = createXL(s);
+
+    /* initialise DataSet */
+    ds->membercnt = 0;
+    ds->keys = NULL;
+    ds->keynode = NULL;
+    ds->Data = NULL;
     ds->xl = xl;
     ds->val = val;
     ds->UI = UI;
-    setkey(ds);
+    ds->cm = NULL;
+
+    if (ds->xl == NULL)
+    {
+	updateValidation(val, ERROR, 
+		"Unable to parse excel file [%s], is the file empty?", s);
+	return ds;
+    }
+    if (!setkey(ds))
+	return ds;
+
     countMembers(ds);
     createData(ds);
 
@@ -38,6 +57,8 @@ DataSet *createDS(Validator *val, UserInput *UI)
     for (int i = 0; i < ds->membercnt; i++)
 	ds->cm[i] = createCM(*ht++);
     printf("Setting values completed.\n");
+
+    validateColumns(ds->val);
 
     return ds;
 }
@@ -145,46 +166,64 @@ double gensum(GenMatrix amount[], unsigned short EREE, int loop)
     return sum;
 }
 
-/* THIS FUNCTION NEEDS UPDATING SO THAT THE USER OF THE INTERFACES INPUTS THE START OF DATA */
-void setkey(DataSet *ds)
+int setkey(DataSet *ds)
 {
     XLfile *xl = ds->xl;
-    char keyCell[32];
-    char *row;
+    const char *pkc = ds->UI->keycell;
+    char *row, *pcol = ds->keycolumn;
     char **xls = xl->sheetname;
     unsigned int i;
     xmlXPathObjectPtr nodeset;
     xmlNodeSetPtr nodes;
     xmlNodePtr node;
 
-    strcpy(ds->keycolumn, "B"); /* This will be changed eventually to use input from user!!! */
-    ds->keyrow = 11; /* This will be changed eventually to use input from user!!! */
-    strcpy(ds->datasheet, "Data"); /* This will be changed eventually to use input from user!!! */
+    /* a cell (f.e. B11) will start with no digits, then digits */
+    while (!isdigit(*pkc))
+	*pcol++ = *pkc++;
+    *pcol = '\0';
+    ds->keyrow = atoi(pkc);
+
+    strcpy(ds->datasheet, ds->UI->sheetname);
     for (i = 0; i < xl->sheetcnt; i++)
 	if (!strcmp(xls[i], ds->datasheet))
 	    break;
     if ((ds->sheet = i) == xl->sheetcnt)
-	errExit("[%s] sheet [%s] does not exist\n", __func__, ds->datasheet);
-
-    snprintf(keyCell, sizeof(keyCell), "%s%d", ds->keycolumn, ds->keyrow);
-
-    nodeset = xl->nodesets[ds->sheet];
-    nodes = nodeset->nodesetval;
-
-    /* set key node */
-    for (node = *nodes->nodeTab; node != NULL; node = node->next)
     {
-	/* find node with row */
-	row = (char *)xmlGetProp(node, (const xmlChar *)"r");
-	if (atoi(row) == ds->keyrow)
-	{
-	    xmlFree(row);
-	    break;
-	}
+	updateValidation(ds->val, ERROR, "Sheet [%s] does not exist", ds->datasheet);
+	return 0;
     }
+    else
+    {
+	/* Check whether cell that was provided has anything in it */
+	if (cell(ds->xl, ds->sheet, ds->UI->keycell) == NULL)
+	{
+	    updateValidation(ds->val, ERROR, "Nothing in cell [%s] found", ds->UI->keycell);
+	    return 0;
+	}
 
-    if ((ds->keynode = node) == NULL)
-	errExit("[%s] key cell [%s] incorrect\n", __func__, keyCell);
+	nodeset = xl->nodesets[ds->sheet];
+	nodes = nodeset->nodesetval;
+
+	/* set key node */
+	for (node = *nodes->nodeTab; node != NULL; node = node->next)
+	{
+	    /* find node with row */
+	    row = (char *)xmlGetProp(node, (const xmlChar *)"r");
+	    if (atoi(row) == ds->keyrow)
+	    {
+		xmlFree(row);
+		break;
+	    }
+	}
+
+	if ((ds->keynode = node) == NULL)
+	{
+	    updateValidation(ds->val, ERROR, "Nothing in cell [%s] found", ds->UI->keycell);
+	    return 0;
+	}
+	else
+	    return 1;
+    }
 }
 
 void countMembers(DataSet *ds)
@@ -204,6 +243,8 @@ void countMembers(DataSet *ds)
     }
     ds->membercnt = count - 1 - ds->keyrow;
     printf("Amount of affiliates in data: %d\n", ds->membercnt);
+    printf("[%s] still to be tested whether this works if there are values under the data\n", 
+	    __func__);
 }
 
 /* Excel is just a bunch of cells of the form O11, DC103, ...
@@ -254,7 +295,7 @@ void createData(DataSet *ds)
      {
 	// Here we update cell for loop, for example O11 becomes P11
 	if (++countkeys >= MAXKEYS)
-	    errExit("[%s] Data has too many keys\n", __func__);;
+	    errExit("[%s] Data has too many keys\n", __func__);
 	nextcol(keyCell);
 	*++pkey = cell(ds->xl, ds->sheet, keyCell);
     }
@@ -284,27 +325,30 @@ void createData(DataSet *ds)
     printf("Creating Data...\n");
     for (int i = 0; i < ds->membercnt; i++)
     {
+	pkey = ds->keys;
 	// Set the initial data (KEY)
-	data = cell(ds->xl, ds->sheet, dataCell);
-	lookup(*(ds->keys), data, *(ds->Data + i));
+	if ((data = cell(ds->xl, ds->sheet, dataCell)) == NULL)
+	    lookup(*pkey++, "0", *(ds->Data + i));
+	else
+	    lookup(*pkey++, data, *(ds->Data + i));
 	nextcol(dataCell);
-	// Set index of keys to 1 at the start of loop
-	countkeys = 1;
-	while (*(ds->keys + countkeys) != NULL)
+	while (*pkey != NULL)
 	{
-
 	    while ((data = cell(ds->xl, ds->sheet, dataCell)) == NULL)
 	    {
-		lookup(*(ds->keys + countkeys), "0", *(ds->Data + i));
+		if (*pkey != NULL)
+		    lookup(*pkey++, "0", *(ds->Data + i));
+		else
+		    break;
 		// Here we update cell for loop, for example O11 becomes P11
-		countkeys++;
 		nextcol(dataCell);
 	    }
 
-	    lookup(*(ds->keys + countkeys), data, *(ds->Data + i));
-
+	    if (*pkey != NULL)
+		lookup(*pkey++, data, *(ds->Data + i));
+	    else
+		break;
 	    // Here we update cell for loop, for example O11 becomes P11
-	    countkeys++;
 	    nextcol(dataCell);
 	}
 
@@ -313,7 +357,6 @@ void createData(DataSet *ds)
 	snprintf(srow, sizeof(srow), "%d", irow);
 	strcpy(dataCell, column);
 	strcat(dataCell, srow);
-
     }
     printf("Creation complete\n");
 }
@@ -838,11 +881,11 @@ char *getcmval(CurrentMember *cm, DataColumn dc, int EREE, int gen)
     }
 
     List *h;
-    if ((h = lookup(value, NULL, cm->Data)) == NULL)
+    if (colmissing[dc] || (h = lookup(value, NULL, cm->Data)) == NULL)
     {
-	printf("warning: '%s' not found in the set of keys given, ", value);
-	printf("make sure your column name is correct\n");
-	printf("Using 0 by default.\n");
+	/* for now on this is set to true so this function will no longer search the hashtable
+	   for the key */
+	colmissing[dc] = 1;
 	return strdup("0");
     }
     else
@@ -864,7 +907,7 @@ void freeDS(DataSet *ds)
 	return;
 
     char **s = ds->keys;
-    while (*s != NULL)
+    while (s != NULL && *s != NULL)
 	free(*s++);
     free(ds->keys);
 
@@ -892,6 +935,118 @@ void freeCM(CurrentMember *cm)
     for (int i = 0; i < MAXPROJ; i++)
 	free(cm->DOC[i]);
     free(cm->DOC);
+}
+
+void validateColumns(Validator *val)
+{
+    /* All missing columns are set to a WARNING, then the important ones are set to ERROR */
+    int cnt = 0;
+    for (int i = 0; i < MAXKEYS; i++)
+	if (colmissing[i])
+	    updateValidation(val, WARNING, 
+		    "Column [%s] missing, all values set to 0", colnames[i]);
+
+    if (colmissing[STATUS])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing, (ACT/DEF)", colnames[STATUS]);
+	cnt++;
+    }
+
+    if (colmissing[SEX])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing, (1/2)", colnames[SEX]);
+	cnt++;
+    }
+
+    if (colmissing[DOB])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing, (Date of birth)", colnames[DOB]);
+	cnt++;
+    }
+
+    if (colmissing[DOS])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing, (Date of situation)", colnames[DOS]);
+	cnt++;
+    }
+
+    if (colmissing[DOA])
+    {
+	updateValidation(val, ERROR, 
+		"Column [%s] missing, (Date of affiliation)", colnames[DOA]);
+	cnt++;
+    }
+
+    if (colmissing[DOR])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing, (Date of retirement)", colnames[DOR]);
+	cnt++;
+    }
+
+    if (colmissing[SAL])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing, (salary)", colnames[SAL]);
+	cnt++;
+    }
+
+    if (colmissing[PT])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing, (part time)", colnames[PT]);
+	cnt++;
+    }
+
+    if (colmissing[NORMRA])
+    {
+	updateValidation(val, ERROR, 
+		"Column [%s] missing, (normal retirement age)", colnames[NORMRA]);
+	cnt++;
+    }
+
+    if (colmissing[TARIEF])
+    {
+	updateValidation(val, ERROR, 
+		"Column [%s] missing, (UKMS/UKZT/MIXED/UKMT)", colnames[TARIEF]);
+	cnt++;
+    }
+
+    if (colmissing[ART24_A_GEN1])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing", colnames[ART24_A_GEN1]);
+	cnt++;
+    }
+
+    if (colmissing[ART24_A_GEN2])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing", colnames[ART24_A_GEN2]);
+	cnt++;
+    }
+
+    if (colmissing[ART24_C_GEN1])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing", colnames[ART24_C_GEN1]);
+	cnt++;
+    }
+
+    if (colmissing[ART24_C_GEN2])
+    {
+	updateValidation(val, ERROR, "Column [%s] missing", colnames[ART24_C_GEN2]);
+	cnt++;
+    }
+
+    if (colmissing[RES])
+    {
+	updateValidation(val, ERROR, 
+		"One or more of the generational columns for [%s] are missing", 
+		colnames[RES]);
+	cnt++;
+    }
+
+    /* after 10 missing columns an error message in included with a suggestion that the 
+       wrong cell was chosen */
+    if (cnt > 10)
+	updateValidation(val, ERROR, 
+		"\nMany columns missing, "
+		"was the correct cell chosen under the \"Data\" section?");
 }
 
 /* --- Assumptions functions --- */
