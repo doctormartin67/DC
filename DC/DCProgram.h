@@ -204,8 +204,6 @@ typedef struct {
     CurrentMember *cm; // This is a pointer to the affiliates	 
     UserInput *UI; /* this will point to the static UserInput struct created in 
 		      userinterface.c */
-    Validator *val; /* this will point to the static Validator struct created in 
-		      userinterface.c */
 } DataSet;
 
 //---Useful functions for CurrentMembers---
@@ -295,11 +293,12 @@ void freeDS(DataSet *ds);
 void freeCM(CurrentMember *cm);
 void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn);
 char *getcmval(CurrentMember *cm, DataColumn, int EREE, int gen);
-void validateColumns(Validator *val);
+void validateColumns();
+void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char *input);
 /* This function will allocate memory based on membercnt for the underlying
    Hashtable used for the data.*/
 void createData(DataSet *ds);
-/* returns 1 if sheet and row where found, otherwise returns 0 */
+/* returns 1 if sheet and row were found, otherwise returns 0 */
 int setkey(DataSet *ds);
 void countMembers(DataSet *ds);
 

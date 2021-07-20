@@ -96,7 +96,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 	validateUI(&validatorLY, &UILY); 
 	validateData(&validatorLY, &UILY);
 
-	if (validatorLY.status == OK)
+	if (validatorLY.status != ERROR)
 	{
 	    running = TRUE;
 	    int s = 0; /* used for error printing */
@@ -509,6 +509,12 @@ static void validateUI(Validator *val, UserInput *UI)
     }
     else
     {
+	if (!isint(day) || !isint(month) || !isint(year))
+	{
+	    updateValidation(val, ERROR, "DOC [%s], expected of the form %s", 
+		    UI->DOC, validMsg[DATEERR]);
+	}
+
 	Date *tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
 	if (tempDate == NULL)
 	{

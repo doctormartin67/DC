@@ -13,7 +13,9 @@ const char *colnames[MAXKEYS] = {"KEY", "NO REGLEMENT", "NAAM", "CONTRACT", "STA
     "increaseSalFirstYear", "CCRA"};
 static int colmissing[MAXKEYS];
 
-DataSet *createDS(Validator *val, UserInput *UI)
+static Validator *val;
+
+DataSet *createDS(Validator *v, UserInput *UI)
 {
     const char *s = UI->fname;
     Hashtable **ht;
@@ -23,6 +25,8 @@ DataSet *createDS(Validator *val, UserInput *UI)
     /* set all missing columns back to 0 when we try to import data again */
     for (int i = 0; i < MAXKEYS; i++)
 	colmissing[i] = 0;
+
+    val = v;
 
     createXLzip(s); /* THIS IS NOT PORTABLE!! */
 
@@ -34,7 +38,6 @@ DataSet *createDS(Validator *val, UserInput *UI)
     ds->keynode = NULL;
     ds->Data = NULL;
     ds->xl = xl;
-    ds->val = val;
     ds->UI = UI;
     ds->cm = NULL;
 
@@ -58,7 +61,7 @@ DataSet *createDS(Validator *val, UserInput *UI)
 	ds->cm[i] = createCM(*ht++);
     printf("Setting values completed.\n");
 
-    validateColumns(ds->val);
+    validateColumns();
 
     return ds;
 }
@@ -99,12 +102,17 @@ CurrentMember createCM(Hashtable *ht)
     cm.contrINV = atof(getcmval(&cm, CONTRINV, -1, -1));
 
     // define article 24 from data
-    for (int j = 0; j < TUCPS_1 + 1; j++)
+    cm.ART24[PUC][ER][ART24GEN1][0] = atof(getcmval(&cm, ART24_A_GEN1, -1, -1));
+    cm.ART24[PUC][ER][ART24GEN2][0] = atof(getcmval(&cm, ART24_A_GEN2, -1, -1));
+    cm.ART24[PUC][EE][ART24GEN1][0] = atof(getcmval(&cm, ART24_C_GEN1, -1, -1));
+    cm.ART24[PUC][EE][ART24GEN2][0] = atof(getcmval(&cm, ART24_C_GEN2, -1, -1));
+    /* PUC = TUC = TUCPS_1 */
+    for (int j = 1; j < 3; j++)
     {
-	cm.ART24[j][ER][ART24GEN1][0] = atof(getcmval(&cm, ART24_A_GEN1, -1, -1));
-	cm.ART24[j][ER][ART24GEN2][0] = atof(getcmval(&cm, ART24_A_GEN2, -1, -1));
-	cm.ART24[j][EE][ART24GEN1][0] = atof(getcmval(&cm, ART24_C_GEN1, -1, -1));
-	cm.ART24[j][EE][ART24GEN2][0] = atof(getcmval(&cm, ART24_C_GEN2, -1, -1));
+	cm.ART24[j][ER][ART24GEN1][0] = cm.ART24[PUC][ER][ART24GEN1][0];
+	cm.ART24[j][ER][ART24GEN2][0] = cm.ART24[PUC][ER][ART24GEN2][0];
+	cm.ART24[j][EE][ART24GEN1][0] = cm.ART24[PUC][EE][ART24GEN1][0];
+	cm.ART24[j][EE][ART24GEN2][0] = cm.ART24[PUC][EE][ART24GEN2][0];
     }
 
     // all variables that have generations, employer and employee
@@ -189,7 +197,7 @@ int setkey(DataSet *ds)
 	    break;
     if ((ds->sheet = i) == xl->sheetcnt)
     {
-	updateValidation(ds->val, ERROR, "Sheet [%s] does not exist", ds->datasheet);
+	updateValidation(val, ERROR, "Sheet [%s] does not exist", ds->datasheet);
 	return 0;
     }
     else
@@ -197,7 +205,7 @@ int setkey(DataSet *ds)
 	/* Check whether cell that was provided has anything in it */
 	if (cell(ds->xl, ds->sheet, ds->UI->keycell) == NULL)
 	{
-	    updateValidation(ds->val, ERROR, "Nothing in cell [%s] found", ds->UI->keycell);
+	    updateValidation(val, ERROR, "Nothing in cell [%s] found", ds->UI->keycell);
 	    return 0;
 	}
 
@@ -218,7 +226,7 @@ int setkey(DataSet *ds)
 
 	if ((ds->keynode = node) == NULL)
 	{
-	    updateValidation(ds->val, ERROR, "Nothing in cell [%s] found", ds->UI->keycell);
+	    updateValidation(val, ERROR, "Nothing in cell [%s] found", ds->UI->keycell);
 	    return 0;
 	}
 	else
@@ -889,7 +897,10 @@ char *getcmval(CurrentMember *cm, DataColumn dc, int EREE, int gen)
 	return strdup("0");
     }
     else
+    {
+	validateInput(dc, cm, value, h->value);
 	return h->value;
+    }
 }
 
 // Example if cm->PREMIUM then s = PREMIUM and we loop through PREMIUM_EREE_GENj
@@ -937,7 +948,7 @@ void freeCM(CurrentMember *cm)
     free(cm->DOC);
 }
 
-void validateColumns(Validator *val)
+void validateColumns()
 {
     /* All missing columns are set to a WARNING, then the important ones are set to ERROR */
     int cnt = 0;
@@ -1047,6 +1058,77 @@ void validateColumns(Validator *val)
 	updateValidation(val, ERROR, 
 		"\nMany columns missing, "
 		"was the correct cell chosen under the \"Data\" section?");
+}
+
+void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char *input)
+{
+    /* not all columns were added here because not all of them will be used in the
+       program, I chose the most important ones to check, the others are the responsibility of 
+       the user */
+    DataColumn floats[] = {SAL, PT, NORMRA, ART24_A_GEN1, ART24_A_GEN2, ART24_C_GEN1, 
+	ART24_C_GEN2, PREMIUM, CAP, CAPPS, RES, RESPS, CAPRED, TAUX};
+    DataColumn dates[] = {DOB, DOS, DOA, DOR};
+
+    int lenf = sizeof(floats)/sizeof(floats[0]);
+    int lend = sizeof(dates)/sizeof(dates[0]);
+
+    /* --- Check floats --- */
+    for (int i = 0; i < lenf; i++)
+    {
+	if (dc == floats[i])
+	{
+	    if (!isfloat(input))
+		updateValidation(val, ERROR, 
+			"Member [%s] has [%s = %s], expected of the form %s", 
+			cm->key, key, input, validMsg[FLOATERR]);
+	    if (input[0] == '-')
+		updateValidation(val, WARNING, 
+			"Member [%s] has a negative %s [%s]", cm->key, key, input);
+	    return;
+	}
+    }
+
+    /* --- Check Dates --- */
+    for (int i = 0; i < lend; i++)
+    {
+	if (dc == dates[i])
+	{
+	    Date *temp = newDate((unsigned int)atoi(input), 0, 0, 0);
+	    if (temp == NULL)
+		updateValidation(val, ERROR, 
+			"Member [%s] has invalid date [%s = %s]", cm->key, key, input); 
+	    free(temp);
+	    return;
+	}
+    }
+
+    /* --- Check Miscellaneous --- */
+    if (dc == STATUS)
+    {
+	if (strcmp(input, "ACT") != 0 && strcmp(input, "DEF") != 0)
+	    updateValidation(val, ERROR, 
+		    "Member [%s] has invalid status [%s = %s], expected ACT or DEF", 
+		    cm->key, key, input); 
+	return;
+    }
+
+    if (dc == SEX)
+    {
+	if (atoi(input) != 1 && atoi(input) != 2)
+	    updateValidation(val, ERROR, 
+		    "Member [%s] has invalid gender [%s = %s], expected 1(male) or 2(female)", 
+		    cm->key, key, input); 
+	return;
+    }
+
+    if (dc == PT)
+    {
+	if (atof(input) > 1 || atof(input) < 0)
+	    updateValidation(val, WARNING, 
+		    "Member [%s] has [%s = %s], expected between 0 and 1", 
+		    cm->key, key, input); 
+	return;
+    }
 }
 
 /* --- Assumptions functions --- */

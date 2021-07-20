@@ -8,3 +8,5 @@
 *tags
 #core file for debugging with gdb
 core
+#gprof output
+gmon.out
