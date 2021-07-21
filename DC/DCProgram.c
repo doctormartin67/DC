@@ -58,7 +58,10 @@ DataSet *createDS(Validator *v, UserInput *UI)
     ht = ds->Data;
     printf("Setting all the values for the affiliates...\n");
     for (int i = 0; i < ds->membercnt; i++)
-	ds->cm[i] = createCM(*ht++);
+    {
+	ds->cm[i].id = i + 1;
+	createCM(&ds->cm[i], *ht++);
+    }
     printf("Setting values completed.\n");
 
     validateColumns();
@@ -67,101 +70,98 @@ DataSet *createDS(Validator *v, UserInput *UI)
 }
 
 // initialise all variables from data (hashtable)
-CurrentMember createCM(Hashtable *ht)
+void createCM(CurrentMember *cm, Hashtable *ht)
 {
-    CurrentMember cm;
-    cm.Data = ht;
-    cm.key = getcmval(&cm, KEY, -1, -1);
-    cm.regl = getcmval(&cm, NOREGLEMENT, -1, -1);
-    cm.name = getcmval(&cm, NAAM, -1, -1);
-    cm.contract = getcmval(&cm, CONTRACT, -1, -1);
-    cm.status = 0;
-    if (strcmp(getcmval(&cm, STATUS, -1, -1), "ACT") == 0)  cm.status += ACT;
-    if (strcmp(getcmval(&cm, ACTIVECONTRACT, -1, -1), "1") == 0)  cm.status += ACTCON;
-    if (strcmp(getcmval(&cm, SEX, -1, -1), "1") == 0)  cm.status += MALE;
-    if (strcmp(getcmval(&cm, MS, -1, -1), "M") == 0)  cm.status += MARRIED;
-    cm.DOB = newDate((unsigned int)atoi(getcmval(&cm, DOB, -1, -1)), 0, 0, 0);
-    cm.DOE = newDate((unsigned int)atoi(getcmval(&cm, DOE, -1, -1)), 0, 0, 0);
-    cm.DOL = newDate((unsigned int)atoi(getcmval(&cm, DOL, -1, -1)), 0, 0, 0);
-    cm.DOS = newDate((unsigned int)atoi(getcmval(&cm, DOS, -1, -1)), 0, 0, 0);
-    cm.DOA = newDate((unsigned int)atoi(getcmval(&cm, DOA, -1, -1)), 0, 0, 0);
-    cm.DOR = newDate((unsigned int)atoi(getcmval(&cm, DOR, -1, -1)), 0, 0, 0);
-    cm.category = getcmval(&cm, CATEGORIE, -1, -1);
-    cm.sal[0] = atof(getcmval(&cm, SAL, -1, -1));
-    cm.PG = atof(getcmval(&cm, PG, -1, -1));
-    cm.PT = atof(getcmval(&cm, PT, -1, -1));
-    cm.NRA = atof(getcmval(&cm, NORMRA, -1, -1));
-    cm.kids = (unsigned short)atoi(getcmval(&cm, ENF, -1, -1));
-    cm.tariff = 0;
-    if (strcmp(getcmval(&cm, TARIEF, -1, -1), "UKMS") == 0)  cm.tariff = UKMS;
-    if (strcmp(getcmval(&cm, TARIEF, -1, -1), "UKZT") == 0)  cm.tariff = UKZT;
-    if (strcmp(getcmval(&cm, TARIEF, -1, -1), "UKMT") == 0)  cm.tariff = UKMT;
-    if (strcmp(getcmval(&cm, TARIEF, -1, -1), "MIXED") == 0)  cm.tariff = MIXED;
-    cm.KO = atof(getcmval(&cm, KO, -1, -1));
-    cm.annINV = atof(getcmval(&cm, RENTINV, -1, -1));
-    cm.contrINV = atof(getcmval(&cm, CONTRINV, -1, -1));
+    cm->Data = ht;
+    cm->key = getcmval(cm, KEY, -1, -1);
+    cm->regl = getcmval(cm, NOREGLEMENT, -1, -1);
+    cm->name = getcmval(cm, NAAM, -1, -1);
+    cm->contract = getcmval(cm, CONTRACT, -1, -1);
+    cm->status = 0;
+    if (strcmp(getcmval(cm, STATUS, -1, -1), "ACT") == 0)  cm->status += ACT;
+    if (strcmp(getcmval(cm, ACTIVECONTRACT, -1, -1), "1") == 0)  cm->status += ACTCON;
+    if (strcmp(getcmval(cm, SEX, -1, -1), "1") == 0)  cm->status += MALE;
+    if (strcmp(getcmval(cm, MS, -1, -1), "M") == 0)  cm->status += MARRIED;
+    cm->DOB = newDate((unsigned int)atoi(getcmval(cm, DOB, -1, -1)), 0, 0, 0);
+    cm->DOE = newDate((unsigned int)atoi(getcmval(cm, DOE, -1, -1)), 0, 0, 0);
+    cm->DOL = newDate((unsigned int)atoi(getcmval(cm, DOL, -1, -1)), 0, 0, 0);
+    cm->DOS = newDate((unsigned int)atoi(getcmval(cm, DOS, -1, -1)), 0, 0, 0);
+    cm->DOA = newDate((unsigned int)atoi(getcmval(cm, DOA, -1, -1)), 0, 0, 0);
+    cm->DOR = newDate((unsigned int)atoi(getcmval(cm, DOR, -1, -1)), 0, 0, 0);
+    cm->category = getcmval(cm, CATEGORIE, -1, -1);
+    cm->sal[0] = atof(getcmval(cm, SAL, -1, -1));
+    cm->PG = atof(getcmval(cm, PG, -1, -1));
+    cm->PT = atof(getcmval(cm, PT, -1, -1));
+    cm->NRA = atof(getcmval(cm, NORMRA, -1, -1));
+    cm->kids = (unsigned short)atoi(getcmval(cm, ENF, -1, -1));
+    cm->tariff = 0;
+    if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKMS") == 0)  cm->tariff = UKMS;
+    if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKZT") == 0)  cm->tariff = UKZT;
+    if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKMT") == 0)  cm->tariff = UKMT;
+    if (strcmp(getcmval(cm, TARIEF, -1, -1), "MIXED") == 0)  cm->tariff = MIXED;
+    cm->KO = atof(getcmval(cm, KO, -1, -1));
+    cm->annINV = atof(getcmval(cm, RENTINV, -1, -1));
+    cm->contrINV = atof(getcmval(cm, CONTRINV, -1, -1));
 
     // define article 24 from data
-    cm.ART24[PUC][ER][ART24GEN1][0] = atof(getcmval(&cm, ART24_A_GEN1, -1, -1));
-    cm.ART24[PUC][ER][ART24GEN2][0] = atof(getcmval(&cm, ART24_A_GEN2, -1, -1));
-    cm.ART24[PUC][EE][ART24GEN1][0] = atof(getcmval(&cm, ART24_C_GEN1, -1, -1));
-    cm.ART24[PUC][EE][ART24GEN2][0] = atof(getcmval(&cm, ART24_C_GEN2, -1, -1));
+    cm->ART24[PUC][ER][ART24GEN1][0] = atof(getcmval(cm, ART24_A_GEN1, -1, -1));
+    cm->ART24[PUC][ER][ART24GEN2][0] = atof(getcmval(cm, ART24_A_GEN2, -1, -1));
+    cm->ART24[PUC][EE][ART24GEN1][0] = atof(getcmval(cm, ART24_C_GEN1, -1, -1));
+    cm->ART24[PUC][EE][ART24GEN2][0] = atof(getcmval(cm, ART24_C_GEN2, -1, -1));
     /* PUC = TUC = TUCPS_1 */
     for (int j = 1; j < 3; j++)
     {
-	cm.ART24[j][ER][ART24GEN1][0] = cm.ART24[PUC][ER][ART24GEN1][0];
-	cm.ART24[j][ER][ART24GEN2][0] = cm.ART24[PUC][ER][ART24GEN2][0];
-	cm.ART24[j][EE][ART24GEN1][0] = cm.ART24[PUC][EE][ART24GEN1][0];
-	cm.ART24[j][EE][ART24GEN2][0] = cm.ART24[PUC][EE][ART24GEN2][0];
+	cm->ART24[j][ER][ART24GEN1][0] = cm->ART24[PUC][ER][ART24GEN1][0];
+	cm->ART24[j][ER][ART24GEN2][0] = cm->ART24[PUC][ER][ART24GEN2][0];
+	cm->ART24[j][EE][ART24GEN1][0] = cm->ART24[PUC][EE][ART24GEN1][0];
+	cm->ART24[j][EE][ART24GEN2][0] = cm->ART24[PUC][EE][ART24GEN2][0];
     }
 
     // all variables that have generations, employer and employee
     //-  VARIABLES WITH MAXGEN  -
-    setGenMatrix(&cm, cm.PREMIUM, PREMIUM);
-    setGenMatrix(&cm, cm.CAP, CAP);
-    setGenMatrix(&cm, cm.CAPPS, CAPPS);
-    setGenMatrix(&cm, cm.CAPDTH, CAPDTH);
+    setGenMatrix(cm, cm->PREMIUM, PREMIUM);
+    setGenMatrix(cm, cm->CAP, CAP);
+    setGenMatrix(cm, cm->CAPPS, CAPPS);
+    setGenMatrix(cm, cm->CAPDTH, CAPDTH);
     for (int k = 0; k < TUCPS_1 + 1; k++)
     {
-	setGenMatrix(&cm, cm.RES[k], RES);
-	setGenMatrix(&cm, cm.RESPS[k], RESPS);
-	setGenMatrix(&cm, cm.REDCAP[k], CAPRED);
+	setGenMatrix(cm, cm->RES[k], RES);
+	setGenMatrix(cm, cm->RESPS[k], RESPS);
+	setGenMatrix(cm, cm->REDCAP[k], CAPRED);
     }
     for (int j = 0; j < MAXGEN; j++)
     {
-	cm.TAUX[ER][j] = atof(getcmval(&cm, TAUX, ER, j + 1));
-	cm.TAUX[EE][j] = atof(getcmval(&cm, TAUX, EE, j + 1));      
+	cm->TAUX[ER][j] = atof(getcmval(cm, TAUX, ER, j + 1));
+	cm->TAUX[EE][j] = atof(getcmval(cm, TAUX, EE, j + 1));      
     }
 
     //-  MISCELLANEOUS  -
-    cm.DELTACAP[ER][0] = atof(getcmval(&cm, DELTA_CAP_A_GEN1, -1, -1));
-    cm.DELTACAP[EE][0] = atof(getcmval(&cm, DELTA_CAP_C_GEN1, -1, -1));
-    cm.X10 = atof(getcmval(&cm, X10, -1, -1));
-    if (cm.tariff == MIXED && cm.X10 == 0)
+    cm->DELTACAP[ER][0] = atof(getcmval(cm, DELTA_CAP_A_GEN1, -1, -1));
+    cm->DELTACAP[EE][0] = atof(getcmval(cm, DELTA_CAP_C_GEN1, -1, -1));
+    cm->X10 = atof(getcmval(cm, X10, -1, -1));
+    if (cm->tariff == MIXED && cm->X10 == 0)
     {
-	printf("Warning: X/10 equals zero for %s but he has a MIXED contract\n", cm.key);
+	printf("Warning: X/10 equals zero for %s but he has a MIXED contract\n", cm->key);
 	printf("X/10 will be taken as 1 by default.\n");
-	cm.X10 = 1;
+	cm->X10 = 1;
     }
-    cm.CAO = atof(getcmval(&cm, CAO, -1, -1));
-    cm.ORU = getcmval(&cm, ORU, -1, -1);
-    cm.CHOICEDTH = getcmval(&cm, CHOICEDTH, -1, -1);
-    cm.CHOICEINVS = getcmval(&cm, CHOICEINVS, -1, -1);
-    cm.CHOICEINVW = getcmval(&cm, CHOICEINVW, -1, -1);
-    cm.contrDTH = atof(getcmval(&cm, CONTRD, -1, -1));
-    cm.percSALKO = atof(getcmval(&cm, PERCOFSALFORKO, -1, -1));
-    cm.indexINV = getcmval(&cm, INVINDEXATION, -1, -1);
-    cm.GRDGR = getcmval(&cm, GRDGR, -1, -1);
-    cm.plan = getcmval(&cm, PLAN, -1, -1);
-    cm.baranc = atof(getcmval(&cm, BARANC, -1, -1));
-    cm.extra = 0;
-    if (strcmp(getcmval(&cm, INCSALFIRSTYEAR, -1, -1), "1") == 0)  cm.extra += INCSAL;
-    if (strcmp(getcmval(&cm, PREP, -1, -1), "1") == 0)  cm.extra += CCRA;
+    cm->CAO = atof(getcmval(cm, CAO, -1, -1));
+    cm->ORU = getcmval(cm, ORU, -1, -1);
+    cm->CHOICEDTH = getcmval(cm, CHOICEDTH, -1, -1);
+    cm->CHOICEINVS = getcmval(cm, CHOICEINVS, -1, -1);
+    cm->CHOICEINVW = getcmval(cm, CHOICEINVW, -1, -1);
+    cm->contrDTH = atof(getcmval(cm, CONTRD, -1, -1));
+    cm->percSALKO = atof(getcmval(cm, PERCOFSALFORKO, -1, -1));
+    cm->indexINV = getcmval(cm, INVINDEXATION, -1, -1);
+    cm->GRDGR = getcmval(cm, GRDGR, -1, -1);
+    cm->plan = getcmval(cm, PLAN, -1, -1);
+    cm->baranc = atof(getcmval(cm, BARANC, -1, -1));
+    cm->extra = 0;
+    if (strcmp(getcmval(cm, INCSALFIRSTYEAR, -1, -1), "1") == 0)  cm->extra += INCSAL;
+    if (strcmp(getcmval(cm, PREP, -1, -1), "1") == 0)  cm->extra += CCRA;
 
-    cm.DOC = (Date **)calloc(MAXPROJ, sizeof(Date *));
-    if (cm.DOC == NULL) errExit("[%s] calloc returned NULL\n", __func__);
-
-    return cm;
+    cm->DOC = (Date **)calloc(MAXPROJ, sizeof(Date *));
+    if (cm->DOC == NULL) errExit("[%s] calloc returned NULL\n", __func__);
 }
 
 double gensum(GenMatrix amount[], unsigned short EREE, int loop)
@@ -177,19 +177,15 @@ double gensum(GenMatrix amount[], unsigned short EREE, int loop)
 int setkey(DataSet *ds)
 {
     XLfile *xl = ds->xl;
-    const char *pkc = ds->UI->keycell;
-    char *row, *pcol = ds->keycolumn;
+    char *row; 
     char **xls = xl->sheetname;
     unsigned int i;
     xmlXPathObjectPtr nodeset;
     xmlNodeSetPtr nodes;
     xmlNodePtr node;
 
-    /* a cell (f.e. B11) will start with no digits, then digits */
-    while (!isdigit(*pkc))
-	*pcol++ = *pkc++;
-    *pcol = '\0';
-    ds->keyrow = atoi(pkc);
+    setcol(ds->keycolumn, ds->UI->keycell);
+    ds->keyrow = getrow(ds->UI->keycell);
 
     strcpy(ds->datasheet, ds->UI->sheetname);
     for (i = 0; i < xl->sheetcnt; i++)
@@ -241,18 +237,15 @@ void countMembers(DataSet *ds)
     int count = ds->keyrow;
     xmlNodePtr node = ds->keynode;
 
-    while (node != NULL && count == r)
+    while (node != NULL)
     {
 	row = (char *)xmlGetProp(node, (xmlChar *)"r");
 	r = atoi(row);
-	count++;
-	r++;
+	if (r - count == 1) count++; /* cells below the data should not be considered */
 	node = node->next;
     }
-    ds->membercnt = count - 1 - ds->keyrow;
+    ds->membercnt = count - ds->keyrow;
     printf("Amount of affiliates in data: %d\n", ds->membercnt);
-    printf("[%s] still to be tested whether this works if there are values under the data\n", 
-	    __func__);
 }
 
 /* Excel is just a bunch of cells of the form O11, DC103, ...
@@ -1056,8 +1049,10 @@ void validateColumns()
        wrong cell was chosen */
     if (cnt > 10)
 	updateValidation(val, ERROR, 
-		"\nMany columns missing, "
-		"was the correct cell chosen under the \"Data\" section?");
+		"\nMany columns missing, possible reasons:\n"
+		"- incorrect cell chosen under the \"Data\" section\n"
+		"- there is an empty column name in the data, "
+		"the search for columns will end there");
 }
 
 void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char *input)
@@ -1079,11 +1074,11 @@ void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char
 	{
 	    if (!isfloat(input))
 		updateValidation(val, ERROR, 
-			"Member [%s] has [%s = %s], expected of the form %s", 
-			cm->key, key, input, validMsg[FLOATERR]);
+			"Member [%d][%s] has [%s = %s], expected of the form %s", 
+			cm->id, cm->key, key, input, validMsg[FLOATERR]);
 	    if (input[0] == '-')
 		updateValidation(val, WARNING, 
-			"Member [%s] has a negative %s [%s]", cm->key, key, input);
+			"Member [%d][%s] has a negative %s [%s]", cm->id, cm->key, key, input);
 	    return;
 	}
     }
@@ -1096,7 +1091,8 @@ void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char
 	    Date *temp = newDate((unsigned int)atoi(input), 0, 0, 0);
 	    if (temp == NULL)
 		updateValidation(val, ERROR, 
-			"Member [%s] has invalid date [%s = %s]", cm->key, key, input); 
+			"Member [%d][%s] has invalid date [%s = %s]", 
+			cm->id, cm->key, key, input); 
 	    free(temp);
 	    return;
 	}
@@ -1107,8 +1103,8 @@ void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char
     {
 	if (strcmp(input, "ACT") != 0 && strcmp(input, "DEF") != 0)
 	    updateValidation(val, ERROR, 
-		    "Member [%s] has invalid status [%s = %s], expected ACT or DEF", 
-		    cm->key, key, input); 
+		    "Member [%d][%s] has invalid status [%s = %s], expected ACT or DEF", 
+		    cm->id, cm->key, key, input); 
 	return;
     }
 
@@ -1116,8 +1112,8 @@ void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char
     {
 	if (atoi(input) != 1 && atoi(input) != 2)
 	    updateValidation(val, ERROR, 
-		    "Member [%s] has invalid gender [%s = %s], expected 1(male) or 2(female)", 
-		    cm->key, key, input); 
+		    "Member [%d][%s] has invalid gender [%s = %s], "
+		    "expected 1(male) or 2(female)", cm->id, cm->key, key, input); 
 	return;
     }
 
@@ -1125,8 +1121,8 @@ void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char
     {
 	if (atof(input) > 1 || atof(input) < 0)
 	    updateValidation(val, WARNING, 
-		    "Member [%s] has [%s = %s], expected between 0 and 1", 
-		    cm->key, key, input); 
+		    "Member [%d][%s] has [%s = %s], expected between 0 and 1", 
+		    cm->id, cm->key, key, input); 
 	return;
     }
 }

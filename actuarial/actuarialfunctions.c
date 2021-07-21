@@ -180,10 +180,12 @@ void evolCAPDTH(CurrentMember *cm, int EREE, int gen, int k) {
 	cm->PREMIUM[EREE][gen][k] * (1 - tff.admincost) * (cm->age[k+1] - cm->age[k]);
 }
 
-void evolRES(CurrentMember *cm, int EREE, int gen, int k) {
+void evolRES(CurrentMember *cm, int EREE, int gen, int k)
+{
     double i;
     double Ex;
     CalcInput *CI = malloc(sizeof(CalcInput));
+    if (CI == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
     //---PUC RESERVES---
     CI->res = cm->RES[PUC][EREE][gen][k];
@@ -631,8 +633,9 @@ double calcRES(CurrentMember *cm, CalcInput *CI)
     return value;
 }
 
-void evolDBONCIC(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], double REDCAPTOT[]) {
-
+void evolDBONCIC(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], 
+	double REDCAPTOT[])
+{
     double probfactdef; // probability factors for deferred payment
     double probfactimm; // probability factors for immediate payment
     double amountdef;
@@ -642,8 +645,10 @@ void evolDBONCIC(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], d
     probfactimm = (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
 
     // DBO, NC, IC
-    for (int i = 0; i < 2; i++) {
-	for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < 2; i++)
+    {
+	for (int j = 0; j < 3; j++)
+	{
 	    amountdef = getamount(cm, k, DBO, i, j, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
 	    amountimm = getamount(cm, k, DBO, i, j, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
 	    cm->DBORET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
@@ -662,9 +667,8 @@ void evolDBONCIC(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], d
     }	
 }
 
-void evolEBP(CurrentMember *cm, int k, 
-	double ART24TOT[], double RESTOT[], double REDCAPTOT[]) {
-
+void evolEBP(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], double REDCAPTOT[])
+{
     double probfactdef; // probability factors for deferred payment
     double probfactimm; // probability factors for immediate payment
     double amountdef;

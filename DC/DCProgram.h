@@ -87,6 +87,7 @@ typedef struct {
 
 typedef struct {
     Hashtable *Data; //Data for an affiliate is in the form of a hashtable
+    unsigned int id; /* Used to print warning/error messages to user with info */
 
     //---Variable Declarations---  
     char *key; // KEY in data
@@ -288,7 +289,7 @@ Tariff tff; // Tariff structure
 
 //---Data Functions---
 DataSet *createDS(Validator *, UserInput *);
-CurrentMember createCM(Hashtable *);
+void createCM(CurrentMember *, Hashtable *);
 void freeDS(DataSet *ds);
 void freeCM(CurrentMember *cm);
 void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn);
