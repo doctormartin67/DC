@@ -322,6 +322,9 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath)
 
 void freeXL(XLfile *xl)
 {
+    if (xl == NULL)
+	return;
+
     /* free xml's */
     xmlFreeDoc(xl->workbook);
     xmlFreeDoc(xl->sharedStrings);

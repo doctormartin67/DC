@@ -87,6 +87,7 @@ void freeXL(XLfile *xl);
  */
 char *cell(XLfile *xl, unsigned int sheet, const char *s);
 unsigned int getrow(const char *cell);
+void setcol(char s[], const char *cell);
 
 /* the excel zip has an xml file with all the string literals
    called sharedStrings.

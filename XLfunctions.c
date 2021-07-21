@@ -232,9 +232,16 @@ unsigned int getrow(const char *cell)
     while (!isdigit(*cell))
 	cell++;
 
-    if (*cell == '\0')
-	errExit("[%s] %s is not a valid cell, no row found\n", __func__, cell);
     return atoi(cell);
+}
+
+/* This function will set s to the column of a given excel cell,
+   for example "B11" will set s to "B" */
+void setcol(char s[], const char *cell)
+{
+    while (!isdigit(*cell))
+	*s++ = *cell++;
+    *s = '\0';
 }
 
 void nextcol(char *next)
