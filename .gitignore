@@ -10,3 +10,5 @@
 core
 #gprof output
 gmon.out
+#TODO file
+TODO*

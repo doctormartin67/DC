@@ -254,7 +254,7 @@ static const char *runnames[] = {"Reported Last Year", "Update Inflation",
     "Sensitivity Inflation -", "Sensitivity Inflation +", "Sensitivity Salary Increase -", 
     "Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
 unsigned short currrun; // Current run
-void setassumptions(CurrentMember *cm);
+void setassumptions(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
 double salaryscale(CurrentMember *cm, int k);
 double calcA(CurrentMember *cm, int k);
 double calcC(CurrentMember *cm, int k);

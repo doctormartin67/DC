@@ -16,15 +16,24 @@ static double wxdefLY(CurrentMember *cm, int k);
 static double retxTY(CurrentMember *cm, int k);
 static double retxLY(CurrentMember *cm, int k);
 
-void setassumptions(CurrentMember *cm) {
-    ass.DOC = (currrun >= runRF ? newDate(0, 2016, 12, 1) : newDate(0, 2015, 12, 1));
+void setassumptions(CurrentMember *cm, UserInput *UILY, UserInput *UITY)
+{
+    char temp[BUFSIZ];
+    char *year, *month, *day;
+
+    (currrun >= runRF ? strcpy(temp, UITY->DOC) : strcpy(temp, UILY->DOC));
+    day = strtok(temp, "/");
+    month = strtok(NULL, "/");
+    year = strtok(NULL, "");
+    
+    ass.DOC = newDate(0, atoi(year), atoi(month), atoi(day));
     // DOC[0] = DOS so we start here with defining DOC[1]
     cm->DOC[1] = ass.DOC;
-    ass.DR = (currrun >= runNewDR ? 0.0125 : 0.0125);
-    ass.DR113 = (currrun >= runNewDR ? 0.0185 : 0.0185);
-    ass.agecorr = (currrun >= runNewMortality ? -3 : -3);
+    ass.DR = (currrun >= runNewDR ? atof(UITY->DR) : atof(UILY->DR));
+    ass.DR113 = (currrun >= runNewDR ? atof(UITY->DR113) : atof(UILY->DR113));
+    ass.agecorr = (currrun >= runNewMortality ? atoi(UITY->agecorr) : atoi(UILY->agecorr));
     ass.SS = (currrun >= runNewSS ? salaryscaleTY : salaryscaleLY);
-    ass.infl = (currrun >= runNewInflation ? 0.018 : 0.018);
+    ass.infl = (currrun >= runNewInflation ? atof(UITY->infl) : atof(UILY->infl));
     ass.NRA = (currrun >= runNewNRA ? NRATY : NRALY);
     ass.wxdef = (currrun >= runNewTurnover ? wxdefTY : wxdefLY);
     ass.retx = (currrun >= runNewNRA ? retxTY : retxLY);
@@ -35,7 +44,7 @@ void setassumptions(CurrentMember *cm) {
     // Assumptions that usually won't change from year to year
     ass.incrSalk0 = 0; // determine whether sal gets increased at k = 0
     ass.incrSalk1 = 1; // determine whether sal gets increased at k = 1
-    ass.TRM_PercDef = 1;
+    ass.TRM_PercDef = atof(UITY->TRM_PercDef);
     ass.method = mPAR115;
     // mIAS, mTUC, mmaxERContr and mmaxPUCTUC still need to be added here
     if (ass.method & mIAS)
@@ -47,19 +56,24 @@ void setassumptions(CurrentMember *cm) {
     //---Tariff Structure---
     //-  Life Tables  -
 
-    for (int EREE = 0; EREE < 2; EREE++) {
-	for (int j = 0; j < MAXGEN; j++) {
-	    switch(cm->tariff) {
+    for (int EREE = 0; EREE < 2; EREE++)
+    {
+	for (int j = 0; j < MAXGEN; j++)
+	{
+	    switch(cm->tariff)
+	    {
 		case UKMS :
 		    tff.ltINS[EREE][j].lt = LXNIHIL;
 		    tff.ltAfterTRM[EREE][j].lt = LXNIHIL;
 		    break;
 		case UKZT :
-		    if (cm->status & ACT) {
+		    if (cm->status & ACT)
+		    {
 			tff.ltINS[EREE][j].lt = (cm->status & MALE ? LXMK : LXFKP);
 			tff.ltAfterTRM[EREE][j].lt = (cm->status & MALE ? LXMR : LXFR);
 		    }
-		    else {
+		    else
+		    {
 			tff.ltINS[EREE][j].lt = (cm->status & MALE ? LXMR : LXFR);
 			tff.ltAfterTRM[EREE][j].lt = tff.ltINS[EREE][j].lt;
 		    }
@@ -91,75 +105,88 @@ void setassumptions(CurrentMember *cm) {
     tff.term = (currrun >= runNewData ? 12 : 12);
 }
 
-static double salaryscaleTY(CurrentMember *cm, int k) {
+static double salaryscaleTY(CurrentMember *cm, int k)
+{
     return ass.infl + 0.011;
 }
 
-static double salaryscaleLY(CurrentMember *cm, int k) {
+static double salaryscaleLY(CurrentMember *cm, int k)
+{
     return ass.infl + 0.011;
 }
 
-static double calcATY(CurrentMember *cm, int k) {
+static double calcATY(CurrentMember *cm, int k)
+{
     // This needs updating! just took insurer premium for testing
     return gensum(cm->PREMIUM, ER, 0);
 }
 
-static double calcALY(CurrentMember *cm, int k) {
+static double calcALY(CurrentMember *cm, int k)
+{
     // This needs updating! just took insurer premium for testing
     return gensum(cm->PREMIUM, ER, 0);
 }
 
-static double calcCTY(CurrentMember *cm, int k) {
+static double calcCTY(CurrentMember *cm, int k)
+{
     // This needs updating! just took insurer premium for testing
     return gensum(cm->PREMIUM, EE, 0);
 }
-static double calcCLY(CurrentMember *cm, int k) {
+static double calcCLY(CurrentMember *cm, int k)
+{
     // This needs updating! just took insurer premium for testing
     return gensum(cm->PREMIUM, EE, 0);
 }
 
-static double calcDTHTY(CurrentMember *cm, int k) {
+static double calcDTHTY(CurrentMember *cm, int k)
+{
     // This needs updating! just took insurer premium for testing
     return gensum(cm->CAPDTH, EE, 0);
 }
-static double calcDTHLY(CurrentMember *cm, int k) {
+static double calcDTHLY(CurrentMember *cm, int k)
+{
     // This needs updating! just took insurer premium for testing
     return gensum(cm->CAPDTH, EE, 0);
 }
 
-static double NRATY(CurrentMember *cm, int k) {
+static double NRATY(CurrentMember *cm, int k)
+{
     return 65;
 }
 
-static double NRALY(CurrentMember *cm, int k) {
+static double NRALY(CurrentMember *cm, int k)
+{
     return 65;
 }
 
-static double wxdefTY(CurrentMember *cm, int k) {
+static double wxdefTY(CurrentMember *cm, int k)
+{
     if (cm->age[k] < 60)
 	return 0.01;
     else
 	return 0;
 }
 
-static double wxdefLY(CurrentMember *cm, int k) {
+static double wxdefLY(CurrentMember *cm, int k)
+{
     if (cm->age[k] < 60)
 	return 0.01;
     else
 	return 0;
 }
 
-static double retxTY(CurrentMember *cm, int k) {
+static double retxTY(CurrentMember *cm, int k)
+{
     if (cm->age[k] < 65)
 	return 0;
     else
 	return 1;
 }
 
-static double retxLY(CurrentMember *cm, int k) {
+static double retxLY(CurrentMember *cm, int k)
+{
     if (cm->age[k] < 65)
 	return 0;
     else
 	return 1;
 }
-

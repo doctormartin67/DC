@@ -1,7 +1,7 @@
 #include "actuarialfunctions.h"
 
 void userinterface();
-void runmember(CurrentMember *cm);
+void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
 void runonerun(DataSet *ds);
 
 int main(void)
@@ -11,9 +11,9 @@ int main(void)
     return 0;
 }
 
-void runmember(CurrentMember *cm)
+void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY)
 {
-    setassumptions(cm); 
+    setassumptions(cm, UILY, UITY); 
     //***INITIALISE VARIABLES (k = 0)***
     //-  Dates and age  -
     *cm->DOC = cm->DOS;

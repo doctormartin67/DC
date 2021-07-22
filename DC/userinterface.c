@@ -26,7 +26,7 @@ static pthread_t thrun;
 static UserInput UILY;
 static Validator validatorLY;
 
-extern void runmember(CurrentMember *cm);
+extern void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
 
 /* signal functions */
 void on_SIradiobutton_toggled(GtkRadioButton *, GtkWidget *);
@@ -319,7 +319,8 @@ static void *run(void *pl)
 
     for (int i = 0; i < ds->membercnt; i++)
     {
-	runmember(cm + i);
+	/* this needs updating when we have a UITY!!! */
+	runmember(cm + i, &UILY, &UILY);
 	snprintf(text, sizeof(text), 
 		"Progress: member %d out of %d members complete", i + 1, ds->membercnt);
 	gtk_label_set_text(GTK_LABEL(pl), text); 
@@ -342,7 +343,8 @@ static void *runtc(void *pl)
     CurrentMember *cm = ds->cm;
 
     printf("testcase: %s chosen\n", cm->key);
-    runmember(cm + tc);
+    /* this needs updating when we have a UITY!!! */
+    runmember(cm + tc, &UILY, &UILY);
     snprintf(text, sizeof(text), "Test case %d has been run", tc + 1);
     gtk_label_set_text(GTK_LABEL(pl), text); 
 
