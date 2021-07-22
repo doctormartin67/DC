@@ -130,17 +130,40 @@ CaseTree *buildTree(const char *s)
 
 void printTree(CaseTree *ct)
 {
-    printf("%s\n", ct->rule);
+    static int cnt = 0; /* count the tabs to be used */
+    char tabs[32] = "";
+    char temp[32] = ""; /* used for end of tree (end select) */
 
+    for (int i = 0; i < cnt; i++)
+	strcat(tabs, "\t");
+    printf("%sselect case %s\n", tabs, ct->rule);
+
+    strcpy(temp, tabs); /* remember tabs used here because it will be the same at end of tree */
+
+    cnt++; /* when cases start we are one level removed from top */
     while (ct != NULL)
     {
-	printf("%s\n", ct->cond);
+	strcpy(tabs, "");
+	for (int i = 0; i < cnt; i++)
+	    strcat(tabs, "\t");
+	printf("%scase %s\n", tabs, ct->cond);
+
+	cnt++; /* either a child or new tree is created, both need another tab */
 	if (ct->child == NULL)
-	    printf("%s\n", ct->expr);
+	{
+	    strcpy(tabs, "");
+	    for (int i = 0; i < cnt; i++)
+		strcat(tabs, "\t");
+	    printf("%s%s\n", tabs, ct->expr);
+	}
 	else
 	    printTree(ct->child);
+
+	cnt--; /* we added tab for child, subtract one again for next case */
 	ct = ct->next;
     }
+    cnt--; /* end select is one tab before the cases */
+    printf("%send select\n", temp);
 }
 
 static int cmpnum(CaseTree *ct, const void *pf)
@@ -256,7 +279,7 @@ double interpret(CaseTree *ct, double age, const char *reg, const char *cat)
 {
     double x = 0.0;
     Cmpfunc *cf;
-    void *v;
+    const void *v;
     for (CaseTree *pct = ct; pct != NULL; )
     {
 	if (strcmp(pct->rule, "AGE") == 0)

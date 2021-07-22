@@ -9,8 +9,7 @@
 
 enum {RULESIZE = 3};
 
-typedef struct
-{
+typedef struct casetree {
     char rule[RULESIZE + 1]; // f.e. AGE, CAT, REG
     char *cond; // condition, f.e. Is < 40, "WC", 12220, ... used to test the rule against
     char *expr; /* expression, f.e. x = 0.01, this can also be a select case because select cases 
