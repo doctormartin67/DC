@@ -1,0 +1,19 @@
+		select case cat
+			case "BC"
+				select case age
+					case < 40
+						x = 0.01
+					case else
+						x = 0.02
+				end select
+			case "WC"
+				select case age
+					case <40
+						x = 0.03
+					case else
+						x = 0.04
+				end select
+			case else
+				x = 0.05
+		end select
+
