@@ -25,5 +25,6 @@ char *strclean(const char *);
 double interpret(CaseTree *ct, double age, const char *reg, const char *cat);
 CaseTree *buildTree(const char *);
 void printTree(CaseTree *ct);
+void freeTree(CaseTree *ct);
 
 #endif

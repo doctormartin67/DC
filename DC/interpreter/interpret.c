@@ -2,6 +2,10 @@
 
 /* This is a program to test interpreter.c */
 
+const char *MsgTree[] = {"Tree passed all the tests", "No tests to check"};
+
+int testTree(CaseTree *ct, FILE *fp);
+
 int main(int argc, char *argv[])
 {
     FILE *fp;
@@ -71,7 +75,46 @@ int main(int argc, char *argv[])
 
 	if (ptree)
 	    printTree(ct);
+
+	testTree(ct, fp);
+
+	freeTree(ct);
+	if (fclose(fp) != 0)
+	    errExit("Unable to close file [%s]\n", argv[i + 1 + ptree]);
     }
 
+    return 0;
+}
+
+int testTree(CaseTree *ct, FILE *fp)
+{
+    char test[BUFSIZ]; /* no way test will be bigger than this */
+
+    char *age, *reg, *cat, *value;
+
+    if (fseek(fp, 0L, SEEK_SET) != 0)
+	errExit("Unable to move to beginning of file\n");
+
+    while (fgets(test, sizeof(test), fp) != NULL)
+	if (strstr(test, "tests:") != NULL)
+	    break;
+    
+    while (fgets(test, sizeof(test), fp) != NULL)
+    {
+	printf("test = %s", test);
+	age = strtok(test, ",");
+	reg = strtok(NULL, ",");
+	cat = strtok(NULL, "=");
+	value = strtok(NULL, "\r\n\v\f"); /* end of line or file */
+
+	if (age == NULL || reg == NULL || cat == NULL || value == NULL)
+	    errExit("[%s] invalid test: %s\n", __func__, test);
+	printf("%s,%s,%s=%s ", age, reg, cat, value);
+
+	if (interpret(ct, atof(age), reg, cat) == atof(value))
+	    printf("PASSED\n");
+	else
+	    printf("FAILED\n");
+    }
     return 0;
 }

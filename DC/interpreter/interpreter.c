@@ -37,7 +37,7 @@ char *strclean(const char *s)
 
 CaseTree *buildTree(const char *s)
 {
-    char *t = strdup(s);
+    char *t = strdup(s); /* this never gets freed! */
     char *c, *sc, *es, *x;
     CaseTree *ct = (CaseTree *)malloc(sizeof(CaseTree));
     if (ct == NULL) errExit("[%s] malloc returned NULL\n", __func__);
@@ -166,6 +166,16 @@ void printTree(CaseTree *ct)
     printf("%send select\n", temp);
 }
 
+void freeTree(CaseTree *ct)
+{
+    if (ct != NULL)
+    {
+	freeTree(ct->child);	
+	freeTree(ct->next);	
+	free(ct);
+    }
+}
+
 static int cmpnum(CaseTree *ct, const void *pf)
 {
     double f = *((double *)pf);
@@ -263,13 +273,18 @@ static int cmpstr(CaseTree *ct, const void *s)
     char *cond = strtok(tmp, ",");     
     while (n--)
     {
-	cond = strinside(cond, "\"", "\"");
+	if ((strstr(cond, "ELSE")) != NULL) /* if there is an else */
+	    return 1;
+
+	if ((cond = strinside(cond, "\"", "\"")) == NULL)
+	    errExit("[%s] string in case should be defined between quotes \"\"\n", __func__);
+
 	if (strcmp(cond, (char *)s) == 0)
 	{
 	    free(cond);
 	    return 1;
 	}
-	free(cond);
+	
 	cond = strtok(NULL, ",");
     }
     return 0;

@@ -21,4 +21,10 @@ select case reg
 	case else
 		x = 0.06
 end select
-
+tests:
+39,123,BC=0.01
+41,123,BC=0.02
+12,123,WC=0.03
+52,123,WC=0.04
+52,123,bla=0.05
+52,23,bla=0.06
