@@ -17,7 +17,7 @@ char *strclean(const char *s)
 	else
 	{
 	    *pt++ = ' ';
-	    while (isgarbage(*s))
+	    while (*s != '\0' && isgarbage(*s))
 		s++;
 	}
     }
@@ -42,17 +42,22 @@ CaseTree *buildTree(const char *s)
     CaseTree *ct = (CaseTree *)malloc(sizeof(CaseTree));
     if (ct == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
-    if ((t = strstr(t, SC)) == NULL)
-    {
+    char *temp = t;
+    if ((t = strstr(temp, SC)) == NULL)
+    { /* in this case there is no "Select Case" in the data */
 	printf("Warning in %s: there are no cases in the assumption, "
 		"so user should have chosen fixed amount for assumption.\n"
 		, __func__); 	
-	free(ct);
-	return NULL;
+	strcpy(ct->rule, "NOR"); /* no rule */
+	ct->cond = NULL;
+	ct->expr = temp;
+	ct->next = NULL;
+	ct->child = NULL;
+	return ct;
     }
 
     /* at the root there is a rule (f.e. age, cat, reg, ...) */
-    t += strlen(SC);
+    t += strlen(SC); /* SC includes space ' ' at the end */
     for (int i = 0; *t != ' ' && i < RULESIZE; i++)
 	ct->rule[i] = *t++;
     ct->rule[RULESIZE] = '\0';
@@ -195,9 +200,9 @@ static int cmpnum(CaseTree *ct, const void *pf)
 	char *to;
 	if ((to = strstr(cond, "TO")) != NULL)
 	{
-	    while (!isdigit(*cond))
+	    while (*cond != '\0' && !isdigit(*cond))
 		cond++; 
-	    while (!isdigit(*to))
+	    while (*to != '\0' && !isdigit(*to))
 		to++;
 
 	    if (f >= atof(cond) && f <= atof(to))
@@ -207,7 +212,7 @@ static int cmpnum(CaseTree *ct, const void *pf)
 	/* in case of "<" or "<=" */
 	else if ((to = strchr(cond, '<')) != NULL)
 	{
-	    while (!isdigit(*cond))
+	    while (*cond != '\0' && !isdigit(*cond))
 		cond++;
 
 	    if (*++to == '=')
@@ -225,7 +230,7 @@ static int cmpnum(CaseTree *ct, const void *pf)
 	/* in case of ">" or ">=" */
 	else if ((to = strchr(cond, '>')) != NULL)
 	{
-	    while (!isdigit(*cond))
+	    while (*cond != '\0' && !isdigit(*cond))
 		cond++;
 
 	    if (*++to == '=')
@@ -247,7 +252,7 @@ static int cmpnum(CaseTree *ct, const void *pf)
 	/* in case it's just a fixed amount */
 	else
 	{
-	    while (!isdigit(*cond))
+	    while (*cond != '\0' && !isdigit(*cond))
 		cond++;
 
 	    if (f == atof(cond))
@@ -312,6 +317,13 @@ double interpret(CaseTree *ct, double age, const char *reg, const char *cat)
 	    cf = cmpstr;
 	    v = cat;
 	}
+	else if (strcmp(pct->rule, "NOR") == 0) /* no rule, just an expression */
+	{
+	    while (*pct->expr != '\0' && !isdigit(*pct->expr))
+		pct->expr++;
+	    x = atof(pct->expr);
+	    return x;
+	}
 	else 
 	{
 	    /* should never reach here because this should have been 
@@ -323,7 +335,7 @@ double interpret(CaseTree *ct, double age, const char *reg, const char *cat)
 	{
 	    if ((pct->child) == NULL)
 	    {
-		while (!isdigit(*pct->expr))
+		while (*pct->expr != '\0' && !isdigit(*pct->expr))
 		    pct->expr++;
 		x = atof(pct->expr);
 		return x;
