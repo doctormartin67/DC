@@ -93,7 +93,7 @@ void createCM(CurrentMember *cm, Hashtable *ht)
     cm->PG = atof(getcmval(cm, PG, -1, -1));
     cm->PT = atof(getcmval(cm, PT, -1, -1));
     cm->NRA = atof(getcmval(cm, NORMRA, -1, -1));
-    cm->kids = (unsigned short)atoi(getcmval(cm, ENF, -1, -1));
+    cm->kids = (unsigned int)atoi(getcmval(cm, ENF, -1, -1));
     cm->tariff = 0;
     if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKMS") == 0)  cm->tariff = UKMS;
     if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKZT") == 0)  cm->tariff = UKZT;
@@ -164,7 +164,7 @@ void createCM(CurrentMember *cm, Hashtable *ht)
     if (cm->DOC == NULL) errExit("[%s] calloc returned NULL\n", __func__);
 }
 
-double gensum(GenMatrix amount[], unsigned short EREE, int loop)
+double gensum(GenMatrix amount[], unsigned int EREE, int loop)
 {
     double sum = 0;
 

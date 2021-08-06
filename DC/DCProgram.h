@@ -94,7 +94,7 @@ typedef struct {
     char *regl; // REGLEMENT
     char *name; // NAME
     char *contract; // CONTRACT number
-    unsigned short status; /* 0000 0000 0000 0111 means single male active member and 
+    unsigned int status; /* 0000 0000 0000 0111 means single male active member and 
 			      active contract */
     Date *DOB; // date of birth
     Date *DOE; // date of entry
@@ -108,8 +108,8 @@ typedef struct {
     double PG; // pensioengrondslag (I have never needed this)
     double PT; // part time
     double NRA; // normal retirement age
-    unsigned short kids; // amount of kids
-    unsigned short tariff; // UKMS, UKZT, UKMT, MIXED
+    unsigned int kids; // amount of kids
+    unsigned int tariff; // UKMS, UKZT, UKMT, MIXED
     double KO; // death lump sum (kapitaal overlijden)
     double annINV; // annuity in case of invalidity
     double contrINV; // contribution for invalidity insurance
@@ -143,7 +143,7 @@ typedef struct {
     char *GRDGR;
     char *plan;
     double baranc; // baremic ancienity
-    unsigned short extra; /* 0000 0000 0000 0011
+    unsigned int extra; /* 0000 0000 0000 0011
 			     means prepensioner whose salary we increase at k = -1 */
 
     //---Variable definitions---    
@@ -208,7 +208,7 @@ typedef struct {
 } DataSet;
 
 //---Useful functions for CurrentMembers---
-double gensum(GenMatrix amount[], unsigned short EREE, int loop);
+double gensum(GenMatrix amount[], unsigned int EREE, int loop);
 
 //---Assumptions declarations---
 typedef struct {
@@ -217,7 +217,7 @@ typedef struct {
     double infl; // Inflation
     double DR; // Discount Rate
     double DR113; // Discount Rate under $113 of IAS19  
-    short agecorr; // Age Correction
+    int agecorr; // Age Correction
     double (*SS)(CurrentMember *cm, int k); // Salary Scale
     double (*calcA)(CurrentMember *cm, int k); // Formula for Employer retirement contribution
     double (*calcC)(CurrentMember *cm, int k); // Formula for Employee retirement contribution  
@@ -227,11 +227,11 @@ typedef struct {
     double (*retx)(CurrentMember *cm, int k); // Turnover rate with deferred payment
 
     //Assumptions that usually won't change from year to year
-    unsigned short incrSalk0; // determine whether sal gets increased at k = 0 
-    unsigned short incrSalk1; // determine whether sal gets increased at k = 1 
+    unsigned int incrSalk0; // determine whether sal gets increased at k = 0 
+    unsigned int incrSalk1; // determine whether sal gets increased at k = 1 
     double TRM_PercDef; /* Percentage of deferred members that will keep their
 			   reserves with the current employer at termination (usually equals 1)*/
-    unsigned short method; // Methodology, we use bits here
+    unsigned int method; // Methodology, we use bits here
     double taxes; /* used for the Service cost because the taxes shouldn't be included
 		     in the admin cost (usually equal to 0.1326 */
 } Assumptions;
@@ -253,7 +253,7 @@ static const char *runnames[] = {"Reported Last Year", "Update Inflation",
     "Sensitivity Duration", "Sensitivity Discount Rate -", "Sensitivity Discount Rate +", 
     "Sensitivity Inflation -", "Sensitivity Inflation +", "Sensitivity Salary Increase -", 
     "Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
-unsigned short currrun; // Current run
+unsigned int currrun; // Current run
 void setassumptions(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
 double salaryscale(CurrentMember *cm, int k);
 double calcA(CurrentMember *cm, int k);

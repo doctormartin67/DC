@@ -722,11 +722,11 @@ void evolEBP(CurrentMember *cm, int k, double ART24TOT[], double RESTOT[], doubl
 }
 
 double getamount(CurrentMember *cm,  int k,  
-	unsigned short DBONCICASS,  
-	unsigned short method,  
-	unsigned short assets,  
-	unsigned short DEFIMM, 
-	unsigned short PBOTBO,
+	unsigned int DBONCICASS,  
+	unsigned int method,  
+	unsigned int assets,  
+	unsigned int DEFIMM, 
+	unsigned int PBOTBO,
 	double ART24TOT[], double RESTOT[], double REDCAPTOT[]) {
 
     switch (DBONCICASS) {

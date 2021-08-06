@@ -86,10 +86,10 @@ void evolEBP(CurrentMember *cm, int k,
 // This is used as a help function to retrieve the appropriate amount
 // for the formula
 double getamount(CurrentMember *cm,  int k,  
-	unsigned short DBONCICASS,  
-	unsigned short method,  
-	unsigned short assets,  
-	unsigned short DEFIMM, 
-	unsigned short PBOTBO,
+	unsigned int DBONCICASS,  
+	unsigned int method,  
+	unsigned int assets,  
+	unsigned int DEFIMM, 
+	unsigned int PBOTBO,
 	double ART24TOT[], double RESTOT[], double REDCAPTOT[]); 
 #endif

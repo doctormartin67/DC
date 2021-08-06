@@ -19,7 +19,7 @@ static const char *widgetname[] = {"sheetname", "keycell", "DOC", "DR", "agecorr
 static GtkWidget *widgets[128];
 static GtkBuilder *builder;
 
-static unsigned short running; /* determines whether program is running or not */
+static int running; /* determines whether program is running or not */
 static DataSet *ds;
 static pthread_t thrun;
 
@@ -52,7 +52,7 @@ static void validateData(Validator *, UserInput *);
 
 void userinterface()
 {
-    unsigned short widgetcnt;
+    unsigned int widgetcnt;
 
     /* Initialize GTK+ and all of its supporting libraries. */
     gtk_init(NULL, NULL);
@@ -63,7 +63,7 @@ void userinterface()
     if (widgetcnt > sizeof(widgets)/sizeof(widgets[0]))
 	errExit("[%s] [widgets] array is too small, increase the size in the code\n", __func__);
 
-    for (int i = 0; i < widgetcnt; i++)
+    for (unsigned int i = 0; i < widgetcnt; i++)
 	widgets[i] = buildWidget(widgetname[i]);
 
     gtk_builder_connect_signals(builder, (void *)NULL);
