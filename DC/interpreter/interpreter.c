@@ -22,7 +22,7 @@ Rule ruleset[] =
 char *strclean(const char *s)
 {
     char *t = calloc(strlen(s) + 1, sizeof(char));
-    if (t == NULL) errExit("[%s] calloc returned NULL\n", __func__);
+    if (NULL == t) errExit("[%s] calloc returned NULL\n", __func__);
 
     char *pt = t;
 
@@ -33,7 +33,7 @@ char *strclean(const char *s)
 	else
 	{
 	    *pt++ = ' ';
-	    while (*s != '\0' && isgarbage(*s))
+	    while ('\0' != *s && isgarbage(*s))
 		s++;
 	}
     }
@@ -62,11 +62,8 @@ CaseTree *buildTree(const char *s)
     if (ct == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
     char *temp = t;
-    if ((t = strstr(temp, SC)) == NULL)
+    if (NULL == (t = strstr(temp, SC)))
     { /* in this case there is no "Select Case" in the data */
-	printf("Warning in %s: there are no cases in the assumption, "
-		"so user should have chosen fixed amount for assumption.\n"
-		, __func__); 	
 	ct->rule_index = -1; /* no rule */
 	ct->cond = NULL;
 	ct->expr = temp;
@@ -78,14 +75,14 @@ CaseTree *buildTree(const char *s)
     /* at the root there is a rule (f.e. age, cat, reg, ...) */
     t += strlen(SC); /* SC includes space ' ' at the end */
     rulename = t;
-    for (int i = 0; *t != '\0' && *t != ' '; i++)
+    for (int i = 0; '\0' != *t && ' ' != *t; i++)
 	t++;
-    *t = '\0';
+    *t++ = '\0';
     ct->rule_index = setRule(rulename);
     if (-1 == ct->rule_index) 
 	errExit("[%s] Unknown rule [%s]\n", __func__, rulename);
 
-    for (CaseTree *pct = ct; pct != NULL; pct = pct->next)
+    for (CaseTree *pct = ct; NULL != pct; pct = pct->next)
     {
 	t += strlen(C);
 	pct->cond = t;
@@ -93,14 +90,17 @@ CaseTree *buildTree(const char *s)
 	x = strstr(t, X);
 	sc = strstr(t, SC);
 
-	if (sc == NULL)
+	if (NULL == sc)
 	    t = x;
 	else 
 	    t = (x < sc ? x : sc);
+
+	if (NULL == t) errExit("An expression doesn't contain \"x = ...\"");
+
 	*(t - 1) = '\0';
 	pct->expr = t;
 
-	if (strncmp(t, SC, strlen(SC)) == 0)
+	if (0 == strncmp(t, SC, strlen(SC)))
 	{
 	    char *prevt = t++;
 
@@ -112,7 +112,7 @@ CaseTree *buildTree(const char *s)
 	    {
 		sc = strstr(t, SC);
 		es = strstr(t, ES);
-		if (sc == NULL || sc > es)
+		if (NULL == sc || sc > es)
 		{
 		    t = es;
 		    nests--;
@@ -139,7 +139,7 @@ CaseTree *buildTree(const char *s)
 	c = strstr(t, C);
 	es = strstr(t, ES);
 
-	if (c == NULL || es < c)
+	if (NULL == c || es < c)
 	{
 	    t = es;
 	    pct->next = NULL;
@@ -147,7 +147,7 @@ CaseTree *buildTree(const char *s)
 	else
 	{
 	    t = c;
-	    if ((pct->next = (CaseTree *)malloc(sizeof(CaseTree))) == NULL)
+	    if (NULL == (pct->next = (CaseTree *)malloc(sizeof(CaseTree))))
 		errExit("[%s] malloc return NULL\n", __func__);
 	    pct->next->rule_index = pct->rule_index;
 	}
@@ -173,7 +173,7 @@ int setRule(const char *name)
 	rn = strlen(ruleset[i].name);
 	if (n != rn)
 	    continue;
-	else if (strncmp(name, ruleset[i].name, n) == 0) 
+	else if (0 == strncmp(name, ruleset[i].name, n)) 
 	    index = i;
     }
 
@@ -194,7 +194,7 @@ void printTree(CaseTree *ct)
 			   at end of tree */
 
     cnt++; /* when cases start we are one level removed from top */
-    while (ct != NULL)
+    while (NULL != ct)
     {
 	strcpy(tabs, "");
 	for (int i = 0; i < cnt; i++)
@@ -203,7 +203,7 @@ void printTree(CaseTree *ct)
 
 	cnt++; /* either a child or new tree is created, both need another 
 		  tab */
-	if (ct->child == NULL)
+	if (NULL == ct->child)
 	{
 	    strcpy(tabs, "");
 	    for (int i = 0; i < cnt; i++)
@@ -222,7 +222,7 @@ void printTree(CaseTree *ct)
 
 void freeTree(CaseTree *ct)
 {
-    if (ct != NULL)
+    if (NULL != ct)
     {
 	freeTree(ct->child);	
 	freeTree(ct->next);	
@@ -240,7 +240,7 @@ static int cmpnum(CaseTree *ct, const void *pf)
     int n = 1; /* number of conditions separated by ',' 
 		  (there is atleast 1 condition) */
     while (*pt)
-	if (*pt++ == ',')
+	if (',' == *pt++)
 	    n++;
 
     char *cond = strtok(tmp, ",");     
@@ -248,11 +248,11 @@ static int cmpnum(CaseTree *ct, const void *pf)
     {
 	/* in case there is a "TO" operator */
 	char *to;
-	if ((to = strstr(cond, "TO")) != NULL)
+	if (NULL != (to = strstr(cond, "TO")))
 	{
-	    while (*cond != '\0' && !isdigit(*cond))
+	    while ('\0' != *cond && !isdigit(*cond))
 		cond++; 
-	    while (*to != '\0' && !isdigit(*to))
+	    while ('\0' != *to && !isdigit(*to))
 		to++;
 
 	    if (f >= atof(cond) && f <= atof(to))
@@ -260,12 +260,12 @@ static int cmpnum(CaseTree *ct, const void *pf)
 	}
 
 	/* in case of "<" or "<=" */
-	else if ((to = strchr(cond, '<')) != NULL)
+	else if (NULL != (to = strchr(cond, '<')))
 	{
-	    while (*cond != '\0' && !isdigit(*cond))
+	    while ('\0' != *cond && !isdigit(*cond))
 		cond++;
 
-	    if (*++to == '=')
+	    if ('=' == *++to) 
 	    {
 		if (f <= atof(cond))
 		    return 1;
@@ -278,12 +278,12 @@ static int cmpnum(CaseTree *ct, const void *pf)
 	}
 
 	/* in case of ">" or ">=" */
-	else if ((to = strchr(cond, '>')) != NULL)
+	else if (NULL != (to = strchr(cond, '>')))
 	{
-	    while (*cond != '\0' && !isdigit(*cond))
+	    while ('\0' != *cond && !isdigit(*cond))
 		cond++;
 
-	    if (*++to == '=')
+	    if ('=' == *++to) 
 	    {
 		if (f >= atof(cond))
 		    return 1;
@@ -296,13 +296,13 @@ static int cmpnum(CaseTree *ct, const void *pf)
 	}
 
 	/* if there is an else */
-	else if ((to = strstr(cond, "ELSE")) != NULL)
+	else if (NULL != (to = strstr(cond, "ELSE")))
 	    return 1;
 
 	/* in case it's just a fixed amount */
 	else
 	{
-	    while (*cond != '\0' && !isdigit(*cond))
+	    while ('\0' != *cond && !isdigit(*cond))
 		cond++;
 
 	    if (f == atof(cond))
@@ -323,20 +323,20 @@ static int cmpstr(CaseTree *ct, const void *s)
     int n = 1; /* number of conditions separated by ',' 
 		  (there is atleast 1 condition) */
     while (*pt)
-	if (*pt++ == ',')
+	if (',' == *pt++)
 	    n++;
 
     char *cond = strtok(tmp, ",");     
     while (n--)
     {
-	if ((strstr(cond, "ELSE")) != NULL) /* if there is an else */
+	if (NULL != (strstr(cond, "ELSE"))) /* if there is an else */
 	    return 1;
 
-	if ((cond = strinside(cond, "\"", "\"")) == NULL)
+	if (NULL == (cond = strinside(cond, "\"", "\"")))
 	    errExit("[%s] string in case should be "
 		    "defined between quotes \"\"\n", __func__);
 
-	if (strcmp(cond, (char *)s) == 0)
+	if (0 == strcmp(cond, (char *)s))
 	{
 	    free(cond);
 	    return 1;
@@ -352,11 +352,11 @@ double interpret(CaseTree *ct, const void *rule_data[])
     double x = 0.0;
     Cmpfunc *cf;
     const void *v;
-    for (CaseTree *pct = ct; pct != NULL; )
+    for (CaseTree *pct = ct; NULL != pct; )
     {
 	if (-1 == pct->rule_index) /* no rule, just an expression */
 	{
-	    while (*pct->expr != '\0' && !isdigit(*pct->expr))
+	    while ('\0' != *pct->expr && !isdigit(*pct->expr))
 		pct->expr++;
 	    x = atof(pct->expr);
 	    return x;
@@ -367,9 +367,9 @@ double interpret(CaseTree *ct, const void *rule_data[])
 
 	if (cf(pct, v))
 	{
-	    if ((pct->child) == NULL)
+	    if (NULL == (pct->child))
 	    {
-		while (*pct->expr != '\0' && !isdigit(*pct->expr))
+		while ('\0' != *pct->expr && !isdigit(*pct->expr))
 		    pct->expr++;
 		x = atof(pct->expr);
 		return x;

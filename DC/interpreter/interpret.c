@@ -18,9 +18,9 @@ int main(int argc, char *argv[])
 
     /* options */
     char *opt = argv[1];
-    short options = 0;
-    const short ptree = 01; /* print tree with '-p' option */
-    const short surpress = 02; /* surpress individual tests '-s', only print final status */
+    int options = 0;
+    const int ptree = 01; /* print tree with '-p' option */
+    const int surpress = 02; /* surpress individual tests '-s', only print final status */
 
     int treecnt;
     CaseTree *ct;
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	exit(0);
     }
 
-    if (*opt == '-')
+    if ('-' == *opt)
     {
 	if (argc < 3)
 	{
@@ -71,18 +71,18 @@ int main(int argc, char *argv[])
     {
 	int index = i + 1 + (options ? 1: 0);
 	fp = fopen(argv[index], "r");
-	if (fp == NULL) errExit("No such file\n");
+	if (NULL == fp) errExit("No such file\n");
 
-	if (fseek(fp, 0L, SEEK_END) != 0)
+	if (0 != fseek(fp, 0L, SEEK_END))
 	    errExit("Unable to move to end of file\n");
 
-	if ((bufsiz = ftell(fp)) == -1)
+	if (-1 == (bufsiz = ftell(fp)))
 	    errExit("Unable to obtain file position\n");
 
-	if ((s[i] = calloc(bufsiz + 1, sizeof(char))) == NULL)
+	if (NULL == (s[i] = calloc(bufsiz + 1, sizeof(char))))
 	    errExit("calloc returned NULL\n");
 
-	if (fseek(fp, 0L, SEEK_SET) != 0)
+	if (0 != fseek(fp, 0L, SEEK_SET))
 	    errExit("Unable to move to beginning of file\n");
 
 	fread(s[i], sizeof(char), bufsiz, fp);
@@ -96,13 +96,13 @@ int main(int argc, char *argv[])
 	if (options & ptree)
 	    printTree(ct);
 
-	if (testTree(ct, fp, options & surpress) == 0)
+	if (0 == testTree(ct, fp, options & surpress))
 	    printf("[%s] %sALL TESTS PASSED%s\n", argv[index], GREEN, NORMAL);
 	else
 	    printf("[%s] %sONE OR MORE TESTS FAILED%s\n", argv[index], RED, NORMAL);
 
 	freeTree(ct);
-	if (fclose(fp) != 0)
+	if (0 != fclose(fp))
 	    errExit("Unable to close file [%s]\n", argv[index]);
     }
 
@@ -122,27 +122,27 @@ int testTree(CaseTree *ct, FILE *fp, int surpress)
     double dage;
     char *temp;
 
-    if (fseek(fp, 0L, SEEK_SET) != 0)
+    if (0 != fseek(fp, 0L, SEEK_SET))
 	errExit("Unable to move to beginning of file\n");
 
-    while ((temp = fgets(test, sizeof(test), fp)) != NULL)
-	if (strstr(test, "tests:") != NULL)
+    while (NULL != (temp = fgets(test, sizeof(test), fp)))
+	if (NULL != strstr(test, "tests:"))
 	    break;
     
-    if (temp == NULL)
+    if (NULL == temp)
     {
 	printf("No tests found\n");
 	return status;
     }
     
-    while (fgets(test, sizeof(test), fp) != NULL)
+    while (NULL != fgets(test, sizeof(test), fp))
     {
 	age = strtok(test, ",");
 	reg = strtok(NULL, ",");
 	cat = strtok(NULL, "=");
 	value = strtok(NULL, "\r\n\v\f"); /* end of line or file */
 
-	if (age == NULL || reg == NULL || cat == NULL || value == NULL)
+	if (NULL == age || NULL == reg || NULL == cat || NULL == value )
 	    errExit("[%s] invalid test: %s\n", __func__, test);
 	
 	dage = atof(age);
