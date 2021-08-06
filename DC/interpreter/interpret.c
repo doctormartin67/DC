@@ -114,7 +114,12 @@ int testTree(CaseTree *ct, FILE *fp, int surpress)
     int status = 0;
     char test[BUFSIZ]; /* no way test will be bigger than this */
 
+    const void **rule_data;
+
+    /* This needs improved !!!!!! */
+    rule_data = calloc(3, sizeof(void *));
     char *age, *reg, *cat, *value;
+    double dage;
     char *temp;
 
     if (fseek(fp, 0L, SEEK_SET) != 0)
@@ -139,8 +144,13 @@ int testTree(CaseTree *ct, FILE *fp, int surpress)
 
 	if (age == NULL || reg == NULL || cat == NULL || value == NULL)
 	    errExit("[%s] invalid test: %s\n", __func__, test);
+	
+	dage = atof(age);
+	rule_data[AGE] = &dage;
+	rule_data[REG] = reg;
+	rule_data[CAT] = cat;
 
-	if (interpret(ct, atof(age), reg, cat) == atof(value))
+	if (interpret(ct, rule_data) == atof(value))
 	{
 	    if (!surpress)
 	    {
@@ -158,6 +168,7 @@ int testTree(CaseTree *ct, FILE *fp, int surpress)
 	    status = 1;
 	}
     }
+    free(rule_data);
 
     return status;
 }

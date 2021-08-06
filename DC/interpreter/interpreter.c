@@ -1,7 +1,23 @@
+/* This is an interpreter than will interpret a text buffer that will be input
+   as VBA Select Case syntax by the user. To understand more about how that
+   works it's best to read up on the syntax of Select Case. CaseTree is a 
+   linked list that will point to the various cases input by the user. 
+   The tree consists of all the Select Cases with the root of the tree being 
+   determined by the rule and each case points to the next one. If there is 
+   a select case within another select case then 'child' will point to the
+   first case of the subtree. */
+
 #include "interpreter.h"
 
 static Cmpfunc cmpnum;
 static Cmpfunc cmpstr;
+
+/* data (NULL) will be set each time interpret is called because it can
+   be different each time */
+Rule ruleset[] = 
+{
+    {"AGE", cmpnum, NULL}, {"REG", cmpstr, NULL}, {"CAT", cmpstr, NULL}
+};
 
 char *strclean(const char *s)
 {
@@ -25,10 +41,11 @@ char *strclean(const char *s)
 
     upper(t); // make case insensitive
 
-    /* END SELECT needs to be replaced with something else, because I need a unique identifier
-       to find the beginning and end of a select case. If there is a case after end select, then
-       strstr(s, "SELECT CASE") would find this when in fact this isn't the beginning of a select
-       case, it's the end of the previous one. I chose "END SELEC67" */
+    /* END SELECT needs to be replaced with something else, because I need a 
+       unique identifier to find the beginning and end of a select case. If 
+       there is a case after end select, then strstr(s, "SELECT CASE") would 
+       find this when in fact this isn't the beginning of a select case, it's 
+       the end of the previous one. I chose "END SELEC67" */
     pt = t;
     t = replace(t, "END SELECT", ES);
     free(pt);
@@ -38,7 +55,9 @@ char *strclean(const char *s)
 CaseTree *buildTree(const char *s)
 {
     char *t = strdup(s); /* this never gets freed! */
+    char *rulename = NULL;
     char *c, *sc, *es, *x;
+    c = sc = es = x = NULL;
     CaseTree *ct = (CaseTree *)malloc(sizeof(CaseTree));
     if (ct == NULL) errExit("[%s] malloc returned NULL\n", __func__);
 
@@ -48,7 +67,7 @@ CaseTree *buildTree(const char *s)
 	printf("Warning in %s: there are no cases in the assumption, "
 		"so user should have chosen fixed amount for assumption.\n"
 		, __func__); 	
-	strcpy(ct->rule, "NOR"); /* no rule */
+	ct->rule_index = -1; /* no rule */
 	ct->cond = NULL;
 	ct->expr = temp;
 	ct->next = NULL;
@@ -58,9 +77,13 @@ CaseTree *buildTree(const char *s)
 
     /* at the root there is a rule (f.e. age, cat, reg, ...) */
     t += strlen(SC); /* SC includes space ' ' at the end */
-    for (int i = 0; *t != ' ' && i < RULESIZE; i++)
-	ct->rule[i] = *t++;
-    ct->rule[RULESIZE] = '\0';
+    rulename = t;
+    for (int i = 0; *t != '\0' && *t != ' '; i++)
+	t++;
+    *t = '\0';
+    ct->rule_index = setRule(rulename);
+    if (-1 == ct->rule_index) 
+	errExit("[%s] Unknown rule [%s]\n", __func__, rulename);
 
     for (CaseTree *pct = ct; pct != NULL; pct = pct->next)
     {
@@ -81,7 +104,8 @@ CaseTree *buildTree(const char *s)
 	{
 	    char *prevt = t++;
 
-	    /* select cases can be nested, we need to find the final end select of this tree */
+	    /* select cases can be nested, we need to find the final end select 
+	       of this tree */
 	    int nests = 1;
 
 	    while (nests)
@@ -102,7 +126,7 @@ CaseTree *buildTree(const char *s)
 	    }
 
 	    /* when nests hits zero, t should be at end select 
-	    (the +1 is because we add 1 to t in the while loop) */
+	       (the +1 is because we add 1 to t in the while loop) */
 	    assert(t == es + 1);
 
 	    t += strlen(ES) - 1;
@@ -125,12 +149,35 @@ CaseTree *buildTree(const char *s)
 	    t = c;
 	    if ((pct->next = (CaseTree *)malloc(sizeof(CaseTree))) == NULL)
 		errExit("[%s] malloc return NULL\n", __func__);
-	    strcpy(pct->next->rule, pct->rule);
+	    pct->next->rule_index = pct->rule_index;
 	}
 	*(t - 1) = '\0';
     }
 
     return ct;
+}
+
+/* Returns the index of the ruleset array for the given name in the tree. If
+   no rule is found then -1 is returned. */
+int setRule(const char *name)
+{
+    int index = -1; /* this will be set to the index of the rule name, 
+		       if it remains -1 then an error occured */
+    int len = sizeof(ruleset)/sizeof(ruleset[0]);
+    size_t n = strlen(name);
+    size_t rn; /* ruleset name size */
+
+    /* find rule */
+    for (int i = 0; i < len; i++)
+    {
+	rn = strlen(ruleset[i].name);
+	if (n != rn)
+	    continue;
+	else if (strncmp(name, ruleset[i].name, n) == 0) 
+	    index = i;
+    }
+
+    return index;
 }
 
 void printTree(CaseTree *ct)
@@ -141,9 +188,10 @@ void printTree(CaseTree *ct)
 
     for (int i = 0; i < cnt; i++)
 	strcat(tabs, "\t");
-    printf("%sselect case %s\n", tabs, ct->rule);
+    printf("%sselect case %s\n", tabs, ruleset[ct->rule_index].name);
 
-    strcpy(temp, tabs); /* remember tabs used here because it will be the same at end of tree */
+    strcpy(temp, tabs); /* remember tabs used here because it will be the same 
+			   at end of tree */
 
     cnt++; /* when cases start we are one level removed from top */
     while (ct != NULL)
@@ -153,7 +201,8 @@ void printTree(CaseTree *ct)
 	    strcat(tabs, "\t");
 	printf("%scase %s\n", tabs, ct->cond);
 
-	cnt++; /* either a child or new tree is created, both need another tab */
+	cnt++; /* either a child or new tree is created, both need another 
+		  tab */
 	if (ct->child == NULL)
 	{
 	    strcpy(tabs, "");
@@ -188,7 +237,8 @@ static int cmpnum(CaseTree *ct, const void *pf)
     strcpy(tmp, ct->cond);
     char *pt = tmp;
 
-    int n = 1; // number of conditions separated by ',' (there is atleast 1 condition)
+    int n = 1; /* number of conditions separated by ',' 
+		  (there is atleast 1 condition) */
     while (*pt)
 	if (*pt++ == ',')
 	    n++;
@@ -270,7 +320,8 @@ static int cmpstr(CaseTree *ct, const void *s)
     strcpy(tmp, ct->cond);
     char *pt = tmp;
 
-    int n = 1; // number of conditions separated by ',' (there is atleast 1 condition)
+    int n = 1; /* number of conditions separated by ',' 
+		  (there is atleast 1 condition) */
     while (*pt)
 	if (*pt++ == ',')
 	    n++;
@@ -282,7 +333,8 @@ static int cmpstr(CaseTree *ct, const void *s)
 	    return 1;
 
 	if ((cond = strinside(cond, "\"", "\"")) == NULL)
-	    errExit("[%s] string in case should be defined between quotes \"\"\n", __func__);
+	    errExit("[%s] string in case should be "
+		    "defined between quotes \"\"\n", __func__);
 
 	if (strcmp(cond, (char *)s) == 0)
 	{
@@ -295,41 +347,23 @@ static int cmpstr(CaseTree *ct, const void *s)
     return 0;
 }
 
-double interpret(CaseTree *ct, double age, const char *reg, const char *cat)
+double interpret(CaseTree *ct, const void *rule_data[])
 {
     double x = 0.0;
     Cmpfunc *cf;
     const void *v;
     for (CaseTree *pct = ct; pct != NULL; )
     {
-	if (strcmp(pct->rule, "AGE") == 0)
-	{
-	    cf = cmpnum;
-	    v = &age;
-	}
-	else if (strcmp(pct->rule, "REG") == 0) 
-	{
-	    cf = cmpstr;
-	    v = reg;
-	}
-	else if (strcmp(pct->rule, "CAT") == 0)
-	{
-	    cf = cmpstr;
-	    v = cat;
-	}
-	else if (strcmp(pct->rule, "NOR") == 0) /* no rule, just an expression */
+	if (-1 == pct->rule_index) /* no rule, just an expression */
 	{
 	    while (*pct->expr != '\0' && !isdigit(*pct->expr))
 		pct->expr++;
 	    x = atof(pct->expr);
 	    return x;
 	}
-	else 
-	{
-	    /* should never reach here because this should have been 
-	       checked before program is run */
-	    errExit("[%s]: Unknown rule \"%s\"\n", __func__, pct->rule);
-	}
+
+	v = rule_data[pct->rule_index];
+	cf = ruleset[pct->rule_index].cf;
 
 	if (cf(pct, v))
 	{
