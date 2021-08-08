@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
     const int ptree = 01; /* print tree with '-p' option */
     const int surpress = 02; /* surpress individual tests '-s', only print final status */
 
-    int treecnt;
-    CaseTree *ct;
+    int treecnt = 0;
+    CaseTree *ct = NULL;
 
     if (argc < 2)
     {
@@ -93,6 +93,16 @@ int main(int argc, char *argv[])
 	s[i] = strclean(s[i]);
 	ct = buildTree(s[i]);
 
+	/* If one tree has an error, print error message and continue with
+	   next tree */
+	if (NULL == ct)
+	{
+	    printf("[%s] %s\n", argv[index], strterror(getterrno()));
+	    if (0 != fclose(fp))
+		errExit("Unable to close file [%s]\n", argv[index]);
+	    continue;
+	}
+
 	if (options & ptree)
 	    printTree(ct);
 
@@ -102,6 +112,7 @@ int main(int argc, char *argv[])
 	    printf("[%s] %sONE OR MORE TESTS FAILED%s\n", argv[index], RED, NORMAL);
 
 	freeTree(ct);
+	ct = NULL;
 	if (0 != fclose(fp))
 	    errExit("Unable to close file [%s]\n", argv[index]);
     }

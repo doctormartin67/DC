@@ -4,10 +4,11 @@
 /* header file for interpreter.c */
 
 #include "libraryheader.h"
+#include "treeerrors.h"
 
 /* key words for Select Case in VBA */
 #define C "CASE "
-#define SC "SELECT CASE "
+#define SC "SELECT CA67 "
 #define ES "END SELEC67" /* 67 is explained in interpreter.c:strclean.c */
 #define X "X" /* An expression is of the form x = ... */
 

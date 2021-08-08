@@ -9,9 +9,14 @@
 
 #include "interpreter.h"
 
+/* In a Select Case statement we could be comparing strings or numbers,
+   the two functions below are used to compare these two types. */
 static Cmpfunc cmpnum;
 static Cmpfunc cmpstr;
 
+/* ruleset is an array which consists of the variables that the user
+   can use to Select Case over. They can be seen as the predetermined
+   variables instead of the user having to define them themselves. */
 /* data (NULL) will be set each time interpret is called because it can
    be different each time */
 Rule ruleset[] = 
@@ -19,6 +24,9 @@ Rule ruleset[] =
     {"AGE", cmpnum, NULL}, {"REG", cmpstr, NULL}, {"CAT", cmpstr, NULL}
 };
 
+/* Before the tree is built, an initial clean is run so that the string to
+   build the tree consists of words separated by 1 space. The string is also
+   set to uppercase to make the interpreter case insensitive. */
 char *strclean(const char *s)
 {
     char *t = calloc(strlen(s) + 1, sizeof(char));
@@ -49,53 +57,124 @@ char *strclean(const char *s)
     pt = t;
     t = replace(t, "END SELECT", ES);
     free(pt);
+    pt = t;
+    t = replace(t, "SELECT CASE ", SC);
+    free(pt);
     return trim(t);
 }
 
+/* Build a tree which is a linked list of 'CaseTree' structs. Each case has 
+   has a rule and a pointer to the next case. If there is a nested select 
+   case then the CaseTree also has a pointer to the first case via the child
+   element. 
+   The tree is checked for errors in this function, some errors are checked 
+   directly, others are checked with the function 'checkTree'. */
 CaseTree *buildTree(const char *s)
 {
-    char *t = strdup(s); /* this never gets freed! */
+    /* At the start of a new build, terrno is reset to NOERR and the checks 
+       are redone. */
+    setterrno(NOERR);
+
+    char *t = strdup(s);
+    char *pt = t; /* used to free t */
     char *rulename = NULL;
     char *c, *sc, *es, *x;
     c = sc = es = x = NULL;
     CaseTree *ct = (CaseTree *)malloc(sizeof(CaseTree));
     if (ct == NULL) errExit("[%s] malloc returned NULL\n", __func__);
+    ct->rule_index = -1; /* no rule yet */
+    ct->cond = NULL;
+    ct->expr = NULL;
+    ct->next = NULL;
+    ct->child = NULL;
 
     char *temp = t;
     if (NULL == (t = strstr(temp, SC)))
     { /* in this case there is no "Select Case" in the data */
-	ct->rule_index = -1; /* no rule */
-	ct->cond = NULL;
+	/* return NULL if there is no 'x' in the expression */
+	if (NULL == strstr(temp, X))
+	{
+	    free(pt);
+	    freeTree(ct);
+	    setterrno(XERR);
+	    return NULL;
+	}
 	ct->expr = temp;
-	ct->next = NULL;
-	ct->child = NULL;
 	return ct;
+    }
+    else if (NULL == (c = strstr(temp, C)))
+    {
+	free(pt);
+	freeTree(ct);
+	setterrno(NOCERR);
+	return NULL;
+    }
+    else if (c < t)
+    {
+	free(pt);
+	freeTree(ct);
+	setterrno(CERR);
+	return NULL;
     }
 
     /* at the root there is a rule (f.e. age, cat, reg, ...) */
     t += strlen(SC); /* SC includes space ' ' at the end */
     rulename = t;
-    for (int i = 0; '\0' != *t && ' ' != *t; i++)
+    while ('\0' != *t && ' ' != *t)
 	t++;
     *t++ = '\0';
+
+    /* return NULL if the next word is 'case', meaning there was no rule */
+    if (0 == strncmp(rulename, C, strlen(C)))
+    {
+	free(pt);
+	freeTree(ct);
+	setterrno(NORULEERR);
+	return NULL;
+    }
+
     ct->rule_index = setRule(rulename);
+
+    /* return NULL if the next word was not a known rule */
     if (-1 == ct->rule_index) 
-	errExit("[%s] Unknown rule [%s]\n", __func__, rulename);
+    {
+	free(pt);
+	freeTree(ct);
+	setterrno(UNKRULEERR);
+	return NULL;
+    }
 
     for (CaseTree *pct = ct; NULL != pct; pct = pct->next)
     {
+	/* return NULL if there is no 'case' right after select case 'rule' */
+	if (0 != strncmp(t, C, strlen(C)))
+	{
+	    free(pt);
+	    freeTree(ct);
+	    setterrno(NOCERR);
+	    return NULL;
+	}
+
 	t += strlen(C);
 	pct->cond = t;
 
 	x = strstr(t, X);
+
+	/* return NULL if there is no 'x' in the expression */
+	if (NULL == x)
+	{
+	    free(pt);
+	    freeTree(ct);
+	    setterrno(XERR);
+	    return NULL;
+	}
+
 	sc = strstr(t, SC);
 
 	if (NULL == sc)
 	    t = x;
 	else 
 	    t = (x < sc ? x : sc);
-
-	if (NULL == t) errExit("An expression doesn't contain \"x = ...\"");
 
 	*(t - 1) = '\0';
 	pct->expr = t;
@@ -112,6 +191,17 @@ CaseTree *buildTree(const char *s)
 	    {
 		sc = strstr(t, SC);
 		es = strstr(t, ES);
+
+		/* return NULL if there is no 'end select' even though we know
+		   there is a select case */
+		if (NULL == es)
+		{
+		    free(pt);
+		    freeTree(ct);
+		    setterrno(SCERR);
+		    return NULL;
+		}
+
 		if (NULL == sc || sc > es)
 		{
 		    t = es;
@@ -188,7 +278,14 @@ void printTree(CaseTree *ct)
 
     for (int i = 0; i < cnt; i++)
 	strcat(tabs, "\t");
-    printf("%sselect case %s\n", tabs, ruleset[ct->rule_index].name);
+
+    if (-1 == ct->rule_index)
+    {
+	printf("%s\n", ct->expr);
+	return;
+    }
+    else
+	printf("%sselect case %s\n", tabs, ruleset[ct->rule_index].name);
 
     strcpy(temp, tabs); /* remember tabs used here because it will be the same 
 			   at end of tree */
@@ -334,7 +431,7 @@ static int cmpstr(CaseTree *ct, const void *s)
 
 	if (NULL == (cond = strinside(cond, "\"", "\"")))
 	    errExit("[%s] string in case should be "
-		    "defined between quotes \"\"\n", __func__);
+		    "defined between quotes \"\"", __func__);
 
 	if (0 == strcmp(cond, (char *)s))
 	{

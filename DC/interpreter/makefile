@@ -15,7 +15,7 @@ BINPATH = /home/doctormartin67/bin
 # objects:
 XML = `xml2-config --cflags` `xml2-config --libs`
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -rdynamic
-MISCOBJS = interpreter.o
+MISCOBJS = interpreter.o treeerrors.o
 LIBOBJS = $(LIBPATH)/helperfunctions.o
 GTKOBJS =
 EXEC = interpret
