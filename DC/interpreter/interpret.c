@@ -1,4 +1,4 @@
-#include "interpreter.h"
+#include "treeerrors.h"
 
 #define NORMAL "\x1B[0m"
 #define RED "\x1B[31m"
@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     const int ptree = 01; /* print tree with '-p' option */
     const int surpress = 02; /* surpress individual tests '-s', only print final status */
 
+    TreeError te = NOERR;
     int treecnt = 0;
     CaseTree *ct = NULL;
 
@@ -95,11 +96,13 @@ int main(int argc, char *argv[])
 
 	/* If one tree has an error, print error message and continue with
 	   next tree */
-	if (NULL == ct)
+	if (NOERR != (te = getterrno()))
 	{
-	    printf("[%s] %s\n", argv[index], strterror(getterrno()));
+	    printf("[%s] %s\n", argv[index], strterror(te));
 	    if (0 != fclose(fp))
 		errExit("Unable to close file [%s]\n", argv[index]);
+
+	    setterrno(NOERR);
 	    continue;
 	}
 

@@ -1,5 +1,5 @@
-interpret.o: interpret.c /usr/include/stdc-predef.h interpreter.h \
- /home/doctormartin67/Projects/library/libraryheader.h \
+interpret.o: interpret.c /usr/include/stdc-predef.h treeerrors.h \
+ interpreter.h /home/doctormartin67/Projects/library/libraryheader.h \
  /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -751,9 +751,9 @@ interpret.o: interpret.c /usr/include/stdc-predef.h interpreter.h \
  /usr/include/gtk-3.0/gtk/deprecated/gtkvseparator.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
- /home/doctormartin67/Projects/library/libraryheader.h treeerrors.h
-interpreter.o: interpreter.c /usr/include/stdc-predef.h interpreter.h \
- /home/doctormartin67/Projects/library/libraryheader.h \
+ /home/doctormartin67/Projects/library/libraryheader.h
+interpreter.o: interpreter.c /usr/include/stdc-predef.h treeerrors.h \
+ interpreter.h /home/doctormartin67/Projects/library/libraryheader.h \
  /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -1505,9 +1505,9 @@ interpreter.o: interpreter.c /usr/include/stdc-predef.h interpreter.h \
  /usr/include/gtk-3.0/gtk/deprecated/gtkvseparator.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
- /home/doctormartin67/Projects/library/libraryheader.h treeerrors.h
-treeerrors.o: treeerrors.c /usr/include/stdc-predef.h interpreter.h \
- /home/doctormartin67/Projects/library/libraryheader.h \
+ /home/doctormartin67/Projects/library/libraryheader.h
+treeerrors.o: treeerrors.c /usr/include/stdc-predef.h treeerrors.h \
+ interpreter.h /home/doctormartin67/Projects/library/libraryheader.h \
  /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -2259,7 +2259,7 @@ treeerrors.o: treeerrors.c /usr/include/stdc-predef.h interpreter.h \
  /usr/include/gtk-3.0/gtk/deprecated/gtkvseparator.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
- /home/doctormartin67/Projects/library/libraryheader.h treeerrors.h
+ /home/doctormartin67/Projects/library/libraryheader.h
 helperfunctions.o: \
  /home/doctormartin67/Projects/library/helperfunctions.c \
  /usr/include/stdc-predef.h \

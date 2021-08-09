@@ -7,12 +7,7 @@
    a select case within another select case then 'child' will point to the
    first case of the subtree. */
 
-#include "interpreter.h"
-
-/* In a Select Case statement we could be comparing strings or numbers,
-   the two functions below are used to compare these two types. */
-static Cmpfunc cmpnum;
-static Cmpfunc cmpstr;
+#include "treeerrors.h"
 
 /* ruleset is an array which consists of the variables that the user
    can use to Select Case over. They can be seen as the predetermined
@@ -71,10 +66,6 @@ char *strclean(const char *s)
    directly, others are checked with the function 'checkTree'. */
 CaseTree *buildTree(const char *s)
 {
-    /* At the start of a new build, terrno is reset to NOERR and the checks 
-       are redone. */
-    setterrno(NOERR);
-
     char *t = strdup(s);
     char *pt = t; /* used to free t */
     char *rulename = NULL;
@@ -177,6 +168,13 @@ CaseTree *buildTree(const char *s)
 	    t = (x < sc ? x : sc);
 
 	*(t - 1) = '\0';
+	if (!isvalidcond(pct)) /* terrno set by isvalidcond */
+	{
+	    free(pt);
+	    free(ct);
+	    return NULL;
+	}
+
 	pct->expr = t;
 
 	if (0 == strncmp(t, SC, strlen(SC)))
@@ -335,7 +333,7 @@ void freeTree(CaseTree *ct)
     }
 }
 
-static int cmpnum(CaseTree *ct, const void *pf)
+int cmpnum(CaseTree *ct, const void *pf)
 {
     double f = *((double *)pf);
     char tmp[strlen(ct->cond) + 1];
@@ -419,7 +417,7 @@ static int cmpnum(CaseTree *ct, const void *pf)
     return 0;
 }
 
-static int cmpstr(CaseTree *ct, const void *s)
+int cmpstr(CaseTree *ct, const void *s)
 {
     char tmp[strlen(ct->cond)+1];
     strcpy(tmp, ct->cond);

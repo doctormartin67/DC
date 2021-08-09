@@ -4,7 +4,6 @@
 /* header file for interpreter.c */
 
 #include "libraryheader.h"
-#include "treeerrors.h"
 
 /* key words for Select Case in VBA */
 #define C "CASE "
@@ -54,5 +53,9 @@ int setRule(const char *);
 double interpret(CaseTree *ct, const void *rule_data[]);
 void printTree(CaseTree *ct);
 void freeTree(CaseTree *ct);
+/* In a Select Case statement we could be comparing strings or numbers,
+   the two functions below are used to compare these two types. */
+extern Cmpfunc cmpnum;
+extern Cmpfunc cmpstr;
 
 #endif
