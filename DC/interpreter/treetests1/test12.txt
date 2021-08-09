@@ -1,25 +1,26 @@
-reg 
+end select reg 
 	case "123"
 		select case cat
 			case "BC"
 				select case age
 					case < 40
-						y = 0.01
+						x = 0.01
 					case else
-						y = 0.02
+						x = 0.02
 				end select
 			case "WC"
 				select case age
 					case <40
-						y = 0.03
+						x = 0.03
 					case else
-						y = 0.04
+						x = 0.04
 				end select
 			case else
-				y = 0.05
+				x = 0.05
 		end select
 	case else
-		y = 0.06
+		x = 0.06
+end select
 tests:
 39,123,BC=0.01
 41,123,BC=0.02

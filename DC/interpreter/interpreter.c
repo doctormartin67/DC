@@ -229,6 +229,14 @@ CaseTree *buildTree(const char *s)
 	c = strstr(t, C);
 	es = strstr(t, ES);
 
+	if (NULL == es)
+	{
+	    free(pt);
+	    freeTree(ct);
+	    setterrno(SCERR);
+	    return NULL;
+	}
+
 	if (NULL == c || es < c)
 	{
 	    t = es;
