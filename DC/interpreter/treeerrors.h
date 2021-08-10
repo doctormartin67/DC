@@ -13,6 +13,7 @@ extern const char *strterrors[];
 void setterrno(TreeError te);
 TreeError getterrno(void);
 const char *strterror(TreeError te);
+int isvalidTree(const char *t);
 int isvalidcond(CaseTree *ct);
 
 #endif

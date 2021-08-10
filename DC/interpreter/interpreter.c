@@ -58,54 +58,33 @@ char *strclean(const char *s)
     return trim(t);
 }
 
-/* Build a tree which is a linked list of 'CaseTree' structs. Each case has 
-   has a rule and a pointer to the next case. If there is a nested select 
-   case then the CaseTree also has a pointer to the first case via the child
-   element. 
-   The tree is checked for errors in this function, some errors are checked 
-   directly, others are checked with the function 'checkTree'. */
+/*
+ * Build a tree which is a linked list of 'CaseTree' structs. Each case has 
+ * has a rule and a pointer to the next case. If there is a nested select 
+ * case then the CaseTree also has a pointer to the first case via the child
+ * element. 
+ * The tree is checked for errors in this function, some errors are checked 
+ * directly, others are checked with the function 'isvalid*'. 
+ */
 CaseTree *buildTree(const char *s)
 {
+    if (!isvalidTree(s)) return NULL;
     char *t = strdup(s);
-    char *pt = t; /* used to free t */
-    char *rulename = NULL;
+    char *const pt = t; /* used to free t */
     char *c, *sc, *es, *x;
     c = sc = es = x = NULL;
+    char *rulename = NULL;
+
     CaseTree *ct = (CaseTree *)malloc(sizeof(CaseTree));
     if (ct == NULL) errExit("[%s] malloc returned NULL\n", __func__);
     ct->rule_index = -1; /* no rule yet */
-    ct->cond = NULL;
-    ct->expr = NULL;
-    ct->next = NULL;
-    ct->child = NULL;
+    ct->cond = ct->expr = NULL;
+    ct->next = ct->child = NULL;
 
-    char *temp = t;
-    if (NULL == (t = strstr(temp, SC)))
-    { /* in this case there is no "Select Case" in the data */
-	/* return NULL if there is no 'x' in the expression */
-	if (NULL == strstr(temp, X))
-	{
-	    free(pt);
-	    freeTree(ct);
-	    setterrno(XERR);
-	    return NULL;
-	}
-	ct->expr = temp;
+    if (NULL == (t = strstr(pt, SC)))
+    { 
+	ct->expr = strstr(pt, X);
 	return ct;
-    }
-    else if (NULL == (c = strstr(temp, C)))
-    {
-	free(pt);
-	freeTree(ct);
-	setterrno(NOCERR);
-	return NULL;
-    }
-    else if (c < t)
-    {
-	free(pt);
-	freeTree(ct);
-	setterrno(CERR);
-	return NULL;
     }
 
     /* at the root there is a rule (f.e. age, cat, reg, ...) */
@@ -150,16 +129,6 @@ CaseTree *buildTree(const char *s)
 	pct->cond = t;
 
 	x = strstr(t, X);
-
-	/* return NULL if there is no 'x' in the expression */
-	if (NULL == x)
-	{
-	    free(pt);
-	    freeTree(ct);
-	    setterrno(XERR);
-	    return NULL;
-	}
-
 	sc = strstr(t, SC);
 
 	if (NULL == sc)
@@ -189,16 +158,6 @@ CaseTree *buildTree(const char *s)
 	    {
 		sc = strstr(t, SC);
 		es = strstr(t, ES);
-
-		/* return NULL if there is no 'end select' even though we know
-		   there is a select case */
-		if (NULL == es)
-		{
-		    free(pt);
-		    freeTree(ct);
-		    setterrno(SCERR);
-		    return NULL;
-		}
 
 		if (NULL == sc || sc > es)
 		{

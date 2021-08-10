@@ -32,6 +32,88 @@ const char *strterror(TreeError te)
     return strterrors[te];
 }
 
+/*
+ * Performs initial checks that the tree has the correct structure, i.e.
+ * Select Case ...
+ * 	Case ...
+ * 		x = ...
+ * End Select
+ */
+    
+int isvalidTree(const char *t)
+{
+    char *c, *sc, *es, *x;
+    c = strstr(t, C);
+    sc = strstr(t, SC);
+    es = strstr(t, ES);
+    x = strstr(t, X);
+    
+    if (NULL == x)
+    {
+	setterrno(XERR);	
+	return 0;
+    }
+    /* tree of the form 'x = *' is valid */
+    if (NULL == c && NULL == sc && NULL == es)
+	return 1;
+    else if (NULL == sc && NULL != es)
+    {
+	setterrno(ESERR);
+	return 0;
+    }
+    else if (NULL == sc && NULL != c)
+    {
+	setterrno(CERR);
+	return 0;
+    }
+    else if (NULL == c)
+    {
+	setterrno(NOCERR);
+	return 0;
+    }
+    else if (NULL == es)
+    {
+	setterrno(SCERR);
+	return 0;
+    }
+    else if (NULL != c && NULL != sc && NULL != es)
+    {
+	if (c < sc)
+	{
+	    setterrno(CERR);
+	    return 0;
+	}
+	else if (es < c)
+	{
+	    setterrno(NOCERR);
+	    return 0;
+	}
+	else if (es < sc)
+	{
+	    setterrno(ESERR);
+	    return 0;
+	}
+	else if (sc < c && c < es)
+	    return 1;
+	else
+	{
+	    printf("[%s] Warning: impossible part of function\n", __func__);
+	    return 0;
+	}
+    }
+    else
+    {
+	printf("[%s] Warning: impossible part of function\n", __func__);
+	return 0;
+    }
+
+    return 1;
+}
+
+/* 
+ * checks the conditions of a case. Returns 0 if an error is found and 1 
+ * otherwhise
+ */
 int isvalidcond(CaseTree *ct)
 {
     const char *s = ct->cond;
