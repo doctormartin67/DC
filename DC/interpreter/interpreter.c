@@ -53,7 +53,7 @@ char *strclean(const char *s)
     t = replace(t, "END SELECT", ES);
     free(pt);
     pt = t;
-    t = replace(t, "SELECT CASE ", SC);
+    t = replace(t, "SELECT CASE", SC);
     free(pt);
     return trim(t);
 }
@@ -64,7 +64,7 @@ char *strclean(const char *s)
  * case then the CaseTree also has a pointer to the first case via the child
  * element. 
  * The tree is checked for errors in this function, some errors are checked 
- * directly, others are checked with the function 'isvalid*'. 
+ * directly, others are checked with the functions 'isvalid*'. 
  */
 CaseTree *buildTree(const char *s)
 {
@@ -88,7 +88,8 @@ CaseTree *buildTree(const char *s)
     }
 
     /* at the root there is a rule (f.e. age, cat, reg, ...) */
-    t += strlen(SC); /* SC includes space ' ' at the end */
+    t += strlen(SC); 
+    t++; /* space ' ' at the end of SC */
     rulename = t;
     while ('\0' != *t && ' ' != *t)
 	t++;
@@ -126,6 +127,7 @@ CaseTree *buildTree(const char *s)
 	}
 
 	t += strlen(C);
+	t++; /* space ' ' at the end of C */
 	pct->cond = t;
 
 	x = strstr(t, X);
@@ -202,8 +204,9 @@ CaseTree *buildTree(const char *s)
 	else
 	{
 	    t = c;
-	    if (NULL == (pct->next = (CaseTree *)malloc(sizeof(CaseTree))))
+	    if (NULL == (pct->next = malloc(sizeof(CaseTree))))
 		errExit("[%s] malloc return NULL\n", __func__);
+
 	    pct->next->rule_index = pct->rule_index;
 	}
 	*(t - 1) = '\0';
@@ -296,16 +299,16 @@ int cmpnum(CaseTree *ct, const void *pf)
 {
     double f = *((double *)pf);
     char tmp[strlen(ct->cond) + 1];
-    strcpy(tmp, ct->cond);
-    char *pt = tmp;
+    snprintf(tmp, sizeof(tmp), "%s", ct->cond);
+    char *cond = tmp;
 
     int n = 1; /* number of conditions separated by ',' 
 		  (there is atleast 1 condition) */
-    while (*pt)
-	if (',' == *pt++)
+    while (*cond)
+	if (',' == *cond++)
 	    n++;
 
-    char *cond = strtok(tmp, ",");     
+    cond = strtok(tmp, ",");     
     while (n--)
     {
 	/* in case there is a "TO" operator */

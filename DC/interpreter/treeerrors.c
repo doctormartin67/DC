@@ -1,12 +1,18 @@
-/* This file defines the error functions for the building of the Select Case
-   tree. */
+/* 
+ * This file defines the error functions for the building of the Select Case
+ * tree.
+ */
 
 #include "treeerrors.h"
 
-/* Set to the error found (if any) while building the tree. */
+/* 
+ * Set to the error found (if any) while building the tree.
+ */
 static TreeError terrno = NOERR;
 
-/* Array with error messages for tree errors */
+/* 
+ * Array with error messages for tree errors
+ */
 const char *strterrors[] = 
 {
     "No errors found in tree", 
@@ -18,13 +24,15 @@ const char *strterrors[] =
     "Select Case has unknown rule",
     "Select Case has no rule", 
     "String condition without quotes \"\"", 
-    "Conditions not separated by ','"
+    "Conditions not separated by ','", 
+    "Invalid condition",
+    "Incorrect use of \"To\" operator",
+    "Incorrect use of \"Is\" operator",
+    "Incorrect use of \"Else\" operator"
 };
 
-/* Simple function to set the static variable to given value. */
 void setterrno(TreeError te) { terrno = te; }
 
-/* Simple function to get the static variable. */
 TreeError getterrno(void) { return terrno; }
 
 const char *strterror(TreeError te)
@@ -116,13 +124,197 @@ int isvalidTree(const char *t)
  */
 int isvalidcond(CaseTree *ct)
 {
+    /* 
+     * n: number of conditions separated by ',' (there is atleast 1 condition)
+     */
+    int n = 1;
     const char *s = ct->cond;
+    char t[strlen(s) + 1];
+    char *pt = t;
+    char *to = strstr(s, "TO");
+
+    snprintf(t, sizeof(t), "%s", s);
     Cmpfunc *cf = ruleset[ct->rule_index].cf;
 
+    while (*pt)
+	if (',' == *pt++)
+	    n++;
+    
+    pt = strtok(t, ",");
+
+    /*
+     * check whether the case is of the correct form when comparing numbers
+     */
     if (cmpnum == cf)
     {
-	/* to do */	
+	while (n--)
+	{
+	    while (isgarbage(*pt))
+		pt++; 
+
+	    /*
+	     * Case Is ...
+	     */
+	    if ('I' == *pt && 'S' == *(pt + 1))
+	    {
+		pt += 2;
+		while (isgarbage(*pt))
+		    pt++; 
+		
+		if ('<' == *pt || '>' == *pt)
+		{
+		    pt++;
+		    if ('=' == *pt)
+			pt++;
+
+		    while (isgarbage(*pt))
+			pt++;
+
+		    if (!isdigit(*pt))
+		    {
+			setterrno(ISERR);
+			return 0;
+		    }
+
+		    while (isdigit(*pt))
+			pt++;
+
+		    if ('.' == *pt)
+		    {
+			pt++;
+
+			if (!isdigit(*pt))
+			{
+			    setterrno(ISERR);
+			    return 0;
+			}
+
+			while (isdigit(*pt))
+			    pt++;
+
+			while (isgarbage(*pt))
+			    pt++;
+
+			if ('\0' != *pt)
+			{
+			    setterrno(ISERR);
+			    return 0;
+			}
+		    }
+		}
+		else if (isdigit(*pt))
+		{
+		    while (isdigit(*pt))
+			pt++;
+
+		    while (isgarbage(*pt))
+			pt++;
+
+		    if ('\0' != *pt)
+		    {
+			setterrno(ISERR);
+			return 0;
+		    }
+		}
+		else
+		{
+		    setterrno(ISERR);
+		    return 0;
+		}
+	    }
+	    /*
+	     * Case [0-9]+ To [0-9]+
+	     */
+	    else if (NULL != to)
+	    {
+		if (!isdigit(*pt))
+		{
+		    setterrno(TOERR);
+		    return 0;
+		}
+
+		while (isdigit(*pt))
+		    pt++;
+
+		if ('.' == *pt)
+		{
+		    pt++;
+		    while (isdigit(*pt))
+			pt++;
+		}
+
+		while (isgarbage(*pt))
+		    pt++;
+
+		if ('T' == *pt && 'O' == *(pt + 1))
+		{
+		    pt += 2;
+
+		    while (isgarbage(*pt))
+			pt++;
+
+		    while (isdigit(*pt))
+			pt++;
+
+		    if ('.' == *pt)
+		    {
+			pt++;
+			while (isdigit(*pt))
+			    pt++;
+		    }
+
+		    while (isgarbage(*pt))
+			pt++;
+
+		    if ('\0' != *pt)
+		    {
+			setterrno(TOERR);
+			return 0;
+		    }
+		}
+		else
+		{
+		    setterrno(TOERR);
+		    return 0;
+		}
+	    }
+	    else if (0 == strncmp(pt, E, strlen(E)))
+	    {
+		pt += strlen(E);
+
+		while (isgarbage(*pt))
+		    pt++;
+
+		if ('\0' != *pt)
+		{
+		    setterrno(ELSERR);
+		    return 0; 
+		}
+	    }
+	    else if (NULL == to)
+	    {
+		while (isdigit(*pt))
+		    pt++;
+
+		while (isgarbage(*pt))
+		    pt++;
+
+		if ('\0' != *pt)
+		{
+		    setterrno(CONDERR);
+		    return 0;
+		}
+	    }
+	    else
+		errExit("[%s] impossible condition reached\n", __func__);
+	    
+	    pt = strtok(NULL, ",");
+	}
     }
+
+    /*
+     * check whether the case is of the correct form when comparing strings
+     */
     else if (cmpstr == cf)
     {
 	while (*s)
@@ -164,11 +356,19 @@ int isvalidcond(CaseTree *ct)
 		else
 		    errExit("[%s] condition while loop impossible", __func__);
 	    }
-	    
-	    /* continue checking condition */
+	    else if (0 == strncmp(ct->cond, E, strlen(E)))
+		return 1;
+	    else
+	    {
+		setterrno(QUOTERR);
+		return 0;
+	    }
+
 	    s++;
 	}
     }
+    else
+	errExit("[%s] condition while loop impossible (cf unknown)", __func__);
 
     return 1;
 }
