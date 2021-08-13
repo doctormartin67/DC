@@ -10,8 +10,10 @@ List *lookup(const char *t, const char *value, Hashtable *ht)
     if (!ht->casesens)
 	upper(key);
 
-    // hash the key using the following:
-    // djb2 by Dan Bernstein https://stackoverflow.com/questions/7666509/hash-function-for-string
+    /* 
+     * hash the key using the following: djb2 by Dan Bernstein 
+     * https://stackoverflow.com/questions/7666509/hash-function-for-string
+     */
     s = key;
     hashval = 5381;
     while (*s)
@@ -19,14 +21,15 @@ List *lookup(const char *t, const char *value, Hashtable *ht)
     hashval %= ht->hashsize;
 
 
-    // search item in list
     for (pht = ht->list[hashval]; pht != NULL; pht = pht->next)
     {
 	if (strcmp(key, pht->key) == 0)
 	    break;
     }
 
-    // if the user enters NULL as value, no new value is set and item is returned
+    /* 
+     * if the user enters NULL as value, no new value is set and item is returned
+     */
     if (value == NULL)
 	return pht;
 
@@ -47,7 +50,7 @@ List *lookup(const char *t, const char *value, Hashtable *ht)
     return pht;
 }
 
-Hashtable *newHashtable(unsigned long n, unsigned short casesens)
+Hashtable *newHashtable(unsigned long n, int casesens)
 {
     Hashtable *ht;
 

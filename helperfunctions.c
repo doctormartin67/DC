@@ -1,6 +1,6 @@
 #include "libraryheader.h"
 
-static void outputError(unsigned useErr, int err, unsigned flushStdout,
+static void outputError(int useErr, int err, int flushStdout,
 	const char *format, va_list ap);
 
 char *trim(char *s)
@@ -80,7 +80,12 @@ int isint(const char *s)
 
 int isgarbage(int c) 
 {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ':';
+    const char *s = GARBAGE;
+
+    while (*s)
+	if (c == *s++)
+	    return 1;
+    return 0;
 }
 
 // replace all occurences of string oldW with newW in s
@@ -143,47 +148,31 @@ int DIRexists(const char *dname)
     }
 }
 
-/* the xml files for excel are often in the form:
-   <v>...<\v> and so we want to value where ...
-   lies. This is a small function to retrieve the
-   ... given begin (<v>) and end (<\v>). 
-   REMEMBER TO FREE THE RETURN VALUE WHEN YOU ARE
-   FINISHED WITH IT!
+/*
+ * finds the first occurence of 'begin' and 'end' inside 's' and returns a
+ * pointer to the string that lies between 'begin' and 'end'. Returns NULL if
+ * neither were found inside 's'.
  */
+
 char *strinside(const char *s, const char *begin, const char *end)
 {
     char *pb; // pointer to begin in s
     char *pe; // pointer to end in s
-    char *value; // calloc result that we will return
-    int i, length; 
-    if ((pb = strstr(s, begin)) == NULL) {
+    if ((pb = strstr(s, begin)) == NULL)
 	return NULL;
-    }
-    /* pe should start looking for end starting at begin (+1 just in case begin and end are the
-       same string, otherwise the strstr function would find the same string and pb would be equal
-       to pe) */
+    /* 
+     * pe should start looking for end starting at begin (+1 just in case begin
+     * and end are the same string, otherwise the strstr function would find 
+     * the same string and pb would be equal to pe)
+     */
     pe = pb + 1;
-    if ((pe = strstr(pe, end)) == NULL) {
+    if ((pe = strstr(pe, end)) == NULL)
 	return NULL;
-    }
 
-    // move pointer to start of the value we want
+    /* move pointer to start of the value we want */
     pb += strlen(begin);
 
-    /* pb is pointing at the character just after
-       the last character of the value we need and
-       so pe - pb is exactly the amount of characters
-       of value, we then need one extra value for '\0'.
-     */
-    length = pe - pb + 1;
-    value = (char *)calloc(length, sizeof(char));
-    if (value == NULL) errExit("[%s] calloc returned NULL\n", __func__);
-    for (i = 0; i < length; i++) {
-	value[i] = *pb++;
-    }
-    value[i-1] = '\0';
-    return value;
-
+    return pb;
 }
 
 // MAKE SURE YOU INPUT DOUBLE AS ARGUMENTS OR YOU WILL HAVE UNDEFINED BEHAVIOUR!
@@ -240,7 +229,7 @@ double sum(double a[], int length)
     return value;
 }
 
-static void outputError(unsigned useErr, int err, unsigned flushStdout, 
+static void outputError(int useErr, int err, int flushStdout, 
 	const char *format, va_list ap)
 {
     char buf[BUFSIZ * 4], userMsg[BUFSIZ], errText[BUFSIZ];

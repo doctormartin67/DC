@@ -31,6 +31,8 @@
 #define XPATHSS "//main:si" /* used for sharedStrings.xml file */
 #define XPATHDATA "//main:row" /* used for all the sheet[0-9].xml files */
 
+#define GARBAGE " \r\n\t:"
+
 typedef struct excel {
     char fname[PATH_MAX];
     char dirname[PATH_MAX];
