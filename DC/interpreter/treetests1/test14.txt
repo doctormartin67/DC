@@ -1,21 +1,21 @@
-select case reg 
-	case "123", "CASE "
-		select case cat
-			case "crap", "BC", "WC", "crap2"
+select 		case reg 
+		case "123", "CASE "
+			select case cat
+		    		case 	"crap"    , 	"BC", 	"WC", "crap2"
 				select case age
-					case <40: x=0.01
+					case is <40: x=0.01
 					case 40 to 60: x = 0.03
-					case else: x = 0.02
+					case		 else: x = 0.02
 				end select
 			case "CASE "
 			    x = 0.03
-			case else
+			case		 else    
 				select case age
 				    case is < 25: x=0.05
 				    case is < 35: x=0.06
-				    case is < 45: x=0.07
+				    case 	is < 45: x=0.07
 				    case is < 55: x=0.08
-				    case else: x=0.09
+				    case 		else:     x=0.09
 				end select
 		end select
 	case else

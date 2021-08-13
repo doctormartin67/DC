@@ -381,33 +381,31 @@ int cmpnum(CaseTree *ct, const void *pf)
 
 int cmpstr(CaseTree *ct, const void *s)
 {
-    char tmp[strlen(ct->cond)+1];
-    strcpy(tmp, ct->cond);
-    char *pt = tmp;
-
-    int n = 1; /* number of conditions separated by ',' 
-		  (there is atleast 1 condition) */
-    while (*pt)
-	if (',' == *pt++)
-	    n++;
-
-    char *cond = strtok(tmp, ",");     
-    while (n--)
-    {
-	if (NULL != (strstr(cond, "ELSE"))) /* if there is an else */
-	    return 1;
-
-	if (NULL == (cond = strinside(cond, "\"", "\"")))
-	    errExit("[%s] string in case should be "
-		    "defined between quotes \"\"", __func__);
-
-	if (0 == strcmp(cond, (char *)s))
-	{
-	    free(cond);
-	    return 1;
-	}
+    /* Case Else */
+    if (0 == strncmp(ct->cond, E, strlen(E)))
+	return 1;
 	
-	cond = strtok(NULL, ",");
+    const char *ps; 
+    const char *cond = strinside(ct->cond, "\"", "\"");
+    const char *quote = strchr(cond, '"');
+
+    /* while loop will break when NULL == cond */
+    while (1)
+    {
+	ps = (const char *)s;
+	while ('\0' != *ps && cond < quote)
+	{
+	    if (*ps++ != *cond++)
+		break;
+	}
+	if (cond == quote)
+	    return 1;
+	
+	cond = strinside(quote + 1, "\"", "\"");
+	if (NULL != cond)
+	    quote = strchr(cond, '"');
+	else
+	    break;
     }
     return 0;
 }

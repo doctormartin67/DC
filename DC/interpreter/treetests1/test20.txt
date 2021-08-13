@@ -1,7 +1,7 @@
 select case reg 
 	case "123", "CASE "
 		select case cat
-			case "CASE ", "crap", "BC", "WC", "crap2"
+			case "CASE ,", "crap", "BC", "WC", "crap2"
 				select case age
 					case is <40: x=0.01
 					case 40 to 60: x = 0.03
