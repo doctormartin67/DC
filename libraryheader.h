@@ -34,23 +34,23 @@
 #define GARBAGE " \r\n\t:"
 
 typedef struct excel {
-    char fname[PATH_MAX];
-    char dirname[PATH_MAX];
-    char **sheetname;
-    unsigned int sheetcnt;
-    xmlDocPtr workbook;
-    xmlDocPtr sharedStrings;
-    xmlXPathObjectPtr nodesetss;
-    xmlDocPtr *sheets;
-    xmlXPathObjectPtr *nodesets;
+	char fname[PATH_MAX + 1];
+	char dirname[PATH_MAX + 1];
+	char **sheetname;
+	unsigned int sheetcnt;
+	xmlDocPtr workbook;
+	xmlDocPtr sharedStrings;
+	xmlXPathObjectPtr nodesetss;
+	xmlDocPtr *sheets;
+	xmlXPathObjectPtr *nodesets;
 } XLfile;
 
 //---This section is for Date functionality---
 typedef struct date {
-    unsigned int XLday; // excel starts counting at 31/12/1899
-    int year;
-    int month;
-    int day;
+	unsigned int XLday; // excel starts counting at 31/12/1899
+	int year;
+	int month;
+	int day;
 } Date;
 enum months {JAN = 1, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
 int isleapyear(int year);
@@ -74,6 +74,7 @@ double max(int, ...);
 double sum(double a[], int length); // sum all elements of array
 void errExit(const char *format, ...);
 void errExitEN(int errnum, const char *format, ...);
+void *jalloc(size_t n, size_t size);
 xmlDocPtr getxmlDoc(const char *docname);
 xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath);
 void setnodes(XLfile *xl);
@@ -87,8 +88,8 @@ void freeXL(XLfile *xl);
    sheet is the number of the sheet to open. Returns NULL when no
    value in cell.
  */
-char *cell(XLfile *xl, unsigned int sheet, const char *s);
-unsigned int getrow(const char *cell);
+char *cell(const XLfile *xl, unsigned sheet, const char *s);
+unsigned getrow(const char *cell);
 void setcol(char s[], const char *cell);
 
 /* the excel zip has an xml file with all the string literals
@@ -96,9 +97,11 @@ void setcol(char s[], const char *cell);
    in the sheet xml files they are listed as a number and so we
    need to retrieve the strings given this number
  */
-char *findss(XLfile *xl, int index);
+char *findss(const XLfile *xl, int index);
+char *getconcatss(xmlNodePtr cn);
 void setsheetnames(XLfile *xl);
 FILE *opensheet(XLfile *xl, char *sheet);
 void nextcol(char *next);
+void strshift(char *s);
 
 #endif

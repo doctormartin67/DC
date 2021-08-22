@@ -3,22 +3,31 @@
 #include "libraryheader.h"
 
 typedef struct list {
-    struct list *next;
-    char *key;
-    char *value;
+	struct list *next;
+	char *key;
+	char *value;
 } List;
 
 typedef struct {
-    List **list;
-    unsigned long hashsize;
-    int casesens; // casesens = 1 for case sensitive, casesens = 0 for insensitive
+	List **list;
+	unsigned long hashsize;
+
+	/* 
+	 * casesens = 1 for case sensitive, casesens = 0 for insensitive
+	 */
+	unsigned casesens; 
 } Hashtable;
 
-// search the hashtable for the key and return the found List if value == NULL. if value is
-// not NULL, update the List with the value
+/* 
+ * search the hashtable for the key and return the found List if value == NULL.
+ * if value is not NULL, update the List with the value
+ */
 List *lookup(const char *key, const char *value, Hashtable *);
-// This allocates memory for n Hashtable pointers
-Hashtable *newHashtable(unsigned long n, int casesens);
+
+/* 
+ * This allocates memory for n Hashtable pointers
+ */
+Hashtable *newHashtable(unsigned long n, unsigned casesens);
 void freeHashtable(Hashtable *ht);
 void freeList(List *l);
 
