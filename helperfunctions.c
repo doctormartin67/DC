@@ -1,7 +1,11 @@
+#include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <errno.h>
+#include <dirent.h>
 #include "libraryheader.h"
-
-static void outputError(int useErr, int err, int flushStdout,
-		const char *format, va_list ap);
+#include "errorexit.h"
 
 char *trim(char *s)
 {
@@ -209,48 +213,6 @@ double sum(double a[], int length)
 	return value;
 }
 
-static void outputError(int useErr, int err, int flushStdout, 
-		const char *format, va_list ap)
-{
-	char buf[BUFSIZ * 4], userMsg[BUFSIZ], errText[BUFSIZ];
-
-	vsnprintf(userMsg, BUFSIZ, format, ap);
-
-	if (useErr)
-		snprintf(errText, sizeof(errText), " [%s]", strerror(err));
-	else
-		snprintf(errText, sizeof(errText), ":");
-
-	snprintf(buf, sizeof(buf), "ERROR%s %s\n", errText, userMsg);
-
-	if (flushStdout)
-		fflush(stdout);
-	fputs(buf, stderr);
-	fflush(stderr);
-}
-void errExit(const char *format, ...)
-{
-	va_list arglist;
-
-	va_start(arglist, format);
-	outputError(1, errno, 1, format, arglist);
-	va_end(arglist);
-
-	exit(EXIT_FAILURE);
-}
-
-/* same as errExit but used when diagnosing Pthreads */
-void errExitEN(int errnum, const char *format, ...)
-{
-	va_list arglist;
-
-	va_start(arglist, format);
-	outputError(1, errnum, 1, format, arglist);
-	va_end(arglist);
-
-	exit(EXIT_FAILURE);
-}
-
 /*
  * wrapper for calloc that errExit's if calloc returns NULL
  */
@@ -260,123 +222,4 @@ void *jalloc(size_t n, size_t size)
 	if (0 == p) errExit("calloc returned NULL\n");
 	
 	return p;
-}
-
-/* xml functions */
-/* returns xmlDocPtr or NULL if docname could not be found */
-xmlDocPtr getxmlDoc(const char *docname)
-{
-	xmlDocPtr doc;
-	if(0 == (doc = xmlParseFile(docname)))
-		fprintf(stderr, "[%s] Unable to parse file [%s]\n", __func__, docname);
-
-	return doc;
-}
-
-xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath)
-{
-	xmlXPathContextPtr context;
-	xmlXPathObjectPtr result;
-	context = xmlXPathNewContext(doc);
-
-	if (0 == context)
-		errExit("[%s] xmlXPathNewContext returned NULL\n", __func__);
-	if (xmlXPathRegisterNs(context,  BAD_CAST NSPREFIX, BAD_CAST NSURI) != 0)
-		errExit("[%s] Unable to register NS with prefix\n", __func__);
-
-	result = xmlXPathEvalExpression(xpath, context);
-	xmlXPathFreeContext(context);
-
-	if (0 == result)
-		errExit("[%s] xmlXPathEvalExpression returned NULL\n", __func__);
-	if(xmlXPathNodeSetIsEmpty(result->nodesetval)) {
-		xmlXPathFreeObject(result);
-		printf("No result\n");
-		return 0;
-	}
-	return result;
-}
-
-/* --- free memory function --- */
-
-void freeXL(XLfile *xl)
-{
-	if (0 == xl) return;
-
-	/* free xml's */
-	xmlFreeDoc(xl->workbook);
-	xmlFreeDoc(xl->sharedStrings);
-	for (unsigned i = 0; i < xl->sheetcnt; i++) {
-		xmlFreeDoc(xl->sheets[i]);
-		xmlXPathFreeObject(xl->nodesets[i]);
-	}
-	free(xl->sheets);
-	free(xl->nodesets);
-	xmlXPathFreeObject(xl->nodesetss);
-
-	/* free others */
-	free(xl->sheetname);
-	free(xl);
-}
-
-/* --- NON PORTABLE FUNCTION --- */
-
-void createXLzip(const char *s)
-{
-	char t[strlen(s) + 1];
-	char *pt = t;
-	const char *prevpxls = s, *pxls = 0, *ps = s;
-	char dirname[strlen(s) + 1];
-	char cmd[BUFSIZ];
-
-	/* 
-	 * find final occurrence of ".xls", usually it should only occur once, 
-	 * but you never know
-	 */
-	while (0 != (prevpxls = strstr(prevpxls, ".xls"))) pxls = prevpxls++;
-
-	if (0 == pxls) 
-		errExit("[%s] [%s] not a valid excel file\n", __func__, s);
-
-	while (ps < pxls) *pt++ = *ps++;
-	*pt = '\0';
-	strcpy(dirname, t);
-
-	strcat(t, ".zip");
-
-	/* remove previous zip file, if it exists */
-	snprintf(cmd, sizeof(cmd), "%s%s%c", "rm -rf '", t, '\'');
-
-	/* THIS IS NOT PORTABLE !!! */
-	if (system(cmd) != 0)
-		errExit("[%s] system command [%s] failed, " 
-				"are you on windows?\n", __func__, cmd);
-
-	snprintf(cmd, sizeof(cmd), 
-			"%s%s%c%s%s%c", "cp '", s, '\'', " '", t, '\'');
-
-	/* THIS IS NOT PORTABLE !!! */
-	if (system(cmd) != 0)
-		errExit("[%s] system command [%s] failed, " 
-				"are you on windows?\n", __func__, cmd);
-
-	/* remove previous folder, if it exists */
-	snprintf(cmd, sizeof(cmd), "%s%s%c", "rm -rf '", dirname, '\'');
-
-	/* THIS IS NOT PORTABLE !!! */
-	if (system(cmd) != 0)
-		errExit("[%s] system command [%s] failed, " 
-				"are you on windows?\n", __func__, cmd);
-
-	if (mkdir(dirname, S_IRWXU | S_IRWXG | S_IRWXO) == -1)
-		errExit("[%s] Error making directory [%s]\n", 
-				__func__, dirname);
-
-	snprintf(cmd, sizeof(cmd), "%s%s%s%s%c", 
-			"unzip -q '", t, "' -d '", dirname, '\'');
-
-	/* THIS IS NOT PORTABLE !!! */
-	if (system(cmd) != 0)
-		errExit("[%s] system command [%s] failed, " 
-				"are you on windows?\n", __func__, cmd);
 }

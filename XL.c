@@ -1,4 +1,9 @@
+#include <string.h>
+#include <ctype.h>
+#include <sys/stat.h>
 #include "libraryheader.h"
+#include "XL.h"
+#include "errorexit.h"
 
 /* 
  * uses xmlDocPtr to represent xml files that will be used to retrieve values
@@ -80,6 +85,7 @@ char *cell(const XLfile *xl, unsigned sheet, const char *s)
 			break;
 		} else
 			free(row);
+		;
 	}
 	if (node == 0) return 0;
 
@@ -300,189 +306,118 @@ void strshift(char *s)
 	}
 }
 
-//---Date Functionality---
-
-static const int commondays[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-static const int leapdays[] = {1, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-int isleapyear(int year)
+/* returns xmlDocPtr or NULL if docname could not be found */
+xmlDocPtr getxmlDoc(const char *docname)
 {
-	if (!(year%4 == 0))
+	xmlDocPtr doc;
+	if(0 == (doc = xmlParseFile(docname)))
+		fprintf(stderr, "[%s] Unable to parse file [%s]\n", __func__, docname);
+
+	return doc;
+}
+
+xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath)
+{
+	xmlXPathContextPtr context;
+	xmlXPathObjectPtr result;
+	context = xmlXPathNewContext(doc);
+
+	if (0 == context)
+		errExit("[%s] xmlXPathNewContext returned NULL\n", __func__);
+	if (xmlXPathRegisterNs(context,  BAD_CAST NSPREFIX, BAD_CAST NSURI) != 0)
+		errExit("[%s] Unable to register NS with prefix\n", __func__);
+
+	result = xmlXPathEvalExpression(xpath, context);
+	xmlXPathFreeContext(context);
+
+	if (0 == result)
+		errExit("[%s] xmlXPathEvalExpression returned NULL\n", __func__);
+	if(xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+		xmlXPathFreeObject(result);
+		printf("No result\n");
 		return 0;
-	else if (!(year%25 == 0))
-		return 1;
-	else if (!(year%16 == 0))
-		return 0;
-	else return 1;
+	}
+	return result;
 }
 
-void setdate(Date *date)
+/* --- free memory function --- */
+
+void freeXL(XLfile *xl)
 {
-	static unsigned int daytoday[BUFSIZ * 16]; // We save the searched days in this array
-	static unsigned int daytomonth[BUFSIZ * 16]; // We save the searched months in this array
-	static unsigned int daytoyear[BUFSIZ * 16]; // We save the searched years in this array
-	unsigned int countday = 1;
-	int countyear = 1900; // excel starts counting at 00/00/1900
-	int currentmonth = 0;
+	if (0 == xl) return;
 
-	// If the day has already been called and saved, then we just take it from the
-	// array where we save it, otherwise calculate it.
-	if (!(daytoyear[date->XLday] == 0) && !(daytomonth[date->XLday] == 0)
-			&& !(daytoday[date->XLday] == 0))
-	{
-		date->day = daytoday[date->XLday];
-		date->month = daytomonth[date->XLday];
-		date->year = daytoyear[date->XLday];	
+	xmlFreeDoc(xl->workbook);
+	xmlFreeDoc(xl->sharedStrings);
+	for (unsigned i = 0; i < xl->sheetcnt; i++) {
+		xmlFreeDoc(xl->sheets[i]);
+		xmlXPathFreeObject(xl->nodesets[i]);
 	}
-	else {
-		while (countday < date->XLday)
-		{
-			currentmonth = currentmonth%12;
-			currentmonth++;
+	free(xl->sheets);
+	free(xl->nodesets);
+	xmlXPathFreeObject(xl->nodesetss);
 
-			if (isleapyear(countyear))
-				countday+=leapdays[currentmonth];
-			else
-				countday+=commondays[currentmonth];
-
-			if (currentmonth == DEC && countday < date->XLday)
-				countyear++;
-		}
-		if (isleapyear(countyear))
-			countday-=leapdays[currentmonth];
-		else
-			countday-=commondays[currentmonth];
-
-		daytoday[date->XLday] = date->XLday - countday;
-		daytomonth[date->XLday] = currentmonth;
-		daytoyear[date->XLday] = countyear;
-
-		if ((date->day = daytoday[date->XLday]) > 31)
-		{
-			printf("Error in %s: %d is not a valid day.\n", __func__, date->day);
-			exit(1);
-		}
-		if((date->month = daytomonth[date->XLday]) > 12)
-		{
-			printf("Error in %s: %d is not a valid day.\n", __func__, date->month);
-			exit(1);
-		}
-		date->year = daytoyear[date->XLday];
-	}
+	free(xl->sheetname);
+	free(xl);
 }
 
-/* if XLday is 0 then this will create a date with the given day, month and year. Otherwise it
-   will create it with the given XLday.*/
-Date *newDate(unsigned int XLday, int year, int month, int day)
+/* --- NON PORTABLE FUNCTION --- */
+
+void createXLzip(const char *s)
 {
-	int tday = day;
-	int tmonth = month;
-	int tyear = year;
+	char t[strlen(s) + 1];
+	char *pt = t;
+	const char *prevpxls = s, *pxls = 0, *ps = s;
+	char dirname[strlen(s) + 1];
+	char cmd[BUFSIZ];
 
-	Date *temp = (Date *)malloc(sizeof(Date));
-	if (temp == NULL) errExit("[%s] malloc returned NULL\n", __func__);
+	/* 
+	 * find final occurrence of ".xls", usually it should only occur once, 
+	 * but you never know
+	 */
+	while (0 != (prevpxls = strstr(prevpxls, ".xls"))) pxls = prevpxls++;
 
-	if (tday > (isleapyear(tyear) ? leapdays[tmonth] : commondays[tmonth]))
-	{
-		tmonth++;
-		tday = 1;
-	}
-	if (tmonth > DEC)
-	{
-		tyear++;
-		tmonth = JAN;
-	}
+	if (0 == pxls) 
+		errExit("[%s] [%s] not a valid excel file\n", __func__, s);
 
-	if (XLday == 0)
-	{
-		temp->day = tday;
-		temp->month = tmonth;
-		temp->year = tyear;
-	}
-	else
-	{
-		temp->XLday = XLday;
-		setdate(temp);
-	}
+	while (ps < pxls) *pt++ = *ps++;
+	*pt = '\0';
+	strcpy(dirname, t);
 
-	// Error checking
-	if (temp->day > (isleapyear(temp->year) ? leapdays[temp->month] : commondays[temp->month]))
-	{
-		free(temp);
-		return NULL;
-	}
-	if (temp->day < 1 || temp->day > 31)
-	{
-		free(temp);
-		return NULL;
-	}
-	if (temp->month < 1 || temp->month > DEC)
-	{
-		free(temp);
-		return NULL;
-	}
+	strcat(t, ".zip");
 
-	return temp;
-}
+	/* remove previous zip file, if it exists */
+	snprintf(cmd, sizeof(cmd), "%s%s%c", "rm -rf '", t, '\'');
 
-Date *minDate(int argc, ...)
-{
-	Date *min; // minimum to return
-	Date *currmin; // current minimum
-	va_list dates;
+	/* THIS IS NOT PORTABLE !!! */
+	if (system(cmd) != 0)
+		errExit("[%s] system command [%s] failed, " 
+				"are you on windows?\n", __func__, cmd);
 
-	va_start(dates, argc);
-	min = va_arg(dates, Date *);
+	snprintf(cmd, sizeof(cmd), 
+			"%s%s%c%s%s%c", "cp '", s, '\'', " '", t, '\'');
 
-	for (int i = 1; i < argc; i++)
-	{
-		currmin = va_arg(dates, Date *);
-		if (min->year > currmin->year)
-		{
-			min = currmin;
-		}
-		else if (min->year == currmin->year)
-		{
-			if (min->month > currmin->month)
-			{
-				min = currmin;
-			}
-			else if (min->month == currmin->month)
-			{
-				if (min->day > currmin->day)
-					min = currmin;
-			}
-		}
-	}
-	// Error checking
-	if (min->day > (isleapyear(min->year) ? leapdays[min->month] : commondays[min->month]))
-	{
-		printf("Error in newDate: %d is not a valid day of month %d\n",
-				min->day, min->month);
-		printf("Exiting program\n");
-		exit(1);
-	}
-	if (min->month > DEC)
-	{
-		printf("Error in newDate: there are no %d months\n", min->month);
-		printf("Exiting program\n");
-		exit(1);
-	}
+	/* THIS IS NOT PORTABLE !!! */
+	if (system(cmd) != 0)
+		errExit("[%s] system command [%s] failed, " 
+				"are you on windows?\n", __func__, cmd);
 
-	return min;
-}
+	/* remove previous folder, if it exists */
+	snprintf(cmd, sizeof(cmd), "%s%s%c", "rm -rf '", dirname, '\'');
 
-// Calculate the time in years between two dates
-// m is the amount of months to subtract (usually 0 or 1)
-double calcyears(Date *d1, Date *d2, int m)
-{
-	return d2->year - d1->year + (double)(d2->month - d1->month - m)/12;
-}
+	/* THIS IS NOT PORTABLE !!! */
+	if (system(cmd) != 0)
+		errExit("[%s] system command [%s] failed, " 
+				"are you on windows?\n", __func__, cmd);
 
-void printDate(Date *d)
-{
-	if (d)
-		printf("%d/%d/%d\n", d->day, d->month, d->year);
-	else
-		printf("(null)\n");
+	if (mkdir(dirname, S_IRWXU | S_IRWXG | S_IRWXO) == -1)
+		errExit("[%s] Error making directory [%s]\n", 
+				__func__, dirname);
+
+	snprintf(cmd, sizeof(cmd), "%s%s%s%s%c", 
+			"unzip -q '", t, "' -d '", dirname, '\'');
+
+	/* THIS IS NOT PORTABLE !!! */
+	if (system(cmd) != 0)
+		errExit("[%s] system command [%s] failed, " 
+				"are you on windows?\n", __func__, cmd);
 }

@@ -1,4 +1,9 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "libraryheader.h"
 #include "hashtable.h"
+#include "errorexit.h"
 
 List *lookup(const char *t, const char *value, Hashtable *ht)
 {
@@ -34,10 +39,9 @@ List *lookup(const char *t, const char *value, Hashtable *ht)
 	 * for new entry otherwise, remove current entry and set with new value
 	 */
 	if (0 == pht) {
-		pht = (List *)malloc(sizeof(*pht));
-		if (0 == pht || 0 == (pht->key = strdup(key)))
-			errExit("[%s] [malloc|strdup] returned NULL\n", 
-					__func__);
+		pht = jalloc(1, sizeof(*pht));
+		if (0 == (pht->key = strdup(key)))
+			errExit("[%s] [strdup] returned NULL\n", __func__);
 		pht->next = ht->list[hashval];
 		ht->list[hashval] = pht;
 	} else {
