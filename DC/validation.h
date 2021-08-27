@@ -4,7 +4,7 @@
 typedef enum {OK, WARNING, ERROR} Status;
 
 /* these will be used as the indeces of validMsg array */
-typedef enum {DATEERR, FLOATERR, AGECORRERR, CELLERR} Err;
+typedef enum {DATEERR, FLOATERR, AGECORRERR, CELLERR, ERR_AMOUNT} Err;
 
 /* The user will receive a maximum of 32 error messages of 256 length*/
 enum {MAXMSG = 32, MAXMSGSIZE = 256}; 
@@ -17,10 +17,9 @@ typedef struct {
     Status status;
 } Validator;
 
-extern const char *validMsg[];
+extern const char *const validMsg[ERR_AMOUNT];
 
-void initValidator(Validator *val);
 void updateValidation(Validator *val, Status status, const char *format, ...);
-void setMsgbuf(char buf[], Validator *val);
+char *setMsgbuf(Validator *val);
 
 #endif

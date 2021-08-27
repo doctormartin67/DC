@@ -21,29 +21,29 @@
  * rule is added by the programmer, don't forget to add a rule to the ruleset 
  * array and also to the rule data that will be used as input.
  */
-enum rules {AGE, REG, CAT};
+enum rules {AGE, REG, CAT, RULE_AMOUNT};
 
-typedef struct casetree 
-{
-    /* 
-     * the index of the rule determines what needs to be checked,
-     * (will be set to one of the enum rules) for example:
-     * age, reglement, category, ...
-     */
-    int rule_index;     
+typedef struct casetree {
+	/* 
+	 * the index of the rule determines what needs to be checked,
+	 * (will be set to one of the enum rules) for example:
+	 * age, reglement, category, ...
+	 */
+	int rule_index;     
 
-    /* 
-     * condition, f.e. Is < 40, "WC", "12220", ... used to test the rule
-     */
-    char *cond;     
+	/* 
+	 * condition, f.e. Is < 40, "WC", "12220", ... used to test the rule
+	 */
+	char *cond;     
 
-    /* 
-     * expression, f.e. x = 0.01, this can also be a select case because select
-     * cases can be nested and so the expression needs to be reevaluated 
-     */
-    char *expr;     
-    struct casetree *next; /* next case in current select case */
-    struct casetree *child; /* points to nested case */ 
+	/* 
+	 * expression, f.e. x = 0.01, this can also be a select case because 
+	 * select cases can be nested and so the expression needs to be 
+	 * reevaluated 
+	 */
+	char *expr;     
+	struct casetree *next; /* next case in current select case */
+	struct casetree *child; /* points to nested case */ 
 } CaseTree;
 
 /* 
@@ -59,19 +59,18 @@ extern Cmpfunc cmpstr;
  * in the excel file for the affiliate. If there is a match then that 
  * expression is taken for the interpret function to return.
  */
-typedef struct 
-{
-    char *name;
-    Cmpfunc *cf;
-    void *data;
+typedef struct {
+	char *name;
+	Cmpfunc *cf;
+	void *data;
 } Rule;
 
-extern Rule ruleset[];
+extern Rule ruleset[RULE_AMOUNT];
 
 char *strclean(const char *);
 CaseTree *buildTree(const char *);
 int setRule(const char *);
-double interpret(CaseTree *ct, const void *rule_data[]);
+double interpret(CaseTree *ct, const void *rule_data[static RULE_AMOUNT]);
 void printTree(CaseTree *ct);
 void freeTree(CaseTree *ct);
 

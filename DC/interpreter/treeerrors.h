@@ -9,7 +9,7 @@ typedef enum
     SEPERR, CONDERR, TOERR, ISERR, ELSERR
 } TreeError;
 
-extern const char *strterrors[];
+extern const char *const strterrors[];
 
 void setterrno(TreeError te);
 TreeError getterrno(void);
