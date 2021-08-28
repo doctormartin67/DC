@@ -1,20 +1,20 @@
 #include "DCProgram.h"
 #include "lifetables.h"
 
-static double salaryscaleTY(CurrentMember *cm, int k);
-static double salaryscaleLY(CurrentMember *cm, int k);
-static double calcATY(CurrentMember *cm, int k);
-static double calcALY(CurrentMember *cm, int k);
-static double calcCTY(CurrentMember *cm, int k);
-static double calcCLY(CurrentMember *cm, int k);
-static double calcDTHTY(CurrentMember *cm, int k);
-static double calcDTHLY(CurrentMember *cm, int k);
-static double NRATY(CurrentMember *cm, int k);
-static double NRALY(CurrentMember *cm, int k);
-static double wxdefTY(CurrentMember *cm, int k);
-static double wxdefLY(CurrentMember *cm, int k);
-static double retxTY(CurrentMember *cm, int k);
-static double retxLY(CurrentMember *cm, int k);
+static double salaryscaleTY(const CurrentMember *cm, int k);
+static double salaryscaleLY(const CurrentMember *cm, int k);
+static double calcATY(const CurrentMember *cm, int k);
+static double calcALY(const CurrentMember *cm, int k);
+static double calcCTY(const CurrentMember *cm, int k);
+static double calcCLY(const CurrentMember *cm, int k);
+static double calcDTHTY(const CurrentMember *cm, int k);
+static double calcDTHLY(const CurrentMember *cm, int k);
+static double NRATY(const CurrentMember *cm, int k);
+static double NRALY(const CurrentMember *cm, int k);
+static double wxdefTY(const CurrentMember *cm, int k);
+static double wxdefLY(const CurrentMember *cm, int k);
+static double retxTY(const CurrentMember *cm, int k);
+static double retxLY(const CurrentMember *cm, int k);
 
 void setassumptions(CurrentMember *cm, UserInput *UILY, UserInput *UITY)
 {
@@ -105,61 +105,61 @@ void setassumptions(CurrentMember *cm, UserInput *UILY, UserInput *UITY)
     tff.term = (currrun >= runNewData ? 12 : 12);
 }
 
-static double salaryscaleTY(CurrentMember *cm, int k)
+static double salaryscaleTY(const CurrentMember *cm, int k)
 {
     return ass.infl + 0.011;
 }
 
-static double salaryscaleLY(CurrentMember *cm, int k)
+static double salaryscaleLY(const CurrentMember *cm, int k)
 {
     return ass.infl + 0.011;
 }
 
-static double calcATY(CurrentMember *cm, int k)
+static double calcATY(const CurrentMember *cm, int k)
 {
     // This needs updating! just took insurer premium for testing
     return gensum(cm->PREMIUM, ER, 0);
 }
 
-static double calcALY(CurrentMember *cm, int k)
+static double calcALY(const CurrentMember *cm, int k)
 {
     // This needs updating! just took insurer premium for testing
     return gensum(cm->PREMIUM, ER, 0);
 }
 
-static double calcCTY(CurrentMember *cm, int k)
+static double calcCTY(const CurrentMember *cm, int k)
 {
     // This needs updating! just took insurer premium for testing
     return gensum(cm->PREMIUM, EE, 0);
 }
-static double calcCLY(CurrentMember *cm, int k)
+static double calcCLY(const CurrentMember *cm, int k)
 {
     // This needs updating! just took insurer premium for testing
     return gensum(cm->PREMIUM, EE, 0);
 }
 
-static double calcDTHTY(CurrentMember *cm, int k)
+static double calcDTHTY(const CurrentMember *cm, int k)
 {
     // This needs updating! just took insurer premium for testing
     return gensum(cm->CAPDTH, EE, 0);
 }
-static double calcDTHLY(CurrentMember *cm, int k)
+static double calcDTHLY(const CurrentMember *cm, int k)
 {
     // This needs updating! just took insurer premium for testing
     return gensum(cm->CAPDTH, EE, 0);
 }
 
-static double NRATY(CurrentMember *cm, int k)
+static double NRATY(const CurrentMember *cm, int k)
 {
     return 65;
 }
 
-static double NRALY(CurrentMember *cm, int k)
+static double NRALY(const CurrentMember *cm, int k)
 {
     return 65;
 }
 
-static double wxdefTY(CurrentMember *cm, int k)
+static double wxdefTY(const CurrentMember *cm, int k)
 {
     if (cm->age[k] < 60)
 	return 0.01;
@@ -167,7 +167,7 @@ static double wxdefTY(CurrentMember *cm, int k)
 	return 0;
 }
 
-static double wxdefLY(CurrentMember *cm, int k)
+static double wxdefLY(const CurrentMember *cm, int k)
 {
     if (cm->age[k] < 60)
 	return 0.01;
@@ -175,7 +175,7 @@ static double wxdefLY(CurrentMember *cm, int k)
 	return 0;
 }
 
-static double retxTY(CurrentMember *cm, int k)
+static double retxTY(const CurrentMember *cm, int k)
 {
     if (cm->age[k] < 65)
 	return 0;
@@ -183,7 +183,7 @@ static double retxTY(CurrentMember *cm, int k)
 	return 1;
 }
 
-static double retxLY(CurrentMember *cm, int k)
+static double retxLY(const CurrentMember *cm, int k)
 {
     if (cm->age[k] < 65)
 	return 0;

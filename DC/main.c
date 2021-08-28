@@ -1,12 +1,13 @@
 #include "libraryheader.h"
 #include "actuarialfunctions.h"
+#include "errorexit.h"
 
 void userinterface();
 void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
 void runonerun(DataSet *ds);
 static void init_cm(CurrentMember *);
-static Date *getDOC(CurrentMember *cm, int k);
-static Date *getDOC_prolongation(CurrentMember *cm, int k);
+static Date *getDOC(const CurrentMember *cm, int k);
+static Date *getDOC_prolongation(const CurrentMember *cm, int k);
 static void prolongate(CurrentMember *cm, int k);
 
 int main(void)
@@ -39,12 +40,18 @@ void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY)
 		if (1 == k) {
 			cm->DOC[k+1] = getDOC(cm, k);
 		} else if (1 < k && MAXPROJBEFOREPROL > k) {
+			if (cm->DOC[k] != cm->DOR)
+				free(cm->DOC[k]);
 			cm->DOC[k] = getDOC(cm, k - 1);
 			cm->DOC[k+1] = getDOC(cm, k);
 		} else if (MAXPROJBEFOREPROL == k) {
+			if (cm->DOC[k] != cm->DOR)
+				free(cm->DOC[k]);
 			cm->DOC[k] = getDOC(cm, k - 1);
 			cm->DOC[k+1] = getDOC_prolongation(cm, k);		
 		} else if (MAXPROJBEFOREPROL < k) {
+			if (cm->DOC[k] != cm->DOR)
+				free(cm->DOC[k]);
 			cm->DOC[k] = getDOC_prolongation(cm, k - 1);
 			cm->DOC[k+1] = getDOC_prolongation(cm, k);		
 			if (MAXPROJBEFOREPROL + 1 == k)
@@ -193,32 +200,44 @@ static void init_cm(CurrentMember *cm)
 
 }
 
-static Date *getDOC(CurrentMember *cm, int k)
+static Date *getDOC(const CurrentMember *cm, int k)
 {
 	Date *d = 0, *Ndate = 0, *docdate = 0;
 
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
 	docdate = newDate(0, cm->DOC[k]->year + 1, cm->DOC[k]->month, 1);
+
+	if (0 == Ndate || 0 == docdate)
+		errExit("[%s] invalid date\n", __func__);
+
 	d = minDate(3, Ndate, docdate, cm->DOR);
 
+	/*
 	if (d != Ndate) free(Ndate);
 	if (d != docdate) free(docdate);
+	*/
 
 	return d;
 }
 
-static Date *getDOC_prolongation(CurrentMember *cm, int k)
+static Date *getDOC_prolongation(const CurrentMember *cm, int k)
 {
 	unsigned addyear = 0;
 	Date *d = 0, *Ndate = 0, *docdate = 0;
 
-	addyear = ((cm->DOC[k]->month >= cm->DOC[1]->month) ? 1 : 0);
+	addyear = (cm->DOC[k]->month >= cm->DOC[1]->month) ? 1 : 0;
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
-	docdate = newDate(0, cm->DOC[k]->year + addyear, cm->DOC[k]->month, 1);
+	docdate = newDate(0, cm->DOC[k]->year + addyear, cm->DOC[1]->month, 1);
+
+	if (0 == Ndate || 0 == docdate)
+		errExit("[%s] invalid date\n", __func__);
+
 	d = minDate(2, Ndate, docdate);
 
+	/*
 	if (d != Ndate) free(Ndate);
 	if (d != docdate) free(docdate);
+	*/
 
 	return d;
 }

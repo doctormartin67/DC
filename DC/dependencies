@@ -756,7 +756,8 @@ main.o: main.c /usr/include/stdc-predef.h \
  /usr/include/libxml2/libxml/xmlmemory.h \
  /usr/include/libxml2/libxml/threads.h \
  /usr/include/libxml2/libxml/xpath.h \
- /usr/include/libxml2/libxml/xpathInternals.h validation.h inputdata.h
+ /usr/include/libxml2/libxml/xpathInternals.h validation.h inputdata.h \
+ /home/doctormartin67/Projects/library/errorexit.h
 lifetables.o: /home/doctormartin67/Projects/work/tables/lifetables.c \
  /usr/include/stdc-predef.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \

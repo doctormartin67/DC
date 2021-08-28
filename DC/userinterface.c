@@ -313,11 +313,11 @@ static void *runtc(void *pl)
 	char text[BUFSIZ];
 	int tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]))); 
 	tc -= 1; // Index is one less than given test case
-	CurrentMember *cm = ds->cm;
+	CurrentMember *cm = ds->cm + tc;
 
 	printf("testcase: %s chosen\n", cm->key);
 	/* this needs updating when we have a UITY!!! */
-	runmember(cm + tc, &UILY, &UILY);
+	runmember(cm, &UILY, &UILY);
 	snprintf(text, sizeof(text), "Test case %d has been run", tc + 1);
 	gtk_label_set_text(GTK_LABEL(pl), text); 
 

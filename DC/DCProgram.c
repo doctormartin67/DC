@@ -5,15 +5,32 @@
 #include "errorexit.h"
 #include "XL.h"
 
-const char *colnames[MAXKEYS] = {"KEY", "NO REGLEMENT", "NAAM", "CONTRACT", "STATUS", 
-	"ACTIVE CONTRACT", "SEX", "MS", "DOB", "DOE", "DOL", "DOS", "DOA", "DOR", "CATEGORIE", 
-	"SAL", "PG", "PT", "NRA", "# ENF", "TARIEF", "KO", "Rent INV", "Contr INV", "ART24_A_GEN1", 
-	"ART24_A_GEN2", "ART24_C_GEN1", "ART24_C_GEN2", "PREMIUM", "CAP", "CAPPS", "CAPDTH", "RES",
-	"RESPS", "CAPRED", "TAUX", "DELTA_CAP_A_GEN1", "DELTA_CAP_C_GEN1", 
-	"X/10", "CAO", "ORU", "CHOICE DTH", "CHOICE INV SICKNESS", "CHOICE INV WORK", "Contr_D", 
-	"%ofSALforKO", "INV INDEXATION", "GR/DGR", "plan", "Baremische ancienniteit",
-	"increaseSalFirstYear", "CCRA"};
-static int colmissing[MAXKEYS];
+static void clean_double_keys(char **keys);
+static unsigned countdigits(unsigned d);
+
+const char *const colnames[KEYS_AMOUNT] = {
+	[KEY] = "KEY", [NOREGLEMENT] = "NO REGLEMENT", [NAAM] = "NAAM",
+	[CONTRACT] = "CONTRACT", [STATUS] = "STATUS",
+	[ACTIVECONTRACT] = "ACTIVE CONTRACT", [SEX] = "SEX", [MS] = "MS",
+	[DOB] = "DOB", [DOE] = "DOE", [DOL] = "DOL", [DOS] = "DOS",
+	[DOA] = "DOA", [DOR] = "DOR", [CATEGORIE] = "CATEGORIE", [SAL] = "SAL",
+	[PG] = "PG", [PT] = "PT", [NORMRA] = "NRA", [ENF] = "# ENF",
+	[TARIEF] = "TARIEF", [KO] = "KO", [RENTINV] = "Rent INV",
+	[CONTRINV] = "Contr INV", [ART24_A_GEN1] = "ART24_A_GEN1", 
+	[ART24_A_GEN2] = "ART24_A_GEN2", [ART24_C_GEN1] = "ART24_C_GEN1",
+	[ART24_C_GEN2] = "ART24_C_GEN2", [PREMIUM] = "PREMIUM", [CAP] = "CAP",
+	[CAPPS] = "CAPPS", [CAPDTH] = "CAPDTH", [RES] = "RES",
+	[RESPS] = "RESPS", [CAPRED] = "CAPRED", [TAUX] = "TAUX",
+	[DELTA_CAP_A_GEN1] = "DELTA_CAP_A_GEN1",
+	[DELTA_CAP_C_GEN1] = "DELTA_CAP_C_GEN1", [X10] = "X/10", [CAO] = "CAO",
+	[ORU] = "ORU", [CHOICEDTH] = "CHOICE DTH",
+	[CHOICEINVS] = "CHOICE INV SICKNESS", [CHOICEINVW] = "CHOICE INV WORK",
+	[CONTRD] = "Contr_D", [PERCOFSALFORKO] = "%ofSALforKO",
+	[INVINDEXATION] = "INV INDEXATION", [GRDGR] = "GR/DGR",
+	[PLAN] = "plan", [BARANC] = "Baremische ancienniteit",
+	[INCSALFIRSTYEAR] = "increaseSalFirstYear", [PREP] = "CCRA"
+};
+static int colmissing[KEYS_AMOUNT];
 
 static Validator *val;
 
@@ -22,9 +39,9 @@ DataSet *createDS(Validator *v, UserInput *UI)
 	const char *s = UI->fname;
 	Hashtable **ht;
 	DataSet *ds = jalloc(1, sizeof(DataSet));
+	*ds = (DataSet){0};
 
-	/* set all missing columns back to 0 when we try to import data again */
-	for (int i = 0; i < MAXKEYS; i++)
+	for (int i = 0; i < KEYS_AMOUNT; i++)
 		colmissing[i] = 0;
 
 	val = v;
@@ -33,33 +50,26 @@ DataSet *createDS(Validator *v, UserInput *UI)
 
 	XLfile *xl = createXL(s);
 
-	/* initialise DataSet */
-	ds->membercnt = 0;
-	ds->keys = NULL;
-	ds->keynode = NULL;
-	ds->Data = NULL;
 	ds->xl = xl;
 	ds->UI = UI;
-	ds->cm = NULL;
 
-	if (ds->xl == NULL)
-	{
-		updateValidation(val, ERROR, 
-				"Unable to parse excel file [%s], is the file empty?", s);
+	if (0 == ds->xl) {
+		updateValidation(val, ERROR, "Unable to parse excel file [%s],"
+				"is the file empty?", s);
 		return ds;
 	}
+
 	if (!setkey(ds))
 		return ds;
 
 	countMembers(ds);
 	createData(ds);
 
-	ds->cm = (CurrentMember *)calloc(ds->membercnt, sizeof(CurrentMember));
-	if (ds->cm == NULL) errExit("[%s] calloc returned NULL\n", __func__);
+	ds->cm = jalloc(ds->membercnt, sizeof(CurrentMember));
 	ht = ds->Data;
+
 	printf("Setting all the values for the affiliates...\n");
-	for (int i = 0; i < ds->membercnt; i++)
-	{
+	for (int i = 0; i < ds->membercnt; i++) {
 		ds->cm[i].id = i + 1;
 		createCM(&ds->cm[i], *ht++);
 	}
@@ -175,6 +185,7 @@ double gensum(const GenMatrix amount[EREE_AMOUNT], unsigned EREE, unsigned k)
 int setkey(DataSet *ds)
 {
 	XLfile *xl = ds->xl;
+	char *c = 0;
 	char *row = 0; 
 	char **xls = xl->sheetname;
 	unsigned i = 0;
@@ -196,19 +207,20 @@ int setkey(DataSet *ds)
 		return 0;
 	} else {
 		/* Check whether cell that was provided has anything in it */
-		if (0 == cell(ds->xl, ds->sheet, ds->UI->keycell)) {
+		if (0 == (c = cell(ds->xl, ds->sheet, ds->UI->keycell))) {
 			updateValidation(val, ERROR, 
 					"Nothing in cell [%s] found",
 					ds->UI->keycell);
 			return 0;
 		}
+		free(c);
 
 		nodeset = xl->nodesets[ds->sheet];
 		nodes = nodeset->nodesetval;
 
 		for (node = *nodes->nodeTab; 0 != node; node = node->next) {
 			row = (char *)xmlGetProp(node, (const xmlChar *)"r");
-			if (atoi(row) == ds->keyrow) {
+			if ((unsigned)atoi(row) == ds->keyrow) {
 				xmlFree(row);
 				break;
 			} else {
@@ -228,17 +240,19 @@ int setkey(DataSet *ds)
 
 void countMembers(DataSet *ds)
 {
-	char *row;
+	char *row = 0;
 	int r = ds->keyrow;
 	int count = ds->keyrow;
 	xmlNodePtr node = ds->keynode;
 
-	while (node != NULL)
-	{
+	while (0 != node) {
 		row = (char *)xmlGetProp(node, (xmlChar *)"r");
 		r = atoi(row);
-		if (r - count == 1) count++; /* cells below the data should not be considered */
+
+		/* cells below the data should not be considered */
+		if (r - count == 1) count++;
 		node = node->next;
+		xmlFree(row);
 	}
 	ds->membercnt = count - ds->keyrow;
 	printf("Amount of affiliates in data: %d\n", ds->membercnt);
@@ -251,72 +265,41 @@ void countMembers(DataSet *ds)
 
 void createData(DataSet *ds)
 {
-	char column[4]; // This holds the column of the beginning of our data cell, for example O
-	int irow; // This holds the row of the beginning of our data cell, for example 11
-	char srow[16]; /* This holds the row in string form of the beginning of our data cell, 
-			  for example "11" */
-	char keyCell[10]; // This will hold the cell of a key for the hashtable, for example O11
-	char dataCell[10]; /* This will hold the cell of data corresponding to a key
-			      for the hashtable, for example O12.*/
-	char *data; // This will hold the value of the data, for example 2.391,30.
+	unsigned countkeys = 0;
+	unsigned irow = ds->keyrow;
+	char column[4];
+	char keyCell[10];
+	char dataCell[10];
+	char *data = 0;
+	char **pkey = 0;
 
 	// Here we set the initial key cell, for example B11
-	strcpy(column, ds->keycolumn);
-	irow = ds->keyrow;
-	snprintf(srow, sizeof(srow), "%d", irow);
-	strcpy(keyCell, column);
-	strcat(keyCell, srow);
+	snprintf(column, sizeof(column), "%s", ds->keycolumn);
+	snprintf(keyCell, sizeof(keyCell), "%s%u", column, irow);
 
 	// Here we set the initial data cell, for example B12
 	irow++;
-	snprintf(srow, sizeof(srow), "%d", irow);
-	strcpy(dataCell, column);
-	strcat(dataCell, srow);
+	snprintf(dataCell, sizeof(dataCell), "%s%u", column, irow);
 
-	// Allocate memory for data matrix and initialise to NULL pointer
-	ds->Data = (Hashtable **)calloc(ds->membercnt, sizeof(Hashtable *));
-	if (ds->Data == NULL) errExit("[%s] calloc returned NULL\n", __func__);
+	ds->Data = jalloc(ds->membercnt, sizeof(Hashtable *));
 
 	for (int k = 0; k < ds->membercnt; k++)
 		// https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-8.html
 		ds->Data[k] = newHashtable(233, 0); // 179 * 1.3 = 232.7 -> 233 is a prime
 
-	// Set the keys
-	int countkeys = 0;
-	ds->keys = (char **)calloc(MAXKEYS, sizeof(char *));
-	if (ds->keys == NULL) errExit("[%s] calloc returned NULL\n", __func__);
-	char **pkey = ds->keys;
+	ds->keys = jalloc(KEYS_AMOUNT, sizeof(char *));
+	pkey = ds->keys;
 	*pkey = cell(ds->xl, ds->sheet, keyCell);
 
-	while (*pkey != NULL)
-	{
+	while (0 != *pkey) {
 		// Here we update cell for loop, for example O11 becomes P11
-		if (++countkeys >= MAXKEYS)
+		if (++countkeys >= KEYS_AMOUNT)
 			errExit("[%s] Data has too many keys\n", __func__);
 		nextcol(keyCell);
 		*++pkey = cell(ds->xl, ds->sheet, keyCell);
 	}
 
-	// Check for double keys
-	int cntdouble = 0;
-	pkey = ds->keys;
-	char **pkey2 = pkey + 1;
-	while (*pkey != NULL)
-	{
-		while (*pkey2 != NULL)
-		{
-			if (strcmp(*pkey, *pkey2) == 0)
-			{
-				char temp[BUFSIZ/256];
-				printf("Warning: %s is a double\n", *pkey2);
-				snprintf(temp, sizeof(temp), "%s%d", *pkey2, ++cntdouble + 1);
-				strcpy(*pkey2, temp);
-				printf("Changed it to %s\n",  *pkey2);
-			}
-			pkey2++;
-		}
-		pkey2 = ++pkey + 1;
-	}
+	clean_double_keys(ds->keys);
 
 	// start populating Hashtable
 	printf("Creating Data...\n");
@@ -351,13 +334,44 @@ void createData(DataSet *ds)
 			nextcol(dataCell);
 		}
 
-		// Iterate through all affiliates by updating dataCell
 		irow++;
-		snprintf(srow, sizeof(srow), "%d", irow);
-		strcpy(dataCell, column);
-		strcat(dataCell, srow);
+		snprintf(dataCell, sizeof(dataCell), "%s%u", column, irow);
 	}
 	printf("Creation complete\n");
+}
+
+static void clean_double_keys(char **keys)
+{
+	size_t len = 0;
+	unsigned cnt = 1;
+	char *newkey = 0;
+	char **pkey = keys + 1;
+	while (0 != *keys) {
+		while (0 != *pkey) {
+			if (0 == strcmp(*keys, *pkey)) {
+				printf("Warning: %s is a double\n", *pkey);
+				cnt++;
+				len = strlen(*pkey) + countdigits(cnt) + 1;
+				newkey = jalloc(len, sizeof(char));
+				snprintf(newkey, len, "%s%u", *pkey, cnt);
+				free(*pkey);
+				*pkey = newkey;
+				printf("Changed it to %s\n",  *pkey);
+			}
+			pkey++;
+		}
+		pkey = ++keys + 1;
+		cnt = 0;
+	}
+}
+
+static unsigned countdigits(unsigned d)
+{
+	unsigned cnt = 1;
+
+	while (d/10) cnt++;
+
+	return cnt;
 }
 
 int printresults(DataSet *ds)
@@ -870,25 +884,18 @@ int printtc(DataSet *ds, unsigned int tc)
 char *getcmval(CurrentMember *cm, DataColumn dc, int EREE, int gen)
 {
 	char value[BUFSIZ];
-	strcpy(value, colnames[dc]);
 
 	if (EREE >= 0 && gen > 0)
-	{
-		char temp[32];
-		snprintf(temp, sizeof(temp), "%c%c%s%d", '_', (EREE == ER ? 'A' : 'C'), "_GEN", gen);
-		strcat(value, temp);
-	}
+		snprintf(value, sizeof(value), "%s%c%c%s%d", colnames[dc], '_',
+				(EREE == ER ? 'A' : 'C'), "_GEN", gen);
+	else
+		snprintf(value, sizeof(value), "%s", colnames[dc]);
 
 	List *h;
-	if (colmissing[dc] || (h = lookup(value, NULL, cm->Data)) == NULL)
-	{
-		/* for now on this is set to true so this function will no longer search the hashtable
-		   for the key */
+	if (colmissing[dc] || 0 == (h = lookup(value, 0, cm->Data))) {
 		colmissing[dc] = 1;
 		return strdup("0");
-	}
-	else
-	{
+	} else {
 		validateInput(dc, cm, value, h->value);
 		return h->value;
 	}
@@ -941,7 +948,7 @@ void validateColumns()
 {
 	/* All missing columns are set to a WARNING, then the important ones are set to ERROR */
 	int cnt = 0;
-	for (int i = 0; i < MAXKEYS; i++)
+	for (int i = 0; i < KEYS_AMOUNT; i++)
 		if (colmissing[i])
 			updateValidation(val, WARNING, 
 					"Column [%s] missing, all values set to 0", colnames[i]);
@@ -1051,109 +1058,120 @@ void validateColumns()
 				"the search for columns will end there");
 }
 
-void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char *input)
+/* 
+ * validate the input given in the excel file. not all columns were added here
+ * because not all of them will be used in the program, I chose the most
+ * important ones to check, the others are the responsibility of the user
+ */
+void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
+		const char *input)
 {
-	/* not all columns were added here because not all of them will be used in the
-	   program, I chose the most important ones to check, the others are the responsibility of 
-	   the user */
-	DataColumn floats[] = {SAL, PT, NORMRA, ART24_A_GEN1, ART24_A_GEN2, ART24_C_GEN1, 
-		ART24_C_GEN2, PREMIUM, CAP, CAPPS, RES, RESPS, CAPRED, TAUX};
-	DataColumn dates[] = {DOB, DOS, DOA, DOR};
+	const DataColumn floats[] = {
+		SAL, PT, NORMRA, ART24_A_GEN1, ART24_A_GEN2, ART24_C_GEN1,
+		ART24_C_GEN2, PREMIUM, CAP, CAPPS, RES, RESPS, CAPRED, TAUX
+	};
+	const DataColumn dates[] = {DOB, DOS, DOA, DOR};
 
-	int lenf = sizeof(floats)/sizeof(floats[0]);
-	int lend = sizeof(dates)/sizeof(dates[0]);
+	size_t lenf = sizeof(floats)/sizeof(floats[0]);
+	size_t lend = sizeof(dates)/sizeof(dates[0]);
+	unsigned update = 0;
+	const unsigned nofloat = 0x1;
+	const unsigned neg = 0x2;
+	const unsigned invaliddate = 0x4;
+	const unsigned invalidstatus = 0x8;
+	const unsigned invalidsex = 0x10;
+	const unsigned invalidPT = 0x20;
 
-	/* --- Check floats --- */
-	for (int i = 0; i < lenf; i++)
-	{
-		if (dc == floats[i])
-		{
+	for (size_t i = 0; i < lenf; i++) {
+		if (floats[i] == dc) {
 			if (!isfloat(input))
-				updateValidation(val, ERROR, 
-						"Member [%d][%s] has [%s = %s], expected of the form %s", 
-						cm->id, cm->key, key, input, validMsg[FLOATERR]);
+				update += nofloat;
 			if (input[0] == '-')
-				updateValidation(val, WARNING, 
-						"Member [%d][%s] has a negative %s [%s]", cm->id, cm->key, key, input);
-			return;
+				update += neg;
+			break;
 		}
 	}
 
-	/* --- Check Dates --- */
-	for (int i = 0; i < lend; i++) {
-		if (dc == dates[i]) {
+	for (size_t i = 0; i < lend; i++) {
+		if (dates[i] == dc) {
 			Date *temp = newDate((unsigned)atoi(input), 0, 0, 0);
-			if (0 == temp)
-				updateValidation(val, ERROR, 
-						"Member [%d][%s] has invalid date [%s = %s]", 
-						cm->id, cm->key, key, input); 
-			else
+			if (0 == temp) {
+				update += invaliddate;
+			} else {
 				//free(temp);
-			return;
+			}
+			break;
 		}
 	}
 
-	/* --- Check Miscellaneous --- */
-	if (dc == STATUS)
-	{
-		if (strcmp(input, "ACT") != 0 && strcmp(input, "DEF") != 0)
-			updateValidation(val, ERROR, 
-					"Member [%d][%s] has invalid status [%s = %s], expected ACT or DEF", 
-					cm->id, cm->key, key, input); 
-		return;
-	}
-
-	if (dc == SEX)
-	{
+	if (STATUS == dc) {
+		if (0 != strcmp(input, "ACT") && 0 != strcmp(input, "DEF"))
+			update += invalidstatus;
+	} else if (SEX == dc) {
 		if (atoi(input) != 1 && atoi(input) != 2)
-			updateValidation(val, ERROR, 
-					"Member [%d][%s] has invalid gender [%s = %s], "
-					"expected 1(male) or 2(female)", cm->id, cm->key, key, input); 
-		return;
+			update += invalidsex;
+	} else if (PT == dc) {
+		if (atof(input) > 1 || atof(input) < 0)
+			update += invalidPT;
 	}
 
-	if (dc == PT)
-	{
-		if (atof(input) > 1 || atof(input) < 0)
-			updateValidation(val, WARNING, 
-					"Member [%d][%s] has [%s = %s], expected between 0 and 1", 
-					cm->id, cm->key, key, input); 
-		return;
-	}
+	if (nofloat & update)
+		updateValidation(val, ERROR, "Member [%d][%s] has [%s = %s], "
+				"expected of the form %s", cm->id, cm->key,
+				key, input, validMsg[FLOATERR]);
+	if (neg & update)
+		updateValidation(val, WARNING, "Member [%d][%s] has a negative"
+				" %s [%s]", cm->id, cm->key, key, input);
+	if (invaliddate & update)
+		updateValidation(val, ERROR, "Member [%d][%s] has invalid date"
+				" [%s = %s]", cm->id, cm->key, key, input); 
+
+	if (invalidstatus & update)
+		updateValidation(val, ERROR, "Member [%d][%s] has invalid "
+				"status [%s = %s], expected ACT or DEF", 
+				cm->id, cm->key, key, input); 
+	if (invalidsex & update)
+		updateValidation(val, ERROR, "Member [%d][%s] has invalid "
+				"gender [%s = %s], expected 1(male) or "
+				"2(female)", cm->id, cm->key, key, input); 
+	if (invalidPT & update)
+		updateValidation(val, WARNING, "Member [%d][%s] has [%s = %s],"
+				"expected between 0 and 1", cm->id, cm->key,
+				key, input); 
 }
 
 /* --- Assumptions functions --- */
-double salaryscale(CurrentMember *cm, int k)
+double salaryscale(const CurrentMember *cm, int k)
 {
 	return (*ass.SS)(cm, k);
 }
 
-double calcA(CurrentMember *cm, int k)
+double calcA(const CurrentMember *cm, int k)
 {
 	return (*ass.calcA)(cm, k);
 }
 
-double calcC(CurrentMember *cm, int k)
+double calcC(const CurrentMember *cm, int k)
 {
 	return (*ass.calcC)(cm, k);
 }
 
-double calcDTH(CurrentMember *cm, int k)
+double calcDTH(const CurrentMember *cm, int k)
 {
 	return (*ass.calcDTH)(cm, k);
 }
 
-double NRA(CurrentMember *cm, int k)
+double NRA(const CurrentMember *cm, int k)
 {
 	return (*ass.NRA)(cm, k);
 }
 
-double wxdef(CurrentMember *cm, int k)
+double wxdef(const CurrentMember *cm, int k)
 {
 	return (*ass.wxdef)(cm, k);
 }
 
-double retx(CurrentMember *cm, int k)
+double retx(const CurrentMember *cm, int k)
 {
 	return (*ass.retx)(cm, k);
 }

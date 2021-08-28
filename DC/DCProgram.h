@@ -203,7 +203,7 @@ typedef struct {
 } CurrentMember;
 
 typedef struct {
-	int keyrow; /* find the row in the excel file where 
+	unsigned keyrow; /* find the row in the excel file where 
 		       the keys are to use in the hashtable */
 	char keycolumn[4];
 	char **keys; // This points to the array of keys in excel
@@ -229,13 +229,13 @@ typedef struct {
 	double DR; // Discount Rate
 	double DR113; // Discount Rate under $113 of IAS19  
 	short agecorr; // Age Correction
-	double (*SS)(CurrentMember *cm, int k); // Salary Scale
-	double (*calcA)(CurrentMember *cm, int k); // Formula for Employer retirement contribution
-	double (*calcC)(CurrentMember *cm, int k); // Formula for Employee retirement contribution  
-	double (*calcDTH)(CurrentMember *cm, int k); // Formula for Capital Death
-	double (*NRA)(CurrentMember *cm, int k);
-	double (*wxdef)(CurrentMember *cm, int k); // Turnover rate with deferred payment
-	double (*retx)(CurrentMember *cm, int k); // Turnover rate with deferred payment
+	double (*SS)(const CurrentMember *cm, int k); // Salary Scale
+	double (*calcA)(const CurrentMember *cm, int k); // Formula for Employer retirement contribution
+	double (*calcC)(const CurrentMember *cm, int k); // Formula for Employee retirement contribution  
+	double (*calcDTH)(const CurrentMember *cm, int k); // Formula for Capital Death
+	double (*NRA)(const CurrentMember *cm, int k);
+	double (*wxdef)(const CurrentMember *cm, int k); // Turnover rate with deferred payment
+	double (*retx)(const CurrentMember *cm, int k); // Turnover rate with deferred payment
 
 	//Assumptions that usually won't change from year to year
 	unsigned short incrSalk0; // determine whether sal gets increased at k = 0 
@@ -266,13 +266,13 @@ static const char *runnames[] = {"Reported Last Year", "Update Inflation",
 	"Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
 unsigned short currrun; // Current run
 void setassumptions(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
-double salaryscale(CurrentMember *cm, int k);
-double calcA(CurrentMember *cm, int k);
-double calcC(CurrentMember *cm, int k);
-double calcDTH(CurrentMember *cm, int k);
-double NRA(CurrentMember *cm, int k);
-double wxdef(CurrentMember *cm, int k);
-double retx(CurrentMember *cm, int k);
+double salaryscale(const CurrentMember *cm, int k);
+double calcA(const CurrentMember *cm, int k);
+double calcC(const CurrentMember *cm, int k);
+double calcDTH(const CurrentMember *cm, int k);
+double NRA(const CurrentMember *cm, int k);
+double wxdef(const CurrentMember *cm, int k);
+double retx(const CurrentMember *cm, int k);
 
 //---Tariff Structure---
 typedef struct {
@@ -306,7 +306,8 @@ void freeCM(CurrentMember *cm);
 void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn);
 char *getcmval(CurrentMember *cm, DataColumn, int EREE, int gen);
 void validateColumns();
-void validateInput(DataColumn dc, CurrentMember *cm, const char *key, const char *input);
+void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
+		const char *input);
 /* This function will allocate memory based on membercnt for the underlying
    Hashtable used for the data.*/
 void createData(DataSet *ds);

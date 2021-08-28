@@ -12,6 +12,15 @@ static void updateART24reserves(unsigned method, CurrentMember *cm,
 static double get_premium_method(unsigned method, CurrentMember *cm,
 		unsigned EREE, int k);
 static void updateART24DEF(CurrentMember *cm, int k);
+static double getDBO(const CurrentMember *cm, int k, unsigned method,
+		unsigned assets, unsigned DEFIMM, unsigned PBOTBO, 
+		const double ART24TOT[const static METHOD_AMOUNT],
+		const double RESTOT[const static METHOD_AMOUNT],
+		const double REDCAPTOT[const static METHOD_AMOUNT]);
+static double getAssets(const CurrentMember *cm, int k, unsigned assets,
+		unsigned DEFIMM,
+		const double RESTOT[const static METHOD_AMOUNT],
+		const double REDCAPTOT[const static METHOD_AMOUNT]);
 static void updateRESCAP(CurrentMember *cm, int k);
 static void updateRESCAPPS(CurrentMember *cm, int k);
 static void updateREDCAPPUC(CurrentMember *cm, int k);
@@ -460,35 +469,48 @@ void evolDBONCIC(CurrentMember *cm, int k,
 		double RESTOT[const static METHOD_AMOUNT],
 		double REDCAPTOT[const static METHOD_AMOUNT])
 {
-	double probfactdef; // probability factors for deferred payment
-	double probfactimm; // probability factors for immediate payment
-	double amountdef;
-	double amountimm;
+	double probfactdef = 0.0; // probability factors for deferred payment
+	double probfactimm = 0.0; // probability factors for immediate payment
+	double amountdef = 0.0;
+	double amountimm = 0.0;
 
 	probfactdef = cm->wxdef[k] * cm->kPx[k] * cm->nPk[k] * cm->vn[k];
 	probfactimm = (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * cm->vk[k];
 
-	// DBO, NC, IC
-	for (int i = 0; i < 2; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			amountdef = getamount(cm, k, DBO, i, j, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
-			amountimm = getamount(cm, k, DBO, i, j, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
-			cm->DBORET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
+	for (int i = 0; i < METHOD_AMOUNT; i++) {
+		if (PUC != i && TUC != i) continue;
+		for (int j = 0; j < ASSET_AMOUNT; j++) {
+			amountdef = getamount(cm, k, DBO, i, j, DEF, PBO,
+					ART24TOT, RESTOT, REDCAPTOT);
+			amountimm = getamount(cm, k, DBO, i, j, IMM, PBO,
+					ART24TOT, RESTOT, REDCAPTOT);
+			cm->DBORET[i][j][k] = amountdef * probfactdef
+				+ amountimm * probfactimm;
 
-			amountdef = getamount(cm, k, NC, i, j, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
-			amountimm = getamount(cm, k, NC, i, j, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
-			cm->NCRET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
+			amountdef = getamount(cm, k, NC, i, j, DEF, PBO,
+					ART24TOT, RESTOT, REDCAPTOT);
+			amountimm = getamount(cm, k, NC, i, j, IMM, PBO,
+					ART24TOT, RESTOT, REDCAPTOT);
+			cm->NCRET[i][j][k] = amountdef * probfactdef
+				+ amountimm * probfactimm;
 
-			amountdef = getamount(cm, k, IC, i, j, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
-			amountimm = getamount(cm, k, IC, i, j, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
-			cm->ICNCRET[i][j][k] = amountdef * probfactdef + amountimm * probfactimm;
+			amountdef = getamount(cm, k, IC, i, j, DEF, PBO,
+					ART24TOT, RESTOT, REDCAPTOT);
+			amountimm = getamount(cm, k, IC, i, j, IMM, PBO,
+					ART24TOT, RESTOT, REDCAPTOT);
+			cm->ICNCRET[i][j][k] = amountdef * probfactdef
+				+ amountimm * probfactimm;
 		}
-		amountdef = getamount(cm, k, ASSETS, 0, PAR113*i, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
-		amountimm = getamount(cm, k, ASSETS, 0, PAR113*i, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
-		cm->assets[PAR113*i][k] = amountdef * probfactdef + amountimm * probfactimm;
-	}	
+	}
+
+	for (int i = 0; i < ASSET_AMOUNT; i++) {
+		amountdef = getamount(cm, k, ASSETS, 0, i, DEF, PBO,
+				ART24TOT, RESTOT, REDCAPTOT);
+		amountimm = getamount(cm, k, ASSETS, 0, i, IMM, PBO,
+				ART24TOT, RESTOT, REDCAPTOT);
+		cm->assets[i][k] = amountdef * probfactdef
+			+ amountimm * probfactimm;
+	}
 }
 
 void evolEBP(CurrentMember *cm, int k, 
@@ -502,50 +524,70 @@ void evolEBP(CurrentMember *cm, int k,
 	double amountimm = 0.0;
 	double vIMM = 0.0;
 	double vDEF = 0.0;
+	double capdth = 0.0;
+	double probs = 0.0;
 	int yearIMM = 0.0;
 	int yearDEF = 0.0;
+	Date *Ndate = 0;
+	Date *IMMdate = 0;
+	Date *DEFdate = 0;
 
+	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
 	yearIMM = calcyears(cm->DOC[1], cm->DOC[k], 0);
-	yearDEF = max(2, 0.0, calcyears(cm->DOC[1], newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1), 0));
+	IMMdate = newDate(0, cm->DOC[1]->year + yearIMM, cm->DOC[1]->month, 1);
+	yearDEF = max(2, 0.0, calcyears(cm->DOC[1], Ndate, 0));
+	DEFdate = newDate(0, cm->DOC[1]->year + yearDEF, cm->DOC[1]->month, 1);
 
-	//-  EBP yearIMM  -
 	if (yearIMM >= 0) {
-		vIMM = pow(1 + ass.DR, -calcyears(newDate(0, cm->DOC[1]->year + yearIMM, cm->DOC[1]->month, 1), cm->DOC[k], 0));
-		probfactimm = (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;	
+		vIMM = pow(1 + ass.DR, -calcyears(IMMdate, cm->DOC[k], 0));
+		probfactimm = (cm->wximm[k] + cm->retx[k]) * cm->kPx[k] * vIMM;
 
-		for (int i = 0; i < 2; i++) { // PUCTUC
-			for (int j = 0; j < 3; j++) { // PUCTUC
-				for (int l = 0; l < 2; l++) { // PBOTBO 
-					amountimm = getamount(cm, k, DBO, i, j, IMM, l, ART24TOT, RESTOT, REDCAPTOT);
-					cm->EBP[i][j][l][yearIMM+1] += amountimm * probfactimm;
+		for (int i = 0; i < METHOD_AMOUNT; i++) {
+			if (PUC != i && TUC != i) continue;
+			for (int j = 0; j < ASSET_AMOUNT; j++) {
+				for (int l = 0; l < CF_AMOUNT; l++) {
+					amountimm = getamount(cm, k, DBO, i, j,
+							IMM, l, ART24TOT,
+							RESTOT, REDCAPTOT);
+					cm->EBP[i][j][l][yearIMM+1] +=
+						amountimm * probfactimm;
 				}
-				amountimm = getamount(cm, k, NC, i, j, IMM, PBO, ART24TOT, RESTOT, REDCAPTOT);
-				cm->PBONCCF[i][j][yearIMM+1] += amountimm * probfactimm;
+				amountimm = getamount(cm, k, NC, i, j, IMM,
+						PBO, ART24TOT, RESTOT,
+						REDCAPTOT);
+				cm->PBONCCF[i][j][yearIMM+1] += amountimm
+					* probfactimm;
 			}
 		}
-		cm->EBPDTH[TBO][yearIMM+1] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
-			cm->qx[k] * cm->kPx[k] * vIMM;
-		cm->EBPDTH[PBO][yearIMM+1] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
-			cm->FF[k] * cm->qx[k] * cm->kPx[k] * vIMM;
-		cm->PBODTHNCCF[yearIMM+1] += (cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k]) * 
-			cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * vIMM;
+		capdth = cm->CAPDTHRiskPart[k] + cm->CAPDTHRESPart[k];
+		probs = cm->qx[k] * cm->kPx[k] * vIMM;
+		cm->EBPDTH[TBO][yearIMM+1] += capdth * probs;
+		cm->EBPDTH[PBO][yearIMM+1] += capdth * cm->FF[k] * probs;
+		cm->PBODTHNCCF[yearIMM+1] += capdth * cm->FFSC[k] * probs;
 	}
 
-	//-  EBP yearDEF  -
-	vDEF = pow(1 + ass.DR, -calcyears(newDate(0, cm->DOC[1]->year + yearDEF, cm->DOC[1]->month, 1),
-				newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1), 0));	
-	probfactdef = cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;	
+	vDEF = pow(1 + ass.DR, -calcyears(DEFdate, Ndate, 0));
+	probfactdef = cm->wxdef[k] * cm->nPk[k] * cm->kPx[k] * vDEF;
 
-	for (int i = 0; i < 2; i++) { // PUCTUC
-		for (int j = 0; j < 3; j++) { // PUCTUC
-			for (int l = 0; l < 2; l++) { // PBOTBO 
-				amountdef = getamount(cm, k, DBO, i, j, DEF, l, ART24TOT, RESTOT, REDCAPTOT);
-				cm->EBP[i][j][l][yearDEF+1] += amountdef * probfactdef;
+	for (int i = 0; i < METHOD_AMOUNT; i++) {
+		if (PUC != i && TUC != i) continue;
+		for (int j = 0; j < ASSET_AMOUNT; j++) {
+			for (int l = 0; l < CF_AMOUNT; l++) {
+				amountdef = getamount(cm, k, DBO, i, j, DEF, l,
+						ART24TOT, RESTOT, REDCAPTOT);
+				cm->EBP[i][j][l][yearDEF+1] += amountdef
+					* probfactdef;
 			}
-			amountdef = getamount(cm, k, NC, i, j, DEF, PBO, ART24TOT, RESTOT, REDCAPTOT);
-			cm->PBONCCF[i][j][yearDEF+1] += amountdef * probfactdef;
+			amountdef = getamount(cm, k, NC, i, j, DEF, PBO,
+					ART24TOT, RESTOT, REDCAPTOT);
+			cm->PBONCCF[i][j][yearDEF+1] += amountdef
+				* probfactdef;
 		}
 	}
+
+	free(Ndate);
+	free(IMMdate);
+	free(DEFdate);
 }
 
 double getamount(const CurrentMember *cm, int k, unsigned DBONCICASS, 
@@ -557,77 +599,86 @@ double getamount(const CurrentMember *cm, int k, unsigned DBONCICASS,
 {
 	switch (DBONCICASS) {
 		case DBO :
-			switch (method) {
-				case PUC :
-					switch (assets) {
-						case PAR113 :
-						case PAR115 :
-							switch (DEFIMM) {
-								case DEF : return max(2, ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO), REDCAPTOT[TUC]); 
-								case IMM : return max(2, ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO), RESTOT[TUC]);
-								default : printf("Error in %s: DEFIMM = %d\n", __func__, DEFIMM);
-									  exit(1);
-							}
-						case MATHRES : return ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO);
-						default : printf("Error in %s: assets = %d\n", __func__, assets);
-							  exit(1);
-					}
-				case TUC :
-					switch (assets) {
-						case PAR113 :
-						case PAR115 :
-							switch (DEFIMM) {
-								case DEF : return max(2, ART24TOT[TUC], REDCAPTOT[TUC]);
-								case IMM : return max(2, ART24TOT[TUC], RESTOT[TUC]); 
-								default : printf("Error in %s: DEFIMM = %d\n", __func__, DEFIMM);
-									  exit(1);
-							}
-						case MATHRES : return ART24TOT[TUC];
-						default : printf("Error in %s: assets = %d\n", __func__, assets);
-							  exit(1);
-					}
-				default : printf("Error in %s: method = %d\n", __func__, method);
-					  exit(1);
-			}
+			return getDBO(cm, k, method, assets, DEFIMM, PBOTBO,
+					ART24TOT, RESTOT, REDCAPTOT);
 		case NC :
 			switch (method) {
 				case PUC : return ART24TOT[PUC] * cm->FFSC[k];
-				case TUC : return (ART24TOT[TUCPS_1] - ART24TOT[TUC]);
-				default : printf("Error in %s: method = %d\n", __func__, method);
-					  exit(1);
+				case TUC : return (ART24TOT[TUCPS_1]
+							   - ART24TOT[TUC]);
+				default : errExit("[%s]: method = %d\n", 
+							  __func__, method);
 			}
+			break;
 		case IC :
 			switch (method) {
-				case PUC : return ART24TOT[PUC] * cm->FFSC[k] * ass.DR;
-				case TUC : return (ART24TOT[TUCPS_1] - ART24TOT[TUC]) * ass.DR;
-				default : printf("Error in %s: method = %d\n", __func__, method);
-					  exit(1);
+				case PUC : return ART24TOT[PUC] * cm->FFSC[k]
+					   * ass.DR;
+				case TUC : return (ART24TOT[TUCPS_1]
+							   - ART24TOT[TUC])
+					   * ass.DR;
+				default : errExit("[%s]: method = %d\n", 
+							  __func__, method);
 			}
-		case ASSETS :
-			switch (assets) {
-				case PAR113 :
-					switch (DEFIMM) {
-						case DEF : return REDCAPTOT[TUC] / cm->vn[k] * cm->vn113[k];
-						case IMM : return RESTOT[TUC] / cm->vk[k] * cm->vk113[k];
-						default : printf("Error in %s: DEFIMM = %d\n", __func__, DEFIMM);
-							  exit(1);
-					}
-				case PAR115 :
-					switch (DEFIMM) {
-						case DEF : return REDCAPTOT[TUC];
-						case IMM : return RESTOT[TUC];
-						default : printf("Error in %s: DEFIMM = %d\n", __func__, DEFIMM);
-							  exit(1);
-					}
-				default :
-					printf("Error in %s: assets = %d\n", __func__, assets);
-					exit(1);
-
-			}
-		default :
-			printf("Error in %s: DBONCICASS = %d\n", __func__, DBONCICASS);
-			exit(1);
+			break;
+		case ASSETS : return getAssets(cm, k, assets, DEFIMM, RESTOT,
+					      REDCAPTOT);
+		default : errExit("[%s]: unknown amount [%d]\n", __func__,
+					DBONCICASS);
 	}
+
+	return 0.0;
+}
+
+static double getDBO(const CurrentMember *cm, int k, unsigned method,
+		unsigned assets, unsigned DEFIMM, unsigned PBOTBO, 
+		const double ART24TOT[const static METHOD_AMOUNT],
+		const double RESTOT[const static METHOD_AMOUNT],
+		const double REDCAPTOT[const static METHOD_AMOUNT])
+{
+	double liab = 0.0;
+	if (PUC == method)
+		liab = ART24TOT[PUC] * pow(cm->FF[k], 1 - PBOTBO);
+	else if (TUC == method)
+		liab = ART24TOT[TUC];
+	else
+		errExit("[%s]: method = %d\n", __func__, method);
+
+	switch (assets) {
+		case PAR113 :
+		case PAR115 :
+			switch (DEFIMM) {
+				case DEF : return max(2, liab, REDCAPTOT[TUC]);
+				case IMM : return max(2, liab, RESTOT[TUC]);
+				default : errExit("[%s] DEFIMM = %d\n", 
+							  __func__, DEFIMM);
+			}
+			break;
+		case MATHRES : return liab;
+		default : errExit("[%s] assets = %d\n", __func__, assets);
+	}
+	return liab;
+}
+
+static double getAssets(const CurrentMember *cm, int k, unsigned assets,
+		unsigned DEFIMM,
+		const double RESTOT[const static METHOD_AMOUNT],
+		const double REDCAPTOT[const static METHOD_AMOUNT])
+{
+	double a = 0.0;
+	double corrfactor = 1.0;
+
+	switch (DEFIMM) {
+		case DEF : a = REDCAPTOT[TUC];
+			   break; 
+		case IMM : a = RESTOT[TUC]; 
+			   break;
+		default : errExit("[%s]: DEFIMM = %d\n", __func__, DEFIMM);
+	}
+
+	if (PAR113 == assets) corrfactor = cm->vn113[k] / cm->vn[k];
+
+	return a * corrfactor;
 }
 
 static void updateRESCAP(CurrentMember *cm, int k)
