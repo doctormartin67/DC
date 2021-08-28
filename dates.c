@@ -78,7 +78,8 @@ Date *newDate(unsigned XLday, int year, int month, int day)
 	// Error checking
 	if (date->day > days_in_month_year(date->year, date->month)
 			|| date->day < 1 || date->day > 31
-			|| date->month < 1 || date->month > DEC) {
+			|| date->month < 1 || date->month > DEC
+			|| date->year < 0) {
 		free(date);
 		date = 0;
 	}
@@ -150,47 +151,37 @@ int days_in_month_year(int year, int month)
  */
 Date *minDate(int argc, ...)
 {
-	Date *min; // minimum to return
-	Date *currmin; // current minimum
+	Date *min = 0;
+	Date *currmin = 0;
 	va_list dates;
 
 	va_start(dates, argc);
 	min = va_arg(dates, Date *);
 
-	for (int i = 1; i < argc; i++)
-	{
+	for (int i = 1; i < argc; i++) {
 		currmin = va_arg(dates, Date *);
-		if (min->year > currmin->year)
-		{
+		if (min->year > currmin->year) {
 			min = currmin;
-		}
-		else if (min->year == currmin->year)
-		{
-			if (min->month > currmin->month)
-			{
+		} else if (min->year == currmin->year) {
+			if (min->month > currmin->month) {
 				min = currmin;
-			}
-			else if (min->month == currmin->month)
-			{
+			} else if (min->month == currmin->month) {
 				if (min->day > currmin->day)
 					min = currmin;
 			}
 		}
 	}
-	// Error checking
-	if (min->day > (isleapyear(min->year) ? leapdays[min->month] : commondays[min->month]))
-	{
-		printf("Error in newDate: %d is not a valid day of month %d\n",
-				min->day, min->month);
-		printf("Exiting program\n");
-		exit(1);
+
+	if (min->year < 0) {
+		errExit("[%s] invalid year [%d]\n", __func__, min->year);
+	} else if (min->month > DEC || min->month < JAN) {
+		errExit("[%s] invalid month [%d]\n", __func__, min->month);
+	} else if (min->day > (isleapyear(min->year) ? leapdays[min->month]
+				: commondays[min->month])) {
+		errExit("[%s] invalid day [%d]\n", __func__, min->day);
 	}
-	if (min->month > DEC)
-	{
-		printf("Error in newDate: there are no %d months\n", min->month);
-		printf("Exiting program\n");
-		exit(1);
-	}
+
+	va_end(dates);
 
 	return min;
 }
