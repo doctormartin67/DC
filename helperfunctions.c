@@ -98,52 +98,6 @@ char *strinside(const char s[static 1], const char begin[static restrict 1],
 	return pb;
 }
 
-// MAKE SURE YOU INPUT DOUBLE AS ARGUMENTS OR YOU WILL HAVE UNDEFINED BEHAVIOUR!
-double min(int argc, ...)
-{
-	va_list valist;
-	double value;
-	double temp;
-
-	/* initialize valist for num number of arguments */
-	va_start(valist, argc);
-
-	/* access all the arguments assigned to valist */
-	value = va_arg(valist, double);
-	for (int i = 0; i < argc - 1; i++) {
-		temp = va_arg(valist, double);
-		value = (value < temp ? value : temp);
-	}
-
-	/* clean memory reserved for valist */
-	va_end(valist);
-
-	return value;
-}
-
-// MAKE SURE YOU INPUT DOUBLE AS ARGUMENTS OR YOU WILL HAVE UNDEFINED BEHAVIOUR!
-double max(int argc, ...)
-{
-	va_list valist;
-	double value;
-	double temp;
-
-	/* initialize valist for num number of arguments */
-	va_start(valist, argc);
-
-	/* access all the arguments assigned to valist */
-	value = va_arg(valist, double);
-	for (int i = 0; i < argc - 1; i++) {
-		temp = va_arg(valist, double);
-		value = (value > temp ? value : temp);
-	}
-
-	/* clean memory reserved for valist */
-	va_end(valist);
-
-	return value;
-}
-
 double sum(size_t length, double a[restrict length])
 {
 	double value = 0;

@@ -10,12 +10,15 @@
 
 #define GARBAGE " \r\n\t:"
 
+#define MAX3(X, Y, Z) MAX2(MAX2(X, Y), Z)
+#define MAX2(X, Y) ((X) > (Y) ? (X) : (Y))
+#define MIN3(X, Y, Z) MIN2(MIN2(X, Y), Z)
+#define MIN2(X, Y) ((X) < (Y) ? (X) : (Y))
+
 char *strinside(const char *s, const char *restrict begin,
 		const char *restrict end);
 char *replace(const char *str, const char *orig, const char *rep);
 int DIRexists(const char *restrict dname);
-double min(int, ...);
-double max(int, ...);
 double sum(size_t length, double a[restrict length]);
 void *jalloc(size_t n, size_t size);
 
