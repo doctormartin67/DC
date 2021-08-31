@@ -108,9 +108,7 @@ inline void nextcol(char next[static 1])
 	}
 
 	while (!isdigit(*s) && '\0' != *s) {
-		if (*s <= 'z' && *s >= 'a')
-			errExit("[%s] invalid cell [%s]\n", __func__, next);
-
+		if (*s <= 'z' && *s >= 'a') errExit("invalid cell [%s]", next);
 		s++;
 	}
 	s--;

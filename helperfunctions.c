@@ -158,7 +158,7 @@ double sum(size_t length, double a[restrict length])
 void *jalloc(size_t n, size_t size)
 {
 	void *p = calloc(n, size);
-	if (0 == p) errExit("calloc returned NULL\n");
+	if (0 == p) errExit("calloc returned NULL");
 	
 	return p;
 }

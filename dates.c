@@ -89,9 +89,9 @@ Date *newDate(unsigned XLday, unsigned year, unsigned month, unsigned day)
 void setdate(Date date[static restrict 1])
 {
 	if (date->XLday > MAXDAYS - 1)
-		errExit("[%s] XLday exceeds the maximum amount of days since "
+		errExit("XLday exceeds the maximum amount of days since "
 				"00/00/1900 (%d). MAXDAYS constant needs "
-				"increased within code\n", __func__, MAXDAYS);
+				"increased within code", MAXDAYS);
 
 	static unsigned daytoday[MAXDAYS];
 	static unsigned daytomonth[MAXDAYS];
@@ -163,9 +163,9 @@ Date *minDate(int argc, ...)
 	}
 
 	if (min->month > DEC || min->month < JAN) {
-		errExit("[%s] invalid month [%d]\n", __func__, min->month);
+		errExit("invalid month [%d]", min->month);
 	} else if (min->day > days_in_month_year(min->year, min->month)) {
-		errExit("[%s] invalid day [%d]\n", __func__, min->day);
+		errExit("invalid day [%d]", min->day);
 	}
 
 	va_end(dates);

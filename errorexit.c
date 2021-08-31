@@ -6,10 +6,11 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <errno.h>
-#include "errorexit.h"
 
 static void outputError(int useErr, int err, int flushStdout,
 		const char * restrict format, va_list ap);
+void errExit(const char *restrict format, ...);
+void errExitEN(int errnum, const char *restrict format, ...);
 
 static void outputError(int useErr, int err, int flushStdout, 
 		const char *restrict format, va_list ap)
@@ -23,13 +24,14 @@ static void outputError(int useErr, int err, int flushStdout,
 	else
 		snprintf(errText, sizeof(errText), ":");
 
-	snprintf(buf, sizeof(buf), "ERROR%s %s\n", errText, userMsg);
+	snprintf(buf, sizeof(buf), "ERROR%s | %s\n", errText, userMsg);
 
 	if (flushStdout)
 		fflush(stdout);
 	fputs(buf, stderr);
 	fflush(stderr);
 }
+
 void errExit(const char *restrict format, ...)
 {
 	va_list arglist;
