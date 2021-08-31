@@ -1,10 +1,7 @@
 main.o: main.c /usr/include/stdc-predef.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h \
- /home/doctormartin67/Projects/work/actuarial/actuarialfunctions.h \
- /usr/include/math.h \
- /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+ /usr/include/ctype.h /usr/include/features.h \
+ /usr/include/x86_64-linux-gnu/sys/cdefs.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
  /usr/include/x86_64-linux-gnu/bits/long-double.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
@@ -13,6 +10,14 @@ main.o: main.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/timesize.h \
  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
  /usr/include/x86_64-linux-gnu/bits/time64.h \
+ /usr/include/x86_64-linux-gnu/bits/endian.h \
+ /usr/include/x86_64-linux-gnu/bits/endianness.h \
+ /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+ /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h \
+ /home/doctormartin67/Projects/work/actuarial/actuarialfunctions.h \
+ /usr/include/math.h \
+ /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
@@ -51,13 +56,9 @@ main.o: main.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
- /usr/include/x86_64-linux-gnu/bits/endian.h \
- /usr/include/x86_64-linux-gnu/bits/endianness.h \
  /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
- /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
- /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/local/include/glib-2.0/glib/garray.h \
  /usr/local/include/glib-2.0/glib/gasyncqueue.h \
  /usr/local/include/glib-2.0/glib/gthread.h \
@@ -728,6 +729,7 @@ main.o: main.c /usr/include/stdc-predef.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/dates.h \
+ /home/doctormartin67/Projects/library/libraryheader.h \
  /home/doctormartin67/Projects/library/XL.h \
  /usr/include/libxml2/libxml/parser.h \
  /usr/include/libxml2/libxml/xmlversion.h \
@@ -756,8 +758,9 @@ main.o: main.c /usr/include/stdc-predef.h \
  /usr/include/libxml2/libxml/xmlmemory.h \
  /usr/include/libxml2/libxml/threads.h \
  /usr/include/libxml2/libxml/xpath.h \
- /usr/include/libxml2/libxml/xpathInternals.h validation.h inputdata.h \
- /home/doctormartin67/Projects/library/errorexit.h
+ /usr/include/libxml2/libxml/xpathInternals.h \
+ /home/doctormartin67/Projects/library/errorexit.h validation.h \
+ inputdata.h /home/doctormartin67/Projects/library/errorexit.h
 lifetables.o: /home/doctormartin67/Projects/work/tables/lifetables.c \
  /usr/include/stdc-predef.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
@@ -796,12 +799,8 @@ actuarialfunctions.o: \
  /home/doctormartin67/Projects/work/actuarial/actuarialfunctions.c \
  /usr/include/stdc-predef.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h \
- /home/doctormartin67/Projects/library/dates.h \
- /home/doctormartin67/Projects/work/actuarial/actuarialfunctions.h \
- /usr/include/math.h \
- /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+ /usr/include/ctype.h /usr/include/features.h \
+ /usr/include/x86_64-linux-gnu/sys/cdefs.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
  /usr/include/x86_64-linux-gnu/bits/long-double.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
@@ -810,6 +809,16 @@ actuarialfunctions.o: \
  /usr/include/x86_64-linux-gnu/bits/timesize.h \
  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
  /usr/include/x86_64-linux-gnu/bits/time64.h \
+ /usr/include/x86_64-linux-gnu/bits/endian.h \
+ /usr/include/x86_64-linux-gnu/bits/endianness.h \
+ /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+ /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h \
+ /home/doctormartin67/Projects/library/dates.h \
+ /home/doctormartin67/Projects/library/libraryheader.h \
+ /home/doctormartin67/Projects/work/actuarial/actuarialfunctions.h \
+ /usr/include/math.h \
+ /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
@@ -848,13 +857,9 @@ actuarialfunctions.o: \
  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
- /usr/include/x86_64-linux-gnu/bits/endian.h \
- /usr/include/x86_64-linux-gnu/bits/endianness.h \
  /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
- /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
- /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/local/include/glib-2.0/glib/garray.h \
  /usr/local/include/glib-2.0/glib/gasyncqueue.h \
  /usr/local/include/glib-2.0/glib/gthread.h \
@@ -1552,8 +1557,9 @@ actuarialfunctions.o: \
  /usr/include/libxml2/libxml/xmlmemory.h \
  /usr/include/libxml2/libxml/threads.h \
  /usr/include/libxml2/libxml/xpath.h \
- /usr/include/libxml2/libxml/xpathInternals.h validation.h inputdata.h \
- /home/doctormartin67/Projects/library/errorexit.h
+ /usr/include/libxml2/libxml/xpathInternals.h \
+ /home/doctormartin67/Projects/library/errorexit.h validation.h \
+ inputdata.h /home/doctormartin67/Projects/library/errorexit.h
 DCProgram.o: DCProgram.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
@@ -2280,7 +2286,8 @@ DCProgram.o: DCProgram.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/dates.h \
- /home/doctormartin67/Projects/library/XL.h \
+ /home/doctormartin67/Projects/library/libraryheader.h \
+ /usr/include/ctype.h /home/doctormartin67/Projects/library/XL.h \
  /usr/include/libxml2/libxml/parser.h \
  /usr/include/libxml2/libxml/xmlversion.h \
  /usr/include/libxml2/libxml/xmlexports.h \
@@ -2308,8 +2315,9 @@ DCProgram.o: DCProgram.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/include/libxml2/libxml/xmlmemory.h \
  /usr/include/libxml2/libxml/threads.h \
  /usr/include/libxml2/libxml/xpath.h \
- /usr/include/libxml2/libxml/xpathInternals.h validation.h inputdata.h \
- /home/doctormartin67/Projects/library/libraryheader.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
+ /home/doctormartin67/Projects/library/errorexit.h validation.h \
+ inputdata.h /home/doctormartin67/Projects/library/libraryheader.h \
  /usr/local/include/xlsxwriter.h /usr/local/include/xlsxwriter/workbook.h \
  /usr/local/include/xlsxwriter/worksheet.h \
  /usr/local/include/xlsxwriter/shared_strings.h \
@@ -2320,7 +2328,7 @@ DCProgram.o: DCProgram.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/local/include/xlsxwriter/format.h \
  /usr/local/include/xlsxwriter/hash_table.h \
  /usr/local/include/xlsxwriter/drawing.h \
- /usr/local/include/xlsxwriter/styles.h /usr/include/ctype.h \
+ /usr/local/include/xlsxwriter/styles.h \
  /usr/local/include/xlsxwriter/utility.h \
  /usr/local/include/xlsxwriter/xmlwriter.h \
  /usr/local/include/xlsxwriter/relationships.h \
@@ -3049,7 +3057,8 @@ client.o: client.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/dates.h \
- /home/doctormartin67/Projects/library/XL.h \
+ /home/doctormartin67/Projects/library/libraryheader.h \
+ /usr/include/ctype.h /home/doctormartin67/Projects/library/XL.h \
  /usr/include/libxml2/libxml/parser.h \
  /usr/include/libxml2/libxml/xmlversion.h \
  /usr/include/libxml2/libxml/xmlexports.h \
@@ -3077,8 +3086,9 @@ client.o: client.c /usr/include/stdc-predef.h DCProgram.h \
  /usr/include/libxml2/libxml/xmlmemory.h \
  /usr/include/libxml2/libxml/threads.h \
  /usr/include/libxml2/libxml/xpath.h \
- /usr/include/libxml2/libxml/xpathInternals.h validation.h inputdata.h \
- /home/doctormartin67/Projects/work/tables/lifetables.h
+ /usr/include/libxml2/libxml/xpathInternals.h \
+ /home/doctormartin67/Projects/library/errorexit.h validation.h \
+ inputdata.h /home/doctormartin67/Projects/work/tables/lifetables.h
 validation.o: validation.c /usr/include/stdc-predef.h \
  /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
@@ -3148,9 +3158,9 @@ helperfunctions.o: \
  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h /usr/include/ctype.h \
- /usr/include/errno.h /usr/include/x86_64-linux-gnu/bits/errno.h \
- /usr/include/linux/errno.h /usr/include/x86_64-linux-gnu/asm/errno.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h /usr/include/errno.h \
+ /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
+ /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/dirent.h /usr/include/x86_64-linux-gnu/bits/dirent.h \
  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
@@ -3158,7 +3168,7 @@ helperfunctions.o: \
  /usr/include/linux/limits.h \
  /usr/include/x86_64-linux-gnu/bits/dirent_ext.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
- /home/doctormartin67/Projects/library/errorexit.h
+ /usr/include/ctype.h /home/doctormartin67/Projects/library/errorexit.h
 hashtable.o: /home/doctormartin67/Projects/library/hashtable.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
@@ -3211,7 +3221,7 @@ hashtable.o: /home/doctormartin67/Projects/library/hashtable.c \
  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
- /home/doctormartin67/Projects/library/hashtable.h \
+ /usr/include/ctype.h /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/errorexit.h
 dates.o: /home/doctormartin67/Projects/library/dates.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
@@ -3261,8 +3271,10 @@ dates.o: /home/doctormartin67/Projects/library/dates.c \
  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
- /home/doctormartin67/Projects/library/libraryheader.h \
  /home/doctormartin67/Projects/library/dates.h \
+ /home/doctormartin67/Projects/library/libraryheader.h \
+ /usr/include/ctype.h /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+ /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /home/doctormartin67/Projects/library/errorexit.h
 errorexit.o: /home/doctormartin67/Projects/library/errorexit.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
@@ -3330,19 +3342,18 @@ XL.o: /home/doctormartin67/Projects/library/XL.c \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
- /usr/include/strings.h /usr/include/ctype.h \
+ /usr/include/strings.h /usr/include/x86_64-linux-gnu/sys/stat.h \
  /usr/include/x86_64-linux-gnu/bits/types.h \
  /usr/include/x86_64-linux-gnu/bits/timesize.h \
  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
  /usr/include/x86_64-linux-gnu/bits/time64.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
  /usr/include/x86_64-linux-gnu/bits/endian.h \
  /usr/include/x86_64-linux-gnu/bits/endianness.h \
- /usr/include/x86_64-linux-gnu/sys/stat.h \
- /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
  /usr/include/x86_64-linux-gnu/bits/stat.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
- /home/doctormartin67/Projects/library/XL.h \
+ /usr/include/ctype.h /home/doctormartin67/Projects/library/XL.h \
  /usr/include/libxml2/libxml/parser.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h \
  /usr/include/libxml2/libxml/xmlversion.h \
@@ -3445,8 +3456,8 @@ userinterface.o: userinterface.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
- /usr/include/x86_64-linux-gnu/bits/setjmp.h /usr/include/ctype.h \
- userinterface.h DCProgram.h /usr/include/stdio.h \
+ /usr/include/x86_64-linux-gnu/bits/setjmp.h userinterface.h DCProgram.h \
+ /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h \
  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
@@ -4133,7 +4144,8 @@ userinterface.o: userinterface.c /usr/include/stdc-predef.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h \
  /home/doctormartin67/Projects/library/hashtable.h \
  /home/doctormartin67/Projects/library/dates.h \
- /home/doctormartin67/Projects/library/XL.h \
+ /home/doctormartin67/Projects/library/libraryheader.h \
+ /usr/include/ctype.h /home/doctormartin67/Projects/library/XL.h \
  /usr/include/libxml2/libxml/parser.h \
  /usr/include/libxml2/libxml/xmlversion.h \
  /usr/include/libxml2/libxml/xmlexports.h \
@@ -4161,6 +4173,7 @@ userinterface.o: userinterface.c /usr/include/stdc-predef.h \
  /usr/include/libxml2/libxml/xmlmemory.h \
  /usr/include/libxml2/libxml/threads.h \
  /usr/include/libxml2/libxml/xpath.h \
- /usr/include/libxml2/libxml/xpathInternals.h validation.h inputdata.h \
- /home/doctormartin67/Projects/library/libraryheader.h \
+ /usr/include/libxml2/libxml/xpathInternals.h \
+ /home/doctormartin67/Projects/library/errorexit.h validation.h \
+ inputdata.h /home/doctormartin67/Projects/library/libraryheader.h \
  /home/doctormartin67/Projects/library/errorexit.h

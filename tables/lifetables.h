@@ -9,6 +9,6 @@
 #define PURE
 #endif
 
-enum lifetables {LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL};
-int lx(register unsigned int, register int) PURE ;
+enum lifetables {LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL, LT_AMOUNT};
+int lx(register unsigned ltindex, register unsigned age) PURE ;
 #endif

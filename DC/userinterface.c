@@ -1,5 +1,4 @@
 #include <pthread.h>
-#include <ctype.h>
 #include "userinterface.h"
 #include "libraryheader.h"
 #include "errorexit.h"
@@ -13,11 +12,17 @@ const char *const validMsg[ERR_AMOUNT] = {
 };
 
 const char *const widgetname[WIDGET_AMOUNT] = {
-	"sheetname", "keycell", "DOC", "DR", "agecorr", "infl", "TRM_PercDef",
-	"DR113", "fixedSIentry", "SS", "standard", "assets", "paragraph",
-	"PUCTUC", "cashflows", "evaluateDTH",  "fixedSIradiobutton",
-	"runchoice", "testcasebox", "testcase", "openDCFile", "saveasDCFile",
-	"openExcelFile", "window", "asswindow", "MsgErr", "filename"
+	[SHEETNAME] = "sheetname", [KEYCELL] = "keycell", [DOC] = "DOC",
+	[DR] = "DR", [AGECORR] = "agecorr", [INFL] = "infl",
+	[TRM_PERCDEF] = "TRM_PercDef", [DR113] = "DR113",
+	[FIXEDSIENTRY] = "fixedSIentry", [SS] = "SS", [STANDARD] = "standard",
+	[ASSETS] = "assets", [PARAGRAPH] = "paragraph", [PUCTUC] = "PUCTUC",
+	[CASHFLOWS] = "cashflows", [EVALUATEDTH] = "evaluateDTH",
+	[FIXEDSIRADIOBUTTON] = "fixedSIradiobutton", [RUNCHOICE] = "runchoice",
+	[TESTCASEBOX] = "testcasebox", [TESTCASE] = "testcase",
+	[OPENDCFILE] = "openDCFile", [SAVEASDCFILE] = "saveasDCFile",
+	[OPENEXCELFILE] = "openExcelFile", [WINDOW] = "window",
+	[ASSWINDOW] = "asswindow", [MSGERR] = "MsgErr", [FILENAME] = "filename"
 };
 
 static GtkWidget *widgets[WIDGET_AMOUNT];
@@ -30,7 +35,8 @@ static pthread_t thrun;
 static UserInput UILY;
 static Validator validatorLY;
 
-extern void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
+extern void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
+		UserInput UITY[static 1]);
 
 void userinterface()
 {
@@ -76,7 +82,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 			if (strcmp("Run one run", choice) == 0) {
 				// This needs updating when I start with reconciliation runs!!
 				currrun = runNewRF; 
-				s = pthread_create(&thrun, NULL, run, (void *)pl);
+				s = pthread_create(&thrun, NULL, run, pl);
 				if (s != 0)
 					errExitEN(s, "[%s] unable to create thread\n", __func__);
 
@@ -88,7 +94,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 			{
 				// This needs updating when I start with reconciliation runs!!
 				currrun = runNewRF; 
-				s = pthread_create(&thrun, 0, runtc, (void *)pl);
+				s = pthread_create(&thrun, 0, runtc, pl);
 				if (s != 0)
 					errExitEN(s, "[%s] unable to create thread\n", __func__);
 
@@ -277,10 +283,10 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 }
 
 /* helper functions */
-static GtkWidget *buildWidget(const char *w)
+static GtkWidget *buildWidget(const char w[static 1])
 {
 	GtkWidget *widget = GTK_WIDGET(gtk_builder_get_object(builder, w));
-	if (widget == NULL) errExit("[%s] incorrect builder name\n", __func__);
+	if (0 == widget) errExit("[%s] incorrect builder name\n", __func__);
 	return widget;
 }
 
@@ -328,7 +334,7 @@ static void *runtc(void *pl)
 	return (void *)0;
 }
 
-static void setUIvals(UserInput *UI)
+static void setUIvals(UserInput UI[static 1])
 {
 	snprintf(UI->sheetname, sizeof(UI->sheetname), "%s", 
 			gtk_entry_get_text(GTK_ENTRY(widgets[SHEETNAME])));
@@ -364,7 +370,7 @@ static void setUIvals(UserInput *UI)
 	printUI(UI);
 }
 
-static void updateUI(UserInput *UI)
+static void updateUI(UserInput UI[static 1])
 {
 	/* --- Data --- */
 	char s[BUFSIZ];
@@ -394,7 +400,7 @@ static void updateUI(UserInput *UI)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]), UI->evaluateDTH);
 }
 
-static void printUI(UserInput *UI)
+static void printUI(UserInput UI[static 1])
 {
 	/* --- Data --- */
 	printf("file name [%s]\n", UI->fname);
@@ -420,136 +426,134 @@ static void printUI(UserInput *UI)
 	printf("evaluateDTH [%d]\n", UI->evaluateDTH); 
 }
 
-static void validateUI(Validator *val, UserInput *UI)
+static void validateUI(Validator val[static 1], UserInput UI[static 1])
 {
-	char temp[BUFSIZ];
+	size_t len = 0;
+	register unsigned colcnt = 0;
+	char temp[strlen(UI->DOC) + 1];
+	char *kc = UI->keycell;
+	char *pt = 0;
+	char *day = 0, *month = 0, *year = 0;
+	Date *tempDate = 0;
 
 	/* ----- Check keycell -----*/
-	int colcnt = 0;
-	strcpy(temp, UI->keycell);
-	upper(temp);
-	strcpy(UI->keycell, temp);
+	upper(kc);
+	len = strlen(kc);
 	gtk_entry_set_text(GTK_ENTRY(widgets[KEYCELL]), UI->keycell);
 
-	if (temp[0] < 'A' || temp[0] > 'Z')
-	{
-		updateValidation(val, ERROR, "KEY cell [%s], expected of the form %s", 
+	if (kc[0] < 'A' || kc[0] > 'Z') {
+		updateValidation(val, ERROR, "KEY cell [%s], "
+				"expected of the form %s", 
 				UI->keycell, validMsg[CELLERR]);
-	}
-	else if (strlen(temp) > 1)
-	{
-		char *pt = &temp[1];
+	} else if (len > 1) {
+		pt = kc + 1;
 		colcnt++;
 
-		while (!isdigit(*pt))
-		{
+		while (!isdigit(*pt)) {
 			pt++;
 			colcnt++;
 		}
 
-		if (colcnt > 3)
-		{
-			updateValidation(val, ERROR, "KEY cell [%s], " "expected of the form %s", 
+		if (colcnt > 3) {
+			updateValidation(val, ERROR, "KEY cell [%s], "
+					"expected of the form %s", 
 					UI->keycell, validMsg[CELLERR]);
 		}
 
-		if (*pt == '\0')
-		{
-			updateValidation(val, ERROR, "KEY cell [%s], " "expected of the form %s", 
+		if ('\0' == *pt) {
+			updateValidation(val, ERROR, "KEY cell [%s], "
+					"expected of the form %s", 
 					UI->keycell, validMsg[CELLERR]);
 		}
 
-		while (isdigit(*pt))
-			pt++;
+		while (isdigit(*pt)) pt++;
 
-		if (*pt != '\0')
-		{
-			updateValidation(val, ERROR, "KEY cell [%s], " "expected of the form %s", 
+		if ('\0' != *pt) {
+			updateValidation(val, ERROR, "KEY cell [%s], "
+					"expected of the form %s", 
 					UI->keycell, validMsg[CELLERR]);
 		}
-	}
-	else if (strlen(temp) == 1)
-		updateValidation(val, ERROR, "KEY cell [%s], " "expected of the form %s", 
+	} else if (1 == len)
+		updateValidation(val, ERROR, "KEY cell [%s], "
+				"expected of the form %s", 
 				UI->keycell, validMsg[CELLERR]);
 
 	/* ----- Check DOC -----*/
-	char *day, *month, *year;
-	strcpy(temp, UI->DOC);
+
+	snprintf(temp, sizeof(temp), "%s", UI->DOC);
 
 	day = strtok(temp, "/");
-	month = strtok(NULL, "/");
-	year = strtok(NULL, "");
+	month = strtok(0, "/");
+	year = strtok(0, "");
 
-	if (day == NULL || month == NULL || year == NULL)
-	{
-		updateValidation(val, ERROR, "DOC [%s], expected of the form %s", 
+	if (0 == day || 0 == month || 0 == year) {
+		updateValidation(val, ERROR, "DOC [%s], "
+				"expected of the form %s",
 				UI->DOC, validMsg[DATEERR]);
-	}
-	else
-	{
-		if (!isint(day) || !isint(month) || !isint(year))
-		{
-			updateValidation(val, ERROR, "DOC [%s], expected of the form %s", 
+	} else {
+		if (!isint(day) || !isint(month) || !isint(year)) {
+			updateValidation(val, ERROR, "DOC [%s], expected of "
+					"the form %s", 
 					UI->DOC, validMsg[DATEERR]);
 		}
 
-		Date *tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
-		if (tempDate == NULL)
-		{
-			updateValidation(val, ERROR, "DOC [%s], expected of the form %s", 
+		tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
+		if (0 == tempDate) {
+			updateValidation(val, ERROR, "DOC [%s], "
+					"expected of the form %s", 
 					UI->DOC, validMsg[DATEERR]);
 		}
 		free(tempDate);
 	}
 
 	/* ----- Check DR -----*/
-	if (!isfloat(UI->DR))
-	{
-		updateValidation(val, ERROR, "DR [%s], expected of the form %s", 
+	if (!isfloat(UI->DR)) {
+		updateValidation(val, ERROR, "DR [%s], "
+				"expected of the form %s",
 				UI->DR, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check Age Correction -----*/
-	if (!isint(UI->agecorr))
-	{
-		updateValidation(val, ERROR, "Age Correction [%s], expected of the form %s", 
+	if (!isint(UI->agecorr)) {
+		updateValidation(val, ERROR, "Age Correction [%s], "
+				"expected of the form %s", 
 				UI->agecorr, validMsg[AGECORRERR]);
 	}
 
 	/* ----- Check Inflation -----*/
-	if (!isfloat(UI->infl))
-	{
-		updateValidation(val, ERROR, "Inflation [%s], expected of the form %s", 
+	if (!isfloat(UI->infl)) {
+		updateValidation(val, ERROR, "Inflation [%s], "
+				"expected of the form %s", 
 				UI->infl, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check Termination percentage -----*/
-	if (!isfloat(UI->TRM_PercDef))
-	{
-		updateValidation(val, ERROR, "Termination % [%s] (usually 1), expected of the form %s", 
+	if (!isfloat(UI->TRM_PercDef)) {
+		updateValidation(val, ERROR, "Termination % [%s] (usually 1), "
+				"expected of the form %s", 
 				UI->TRM_PercDef, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check DR 113 -----*/
-	if (!isfloat(UI->DR113))
-	{
-		updateValidation(val, WARNING, "DR $113 [%s], expected of the form %s", 
+	if (!isfloat(UI->DR113)) {
+		updateValidation(val, WARNING, "DR $113 [%s], "
+				"expected of the form %s", 
 				UI->DR113, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check Salary Increase -----*/
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widgets[FIXEDSIRADIOBUTTON])))
-	{
-		if (!isfloat(UI->SI))
-		{
-			updateValidation(val, ERROR, "Salary Increase [%s], expected of the form %s", 
+	if (gtk_toggle_button_get_active(
+				GTK_TOGGLE_BUTTON(
+					widgets[FIXEDSIRADIOBUTTON]))) {
+		if (!isfloat(UI->SI)) {
+			updateValidation(val, ERROR, "Salary Increase [%s], "
+					"expected of the form %s", 
 					UI->SI, validMsg[FLOATERR]);
 		}
 	}
 }
 
-static void validateData(Validator *val, UserInput *UI)
+static void validateData(Validator val[static 1], UserInput UI[static 1])
 {
-	if (val->status == OK)
-		ds = createDS(val, UI); 
+	if (val->status == OK) ds = createDS(val, UI); 
 }

@@ -6,48 +6,54 @@
 #include "errorexit.h"
 
 #define PATH "/home/doctormartin67/Projects/work/tables/tables/" //needs updating!!
-enum {TOTALTABLES = 32, MAXAGE = 130, LENGTHLINE = 64};
+enum {MAXAGE = 130, LENGTHLINE = 64};
 
-static const char *lifetables[6] =
-{"LXMR", "LXFR", "LXMK", "LXFK", "LXFK'", "Lxnihil"};
+static const char *const lifetables[LT_AMOUNT] = {
+	[LXMR] = "LXMR",
+	[LXFR] = "LXFR",
+	[LXMK] = "LXMK",
+	[LXFK] = "LXFK",
+	[LXFKP] = "LXFK'",
+	[LXNIHIL] = "Lxnihil"
+};
 
-static int ltlist[TOTALTABLES][MAXAGE];
+static int ltlist[LT_AMOUNT][MAXAGE];
 
 static void makeLifeTable(const char *, int *);
 
-int lx(register unsigned int ltindex, register int age)
+int lx(register unsigned ltindex, register unsigned age)
 {
-    if (age > MAXAGE)
-	return 0;
-    else {
-	if (ltlist[ltindex][0] == 0)
-	    makeLifeTable(lifetables[ltindex], ltlist[ltindex]);
-	return ltlist[ltindex][age];
-    }
+	if (age > MAXAGE) return 0;
+	else {
+		if (0 == ltlist[ltindex][0])
+			makeLifeTable(lifetables[ltindex], ltlist[ltindex]);
+		return ltlist[ltindex][age];
+	}
 }
 
-static void makeLifeTable(const char *name, int *clt)
+static void makeLifeTable(const char name[static restrict 1], int clt[static 1])
 { 
-    char line[LENGTHLINE];
-    FILE *lt;
-    char *lp = line;
-    char path[PATH_MAX]; 
-    snprintf(path, sizeof(path), "%s%s", PATH, name);
+	char path[PATH_MAX]; 
+	char line[LENGTHLINE];
+	FILE *lt = 0;
+	char *lp = 0;
 
-    if (0 == (lt = fopen(path, "r")))
-	errExit("[%s] can't open %s\n", __func__, path);
+	snprintf(path, sizeof(path), "%s%s", PATH, name);
 
-    while((fgets(line, LENGTHLINE, lt))) {
-	lp = line;
-	while (',' != *lp && '\0' != *lp)
-	    lp++;
-	if ('\0' == *lp)
-	    errExit("[%s] %s does not contain a ',', "
-			    "so how does it separate age from value?\n", 
-			    __func__, line);
+	if (0 == (lt = fopen(path, "r")))
+		errExit("[%s] can't open %s\n", __func__, path);
 
-	*clt++ = atoi(++lp);
-    }
+	while((fgets(line, LENGTHLINE, lt))) {
+		lp = line;
+		while (',' != *lp && '\0' != *lp) lp++;
 
-    fclose(lt);
+		if ('\0' == *lp)
+			errExit("[%s] %s does not contain a ',', so how does "
+					"it separate age from value?\n",
+					__func__, line);
+
+		*clt++ = atoi(++lp);
+	}
+
+	fclose(lt);
 }

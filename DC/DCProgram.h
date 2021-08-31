@@ -47,6 +47,7 @@ enum inscomb {UKMS, UKZT, UKMT, MIXED};
 // projected unit credit without future premiums
 /* projected unit credit with future premiums,
    one year later (for service cost)*/
+// don't alter this order!!
 enum {PUC, TUC, TUCPS_1, METHOD_AMOUNT};
 // Assets $115
 // Assets Mathematical Reserves
@@ -100,14 +101,14 @@ typedef struct {
 
 typedef struct {
 	Hashtable *Data; //Data for an affiliate is in the form of a hashtable
-	unsigned int id; /* Used to print warning/error messages to user with info */
+	unsigned id; /* Used to print warning/error messages to user with info */
 
 	//---Variable Declarations---  
 	char *key; // KEY in data
 	char *regl; // REGLEMENT
 	char *name; // NAME
 	char *contract; // CONTRACT number
-	unsigned short status; /* 0000 0000 0000 0111 means single male active member and 
+	unsigned status; /* 0000 0000 0000 0111 means single male active member and 
 				  active contract */
 	Date *DOB; // date of birth
 	Date *DOE; // date of entry
@@ -121,8 +122,8 @@ typedef struct {
 	double PG; // pensioengrondslag (I have never needed this)
 	double PT; // part time
 	double NRA; // normal retirement age
-	unsigned short kids; // amount of kids
-	unsigned short tariff; // UKMS, UKZT, UKMT, MIXED
+	unsigned kids; // amount of kids
+	unsigned tariff; // UKMS, UKZT, UKMT, MIXED
 	double KO; // death lump sum (kapitaal overlijden)
 	double annINV; // annuity in case of invalidity
 	double contrINV; // contribution for invalidity insurance
@@ -155,7 +156,7 @@ typedef struct {
 	char *GRDGR;
 	char *plan;
 	double baranc; // baremic ancienity
-	unsigned short extra; /* 0000 0000 0000 0011
+	unsigned extra; /* 0000 0000 0000 0011
 				 means prepensioner whose salary we increase at k = -1 */
 
 	//---Variable definitions---    
@@ -209,7 +210,7 @@ typedef struct {
 	char **keys; // This points to the array of keys in excel
 	xmlNodePtr keynode;
 	char datasheet[256]; // This is the sheet where the data lies
-	unsigned int sheet; // This is the index of the sheet where the data lies
+	unsigned sheet; // This is the index of the sheet where the data lies
 	XLfile *xl;
 	Hashtable **Data; // This will be set using createData function below
 	int membercnt;
@@ -238,11 +239,11 @@ typedef struct {
 	double (*retx)(const CurrentMember *cm, int k); // Turnover rate with deferred payment
 
 	//Assumptions that usually won't change from year to year
-	unsigned short incrSalk0; // determine whether sal gets increased at k = 0 
-	unsigned short incrSalk1; // determine whether sal gets increased at k = 1 
+	unsigned incrSalk0; // determine whether sal gets increased at k = 0 
+	unsigned incrSalk1; // determine whether sal gets increased at k = 1 
 	double TRM_PercDef; /* Percentage of deferred members that will keep their
 			       reserves with the current employer at termination (usually equals 1)*/
-	unsigned short method; // Methodology, we use bits here
+	unsigned method; // Methodology, we use bits here
 	double taxes; /* used for the Service cost because the taxes shouldn't be included
 			 in the admin cost (usually equal to 0.1326 */
 } Assumptions;
@@ -264,7 +265,7 @@ static const char *runnames[] = {"Reported Last Year", "Update Inflation",
 	"Sensitivity Duration", "Sensitivity Discount Rate -", "Sensitivity Discount Rate +", 
 	"Sensitivity Inflation -", "Sensitivity Inflation +", "Sensitivity Salary Increase -", 
 	"Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
-unsigned short currrun; // Current run
+unsigned currrun; // Current run
 void setassumptions(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
 double salaryscale(const CurrentMember *cm, int k);
 double calcA(const CurrentMember *cm, int k);
@@ -276,7 +277,7 @@ double retx(const CurrentMember *cm, int k);
 
 //---Tariff Structure---
 typedef struct {
-	unsigned int lt; /* there is an array of strings containing the names of lifetables. 
+	unsigned lt; /* there is an array of strings containing the names of lifetables. 
 			    I reference the array elements by using the index defined with an 
 			    enum lifetables. */
 	double i; // Insurance rate (This changes for prolongation table for example)
@@ -317,6 +318,6 @@ void countMembers(DataSet *ds);
 
 //---Results Functions---
 int printresults(DataSet *ds);
-int printtc(DataSet *ds, unsigned int tc); // tc = test case
+int printtc(DataSet *ds, unsigned tc); // tc = test case
 
 #endif

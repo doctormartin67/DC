@@ -5,7 +5,7 @@
 #include "errorexit.h"
 #include "XL.h"
 
-static void clean_double_keys(char **keys);
+static void clean_double_keys(char *keys[static 1]);
 static unsigned countdigits(unsigned d);
 
 const char *const colnames[KEYS_AMOUNT] = {
@@ -34,11 +34,11 @@ static int colmissing[KEYS_AMOUNT];
 
 static Validator *val;
 
-DataSet *createDS(Validator *v, UserInput *UI)
+DataSet *createDS(Validator v[static 1], UserInput UI[static 1])
 {
 	const char *s = UI->fname;
-	Hashtable **ht;
-	DataSet *ds = jalloc(1, sizeof(DataSet));
+	Hashtable **ht = 0;
+	DataSet *ds = jalloc(1, sizeof(*ds));
 	*ds = (DataSet){0};
 
 	for (int i = 0; i < KEYS_AMOUNT; i++)
@@ -65,7 +65,7 @@ DataSet *createDS(Validator *v, UserInput *UI)
 	countMembers(ds);
 	createData(ds);
 
-	ds->cm = jalloc(ds->membercnt, sizeof(CurrentMember));
+	ds->cm = jalloc(ds->membercnt, sizeof(*ds->cm));
 	ht = ds->Data;
 
 	printf("Setting all the values for the affiliates...\n");
@@ -81,7 +81,7 @@ DataSet *createDS(Validator *v, UserInput *UI)
 }
 
 // initialise all variables from data (hashtable)
-void createCM(CurrentMember *cm, Hashtable *ht)
+void createCM(CurrentMember cm[static 1], Hashtable ht[static 1])
 {
 	cm->Data = ht;
 	cm->key = getcmval(cm, KEY, -1, -1);
@@ -93,18 +93,18 @@ void createCM(CurrentMember *cm, Hashtable *ht)
 	if (strcmp(getcmval(cm, ACTIVECONTRACT, -1, -1), "1") == 0)  cm->status += ACTCON;
 	if (strcmp(getcmval(cm, SEX, -1, -1), "1") == 0)  cm->status += MALE;
 	if (strcmp(getcmval(cm, MS, -1, -1), "M") == 0)  cm->status += MARRIED;
-	cm->DOB = newDate((unsigned int)atoi(getcmval(cm, DOB, -1, -1)), 0, 0, 0);
-	cm->DOE = newDate((unsigned int)atoi(getcmval(cm, DOE, -1, -1)), 0, 0, 0);
-	cm->DOL = newDate((unsigned int)atoi(getcmval(cm, DOL, -1, -1)), 0, 0, 0);
-	cm->DOS = newDate((unsigned int)atoi(getcmval(cm, DOS, -1, -1)), 0, 0, 0);
-	cm->DOA = newDate((unsigned int)atoi(getcmval(cm, DOA, -1, -1)), 0, 0, 0);
-	cm->DOR = newDate((unsigned int)atoi(getcmval(cm, DOR, -1, -1)), 0, 0, 0);
+	cm->DOB = newDate((unsigned)atoi(getcmval(cm, DOB, -1, -1)), 0, 0, 0);
+	cm->DOE = newDate((unsigned)atoi(getcmval(cm, DOE, -1, -1)), 0, 0, 0);
+	cm->DOL = newDate((unsigned)atoi(getcmval(cm, DOL, -1, -1)), 0, 0, 0);
+	cm->DOS = newDate((unsigned)atoi(getcmval(cm, DOS, -1, -1)), 0, 0, 0);
+	cm->DOA = newDate((unsigned)atoi(getcmval(cm, DOA, -1, -1)), 0, 0, 0);
+	cm->DOR = newDate((unsigned)atoi(getcmval(cm, DOR, -1, -1)), 0, 0, 0);
 	cm->category = getcmval(cm, CATEGORIE, -1, -1);
 	cm->sal[0] = atof(getcmval(cm, SAL, -1, -1));
 	cm->PG = atof(getcmval(cm, PG, -1, -1));
 	cm->PT = atof(getcmval(cm, PT, -1, -1));
 	cm->NRA = atof(getcmval(cm, NORMRA, -1, -1));
-	cm->kids = (unsigned short)atoi(getcmval(cm, ENF, -1, -1));
+	cm->kids = (unsigned)atoi(getcmval(cm, ENF, -1, -1));
 	cm->tariff = 0;
 	if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKMS") == 0)  cm->tariff = UKMS;
 	if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKZT") == 0)  cm->tariff = UKZT;
@@ -120,8 +120,7 @@ void createCM(CurrentMember *cm, Hashtable *ht)
 	cm->ART24[PUC][EE][ART24GEN1][0] = atof(getcmval(cm, ART24_C_GEN1, -1, -1));
 	cm->ART24[PUC][EE][ART24GEN2][0] = atof(getcmval(cm, ART24_C_GEN2, -1, -1));
 	/* PUC = TUC = TUCPS_1 */
-	for (int j = 1; j < 3; j++)
-	{
+	for (int j = 1; j < METHOD_AMOUNT; j++) {
 		cm->ART24[j][ER][ART24GEN1][0] = cm->ART24[PUC][ER][ART24GEN1][0];
 		cm->ART24[j][ER][ART24GEN2][0] = cm->ART24[PUC][ER][ART24GEN2][0];
 		cm->ART24[j][EE][ART24GEN1][0] = cm->ART24[PUC][EE][ART24GEN1][0];
@@ -134,14 +133,12 @@ void createCM(CurrentMember *cm, Hashtable *ht)
 	setGenMatrix(cm, cm->CAP, CAP);
 	setGenMatrix(cm, cm->CAPPS, CAPPS);
 	setGenMatrix(cm, cm->CAPDTH, CAPDTH);
-	for (int k = 0; k < TUCPS_1 + 1; k++)
-	{
+	for (int k = 0; k < METHOD_AMOUNT; k++) {
 		setGenMatrix(cm, cm->RES[k], RES);
 		setGenMatrix(cm, cm->RESPS[k], RESPS);
 		setGenMatrix(cm, cm->REDCAP[k], CAPRED);
 	}
-	for (int j = 0; j < MAXGEN; j++)
-	{
+	for (int j = 0; j < MAXGEN; j++) {
 		cm->TAUX[ER][j] = atof(getcmval(cm, TAUX, ER, j + 1));
 		cm->TAUX[EE][j] = atof(getcmval(cm, TAUX, EE, j + 1));      
 	}
@@ -150,8 +147,7 @@ void createCM(CurrentMember *cm, Hashtable *ht)
 	cm->DELTACAP[ER][0] = atof(getcmval(cm, DELTA_CAP_A_GEN1, -1, -1));
 	cm->DELTACAP[EE][0] = atof(getcmval(cm, DELTA_CAP_C_GEN1, -1, -1));
 	cm->X10 = atof(getcmval(cm, X10, -1, -1));
-	if (cm->tariff == MIXED && cm->X10 == 0)
-	{
+	if (cm->tariff == MIXED && cm->X10 == 0) {
 		printf("Warning: X/10 equals zero for %s but he has a MIXED contract\n", cm->key);
 		printf("X/10 will be taken as 1 by default.\n");
 		cm->X10 = 1;
@@ -172,17 +168,17 @@ void createCM(CurrentMember *cm, Hashtable *ht)
 	if (strcmp(getcmval(cm, PREP, -1, -1), "1") == 0)  cm->extra += CCRA;
 }
 
-double gensum(const GenMatrix amount[EREE_AMOUNT], unsigned EREE, unsigned k)
+double gensum(const GenMatrix amount[static EREE_AMOUNT],
+		unsigned EREE, unsigned k)
 {
 	double sum = 0;
 
-	for (int i = 0; i < MAXGEN; i++)
-		sum += amount[EREE][i][k];
+	for (int i = 0; i < MAXGEN; i++) sum += amount[EREE][i][k];
 
 	return sum;
 }
 
-int setkey(DataSet *ds)
+int setkey(DataSet ds[static 1])
 {
 	XLfile *xl = ds->xl;
 	char *c = 0;
@@ -238,7 +234,7 @@ int setkey(DataSet *ds)
 	}
 }
 
-void countMembers(DataSet *ds)
+void countMembers(DataSet ds[static 1])
 {
 	char *row = 0;
 	int r = ds->keyrow;
@@ -263,7 +259,7 @@ void countMembers(DataSet *ds)
    hashtables, where we will store all the cells for our data. We will 
    reference cell O11 as an example going further.*/
 
-void createData(DataSet *ds)
+void createData(DataSet ds[static 1])
 {
 	unsigned countkeys = 0;
 	unsigned irow = ds->keyrow;
@@ -281,13 +277,13 @@ void createData(DataSet *ds)
 	irow++;
 	snprintf(dataCell, sizeof(dataCell), "%s%u", column, irow);
 
-	ds->Data = jalloc(ds->membercnt, sizeof(Hashtable *));
+	ds->Data = jalloc(ds->membercnt, sizeof(*ds->Data));
 
 	for (int k = 0; k < ds->membercnt; k++)
 		// https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-8.html
 		ds->Data[k] = newHashtable(233, 0); // 179 * 1.3 = 232.7 -> 233 is a prime
 
-	ds->keys = jalloc(KEYS_AMOUNT, sizeof(char *));
+	ds->keys = jalloc(KEYS_AMOUNT, sizeof(*ds->keys));
 	pkey = ds->keys;
 	*pkey = cell(ds->xl, ds->sheet, keyCell);
 
@@ -340,7 +336,7 @@ void createData(DataSet *ds)
 	printf("Creation complete\n");
 }
 
-static void clean_double_keys(char **keys)
+static void clean_double_keys(char *keys[static 1])
 {
 	size_t len = 0;
 	unsigned cnt = 1;
@@ -352,7 +348,7 @@ static void clean_double_keys(char **keys)
 				printf("Warning: %s is a double\n", *pkey);
 				cnt++;
 				len = strlen(*pkey) + countdigits(cnt) + 1;
-				newkey = jalloc(len, sizeof(char));
+				newkey = jalloc(len, sizeof(*newkey));
 				snprintf(newkey, len, "%s%u", *pkey, cnt);
 				free(*pkey);
 				*pkey = newkey;
@@ -374,6 +370,7 @@ static unsigned countdigits(unsigned d)
 	return cnt;
 }
 
+// THIS FUNCTION IS HORRIBLY CODED, NEEDS UPDATED!!!
 int printresults(DataSet *ds)
 {
 	char results[PATH_MAX];
@@ -461,40 +458,40 @@ int printresults(DataSet *ds)
 		worksheet_write_number(worksheet, row+1, col+index++, salaryscale(cm, 1), NULL);
 		index++;
 
-		double DBORETPUCPAR = sum(cm->DBORET[PUC][PAR115], MAXPROJ);
-		double DBORETPUCRES = sum(cm->DBORET[PUC][MATHRES], MAXPROJ);
-		double DBORETTUCPAR = sum(cm->DBORET[TUC][PAR115], MAXPROJ);
-		double DBORETTUCRES = sum(cm->DBORET[TUC][MATHRES], MAXPROJ);
+		double DBORETPUCPAR = sum(MAXPROJ, cm->DBORET[PUC][PAR115]);
+		double DBORETPUCRES = sum(MAXPROJ, cm->DBORET[PUC][MATHRES]);
+		double DBORETTUCPAR = sum(MAXPROJ, cm->DBORET[TUC][PAR115]);
+		double DBORETTUCRES = sum(MAXPROJ, cm->DBORET[TUC][MATHRES]);
 
-		double NCRETPUCPAR = sum(cm->NCRET[PUC][PAR115], MAXPROJ);
-		double NCRETPUCRES = sum(cm->NCRET[PUC][MATHRES], MAXPROJ);
-		double NCRETTUCPAR = sum(cm->NCRET[TUC][PAR115], MAXPROJ);
-		double NCRETTUCRES = sum(cm->NCRET[TUC][MATHRES], MAXPROJ);
+		double NCRETPUCPAR = sum(MAXPROJ, cm->NCRET[PUC][PAR115]);
+		double NCRETPUCRES = sum(MAXPROJ, cm->NCRET[PUC][MATHRES]);
+		double NCRETTUCPAR = sum(MAXPROJ, cm->NCRET[TUC][PAR115]);
+		double NCRETTUCRES = sum(MAXPROJ, cm->NCRET[TUC][MATHRES]);
 
-		double ICNCRETPUCPAR = sum(cm->ICNCRET[PUC][PAR115], MAXPROJ);
-		double ICNCRETPUCRES = sum(cm->ICNCRET[PUC][MATHRES], MAXPROJ);
-		double ICNCRETTUCPAR = sum(cm->ICNCRET[TUC][PAR115], MAXPROJ);
-		double ICNCRETTUCRES = sum(cm->ICNCRET[TUC][MATHRES], MAXPROJ);
+		double ICNCRETPUCPAR = sum(MAXPROJ, cm->ICNCRET[PUC][PAR115]);
+		double ICNCRETPUCRES = sum(MAXPROJ, cm->ICNCRET[PUC][MATHRES]);
+		double ICNCRETTUCPAR = sum(MAXPROJ, cm->ICNCRET[TUC][PAR115]);
+		double ICNCRETTUCRES = sum(MAXPROJ, cm->ICNCRET[TUC][MATHRES]);
 
 		double ExpERContr = 
 			max(2, 0.0, min(2, 1.0, NRA(cm, 1) - cm->age[1])) * gensum(cm->PREMIUM, ER, 1);
 		double ExpEEContr = 
 			max(2, 0.0, min(2, 1.0, NRA(cm, 1) - cm->age[1])) * gensum(cm->PREMIUM, EE, 1);
 
-		double DBODTHRESPART = sum(cm->DBODTHRESPart, MAXPROJ);
-		double DBODTHRiskPART = sum(cm->DBODTHRiskPart, MAXPROJ);
-		double NCDTHRESPART = sum(cm->NCDTHRESPart, MAXPROJ);
-		double NCDTHRiskPART = sum(cm->NCDTHRiskPart, MAXPROJ);
+		double DBODTHRESPART = sum(MAXPROJ, cm->DBODTHRESPart);
+		double DBODTHRiskPART = sum(MAXPROJ, cm->DBODTHRiskPart);
+		double NCDTHRESPART = sum(MAXPROJ, cm->NCDTHRESPart);
+		double NCDTHRiskPART = sum(MAXPROJ, cm->NCDTHRiskPart);
 
-		double assetsPAR115 = sum(cm->assets[PAR115], MAXPROJ);
-		double assetsPAR113 = sum(cm->assets[PAR113], MAXPROJ);
-		double assetsRES = sum(cm->assets[MATHRES], MAXPROJ);
+		double assetsPAR115 = sum(MAXPROJ, cm->assets[PAR115]);
+		double assetsPAR113 = sum(MAXPROJ, cm->assets[PAR113]);
+		double assetsRES = sum(MAXPROJ, cm->assets[MATHRES]);
 
 		double ART24TOT = cm->ART24[PUC][ER][ART24GEN1][1] + cm->ART24[PUC][ER][ART24GEN2][1] +
 			cm->ART24[PUC][EE][ART24GEN1][1] + cm->ART24[PUC][EE][ART24GEN2][1];
 
-		double ICNCDTHRESPART = sum(cm->ICNCDTHRESPart, MAXPROJ); 
-		double ICNCDTHRiskPART = sum(cm->ICNCDTHRiskPart, MAXPROJ); 
+		double ICNCDTHRESPART = sum(MAXPROJ, cm->ICNCDTHRESPart); 
+		double ICNCDTHRiskPART = sum(MAXPROJ, cm->ICNCDTHRiskPart); 
 
 		/* Liability */
 		worksheet_write_number(worksheet, row+1, col+index++, DBORETPUCPAR, NULL);
@@ -588,7 +585,7 @@ int printresults(DataSet *ds)
 	return workbook_close(workbook);
 }
 
-int printtc(DataSet *ds, unsigned int tc)
+int printtc(DataSet *ds, unsigned tc)
 {
 	char results[PATH_MAX];
 	char temp[64]; // to store temporary strings for field names and such.
@@ -881,7 +878,7 @@ int printtc(DataSet *ds, unsigned int tc)
 	return workbook_close(workbook);
 }
 
-char *getcmval(CurrentMember *cm, DataColumn dc, int EREE, int gen)
+char *getcmval(CurrentMember cm[static 1], DataColumn dc, int EREE, int gen)
 {
 	char value[BUFSIZ];
 
@@ -902,11 +899,12 @@ char *getcmval(CurrentMember *cm, DataColumn dc, int EREE, int gen)
 }
 
 // Example if cm->PREMIUM then s = PREMIUM and we loop through PREMIUM_EREE_GENj
-void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn dc)
+void setGenMatrix(CurrentMember cm[static 1],
+		GenMatrix var[static EREE_AMOUNT], DataColumn dc)
 {
 	for (int j = 0; j < MAXGEN; j++)
-		for (int EREE = 0; EREE < 2; EREE++)
-			var[EREE][j][0] = atof(getcmval(cm, dc, EREE, j + 1));
+		for (int i = 0; i < EREE_AMOUNT; i++)
+			var[i][j][0] = atof(getcmval(cm, dc, i, j + 1));
 }
 
 /* --- free memory functions --- */
@@ -944,116 +942,116 @@ void freeCM(CurrentMember *cm)
 	free(cm->DOC);
 }
 
+/* 
+ * All missing columns are set to a WARNING,
+ * then the important ones are set to ERROR
+ */
 void validateColumns()
 {
-	/* All missing columns are set to a WARNING, then the important ones are set to ERROR */
-	int cnt = 0;
-	for (int i = 0; i < KEYS_AMOUNT; i++)
+	unsigned  cnt = 0;
+
+	for (unsigned i = 0; i < KEYS_AMOUNT; i++)
 		if (colmissing[i])
-			updateValidation(val, WARNING, 
-					"Column [%s] missing, all values set to 0", colnames[i]);
+			updateValidation(val, WARNING, "Column [%s] missing, "
+					"all values set to 0", colnames[i]);
 
-	if (colmissing[STATUS])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing, (ACT/DEF)", colnames[STATUS]);
+	if (colmissing[STATUS]) {
+		updateValidation(val, ERROR, "Column [%s] missing, (ACT/DEF)",
+				colnames[STATUS]);
 		cnt++;
 	}
 
-	if (colmissing[SEX])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing, (1/2)", colnames[SEX]);
+	if (colmissing[SEX]) {
+		updateValidation(val, ERROR, "Column [%s] missing, (1/2)",
+				colnames[SEX]);
 		cnt++;
 	}
 
-	if (colmissing[DOB])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing, (Date of birth)", colnames[DOB]);
+	if (colmissing[DOB]) {
+		updateValidation(val, ERROR, "Column [%s] missing, "
+				"(Date of birth)", colnames[DOB]);
 		cnt++;
 	}
 
-	if (colmissing[DOS])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing, (Date of situation)", colnames[DOS]);
+	if (colmissing[DOS]) {
+		updateValidation(val, ERROR, "Column [%s] missing, "
+				"(Date of situation)", colnames[DOS]);
 		cnt++;
 	}
 
-	if (colmissing[DOA])
-	{
-		updateValidation(val, ERROR, 
-				"Column [%s] missing, (Date of affiliation)", colnames[DOA]);
+	if (colmissing[DOA]) {
+		updateValidation(val, ERROR, "Column [%s] missing, "
+				"(Date of affiliation)", colnames[DOA]);
 		cnt++;
 	}
 
-	if (colmissing[DOR])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing, (Date of retirement)", colnames[DOR]);
+	if (colmissing[DOR]) {
+		updateValidation(val, ERROR, "Column [%s] missing, "
+				"(Date of retirement)", colnames[DOR]);
 		cnt++;
 	}
 
-	if (colmissing[SAL])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing, (salary)", colnames[SAL]);
+	if (colmissing[SAL]) {
+		updateValidation(val, ERROR, "Column [%s] missing, (salary)",
+				colnames[SAL]);
 		cnt++;
 	}
 
-	if (colmissing[PT])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing, (part time)", colnames[PT]);
+	if (colmissing[PT]) {
+		updateValidation(val, ERROR, "Column [%s] missing, "
+				"(part time)", colnames[PT]);
 		cnt++;
 	}
 
-	if (colmissing[NORMRA])
-	{
-		updateValidation(val, ERROR, 
-				"Column [%s] missing, (normal retirement age)", colnames[NORMRA]);
+	if (colmissing[NORMRA]) {
+		updateValidation(val, ERROR, "Column [%s] missing, "
+				"(normal retirement age)", colnames[NORMRA]);
 		cnt++;
 	}
 
-	if (colmissing[TARIEF])
-	{
-		updateValidation(val, ERROR, 
-				"Column [%s] missing, (UKMS/UKZT/MIXED/UKMT)", colnames[TARIEF]);
+	if (colmissing[TARIEF]) {
+		updateValidation(val, ERROR, "Column [%s] missing, "
+				"(UKMS/UKZT/MIXED/UKMT)", colnames[TARIEF]);
 		cnt++;
 	}
 
-	if (colmissing[ART24_A_GEN1])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing", colnames[ART24_A_GEN1]);
+	if (colmissing[ART24_A_GEN1]) {
+		updateValidation(val, ERROR, "Column [%s] missing",
+				colnames[ART24_A_GEN1]);
 		cnt++;
 	}
 
-	if (colmissing[ART24_A_GEN2])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing", colnames[ART24_A_GEN2]);
+	if (colmissing[ART24_A_GEN2]) {
+		updateValidation(val, ERROR, "Column [%s] missing",
+				colnames[ART24_A_GEN2]);
 		cnt++;
 	}
 
-	if (colmissing[ART24_C_GEN1])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing", colnames[ART24_C_GEN1]);
+	if (colmissing[ART24_C_GEN1]) {
+		updateValidation(val, ERROR, "Column [%s] missing",
+				colnames[ART24_C_GEN1]);
 		cnt++;
 	}
 
-	if (colmissing[ART24_C_GEN2])
-	{
-		updateValidation(val, ERROR, "Column [%s] missing", colnames[ART24_C_GEN2]);
+	if (colmissing[ART24_C_GEN2]) {
+		updateValidation(val, ERROR, "Column [%s] missing",
+				colnames[ART24_C_GEN2]);
 		cnt++;
 	}
 
-	if (colmissing[RES])
-	{
-		updateValidation(val, ERROR, 
-				"One or more of the generational columns for [%s] are missing", 
-				colnames[RES]);
+	if (colmissing[RES]) {
+		updateValidation(val, ERROR, "One or more of the generational "
+				"columns for [%s] are missing", colnames[RES]);
 		cnt++;
 	}
 
 	/* after 10 missing columns an error message in included with a suggestion that the 
 	   wrong cell was chosen */
 	if (cnt > 10)
-		updateValidation(val, ERROR, 
-				"\nMany columns missing, possible reasons:\n"
-				"- incorrect cell chosen under the \"Data\" section\n"
+		updateValidation(val, ERROR, "\nMany columns missing, "
+				"possible reasons:\n"
+				"- incorrect cell chosen under the "
+				"\"Data\" section\n"
 				"- there is an empty column name in the data, "
 				"the search for columns will end there");
 }
@@ -1063,8 +1061,8 @@ void validateColumns()
  * because not all of them will be used in the program, I chose the most
  * important ones to check, the others are the responsibility of the user
  */
-void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
-		const char *input)
+void validateInput(DataColumn dc, const CurrentMember cm[static 1],
+		const char key[static 1], const char input[static 1])
 {
 	const DataColumn floats[] = {
 		SAL, PT, NORMRA, ART24_A_GEN1, ART24_A_GEN2, ART24_C_GEN1,
@@ -1098,7 +1096,7 @@ void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
 			if (0 == temp) {
 				update += invaliddate;
 			} else {
-				//free(temp);
+				free(temp);
 			}
 			break;
 		}
@@ -1141,37 +1139,37 @@ void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
 }
 
 /* --- Assumptions functions --- */
-double salaryscale(const CurrentMember *cm, int k)
+double salaryscale(const CurrentMember cm[static 1], int k)
 {
 	return (*ass.SS)(cm, k);
 }
 
-double calcA(const CurrentMember *cm, int k)
+double calcA(const CurrentMember cm[static 1], int k)
 {
 	return (*ass.calcA)(cm, k);
 }
 
-double calcC(const CurrentMember *cm, int k)
+double calcC(const CurrentMember cm[static 1], int k)
 {
 	return (*ass.calcC)(cm, k);
 }
 
-double calcDTH(const CurrentMember *cm, int k)
+double calcDTH(const CurrentMember cm[static 1], int k)
 {
 	return (*ass.calcDTH)(cm, k);
 }
 
-double NRA(const CurrentMember *cm, int k)
+double NRA(const CurrentMember cm[static 1], int k)
 {
 	return (*ass.NRA)(cm, k);
 }
 
-double wxdef(const CurrentMember *cm, int k)
+double wxdef(const CurrentMember cm[static 1], int k)
 {
 	return (*ass.wxdef)(cm, k);
 }
 
-double retx(const CurrentMember *cm, int k)
+double retx(const CurrentMember cm[static 1], int k)
 {
 	return (*ass.retx)(cm, k);
 }

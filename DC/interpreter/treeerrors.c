@@ -3,6 +3,11 @@
  * tree.
  */
 
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include "libraryheader.h"
+#include "errorexit.h"
 #include "treeerrors.h"
 
 /* 
@@ -53,26 +58,26 @@ int isvalidTree(const char *t)
 	es = strstr(t, ES);
 	x = strstr(t, X);
 
-	if (NULL == x) {
+	if (0 == x) {
 		setterrno(XERR);	
 		return 0;
 	}
 	/* tree of the form 'x = *' is valid */
-	if (NULL == c && NULL == sc && NULL == es) {
+	if (0 == c && 0 == sc && 0 == es) {
 		return 1;
-	} else if (NULL == sc && NULL != es) {
+	} else if (0 == sc && 0 != es) {
 		setterrno(ESERR);
 		return 0;
-	} else if (NULL == sc && NULL != c) {
+	} else if (0 == sc && 0 != c) {
 		setterrno(CERR);
 		return 0;
-	} else if (NULL == c) {
+	} else if (0 == c) {
 		setterrno(NOCERR);
 		return 0;
-	} else if (NULL == es) {
+	} else if (0 == es) {
 		setterrno(SCERR);
 		return 0;
-	} else if (NULL != c && NULL != sc && NULL != es) {
+	} else if (0 != c && 0 != sc && 0 != es) {
 		if (c < sc) {
 			setterrno(CERR);
 			return 0;
@@ -178,7 +183,7 @@ int isvalidcond(CaseTree *ct)
 					setterrno(ISERR);
 					return 0;
 				}
-			} else if (NULL != to) { /* Case [0-9]+ To [0-9]+ */
+			} else if (0 != to) { /* Case [0-9]+ To [0-9]+ */
 				if (!isdigit(*pt)) {
 					setterrno(TOERR);
 					return 0;
@@ -225,7 +230,7 @@ int isvalidcond(CaseTree *ct)
 					setterrno(ELSERR);
 					return 0; 
 				}
-			} else if (NULL == to) {
+			} else if (0 == to) {
 				while (isdigit(*pt)) pt++;
 
 				while (isgarbage(*pt)) pt++;
@@ -237,7 +242,7 @@ int isvalidcond(CaseTree *ct)
 			} else errExit("[%s] impossible condition reached\n", 
 					__func__);
 
-			pt = strtok(NULL, ",");
+			pt = strtok(0, ",");
 		}
 	} else if (cmpstr == cf) {
 		while (*s) {

@@ -20,6 +20,6 @@ typedef struct {
 extern const char *const validMsg[ERR_AMOUNT];
 
 void updateValidation(Validator *val, Status status, const char *format, ...);
-char *setMsgbuf(Validator *val);
+char *setMsgbuf(const Validator *val);
 
 #endif

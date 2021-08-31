@@ -6,202 +6,210 @@
 
 const double eps = 0.0000001;
 
-static void updateART24ACT(CurrentMember *cm, int k);
-static void updateART24reserves(unsigned method, CurrentMember *cm,
+static void updateART24ACT(CurrentMember cm[static restrict 1], int k);
+static void updateART24reserves(unsigned method,
+		CurrentMember cm[static restrict 1],
 		unsigned EREE, unsigned ART24gen, int k);
-static double get_premium_method(unsigned method, CurrentMember *cm,
-		unsigned EREE, int k);
-static void updateART24DEF(CurrentMember *cm, int k);
-static double getDBO(const CurrentMember *cm, int k, unsigned method,
-		unsigned assets, unsigned DEFIMM, unsigned PBOTBO, 
+static double get_premium_method(unsigned method,
+		CurrentMember cm[static restrict 1], unsigned EREE, int k);
+static void updateART24DEF(CurrentMember cm[static 1], int k);
+static double getDBO(const CurrentMember cm[static restrict 1], int k,
+		unsigned method, unsigned assets, unsigned DEFIMM,
+		unsigned PBOTBO,
 		const double ART24TOT[const static METHOD_AMOUNT],
 		const double RESTOT[const static METHOD_AMOUNT],
 		const double REDCAPTOT[const static METHOD_AMOUNT]);
-static double getAssets(const CurrentMember *cm, int k, unsigned assets,
-		unsigned DEFIMM,
+static double getAssets(const CurrentMember cm[static restrict 1], int k,
+		unsigned assets, unsigned DEFIMM,
 		const double RESTOT[const static METHOD_AMOUNT],
 		const double REDCAPTOT[const static METHOD_AMOUNT]);
-static void updateRESCAP(CurrentMember *cm, int k);
-static void updateRESCAPPS(CurrentMember *cm, int k);
-static void updateREDCAPPUC(CurrentMember *cm, int k);
-static void updateRESTUC(CurrentMember *cm, int k);
-static void updateREDCAPTUC(CurrentMember *cm, int k);
-static void updateRESTUCPS_1(CurrentMember *cm, int k);
-static void updateREDCAPTUCPS_1(CurrentMember *cm, int k);
+static void updateRESCAP(CurrentMember cm[static restrict 1], int k);
+static void updateRESCAPPS(CurrentMember cm[static restrict 1], int k);
+static void updateREDCAPPUC(CurrentMember cm[static restrict 1], int k);
+static void updateRESTUC(CurrentMember cm[static restrict 1], int k);
+static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k);
+static void updateRESTUCPS_1(CurrentMember cm[static restrict 1], int k);
+static void updateREDCAPTUCPS_1(CurrentMember cm[static restrict 1], int k);
 
-double npx(register unsigned int lt, 
-		register double ageX, register double ageXn, register int corr){ //lt = life table
-	/* generally the rule is npx = lx(ageXn)/lx(ageX) but because lx has
-	   an integer value as its input we need to interpolate both these
-	   values
+/*
+ * inline functions
+ */
+double npx(register unsigned lt, register double ageX, register double ageXn,
+		register int corr) PURE ;
+double nEx(register unsigned lt, register double i, register double charge,
+		register double ageX, register double ageXn,
+		register int corr) PURE ;
+
+/*
+ * calculates the annuity from ageX to ageXn given the term, f.e. monthly,
+ * with a given life table lt, an interest rate i, a cost on the interest rate
+ * charge, whether the payment are pre- or post numerando and with an age
+ * correction. 
+ * The function saves the calculated values in a hashtable so that
+ * values already calculated can be searched in the table.
+ */
+double axn(register unsigned lt, register double i, register double charge, 
+		register unsigned prepost, register unsigned term,
+		register double ageX, register double ageXn, register int corr)
+{
+	static Hashtable *axntable = 0; 
+	List *h = 0;
+	char key[256];
+	char valuestr[128];
+	register int payments = 0;
+	register double ageXk = 0.0;
+	register double value = 0.0;
+
+	snprintf(key, sizeof(key), "%d%f%f%d%d%f%f%d", lt, i, charge, prepost,
+			term, ageX, ageXn, corr); 
+
+	/* 
+	 * took 5 * 3 * (12 * 45)^2 * 2 as a rough estimate of the amount of
+	 * combinations for keys then times 1.3 and then the next prime number
 	 */
-	register double ip1; //interpolation value 1
-	register double ip2; //interpolation value 2
-	register int lxX; // alive at ageX
-	register int lxX1; // alive at ageX + 1
-	register int lxXn; // alive at ageXn 
-	register int lxXn1; // alive at ageXn + 1 
-	ageX += corr;
-	ageXn += corr;
-	ageX = fmax(0, ageX);
-	ageXn = fmax(0, ageXn);
-	lxX = lx(lt, ageX);
-	lxX1 = lx(lt, ageX + 1);
-	lxXn = lx(lt, ageXn);
-	lxXn1 = lx(lt, ageXn + 1);
+	if (0 == axntable) axntable = newHashtable(11372401, 1);
 
-	ip1 = lxX - (ageX - floor(ageX)) * (lxX - lxX1);
-	ip2 = lxXn - (ageXn - floor(ageXn)) * (lxXn - lxXn1);
-
-	return ip2/ip1;
-}
-
-double nEx(unsigned int lt, double i, double charge, double ageX, double ageXn, int corr){
-	double im = (1+i)/(1+charge) - 1;
-	double n = ageXn - ageX;
-	double vn = 1/pow(1 + im, n);
-	double nPx = npx(lt, ageX, ageXn, corr);
-	return vn * nPx;
-}
-
-double axn(unsigned int lt, double i, double charge, int prepost, int term,
-		double ageX, double ageXn, int corr){
-	static Hashtable *axntable; /* This is used so that axn gets saved 
-				       and doesn't have to be calculated
-				       over and over for the same arguments. */
-
-	char key[256]; /* This is used to search the Hashtable to see whether or not it 
-			  has already been calculated */
-	snprintf(key, sizeof(key), "%d%f%f%d%d%f%f%d", lt, i, charge, prepost, term, ageX, ageXn, corr); 
-
-	/* I took 5 * 3 * (12 * 45)^2 * 2 as a rough estimate of the amount of combinations for keys then times 1.3 and then the next prime number*/
-	if (axntable == NULL)
-		axntable = newHashtable(11372401, 1);
-
-	List *h;
-
-	if ((h = lookup(key, NULL, axntable)) == NULL) {
+	if (0 == (h = lookup(key, 0, axntable))) {
 		if (12 % term != 0) {
-			printf("An incorrect term was chosen, payments are usually monthly (term = 12)\n");
-			printf("but can also be yearly for example (term = 1). term should be divisible\n");
-			printf("by 12 but \nterm = %d.\n", term);
-			exit(0);
-		}
-		else if (ageX > ageXn + eps) {
-			printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
+			errExit("[%s] term [%d] is not divisible by 12\n",
+					__func__, term);
+		} else if (ageX > ageXn + eps) {
+			printf("warning: ageXn = %.6f < ageX = %.6f\n",
+					ageXn, ageX);
 			printf("axn = 0 is taken in this case.\n");
 			h = lookup(key, "0", axntable);
 			return 0;
-		}
-		else {
-			double ageXk = ageX + (double)prepost/term; // current age in while loop
-			int payments = (int)((ageXn - ageX) * term + eps);
-			double value = 0; // return value
-			char valuestr[128]; // return value as string to input in hashtable
+		} else {
+			ageXk = ageX + (double)prepost/term;
+			payments = (ageXn - ageX) * term + eps;
 			while (payments--) {
 				value += nEx(lt, i, charge, ageX, ageXk, corr);
 				ageXk += 1.0/term;
 			}
-			/* There is a final portion that needs to be added when the amount of payments don't consider
-			   fractions of age, for example if ageX = 40 and ageXn = 40,5 and term = 1. This would give 0 
-			   payments but we still need to add nEx/2 in this case.
-			   We also need to subtract one term from ageXk because the while loop adds one too many.
+			/* 
+			 * There is a final portion that needs to be added when
+			 * the amount of payments don't consider fractions of
+			 * age, for example if ageX = 40 and ageXn = 40,5 and
+			 * term = 1. This would give 0 payments but we still
+			 * need to add nEx/2 in this case. We also need to
+			 * subtract one term from ageXk because the while loop
+			 * adds one too many.
 			 */    
 			ageXk -= 1.0/term * prepost;
 			value /= term;
-			value += (ageXn - ageXk) *
-				nEx(lt, i, charge, ageX,
-						(double)((int)(ageXn*term + eps))/term + term*prepost, corr);
+			value += (ageXn - ageXk)
+				* nEx(lt, i, charge, ageX,
+						((int)(ageXn*term + eps))/term
+						+ term*prepost, corr);
+
 			snprintf(valuestr, sizeof(valuestr), "%f", value);
 			h = lookup(key, valuestr, axntable);
 		}
 	}
+
 	return atof(h->value);
 }
 
-double Ax1n(unsigned int lt, double i, double charge, double ageX, double ageXn, int corr){
+/* 
+ * nAx = v^(1/2)*1Qx + v^(1+1/2)*1Px*1q_{x+1} + ...
+ * + v^(n-1+1/2)*{n-1}_Px*1Q_{x+n-1}
+ */
+double Ax1n(register unsigned lt, register double i, register double charge,
+		register double ageX, register double ageXn, register int corr)
+{
+	register int k = 0;
+	register int payments = 0;
+	register double im = 0.0;
+	register double v = 0.0;
+	register double value = 0.0;
+
 	if (ageX > ageXn + eps) {
 		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
 		printf("Ax1n = 0 is taken in this case.\n");
 		return 0;
-	}
-	else {
-		double im = (1+i)/(1+charge) - 1;
-		double v = 1/(1 + im);
-		int payments = (int)(ageXn - ageX + eps);
-		double value = 0; //return value;
-		int k = 0;
-		// nAx = v^(1/2)*1Qx + v^(1+1/2)*1Px*1q_{x+1} + ... + v^(n-1+1/2)*{n-1}_Px*1Q_{x+n-1}
+	} else {
+		im = (1 + i)/(1 + charge) - 1;
+		v = 1/(1 + im);
+		payments = ageXn - ageX + eps;
+
 		while (payments--) {
-			value += pow(v, k + 1.0/2) *
-				npx(lt, ageX, ageX + k, corr) *
-				(1 - npx(lt, ageX + k, ageX + k + 1, corr));
+			value += pow(v, k + 1.0/2)
+				* npx(lt, ageX, ageX + k, corr)
+				* (1 - npx(lt, ageX + k, ageX + k + 1, corr));
 			k++;
 		}
-		// below is the final fractional payment, for example 40 until 40.6 years old
-		value += pow(v, k + 1.0/2) *
-			npx(lt, ageX, ageX + k, corr) *
-			(1 - npx(lt, ageX + k, ageXn, corr));
+		value += pow(v, k + 1.0/2)
+			* npx(lt, ageX, ageX + k, corr)
+			* (1 - npx(lt, ageX + k, ageXn, corr));
+
 		return value;
 	}
 }
 
-double IAx1n(unsigned int lt, double i, double charge, double ageX, double ageXn, int corr){
+// IAx1n = sum^{n-1}_k=1:k*1A_{x+k}*kEx
+double IAx1n(register unsigned lt, register double i, register double charge,
+		register double ageX, register double ageXn, register int corr)
+{
+	register int k = 1;
+	register int payments = 0;
+	register double value = 0.0;
+
 	if (ageX > ageXn + eps) {
 		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
 		printf("Ax1n = 0 is taken in this case.\n");
 		return 0;
-	}
-	else {
-		int payments = (int)(ageXn - ageX + eps);
-		double value = 0; //return value;
-		int k = 1;
-		// IAx1n = sum^{n-1}_k=1:k*1A_{x+k}*kEx
+	} else {
+		payments = ageXn - ageX + eps;
 		while (payments--) {
-			value += k * Ax1n(lt, i, charge, ageX + k - 1, ageX + k, corr) *
-				nEx(lt, i, charge, ageX, ageX + k - 1, corr);
+			value += k * Ax1n(lt, i, charge, ageX + k - 1,
+					ageX + k, corr)
+			* nEx(lt, i, charge, ageX, ageX + k - 1, corr);
 			k++;
 		}
-		// below is the final fractional payment, for example 40 until 40.6 years old
-		value += k * Ax1n(lt, i, charge, ageX + k - 1, ageXn, corr) *
-			nEx(lt, i, charge, ageX, ageXn, corr);
+		value += k * Ax1n(lt, i, charge, ageX + k - 1,
+				ageXn, corr)
+			* nEx(lt, i, charge, ageX, ageXn, corr);
+
 		return value;
 	}
 }
 
-// This function hasn't been completed because I don't think I need it. At the moment it
-// only works for term = 1
-double Iaxn(unsigned int lt, double i, double charge, int prepost, int term,
-		double ageX, double ageXn, int corr){
-	if (1 % term != 0) {
-		printf("Iaxn has only been implemented for term = 1. You will need to adjust your \n");
-		printf("input for term, at the moment term = %d.\n", term);
-		exit(0);
-	}
-	else if (ageX > ageXn + eps) {
+/* 
+ * This function hasn't been completed because I don't think I need it.
+ * At the moment it only works for term = 1
+ */
+double Iaxn(register unsigned lt, register double i, register double charge,
+		register unsigned prepost, register unsigned term,
+		register double ageX, register double ageXn, register int corr)
+{
+	register int k = 1;
+	register int payments = 0;
+	register double ageXk = 0.0;
+	register double value = 0.0;
+
+	if (ageX > ageXn + eps) {
 		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
 		printf("Iaxn = 0 is taken in this case.\n");
 		return 0;
-	}
-	else {
-		double ageXk = ageX + (double)prepost/term; // current age in while loop
-		int payments = (int)((ageXn - ageX) * term + eps);
-		double value = 0; //return value;
-		double k = 1;
+	} else {
+		ageXk = ageX + (double)prepost/term;
+		payments = (ageXn - ageX) * term + eps;
 		while (payments--) {
 			value += k++ * nEx(lt, i, charge, ageX, ageXk, corr);
 			ageXk += 1.0/term;
 		}
 		ageXk -= 1.0/term * prepost;
 		value /= term;
-		value += (ageXn - ageXk) * k *
-			nEx(lt, i, charge, ageX,
-					(double)((int)(ageXn*term + eps))/term + term*prepost, corr);
+		value += (ageXn - ageXk) * k
+			* nEx(lt, i, charge, ageX,
+					((int)(ageXn*term + eps))/term
+					+ term*prepost, corr);
+
 		return value;
 	}
 }
 
-void evolCAPDTH(CurrentMember *cm, int k) {
+void evolCAPDTH(CurrentMember cm[static restrict 1], int k) {
 	for (int i = 0; i < EREE_AMOUNT; i++) {
 		cm->DELTACAP[i][k+1] = cm->DELTACAP[i][k];
 		for (int gen = 0; gen < MAXGEN; gen++) {
@@ -213,7 +221,7 @@ void evolCAPDTH(CurrentMember *cm, int k) {
 	}
 }
 
-void evolRES(CurrentMember *cm, int k)
+void evolRES(CurrentMember cm[static restrict 1], int k)
 {
 	updateRESCAP(cm, k);
 	updateRESCAPPS(cm, k);
@@ -224,7 +232,7 @@ void evolRES(CurrentMember *cm, int k)
 	updateREDCAPTUCPS_1(cm, k);
 }
 
-void evolPremiums(CurrentMember *cm, int k)
+void evolPremiums(CurrentMember cm[static restrict 1], int k)
 {
 	double formula = 0.0;
 	double prem = 0.0;
@@ -272,7 +280,7 @@ void evolPremiums(CurrentMember *cm, int k)
 
 }
 
-void evolART24(CurrentMember *cm, int k)
+void evolART24(CurrentMember cm[static restrict 1], int k)
 {
 	if (cm->status & ACT)
 		updateART24ACT(cm, k);
@@ -280,7 +288,7 @@ void evolART24(CurrentMember *cm, int k)
 		updateART24DEF(cm, k);
 }
 
-static void updateART24ACT(CurrentMember *cm, int k)
+static void updateART24ACT(CurrentMember cm[static restrict 1], int k)
 {
 	for (int l = 0; l < EREE_AMOUNT; l++) {
 		for (int m = 0; m < ART24GEN_AMOUNT; m++) {
@@ -291,7 +299,8 @@ static void updateART24ACT(CurrentMember *cm, int k)
 	}
 }
 
-static void updateART24reserves(unsigned method, CurrentMember *cm,
+static void updateART24reserves(unsigned method,
+		CurrentMember cm[static restrict 1],
 		unsigned EREE, unsigned ART24gen, int k)
 {
 	unsigned pp = 0.0;
@@ -322,8 +331,8 @@ static void updateART24reserves(unsigned method, CurrentMember *cm,
 		(pow(1 + im, tff.term * period + pp) - 1 - im * pp) / im;
 
 }
-static double get_premium_method(unsigned method, CurrentMember *cm,
-		unsigned EREE, int k)
+static double get_premium_method(unsigned method,
+		CurrentMember cm[static restrict 1], unsigned EREE, int k)
 {
 	double premium = 0.0;
 
@@ -342,7 +351,7 @@ static double get_premium_method(unsigned method, CurrentMember *cm,
 	return premium;
 }
 
-static void updateART24DEF(CurrentMember *cm, int k)
+static void updateART24DEF(CurrentMember cm[static restrict 1], int k)
 {
 	for (int j = 0; j < METHOD_AMOUNT; j++)
 		for (int l = 0; l < EREE_AMOUNT; l++)
@@ -351,7 +360,8 @@ static void updateART24DEF(CurrentMember *cm, int k)
 					cm->ART24[j][l][m][k]; 
 }
 
-double calcCAP(CurrentMember *cm, CalcInput *CI)
+double calcCAP(const CurrentMember cm[static restrict 1],
+		const CalcInput *restrict CI)
 {
 	double res = CI->res, prem = CI->prem, deltacap = CI->deltacap, 
 	       capdth = CI->capdth, age = CI->age, RA = CI->RA;
@@ -408,7 +418,8 @@ double calcCAP(CurrentMember *cm, CalcInput *CI)
 	return value;
 }
 
-double calcRES(CurrentMember *cm, CalcInput *CI)
+double calcRES(const CurrentMember cm[static restrict 1],
+		const CalcInput *restrict CI)
 {
 	double cap = CI->cap, prem = CI->prem, deltacap = CI->deltacap, 
 	       capdth = CI->capdth, age = CI->age, RA = CI->RA;
@@ -464,10 +475,10 @@ double calcRES(CurrentMember *cm, CalcInput *CI)
 	return value;
 }
 
-void evolDBONCIC(CurrentMember *cm, int k, 
-		double ART24TOT[const static METHOD_AMOUNT],
-		double RESTOT[const static METHOD_AMOUNT],
-		double REDCAPTOT[const static METHOD_AMOUNT])
+void evolDBONCIC(CurrentMember cm[static restrict 1], int k, 
+		const double ART24TOT[const static METHOD_AMOUNT],
+		const double RESTOT[const static METHOD_AMOUNT],
+		const double REDCAPTOT[const static METHOD_AMOUNT])
 {
 	double probfactdef = 0.0; // probability factors for deferred payment
 	double probfactimm = 0.0; // probability factors for immediate payment
@@ -513,10 +524,10 @@ void evolDBONCIC(CurrentMember *cm, int k,
 	}
 }
 
-void evolEBP(CurrentMember *cm, int k, 
-		double ART24TOT[const static METHOD_AMOUNT],
-		double RESTOT[const static METHOD_AMOUNT],
-		double REDCAPTOT[const static METHOD_AMOUNT])
+void evolEBP(CurrentMember cm[static restrict 1], int k, 
+		const double ART24TOT[const static METHOD_AMOUNT],
+		const double RESTOT[const static METHOD_AMOUNT],
+		const double REDCAPTOT[const static METHOD_AMOUNT])
 {
 	double probfactdef = 0.0;
 	double probfactimm = 0.0;
@@ -590,9 +601,9 @@ void evolEBP(CurrentMember *cm, int k,
 	free(DEFdate);
 }
 
-double getamount(const CurrentMember *cm, int k, unsigned DBONCICASS, 
-		unsigned method, unsigned assets, unsigned DEFIMM, 
-		unsigned PBOTBO, 
+double getamount(const CurrentMember cm[static restrict 1], int k,
+		unsigned DBONCICASS, unsigned method, unsigned assets,
+		unsigned DEFIMM, unsigned PBOTBO, 
 		const double ART24TOT[const static METHOD_AMOUNT],
 		const double RESTOT[const static METHOD_AMOUNT],
 		const double REDCAPTOT[const static METHOD_AMOUNT])
@@ -630,7 +641,7 @@ double getamount(const CurrentMember *cm, int k, unsigned DBONCICASS,
 	return 0.0;
 }
 
-static double getDBO(const CurrentMember *cm, int k, unsigned method,
+static double getDBO(const CurrentMember cm[static restrict 1], int k, unsigned method,
 		unsigned assets, unsigned DEFIMM, unsigned PBOTBO, 
 		const double ART24TOT[const static METHOD_AMOUNT],
 		const double RESTOT[const static METHOD_AMOUNT],
@@ -660,8 +671,8 @@ static double getDBO(const CurrentMember *cm, int k, unsigned method,
 	return liab;
 }
 
-static double getAssets(const CurrentMember *cm, int k, unsigned assets,
-		unsigned DEFIMM,
+static double getAssets(const CurrentMember cm[static restrict 1], int k,
+		unsigned assets, unsigned DEFIMM,
 		const double RESTOT[const static METHOD_AMOUNT],
 		const double REDCAPTOT[const static METHOD_AMOUNT])
 {
@@ -681,9 +692,9 @@ static double getAssets(const CurrentMember *cm, int k, unsigned assets,
 	return a * corrfactor;
 }
 
-static void updateRESCAP(CurrentMember *cm, int k)
+static void updateRESCAP(CurrentMember cm[static restrict 1], int k)
 {
-	CalcInput *CI = jalloc(1, sizeof(CalcInput));
+	CalcInput *CI = jalloc(1, sizeof(*CI));
 
 	CI->RA = (k + 1 > MAXPROJBEFOREPROL ? NRA(cm, k + 1) : cm->NRA);
 	for (int i = 0; i < EREE_AMOUNT; i++) {
@@ -706,9 +717,9 @@ static void updateRESCAP(CurrentMember *cm, int k)
 	free(CI);
 }
 
-static void updateRESCAPPS(CurrentMember *cm, int k)
+static void updateRESCAPPS(CurrentMember cm[static restrict 1], int k)
 {
-	CalcInput *CI = jalloc(1, sizeof(CalcInput));
+	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
 	CI->deltacap = 0;
 	CI->capdth = 0;
@@ -731,9 +742,9 @@ static void updateRESCAPPS(CurrentMember *cm, int k)
 	free(CI);
 }
 
-static void updateREDCAPPUC(CurrentMember *cm, int k)
+static void updateREDCAPPUC(CurrentMember cm[static restrict 1], int k)
 {
-	CalcInput *CI = jalloc(1, sizeof(CalcInput));
+	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
 
 	for (int i = 0; i < EREE_AMOUNT; i++) {
@@ -774,11 +785,11 @@ static void updateREDCAPPUC(CurrentMember *cm, int k)
 	free(CI);
 }
 
-static void updateRESTUC(CurrentMember *cm, int k)
+static void updateRESTUC(CurrentMember cm[static restrict 1], int k)
 {
 	double ir = 0.0;
 	double Ex = 0.0;
-	CalcInput *CI = jalloc(1, sizeof(CalcInput));
+	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
 	CI->deltacap = 0;
 
@@ -809,9 +820,9 @@ static void updateRESTUC(CurrentMember *cm, int k)
 	free(CI);
 }
 
-static void updateREDCAPTUC(CurrentMember *cm, int k)
+static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k)
 {
-	CalcInput *CI = jalloc(1, sizeof(CalcInput));
+	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
 	CI->deltacap = 0;
 
@@ -908,12 +919,12 @@ static void updateREDCAPTUC(CurrentMember *cm, int k)
 	free(CI);
 }
 
-static void updateRESTUCPS_1(CurrentMember *cm, int k)
+static void updateRESTUCPS_1(CurrentMember cm[static restrict 1], int k)
 {
 	unsigned index = min(2, (double)k+1, 2.0);
 	double ir = 0.0;
 	double Ex = 0.0;
-	CalcInput *CI = jalloc(1, sizeof(CalcInput));
+	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
 	CI->deltacap = 0;
 
@@ -944,10 +955,10 @@ static void updateRESTUCPS_1(CurrentMember *cm, int k)
 	free(CI);
 }
 
-static void updateREDCAPTUCPS_1(CurrentMember *cm, int k)
+static void updateREDCAPTUCPS_1(CurrentMember cm[static restrict 1], int k)
 {
 	unsigned index = min(2, (double)k+1, 2.0);
-	CalcInput *CI = jalloc(1, sizeof(CalcInput));
+	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
 	CI->deltacap = 0;
 

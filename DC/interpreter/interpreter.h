@@ -5,8 +5,6 @@
 #ifndef INTERPRETER
 #define INTERPRETER
 
-#include "libraryheader.h"
-
 /* 
  * key words for Select Case in VBA
  */

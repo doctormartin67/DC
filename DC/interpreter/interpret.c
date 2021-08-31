@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "libraryheader.h"
+#include "errorexit.h"
 #include "treeerrors.h"
 
 #define NORMAL "\x1B[0m"
@@ -24,7 +29,7 @@ int main(int argc, char *argv[])
 
 	TreeError te = NOERR;
 	int treecnt = 0;
-	CaseTree *ct = NULL;
+	CaseTree *ct = 0;
 
 	if (argc < 2)
 	{
@@ -72,7 +77,7 @@ int main(int argc, char *argv[])
 	{
 		int index = i + 1 + (options ? 1: 0);
 		fp = fopen(argv[index], "r");
-		if (NULL == fp) errExit("No such file\n");
+		if (0 == fp) errExit("No such file\n");
 
 		if (0 != fseek(fp, 0L, SEEK_END))
 			errExit("Unable to move to end of file\n");
@@ -80,8 +85,7 @@ int main(int argc, char *argv[])
 		if (-1 == (bufsiz = ftell(fp)))
 			errExit("Unable to obtain file position\n");
 
-		if (NULL == (s[i] = calloc(bufsiz + 1, sizeof(char))))
-			errExit("calloc returned NULL\n");
+		s[i] = jalloc(bufsiz + 1, sizeof(char));
 
 		if (0 != fseek(fp, 0L, SEEK_SET))
 			errExit("Unable to move to beginning of file\n");
@@ -115,7 +119,7 @@ int main(int argc, char *argv[])
 			printf("[%s] %sONE OR MORE TESTS FAILED%s\n", argv[index], RED, NORMAL);
 
 		freeTree(ct);
-		ct = NULL;
+		ct = 0;
 		if (0 != fclose(fp))
 			errExit("Unable to close file [%s]\n", argv[index]);
 	}
@@ -139,24 +143,24 @@ int testTree(CaseTree *ct, FILE *fp, int surpress)
 	if (0 != fseek(fp, 0L, SEEK_SET))
 		errExit("Unable to move to beginning of file\n");
 
-	while (NULL != (temp = fgets(test, sizeof(test), fp)))
-		if (NULL != strstr(test, "tests:"))
+	while (0 != (temp = fgets(test, sizeof(test), fp)))
+		if (0 != strstr(test, "tests:"))
 			break;
 
-	if (NULL == temp)
+	if (0 == temp)
 	{
 		printf("No tests found\n");
 		return status;
 	}
 
-	while (NULL != fgets(test, sizeof(test), fp))
+	while (0 != fgets(test, sizeof(test), fp))
 	{
 		age = strtok(test, ",");
-		reg = strtok(NULL, ",");
-		cat = strtok(NULL, "=");
-		value = strtok(NULL, "\r\n\v\f"); /* end of line or file */
+		reg = strtok(0, ",");
+		cat = strtok(0, "=");
+		value = strtok(0, "\r\n\v\f"); /* end of line or file */
 
-		if (NULL == age || NULL == reg || NULL == cat || NULL == value )
+		if (0 == age || 0 == reg || 0 == cat || 0 == value )
 			errExit("[%s] invalid test: %s\n", __func__, test);
 
 		dage = atof(age);

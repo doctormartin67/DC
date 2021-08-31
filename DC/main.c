@@ -3,12 +3,12 @@
 #include "errorexit.h"
 
 void userinterface();
-void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
-void runonerun(DataSet *ds);
+void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
+		UserInput UITY[static 1]);
 static void init_cm(CurrentMember *);
-static Date *getDOC(const CurrentMember *cm, int k);
-static Date *getDOC_prolongation(const CurrentMember *cm, int k);
-static void prolongate(CurrentMember *cm, int k);
+static Date *getDOC(const CurrentMember cm[static 1], int k);
+static Date *getDOC_prolongation(const CurrentMember cm[static 1], int k);
+static void prolongate(CurrentMember cm[static 1], int k);
 
 int main(void)
 {
@@ -17,7 +17,8 @@ int main(void)
 	return 0;
 }
 
-void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY)
+void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
+		UserInput UITY[static 1])
 {
 	double ERprem = 0.0;
 	double EEprem = 0.0;
@@ -40,18 +41,15 @@ void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY)
 		if (1 == k) {
 			cm->DOC[k+1] = getDOC(cm, k);
 		} else if (1 < k && MAXPROJBEFOREPROL > k) {
-			if (cm->DOC[k] != cm->DOR)
-				free(cm->DOC[k]);
+			free(cm->DOC[k]);
 			cm->DOC[k] = getDOC(cm, k - 1);
 			cm->DOC[k+1] = getDOC(cm, k);
 		} else if (MAXPROJBEFOREPROL == k) {
-			if (cm->DOC[k] != cm->DOR)
-				free(cm->DOC[k]);
+			free(cm->DOC[k]);
 			cm->DOC[k] = getDOC(cm, k - 1);
 			cm->DOC[k+1] = getDOC_prolongation(cm, k);		
 		} else if (MAXPROJBEFOREPROL < k) {
-			if (cm->DOC[k] != cm->DOR)
-				free(cm->DOC[k]);
+			free(cm->DOC[k]);
 			cm->DOC[k] = getDOC_prolongation(cm, k - 1);
 			cm->DOC[k+1] = getDOC_prolongation(cm, k);		
 			if (MAXPROJBEFOREPROL + 1 == k)
@@ -150,7 +148,7 @@ void runmember(CurrentMember *cm, UserInput *UILY, UserInput *UITY)
 	}     
 }
 
-static void init_cm(CurrentMember *cm)
+static void init_cm(CurrentMember cm[static 1])
 {
 	Date **doc = cm->DOC;
 	const Date *dob = cm->DOB;
@@ -159,7 +157,7 @@ static void init_cm(CurrentMember *cm)
 	double *prem = 0;
 
 	//-  Dates and age  -
-	*doc = cm->DOS;
+	*doc = Datedup(cm->DOS);
 	cm->age[0] = calcyears(dob, *doc, 1);
 	cm->nDOE[0] = calcyears(doe, *doc, (1 == doe->day ? 0 : 1));
 	cm->nDOA[0] = calcyears(doa, *doc, (1 == doa->day ? 0 : 1));
@@ -200,7 +198,7 @@ static void init_cm(CurrentMember *cm)
 
 }
 
-static Date *getDOC(const CurrentMember *cm, int k)
+static Date *getDOC(const CurrentMember cm[static 1], int k)
 {
 	Date *d = 0, *Ndate = 0, *docdate = 0;
 
@@ -212,15 +210,15 @@ static Date *getDOC(const CurrentMember *cm, int k)
 
 	d = minDate(3, Ndate, docdate, cm->DOR);
 
-	/*
 	if (d != Ndate) free(Ndate);
 	if (d != docdate) free(docdate);
-	*/
+	if (d == cm->DOR)
+		d = Datedup(cm->DOR);
 
 	return d;
 }
 
-static Date *getDOC_prolongation(const CurrentMember *cm, int k)
+static Date *getDOC_prolongation(const CurrentMember cm[static 1], int k)
 {
 	unsigned addyear = 0;
 	Date *d = 0, *Ndate = 0, *docdate = 0;
@@ -234,15 +232,13 @@ static Date *getDOC_prolongation(const CurrentMember *cm, int k)
 
 	d = minDate(2, Ndate, docdate);
 
-	/*
 	if (d != Ndate) free(Ndate);
 	if (d != docdate) free(docdate);
-	*/
 
 	return d;
 }
 
-static void prolongate(CurrentMember *cm, int k)
+static void prolongate(CurrentMember cm[static 1], int k)
 {
 	for (int EREE = 0; EREE < EREE_AMOUNT; EREE++) {
 		cm->PREMIUM[EREE][MAXGEN-1][k] = gensum(cm->PREMIUM, EREE, k);

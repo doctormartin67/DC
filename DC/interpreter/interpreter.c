@@ -7,7 +7,14 @@
    a select case within another select case then 'child' will point to the
    first case of the subtree. */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <assert.h>
+#include "libraryheader.h"
 #include "treeerrors.h"
+#include "errorexit.h"
 
 /* ruleset is an array which consists of the variables that the user
    can use to Select Case over. They can be seen as the predetermined
@@ -16,9 +23,9 @@
    be different each time */
 Rule ruleset[RULE_AMOUNT] = 
 {
-	[AGE] = {"AGE", cmpnum, (void *)0}, 
-	[REG] = {"REG", cmpstr, (void *)0}, 
-	[CAT] = {"CAT", cmpstr, (void *)0}
+	[AGE] = {"AGE", cmpnum, 0}, 
+	[REG] = {"REG", cmpstr, 0}, 
+	[CAT] = {"CAT", cmpstr, 0}
 };
 
 /* Before the tree is built, an initial clean is run so that the string to
@@ -26,9 +33,7 @@ Rule ruleset[RULE_AMOUNT] =
    set to uppercase to make the interpreter case insensitive. */
 char *strclean(const char *s)
 {
-	char *t = calloc(strlen(s) + 1, sizeof(char));
-	if (0 == t) errExit("[%s] calloc returned NULL\n", __func__);
-
+	char *t = jalloc(strlen(s) + 1, sizeof(char));
 	char *pt = t;
 
 	while (*s) {
@@ -77,8 +82,7 @@ CaseTree *buildTree(const char *s)
 	c = sc = es = x = 0;
 	char *rulename = 0;
 
-	CaseTree *ct = (CaseTree *)malloc(sizeof(CaseTree));
-	if (0 == ct) errExit("[%s] malloc returned NULL\n", __func__);
+	CaseTree *ct = jalloc(1, sizeof(CaseTree));
 	*ct = (CaseTree){0};
 	ct->rule_index = -1; /* no rule yet */
 
@@ -140,7 +144,7 @@ CaseTree *buildTree(const char *s)
 		*(t - 1) = '\0';
 		if (!isvalidcond(pct)) { /* terrno set by isvalidcond */
 			free(pt);
-			free(ct);
+			freeTree(ct);
 			return 0;
 		}
 
@@ -197,9 +201,7 @@ CaseTree *buildTree(const char *s)
 			pct->next = 0;
 		} else {
 			t = c;
-			if (0 == (pct->next = malloc(sizeof(CaseTree))))
-				errExit("[%s] malloc return NULL\n", __func__);
-
+			pct->next = jalloc(1, sizeof(CaseTree));
 			pct->next->rule_index = pct->rule_index;
 		}
 		*(t - 1) = '\0';
