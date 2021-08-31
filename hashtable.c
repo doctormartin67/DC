@@ -5,10 +5,11 @@
 #include "hashtable.h"
 #include "errorexit.h"
 
-List *lookup(const char *t, const char *value, Hashtable *ht)
+List *lookup(const char t[static restrict 1], const char *restrict value,
+		Hashtable ht[static restrict 1])
 {
 	List *pht = 0;
-	register unsigned long hashval;
+	register unsigned long hashval = 0;
 	char *s = 0, key[strlen(t) + 1];
 
 	snprintf(key, sizeof(key), "%s", t);
@@ -54,29 +55,29 @@ List *lookup(const char *t, const char *value, Hashtable *ht)
 	return pht;
 }
 
-Hashtable *newHashtable(unsigned long n, unsigned casesens)
+Hashtable *newHashtable(size_t n, unsigned casesens)
 {
-	Hashtable *ht;
+	Hashtable *ht = jalloc(1, sizeof(*ht));
 
-	ht = jalloc(1, sizeof(Hashtable));
-	ht->list = jalloc(n, sizeof(List *));
+	ht->list = jalloc(n, sizeof(*ht->list));
 	ht->hashsize = n;
 	ht->casesens = casesens;
+
 	return ht;
 }
 
-void freeHashtable(Hashtable *ht)
+void freeHashtable(Hashtable *restrict ht)
 {
 	if (0 == ht) return;
 
-	for (unsigned int i = 0; i < ht->hashsize; i++)
+	for (unsigned i = 0; i < ht->hashsize; i++)
 		freeList(ht->list[i]);
 
 	free(ht->list);
 	free(ht);
 }
 
-void freeList(List *l)
+void freeList(List *restrict l)
 {
 	if (0 != l) {
 		free(l->key);

@@ -9,10 +9,10 @@
 #include "errorexit.h"
 
 static void outputError(int useErr, int err, int flushStdout,
-		const char *format, va_list ap);
+		const char * restrict format, va_list ap);
 
 static void outputError(int useErr, int err, int flushStdout, 
-		const char *format, va_list ap)
+		const char *restrict format, va_list ap)
 {
 	char buf[BUFSIZ * 4], userMsg[BUFSIZ], errText[BUFSIZ];
 
@@ -30,7 +30,7 @@ static void outputError(int useErr, int err, int flushStdout,
 	fputs(buf, stderr);
 	fflush(stderr);
 }
-void errExit(const char *format, ...)
+void errExit(const char *restrict format, ...)
 {
 	va_list arglist;
 
@@ -42,7 +42,7 @@ void errExit(const char *format, ...)
 }
 
 /* same as errExit but used when diagnosing Pthreads */
-void errExitEN(int errnum, const char *format, ...)
+void errExitEN(int errnum, const char *restrict format, ...)
 {
 	va_list arglist;
 
@@ -52,5 +52,3 @@ void errExitEN(int errnum, const char *format, ...)
 
 	exit(EXIT_FAILURE);
 }
-
-
