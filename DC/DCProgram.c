@@ -290,7 +290,7 @@ void createData(DataSet ds[static 1])
 	while (0 != *pkey) {
 		// Here we update cell for loop, for example O11 becomes P11
 		if (++countkeys >= KEYS_AMOUNT)
-			errExit("[%s] Data has too many keys\n", __func__);
+			errExit("Data has too many keys");
 		nextcol(keyCell);
 		*++pkey = cell(ds->xl, ds->sheet, keyCell);
 	}

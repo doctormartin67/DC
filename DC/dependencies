@@ -3329,8 +3329,7 @@ errorexit.o: /home/doctormartin67/Projects/library/errorexit.c \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h /usr/include/errno.h \
  /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
- /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
- /home/doctormartin67/Projects/library/errorexit.h
+ /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h
 XL.o: /home/doctormartin67/Projects/library/XL.c \
  /usr/include/stdc-predef.h /usr/include/string.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \

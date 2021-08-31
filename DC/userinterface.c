@@ -105,7 +105,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 			else if (strcmp("Run reconciliation", choice) == 0)
 				printf("something else\n");
 			else
-				errExit("[%s] should never reach here\n", __func__);
+				errExit("should never reach here");
 
 			g_free(choice);
 		}
@@ -141,7 +141,7 @@ void on_runchoice_changed(GtkComboBox *cb, gpointer *p)
 	if (GTK_COMBO_BOX(widgets[RUNCHOICE]) == cb)
 		choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
 	else
-		errExit("[%s] something went wrong with GtkComboBox\n", __func__);
+		errExit("something went wrong with GtkComboBox");
 
 	if (strcmp("Run test case", choice) == 0)
 		gtk_widget_show_all(widgets[TESTCASEBOX]);
@@ -188,7 +188,7 @@ void on_openDC_activate(GtkMenuItem *m)
 			else
 				updateUI(&UILY);
 			if (fclose(fp) == EOF) 
-				errExit("[%s] unable to close file [%s]\n", __func__, filename);
+				errExit("unable to close file [%s]", filename);
 		}
 		else
 		{
@@ -246,9 +246,9 @@ void on_saveasDC_activate(GtkMenuItem *m)
 		if (fp != NULL)
 		{
 			if (fwrite(&UILY, sizeof(UILY), 1, fp) != 1)
-				errExit("[%s] unable to write to file [%s]\n", __func__, temp);
+				errExit("unable to write to file [%s]", temp);
 			if (fclose(fp) == EOF) 
-				errExit("[%s] unable to close file [%s]\n", __func__, filename);
+				errExit("unable to close file [%s]", filename);
 		}
 		else
 		{
@@ -286,7 +286,7 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 static GtkWidget *buildWidget(const char w[static 1])
 {
 	GtkWidget *widget = GTK_WIDGET(gtk_builder_get_object(builder, w));
-	if (0 == widget) errExit("[%s] incorrect builder name\n", __func__);
+	if (0 == widget) errExit("incorrect builder name");
 	return widget;
 }
 

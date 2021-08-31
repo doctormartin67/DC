@@ -239,8 +239,7 @@ int isvalidcond(CaseTree *ct)
 					setterrno(CONDERR);
 					return 0;
 				}
-			} else errExit("[%s] impossible condition reached\n", 
-					__func__);
+			} else errExit("impossible condition reached");
 
 			pt = strtok(0, ",");
 		}
@@ -269,9 +268,9 @@ int isvalidcond(CaseTree *ct)
 						setterrno(QUOTERR); 
 						return 0;
 					}
-				}
-				else errExit("[%s] condition while loop " 
-						"impossible", __func__);
+				} else
+					errExit("condition while loop "
+							"impossible");
 			}
 			else if (0 == strncmp(ct->cond, E, strlen(E))) {
 				return 1;
@@ -282,8 +281,7 @@ int isvalidcond(CaseTree *ct)
 
 			s++;
 		}
-	} else errExit("[%s] condition while loop impossible (cf unknown)", 
-			__func__);
+	} else errExit("condition while loop impossible (cf unknown)");
 
 	return 1;
 }

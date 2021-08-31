@@ -77,18 +77,18 @@ int main(int argc, char *argv[])
 	{
 		int index = i + 1 + (options ? 1: 0);
 		fp = fopen(argv[index], "r");
-		if (0 == fp) errExit("No such file\n");
+		if (0 == fp) errExit("No such file");
 
 		if (0 != fseek(fp, 0L, SEEK_END))
-			errExit("Unable to move to end of file\n");
+			errExit("Unable to move to end of file");
 
 		if (-1 == (bufsiz = ftell(fp)))
-			errExit("Unable to obtain file position\n");
+			errExit("Unable to obtain file position");
 
 		s[i] = jalloc(bufsiz + 1, sizeof(char));
 
 		if (0 != fseek(fp, 0L, SEEK_SET))
-			errExit("Unable to move to beginning of file\n");
+			errExit("Unable to move to beginning of file");
 
 		fread(s[i], sizeof(char), bufsiz, fp);
 		/* error handling still to do here */
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 		{
 			printf("[%s] %s\n", argv[index], strterror(te));
 			if (0 != fclose(fp))
-				errExit("Unable to close file [%s]\n", argv[index]);
+				errExit("Unable to close file [%s]", argv[index]);
 
 			setterrno(NOERR);
 			continue;
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 		freeTree(ct);
 		ct = 0;
 		if (0 != fclose(fp))
-			errExit("Unable to close file [%s]\n", argv[index]);
+			errExit("Unable to close file [%s]", argv[index]);
 	}
 
 	return 0;
@@ -141,7 +141,7 @@ int testTree(CaseTree *ct, FILE *fp, int surpress)
 	char *temp;
 
 	if (0 != fseek(fp, 0L, SEEK_SET))
-		errExit("Unable to move to beginning of file\n");
+		errExit("Unable to move to beginning of file");
 
 	while (0 != (temp = fgets(test, sizeof(test), fp)))
 		if (0 != strstr(test, "tests:"))
@@ -161,7 +161,7 @@ int testTree(CaseTree *ct, FILE *fp, int surpress)
 		value = strtok(0, "\r\n\v\f"); /* end of line or file */
 
 		if (0 == age || 0 == reg || 0 == cat || 0 == value )
-			errExit("[%s] invalid test: %s\n", __func__, test);
+			errExit("invalid test: %s", test);
 
 		dage = atof(age);
 		rule_data[AGE] = &dage;

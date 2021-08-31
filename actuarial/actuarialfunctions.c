@@ -71,8 +71,7 @@ double axn(register unsigned lt, register double i, register double charge,
 
 	if (0 == (h = lookup(key, 0, axntable))) {
 		if (12 % term != 0) {
-			errExit("[%s] term [%d] is not divisible by 12\n",
-					__func__, term);
+			errExit("term [%d] is not divisible by 12", term);
 		} else if (ageX > ageXn + eps) {
 			printf("warning: ageXn = %.6f < ageX = %.6f\n",
 					ageXn, ageX);
@@ -411,8 +410,7 @@ double calcCAP(const CurrentMember cm[static restrict 1],
 				* (Ax1 + tff.costKO * axcost));
 			break;
 		default :
-			errExit("[%s] %d is not a valid tariff.\n", __func__, 
-					cm->tariff);
+			errExit("%d is not a valid tariff.", cm->tariff);
 	}
 
 	return value;
@@ -468,8 +466,7 @@ double calcRES(const CurrentMember cm[static restrict 1],
 				- prem * (1 - tff.admincost) * ax;
 			break;
 		default :
-			errExit("[%s] %d is not a valid tariff.\n", __func__, 
-					cm->tariff);
+			errExit("%d is not a valid tariff.", cm->tariff);
 	}
 
 	return value;
@@ -617,8 +614,7 @@ double getamount(const CurrentMember cm[static restrict 1], int k,
 				case PUC : return ART24TOT[PUC] * cm->FFSC[k];
 				case TUC : return (ART24TOT[TUCPS_1]
 							   - ART24TOT[TUC]);
-				default : errExit("[%s]: method = %d\n", 
-							  __func__, method);
+				default : errExit("method = %d", method);
 			}
 			break;
 		case IC :
@@ -628,14 +624,12 @@ double getamount(const CurrentMember cm[static restrict 1], int k,
 				case TUC : return (ART24TOT[TUCPS_1]
 							   - ART24TOT[TUC])
 					   * ass.DR;
-				default : errExit("[%s]: method = %d\n", 
-							  __func__, method);
+				default : errExit("method = %d", method);
 			}
 			break;
 		case ASSETS : return getAssets(cm, k, assets, DEFIMM, RESTOT,
 					      REDCAPTOT);
-		default : errExit("[%s]: unknown amount [%d]\n", __func__,
-					DBONCICASS);
+		default : errExit("unknown amount [%d]", DBONCICASS);
 	}
 
 	return 0.0;
@@ -653,7 +647,7 @@ static double getDBO(const CurrentMember cm[static restrict 1], int k, unsigned 
 	else if (TUC == method)
 		liab = ART24TOT[TUC];
 	else
-		errExit("[%s]: method = %d\n", __func__, method);
+		errExit("method = %d", method);
 
 	switch (assets) {
 		case PAR113 :
@@ -661,12 +655,11 @@ static double getDBO(const CurrentMember cm[static restrict 1], int k, unsigned 
 			switch (DEFIMM) {
 				case DEF : return max(2, liab, REDCAPTOT[TUC]);
 				case IMM : return max(2, liab, RESTOT[TUC]);
-				default : errExit("[%s] DEFIMM = %d\n", 
-							  __func__, DEFIMM);
+				default : errExit("DEFIMM = %d", DEFIMM);
 			}
 			break;
 		case MATHRES : return liab;
-		default : errExit("[%s] assets = %d\n", __func__, assets);
+		default : errExit("assets = %d", assets);
 	}
 	return liab;
 }
@@ -684,7 +677,7 @@ static double getAssets(const CurrentMember cm[static restrict 1], int k,
 			   break; 
 		case IMM : a = RESTOT[TUC]; 
 			   break;
-		default : errExit("[%s]: DEFIMM = %d\n", __func__, DEFIMM);
+		default : errExit("DEFIMM = %d", DEFIMM);
 	}
 
 	if (PAR113 == assets) corrfactor = cm->vn113[k] / cm->vn[k];

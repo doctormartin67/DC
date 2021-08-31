@@ -205,8 +205,7 @@ static Date *getDOC(const CurrentMember cm[static 1], int k)
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
 	docdate = newDate(0, cm->DOC[k]->year + 1, cm->DOC[k]->month, 1);
 
-	if (0 == Ndate || 0 == docdate)
-		errExit("[%s] invalid date\n", __func__);
+	if (0 == Ndate || 0 == docdate) errExit("invalid date");
 
 	d = minDate(3, Ndate, docdate, cm->DOR);
 
@@ -227,8 +226,7 @@ static Date *getDOC_prolongation(const CurrentMember cm[static 1], int k)
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
 	docdate = newDate(0, cm->DOC[k]->year + addyear, cm->DOC[1]->month, 1);
 
-	if (0 == Ndate || 0 == docdate)
-		errExit("[%s] invalid date\n", __func__);
+	if (0 == Ndate || 0 == docdate) errExit("invalid date");
 
 	d = minDate(2, Ndate, docdate);
 
