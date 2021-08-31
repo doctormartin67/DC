@@ -192,7 +192,7 @@ static void init_cm(CurrentMember cm[static 1])
 		*prem = (EREE == ER ? calcA(cm, 0) : calcC(cm, 0));
 		for (int j = 0; j < MAXGEN-1; j++) {
 			prem = cm->PREMIUM[EREE][MAXGEN-1];
-			*prem = max(2, 0.0, *prem - *cm->PREMIUM[EREE][j]);
+			*prem = MAX2(0.0, *prem - *cm->PREMIUM[EREE][j]);
 		}
 	}
 

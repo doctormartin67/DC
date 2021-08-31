@@ -474,9 +474,9 @@ int printresults(DataSet *ds)
 		double ICNCRETTUCRES = sum(MAXPROJ, cm->ICNCRET[TUC][MATHRES]);
 
 		double ExpERContr = 
-			max(2, 0.0, min(2, 1.0, NRA(cm, 1) - cm->age[1])) * gensum(cm->PREMIUM, ER, 1);
+			MAX2(0.0, MIN2(1.0, NRA(cm, 1) - cm->age[1])) * gensum(cm->PREMIUM, ER, 1);
 		double ExpEEContr = 
-			max(2, 0.0, min(2, 1.0, NRA(cm, 1) - cm->age[1])) * gensum(cm->PREMIUM, EE, 1);
+			MAX2(0.0, MIN2(1.0, NRA(cm, 1) - cm->age[1])) * gensum(cm->PREMIUM, EE, 1);
 
 		double DBODTHRESPART = sum(MAXPROJ, cm->DBODTHRESPart);
 		double DBODTHRiskPART = sum(MAXPROJ, cm->DBODTHRiskPart);
@@ -524,55 +524,46 @@ int printresults(DataSet *ds)
 		/* DBO + SC */
 		/* DBO RET PUC PAR */
 		worksheet_write_number(worksheet, row+1, col+index++, 
-				max(2, 
-					DBORETPUCPAR, 
+				MAX2(DBORETPUCPAR, 
 					(ass.method & PAR113 ? assetsPAR113 : assetsPAR115)), 
 				NULL);
 		/* SC ER PUC PAR */
 		worksheet_write_number(worksheet, row+1, col+index++, 
-				max(2, 
-					0.0, 
+				MAX2(0.0, 
 					NCRETPUCPAR + ICNCRETPUCPAR - ExpEEContr), 
 				NULL);
 		/* DBO RET TUC PAR */
 		worksheet_write_number(worksheet, row+1, col+index++, 
-				max(2, 
-					DBORETTUCPAR, 
+				MAX2(DBORETTUCPAR, 
 					(ass.method & PAR113 ? assetsPAR113 : assetsPAR115)), 
 				NULL);
 		/* SC ER TUC PAR */
 		worksheet_write_number(worksheet, row+1, col+index++, 
-				max(2, 
-					(ass.method & mmaxERContr ? ExpERContr * (1 - tff.admincost) / 
+				MAX2((ass.method & mmaxERContr ? ExpERContr * (1 - tff.admincost) / 
 					 (1 + ass.taxes) : 0.0), 
 					NCRETTUCPAR + ICNCRETTUCPAR - ExpEEContr), 
 				NULL);
 		/* DBO RET PUC RES */
 		worksheet_write_number(worksheet, row+1, col+index++, 
-				max(3, 
-					DBORETPUCRES + (ass.method & mDTH ? DBODTHRESPART : 0.0), 
+				MAX3(DBORETPUCRES + (ass.method & mDTH ? DBODTHRESPART : 0.0), 
 					assetsRES, 
 					ART24TOT) + (ass.method & mDTH ? DBODTHRiskPART : 0.0), 
 				NULL);
 		/* SC ER PUC RES */
 		worksheet_write_number(worksheet, row+1, col+index++, 
-				max(2, 
-					0.0,
-					NCRETPUCRES + ICNCRETPUCRES + 
+				MAX2(0.0, NCRETPUCRES + ICNCRETPUCRES + 
 					(ass.method & mDTH ? NCDTHRESPART + ICNCDTHRESPART : 0.0) - ExpEEContr + 
 					(ass.method & mDTH ? NCDTHRiskPART + ICNCDTHRiskPART : 0.0)), 
 				NULL);
 		/* DBO RET TUC RES */
 		worksheet_write_number(worksheet, row+1, col+index++, 
-				max(3, 
-					DBORETTUCRES + (ass.method & mDTH ? DBODTHRESPART : 0.0), 
+				MAX3(DBORETTUCRES + (ass.method & mDTH ? DBODTHRESPART : 0.0), 
 					assetsRES, 
 					ART24TOT) + (ass.method & mDTH ? DBODTHRiskPART : 0.0), 
 				NULL);
 		/* SC ER TUC RES */
 		worksheet_write_number(worksheet, row+1, col+index++, 
-				max(2, 
-					(ass.method & mmaxERContr ? ExpERContr * (1 - tff.admincost) / 
+				MAX2((ass.method & mmaxERContr ? ExpERContr * (1 - tff.admincost) / 
 					 (1 + ass.taxes) : 0.0),
 					NCRETTUCRES + ICNCRETTUCRES + 
 					(ass.method & mDTH ? NCDTHRESPART + ICNCDTHRESPART : 0.0) - ExpEEContr) +

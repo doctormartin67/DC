@@ -108,8 +108,8 @@ inline double npx(register unsigned lt, register double ageX,
 	register int lxXn1;
 	ageX += corr;
 	ageXn += corr;
-	ageX = fmax(0, ageX);
-	ageXn = fmax(0, ageXn);
+	ageX = MAX2(0, ageX);
+	ageXn = MAX2(0, ageXn);
 	lxX = lx(lt, ageX);
 	lxX1 = lx(lt, ageX + 1);
 	lxXn = lx(lt, ageXn);

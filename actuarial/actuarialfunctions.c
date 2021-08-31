@@ -247,7 +247,7 @@ void evolPremiums(CurrentMember cm[static restrict 1], int k)
 			prem = formula;
 			for (int l = 0; l < j; l++)
 				prem = prem - cm->PREMIUM[i][l][k+1];
-			prem = (j < MAXGEN - 1 ? min(2, cm->PREMIUM[i][j][k]
+			prem = (j < MAXGEN - 1 ? MIN2(cm->PREMIUM[i][j][k]
 						, prem) : prem);
 
 			cm->PREMIUM[i][j][k+1] = prem;
@@ -270,7 +270,7 @@ void evolPremiums(CurrentMember cm[static restrict 1], int k)
 				RPcap = cm->CAP[i][j][k]/cm->X10;
 				RPres = cm->RES[PUC][i][j][k];
 
-				cm->RP[i][j][k] = fmax(0.0, (RPcap - RPres)
+				cm->RP[i][j][k] = MAX2(0.0, (RPcap - RPres)
 						* Ax1/ax)
 					+ RPcap * tff.costKO * axcost;
 			}			     
@@ -320,11 +320,11 @@ static void updateART24reserves(unsigned method,
 		return;
 
 	pp = (tff.prepost == 0 ? 1 : 0);
-	admincost = (ER == EREE ? min(2, ART24admincost, admincost) : 0);
+	admincost = (ER == EREE ? MIN2(ART24admincost, admincost) : 0);
 	rp = gensum(cm->RP, EREE, k);
 	im = pow(1 + i, 1.0/tff.term) - 1;
 	premium = get_premium_method(method, cm, EREE, k);
-	premium = max(2, 0.0, premium * (1 - admincost) - rp);
+	premium = MAX2(0.0, premium * (1 - admincost) - rp);
 
 	cm->ART24[method][EREE][ART24gen][k+1] += premium / tff.term *
 		(pow(1 + im, tff.term * period + pp) - 1 - im * pp) / im;
@@ -543,7 +543,7 @@ void evolEBP(CurrentMember cm[static restrict 1], int k,
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
 	yearIMM = calcyears(cm->DOC[1], cm->DOC[k], 0);
 	IMMdate = newDate(0, cm->DOC[1]->year + yearIMM, cm->DOC[1]->month, 1);
-	yearDEF = max(2, 0.0, calcyears(cm->DOC[1], Ndate, 0));
+	yearDEF = MAX2(0.0, calcyears(cm->DOC[1], Ndate, 0));
 	DEFdate = newDate(0, cm->DOC[1]->year + yearDEF, cm->DOC[1]->month, 1);
 
 	if (yearIMM >= 0) {
@@ -653,8 +653,8 @@ static double getDBO(const CurrentMember cm[static restrict 1], int k, unsigned 
 		case PAR113 :
 		case PAR115 :
 			switch (DEFIMM) {
-				case DEF : return max(2, liab, REDCAPTOT[TUC]);
-				case IMM : return max(2, liab, RESTOT[TUC]);
+				case DEF : return MAX2(liab, REDCAPTOT[TUC]);
+				case IMM : return MAX2(liab, RESTOT[TUC]);
 				default : errExit("DEFIMM = %d", DEFIMM);
 			}
 			break;
@@ -788,10 +788,10 @@ static void updateRESTUC(CurrentMember cm[static restrict 1], int k)
 
 	for (int i = 0; i < EREE_AMOUNT; i++) {
 		for (int gen = 0; gen < MAXGEN; gen++) {
-			CI->RA = min(3, NRA(cm, k + 1), cm->NRA, cm->age[k+1]);
+			CI->RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->age[k+1]);
 			ir = cm->TAUX[i][gen];
 			Ex = nEx(tff.ltINS[i][gen].lt, ir, tff.costRES, CI->RA,
-					min(2, NRA(cm, k), cm->NRA), 0);
+					MIN2(NRA(cm, k), cm->NRA), 0);
 
 			CI->lt = &tff.ltINS[i][gen];
 			CI->res = cm->RES[PUC][i][gen][1];
@@ -826,7 +826,7 @@ static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k)
 				CI->res = CI->cap;
 				CI->capdth = cm->CAPDTH[i][gen][1];
 				CI->age = cm->age[1];
-				CI->RA = min(2, NRA(cm, k + 1), cm->NRA);
+				CI->RA = MIN2(NRA(cm, k + 1), cm->NRA);
 				CI->cap = calcCAP(cm, CI) + cm->DELTACAP[i][0]
 					* (cm->NRA - CI->age) * 12;
 
@@ -841,7 +841,7 @@ static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k)
 				CI->res = cm->RESPS[PUC][i][gen][1];
 				CI->capdth = 0;
 				CI->age = cm->age[1];
-				CI->RA = min(2, NRA(cm, k + 1), cm->NRA);
+				CI->RA = MIN2(NRA(cm, k + 1), cm->NRA);
 				CI->cap = calcCAP(cm, CI);
 
 				CI->lt = &tff.ltProlongAfterTRM[i];
@@ -854,21 +854,21 @@ static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k)
 				CI->res = cm->RES[PUC][i][gen][1];
 				CI->capdth = cm->CAPDTH[i][gen][1];
 				CI->age = cm->age[1];
-				CI->RA = min(3, NRA(cm, k + 1), cm->NRA, 
+				CI->RA = MIN3(NRA(cm, k + 1), cm->NRA, 
 						cm->age[k+1]);
 				CI->cap = calcCAP(cm, CI);
 
 				CI->lt = &tff.ltAfterTRM[i][gen];
 				CI->res = CI->cap;
 				CI->age = CI->RA;
-				CI->RA = min(2, NRA(cm, k + 1), cm->NRA);
+				CI->RA = MIN2(NRA(cm, k + 1), cm->NRA);
 				CI->cap = calcCAP(cm, CI) + cm->DELTACAP[i][0]
 					* (cm->NRA - cm->age[1]) * 12;
 
 				CI->lt = &tff.ltProlong[i];
 				CI->res = CI->cap;
 				CI->age = CI->RA;
-				CI->RA = max(2, min(2, NRA(cm, k + 1), cm->NRA)
+				CI->RA = MAX2(MIN2(NRA(cm, k + 1), cm->NRA)
 						, cm->age[k+1]);
 				CI->cap = calcCAP(cm, CI);
 
@@ -883,20 +883,20 @@ static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k)
 				CI->res = cm->RESPS[PUC][i][gen][1];
 				CI->capdth = 0;
 				CI->age = cm->age[1];
-				CI->RA = min(3, NRA(cm, k + 1), cm->NRA, 
+				CI->RA = MIN3(NRA(cm, k + 1), cm->NRA, 
 						cm->age[k+1]);
 				CI->cap = calcCAP(cm, CI);
 
 				CI->lt = &tff.ltAfterTRM[i][gen];
 				CI->res = CI->cap;
 				CI->age = CI->RA;
-				CI->RA = min(2, NRA(cm, k + 1), cm->NRA);
+				CI->RA = MIN2(NRA(cm, k + 1), cm->NRA);
 				CI->cap = calcCAP(cm, CI);
 
 				CI->lt = &tff.ltProlong[i];
 				CI->res = CI->cap;
 				CI->age = CI->RA;
-				CI->RA = max(2, min(2, NRA(cm, k + 1), cm->NRA)
+				CI->RA = MAX2(MIN2(NRA(cm, k + 1), cm->NRA)
 						, cm->age[k+1]);
 				CI->cap = calcCAP(cm, CI);
 
@@ -914,7 +914,7 @@ static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k)
 
 static void updateRESTUCPS_1(CurrentMember cm[static restrict 1], int k)
 {
-	unsigned index = min(2, (double)k+1, 2.0);
+	unsigned index = MIN2(k + 1, 2.0);
 	double ir = 0.0;
 	double Ex = 0.0;
 	CalcInput *CI = jalloc(1, sizeof(*CI));
@@ -923,10 +923,10 @@ static void updateRESTUCPS_1(CurrentMember cm[static restrict 1], int k)
 
 	for (int i = 0; i < EREE_AMOUNT; i++) {
 		for (int gen = 0; gen < MAXGEN; gen++) {
-			CI->RA = min(3, NRA(cm, k + 1), cm->NRA, cm->age[k+1]);
+			CI->RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->age[k+1]);
 			ir = cm->TAUX[i][gen];
 			Ex = nEx(tff.ltINS[i][gen].lt, ir, tff.costRES, CI->RA,
-					min(2, NRA(cm, k), cm->NRA), 0);
+					MIN2(NRA(cm, k), cm->NRA), 0);
 
 			CI->lt = &tff.ltINS[i][gen];
 			CI->res = cm->RES[PUC][i][gen][index];
@@ -950,7 +950,7 @@ static void updateRESTUCPS_1(CurrentMember cm[static restrict 1], int k)
 
 static void updateREDCAPTUCPS_1(CurrentMember cm[static restrict 1], int k)
 {
-	unsigned index = min(2, (double)k+1, 2.0);
+	unsigned index = MIN2(k + 1, 2.0);
 	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
 	CI->deltacap = 0;
@@ -962,7 +962,7 @@ static void updateREDCAPTUCPS_1(CurrentMember cm[static restrict 1], int k)
 				CI->res = cm->RES[PUC][i][gen][index];
 				CI->capdth = cm->CAPDTH[i][gen][index];
 				CI->age = cm->age[index]; 
-				CI->RA = min(2, NRA(cm, k + 1), cm->NRA);
+				CI->RA = MIN2(NRA(cm, k + 1), cm->NRA);
 				CI->cap = calcCAP(cm, CI) + cm->DELTACAP[i][0]
 					* (cm->NRA - CI->age) * 12;
 
@@ -978,7 +978,7 @@ static void updateREDCAPTUCPS_1(CurrentMember cm[static restrict 1], int k)
 				CI->res = cm->RESPS[PUC][i][gen][index];
 				CI->capdth = 0;
 				CI->age = cm->age[index];
-				CI->RA = min(2, NRA(cm, k + 1), cm->NRA);
+				CI->RA = MIN2(NRA(cm, k + 1), cm->NRA);
 				CI->cap = calcCAP(cm, CI);
 
 				CI->lt = &tff.ltProlongAfterTRM[i];
@@ -992,21 +992,21 @@ static void updateREDCAPTUCPS_1(CurrentMember cm[static restrict 1], int k)
 				CI->res = cm->RES[PUC][i][gen][index];
 				CI->capdth = cm->CAPDTH[i][gen][index];
 				CI->age = cm->age[index];
-				CI->RA = min(3, NRA(cm, k + 1), cm->NRA, 
+				CI->RA = MIN3(NRA(cm, k + 1), cm->NRA, 
 						cm->age[k+1]);
 				CI->cap = calcCAP(cm, CI);
 
 				CI->lt = &tff.ltAfterTRM[i][gen];
 				CI->res = CI->cap;
 				CI->age = CI->RA;
-				CI->RA = min(2, NRA(cm, k + 1), cm->NRA);
+				CI->RA = MIN2(NRA(cm, k + 1), cm->NRA);
 				CI->cap = calcCAP(cm, CI) + cm->DELTACAP[i][0]
 					* (cm->NRA - cm->age[index]) * 12;
 
 				CI->lt = &tff.ltProlong[i];
 				CI->res = CI->cap;
-				CI->age = min(2, NRA(cm, k+1), cm->NRA);
-				CI->RA = max(2, min(2, NRA(cm, k + 1), cm->NRA)
+				CI->age = MIN2(NRA(cm, k+1), cm->NRA);
+				CI->RA = MAX2(MIN2(NRA(cm, k + 1), cm->NRA)
 						, cm->age[k+1]);
 				CI->cap = calcCAP(cm, CI);
 
@@ -1022,20 +1022,20 @@ static void updateREDCAPTUCPS_1(CurrentMember cm[static restrict 1], int k)
 				CI->res = cm->RESPS[PUC][i][gen][index];
 				CI->capdth = 0;
 				CI->age = cm->age[index];
-				CI->RA = min(3, NRA(cm, k + 1), cm->NRA, 
+				CI->RA = MIN3(NRA(cm, k + 1), cm->NRA, 
 						cm->age[k+1]);
 				CI->cap = calcCAP(cm, CI);
 
 				CI->lt = &tff.ltAfterTRM[i][gen];
 				CI->res = CI->cap;
 				CI->age = CI->RA;
-				CI->RA = min(2, NRA(cm, k + 1), cm->NRA);
+				CI->RA = MIN2(NRA(cm, k + 1), cm->NRA);
 				CI->cap = calcCAP(cm, CI);
 
 				CI->lt = &tff.ltProlong[i];
 				CI->res = CI->cap;
 				CI->age = CI->RA;
-				CI->RA = max(2, min(2, NRA(cm, k + 1), cm->NRA)
+				CI->RA = MAX2(MIN2(NRA(cm, k + 1), cm->NRA)
 						, cm->age[k+1]);
 				CI->cap = calcCAP(cm, CI);
 
