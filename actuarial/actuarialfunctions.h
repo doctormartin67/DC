@@ -4,6 +4,8 @@
 #include "lifetables.h"
 #include "DCProgram.h"
 
+#define EPS 0.0000001
+
 enum {DBO, NC, IC, ASSETS};
 enum {DEF, IMM}; // deferred or immediate payment
 
@@ -17,6 +19,8 @@ typedef struct {
 	double RA; 
 	double cap;
 } CalcInput;
+
+extern unsigned long lx[LT_AMOUNT][MAXAGE];
 
 /*
  * Definitions:
@@ -32,18 +36,6 @@ typedef struct {
  * - charge is a possible charge that an insurance company or another entity 
  * might charge on the discount rate.
  */
-
-/* 
- * axn is the annuity factor that calculates the present value of investing 1
- * dollar each year from ageX until ageXn divided up by the term, where term is
- * represented in months, so term = 12 means we pay 1/12 per months, term = 6
- * means we pay 2/12 every 2 months. prepost determines whether we pay straight
- * away (prepost = 0) or after the first term ends (prepost = 1). 
- */
-double axn(register unsigned lt, register double i, register double charge,
-		register unsigned prepost, register unsigned term,
-		register double ageX, register double ageXn,
-		register int corr) PURE ;
 
 /*
  * discounted yearly payments in case of death
@@ -100,20 +92,20 @@ double getamount(const CurrentMember *restrict cm, int k, unsigned DBONCICASS,
 inline double npx(register unsigned lt, register double ageX,
 		register double ageXn, register int corr)
 {
-	register double ip1;
-	register double ip2;
-	register int lxX;
-	register int lxX1;
-	register int lxXn;
-	register int lxXn1;
+	register double ip1 = 0.0;
+	register double ip2 = 0.0;
+	register unsigned long lxX = 0;
+	register unsigned long lxX1 = 0;
+	register unsigned long lxXn = 0;
+	register unsigned long lxXn1 = 0;
 	ageX += corr;
 	ageXn += corr;
 	ageX = MAX2(0, ageX);
 	ageXn = MAX2(0, ageXn);
-	lxX = lx(lt, ageX);
-	lxX1 = lx(lt, ageX + 1);
-	lxXn = lx(lt, ageXn);
-	lxXn1 = lx(lt, ageXn + 1);
+	lxX = lx[lt][(unsigned)ageX];
+	lxX1 = lx[lt][(unsigned)(ageX + 1)];
+	lxXn = lx[lt][(unsigned)ageXn];
+	lxXn1 = lx[lt][(unsigned)(ageXn + 1)];
 
 	ip1 = lxX - (ageX - floor(ageX)) * (lxX - lxX1);
 	ip2 = lxXn - (ageXn - floor(ageXn)) * (lxXn - lxXn1);
@@ -133,6 +125,82 @@ inline double nEx(register unsigned lt, register double i, register double charg
 	register double vn = 1/pow(1 + im, n);
 	register double nPx = npx(lt, ageX, ageXn, corr);
 	return vn * nPx;
+}
+
+/*
+ * calculates the annuity from ageX to ageXn given the term, f.e. monthly,
+ * with a given life table lt, an interest rate i, a cost on the interest rate
+ * charge, whether the payment are pre- or post numerando and with an age
+ * correction. 
+ * The function saves the calculated values in a hashtable so that
+ * values already calculated can be searched in the table.
+ */
+inline double axn(register unsigned lt, register double i, register double charge, 
+		register unsigned prepost, register unsigned term,
+		register double ageX, register double ageXn, register int corr)
+{
+	register int payments = 0;
+	register double ageXk = 0.0;
+	register double value = 0.0;
+
+	if (12 % term != 0) {
+		/* errExit("term [%d] is not divisible by 12", term); */
+	} else if (ageX > ageXn + EPS) {
+		/*
+		printf("warning: ageXn = %.6f < ageX = %.6f\n",
+				ageXn, ageX);
+		printf("axn = 0 is taken in this case.\n");
+		*/
+		value = 0;
+	} else {
+		ageXk = ageX + (double)prepost/term;
+		payments = (ageXn - ageX) * term + EPS;
+		while (payments--) {
+			value += nEx(lt, i, charge, ageX, ageXk, corr);
+			ageXk += 1.0/term;
+		}
+		/* 
+		 * There is a final portion that needs to be added when
+		 * the amount of payments don't consider fractions of
+		 * age, for example if ageX = 40 and ageXn = 40,5 and
+		 * term = 1. This would give 0 payments but we still
+		 * need to add nEx/2 in this case. We also need to
+		 * subtract one term from ageXk because the while loop
+		 * adds one too many.
+		 */    
+		ageXk -= 1.0/term * prepost;
+		value /= term;
+		value += (ageXn - ageXk)
+			* nEx(lt, i, charge, ageX,
+					((int)(ageXn*term + EPS))/term
+					+ term*prepost, corr);
+
+	}
+
+	return value;
+}
+
+inline double CAP_UKMS_UKZT(double res, double prem, double deltacap, double age,
+		double RA, double ac, double Ex, double ax)
+{
+	return (res + prem * (1 - ac) * ax) / Ex + deltacap * (RA - age) * 12;
+}
+
+inline double CAP_UKMT(double res, double prem, double capdth, double ac,
+		double Ex, double ax, double axcost, double Ax1, double IAx1,
+		double Iax, double cKO)
+{
+	prem *= (1 - ac);
+	return (res + prem * ax - capdth * (Ax1 + cKO * axcost)
+			- prem * (IAx1 + cKO * Iax)) / Ex;
+}
+
+inline double CAP_MIXED(double res, double prem, double ac, double Ex,
+		double ax, double axcost, double Ax1, double x10,
+		double MIXEDPS, double cKO)
+{
+	return (res + prem * (1 - ac) * ax)
+		/ (Ex + 1.0/x10 * MIXEDPS * (Ax1 + cKO * axcost));
 }
 
 #endif

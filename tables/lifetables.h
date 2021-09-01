@@ -9,7 +9,7 @@
 #define PURE
 #endif
 
+enum {MAXAGE = 130, LENGTHLINE = 64};
 enum lifetables {LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL, LT_AMOUNT};
-int lx(register unsigned lt, register unsigned age) PURE ;
 void makeLifeTables(void);
 #endif

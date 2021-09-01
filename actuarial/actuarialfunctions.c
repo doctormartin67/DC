@@ -4,8 +4,6 @@
 #include "hashtable.h"
 #include "errorexit.h"
 
-const double eps = 0.0000001;
-
 static void updateART24ACT(CurrentMember cm[static restrict 1], int k);
 static void updateART24reserves(unsigned method,
 		CurrentMember cm[static restrict 1],
@@ -39,75 +37,18 @@ double npx(register unsigned lt, register double ageX, register double ageXn,
 double nEx(register unsigned lt, register double i, register double charge,
 		register double ageX, register double ageXn,
 		register int corr) PURE ;
-
-/*
- * calculates the annuity from ageX to ageXn given the term, f.e. monthly,
- * with a given life table lt, an interest rate i, a cost on the interest rate
- * charge, whether the payment are pre- or post numerando and with an age
- * correction. 
- * The function saves the calculated values in a hashtable so that
- * values already calculated can be searched in the table.
- */
-double axn(register unsigned lt, register double i, register double charge, 
+double axn(register unsigned lt, register double i, register double charge,
 		register unsigned prepost, register unsigned term,
-		register double ageX, register double ageXn, register int corr)
-{
-	static Hashtable *axntable = 0; 
-	List *h = 0;
-	char key[256];
-	char valuestr[128];
-	register int payments = 0;
-	register double ageXk = 0.0;
-	register double value = 0.0;
-
-	snprintf(key, sizeof(key), "%d%f%f%d%d%f%f%d", lt, i, charge, prepost,
-			term, ageX, ageXn, corr); 
-
-	/* 
-	 * took 5 * 3 * (12 * 45)^2 * 2 as a rough estimate of the amount of
-	 * combinations for keys then times 1.3 and then the next prime number
-	 */
-	if (0 == axntable) axntable = newHashtable(11372401, 1);
-
-	if (0 == (h = lookup(key, 0, axntable))) {
-		if (12 % term != 0) {
-			errExit("term [%d] is not divisible by 12", term);
-		} else if (ageX > ageXn + eps) {
-			printf("warning: ageXn = %.6f < ageX = %.6f\n",
-					ageXn, ageX);
-			printf("axn = 0 is taken in this case.\n");
-			h = lookup(key, "0", axntable);
-			return 0;
-		} else {
-			ageXk = ageX + (double)prepost/term;
-			payments = (ageXn - ageX) * term + eps;
-			while (payments--) {
-				value += nEx(lt, i, charge, ageX, ageXk, corr);
-				ageXk += 1.0/term;
-			}
-			/* 
-			 * There is a final portion that needs to be added when
-			 * the amount of payments don't consider fractions of
-			 * age, for example if ageX = 40 and ageXn = 40,5 and
-			 * term = 1. This would give 0 payments but we still
-			 * need to add nEx/2 in this case. We also need to
-			 * subtract one term from ageXk because the while loop
-			 * adds one too many.
-			 */    
-			ageXk -= 1.0/term * prepost;
-			value /= term;
-			value += (ageXn - ageXk)
-				* nEx(lt, i, charge, ageX,
-						((int)(ageXn*term + eps))/term
-						+ term*prepost, corr);
-
-			snprintf(valuestr, sizeof(valuestr), "%f", value);
-			h = lookup(key, valuestr, axntable);
-		}
-	}
-
-	return atof(h->value);
-}
+		register double ageX, register double ageXn,
+		register int corr) PURE ;
+double CAP_UKMS_UKZT(double res, double prem, double deltacap, double age,
+		double RA, double ac, double Ex, double ax) PURE ;
+double CAP_UKMT(double res, double prem, double capdth, double ac,
+		double Ex, double ax, double axcost, double Ax1, double IAx1,
+		double Iax, double cKO) PURE ;
+double CAP_MIXED(double res, double prem, double ac, double Ex,
+		double ax, double axcost, double Ax1, double x10,
+		double MIXEDPS, double cKO) PURE ;
 
 /* 
  * nAx = v^(1/2)*1Qx + v^(1+1/2)*1Px*1q_{x+1} + ...
@@ -122,14 +63,14 @@ double Ax1n(register unsigned lt, register double i, register double charge,
 	register double v = 0.0;
 	register double value = 0.0;
 
-	if (ageX > ageXn + eps) {
+	if (ageX > ageXn + EPS) {
 		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
 		printf("Ax1n = 0 is taken in this case.\n");
 		return 0;
 	} else {
 		im = (1 + i)/(1 + charge) - 1;
 		v = 1/(1 + im);
-		payments = ageXn - ageX + eps;
+		payments = ageXn - ageX + EPS;
 
 		while (payments--) {
 			value += pow(v, k + 1.0/2)
@@ -153,16 +94,16 @@ double IAx1n(register unsigned lt, register double i, register double charge,
 	register int payments = 0;
 	register double value = 0.0;
 
-	if (ageX > ageXn + eps) {
+	if (ageX > ageXn + EPS) {
 		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
 		printf("Ax1n = 0 is taken in this case.\n");
 		return 0;
 	} else {
-		payments = ageXn - ageX + eps;
+		payments = ageXn - ageX + EPS;
 		while (payments--) {
 			value += k * Ax1n(lt, i, charge, ageX + k - 1,
 					ageX + k, corr)
-			* nEx(lt, i, charge, ageX, ageX + k - 1, corr);
+				* nEx(lt, i, charge, ageX, ageX + k - 1, corr);
 			k++;
 		}
 		value += k * Ax1n(lt, i, charge, ageX + k - 1,
@@ -186,13 +127,13 @@ double Iaxn(register unsigned lt, register double i, register double charge,
 	register double ageXk = 0.0;
 	register double value = 0.0;
 
-	if (ageX > ageXn + eps) {
+	if (ageX > ageXn + EPS) {
 		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
 		printf("Iaxn = 0 is taken in this case.\n");
 		return 0;
 	} else {
 		ageXk = ageX + (double)prepost/term;
-		payments = (ageXn - ageX) * term + eps;
+		payments = (ageXn - ageX) * term + EPS;
 		while (payments--) {
 			value += k++ * nEx(lt, i, charge, ageX, ageXk, corr);
 			ageXk += 1.0/term;
@@ -201,7 +142,7 @@ double Iaxn(register unsigned lt, register double i, register double charge,
 		value /= term;
 		value += (ageXn - ageXk) * k
 			* nEx(lt, i, charge, ageX,
-					((int)(ageXn*term + eps))/term
+					((int)(ageXn*term + EPS))/term
 					+ term*prepost, corr);
 
 		return value;
@@ -346,7 +287,7 @@ static double get_premium_method(unsigned method,
 			premium = (k > 1 ? 0 : gensum(cm->PREMIUM, EREE, k));
 			break;
 	}
-	
+
 	return premium;
 }
 
@@ -387,8 +328,8 @@ double calcCAP(const CurrentMember cm[static restrict 1],
 	switch(cm->tariff) {
 		case UKMS :
 		case UKZT :
-			value = (res + prem * (1 - tff.admincost) * ax) / Ex
-				+ deltacap * (RA - age) * 12;
+			value = CAP_UKMS_UKZT(res, prem, deltacap, age, RA,
+					tff.admincost, Ex, ax);
 			break;
 		case UKMT :
 			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
@@ -396,18 +337,17 @@ double calcCAP(const CurrentMember cm[static restrict 1],
 			IAx1 = IAx1n(lt->lt, i, tff.costRES, age, RA, 0);
 			Iax = Iaxn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
 
-			value = (res + prem * (1 - tff.admincost) * ax
-					- capdth * (Ax1 + tff.costKO * axcost)
-					- prem * (1 - tff.admincost)
-					* (IAx1 + tff.costKO * Iax)) / Ex;
+			value = CAP_UKMT(res, prem, capdth, tff.admincost, Ex,
+					ax, axcost, Ax1, IAx1, Iax,
+					tff.costKO);
 			break;
 		case MIXED :
 			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
 			Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
 
-			value = (res + prem * (1 - tff.admincost) * ax)
-				/ (Ex + 1.0/cm->X10 * tff.MIXEDPS
-				* (Ax1 + tff.costKO * axcost));
+			value = CAP_MIXED(res, prem, tff.admincost, Ex, ax,
+					axcost, Ax1, cm->X10, tff.MIXEDPS,
+					tff.costKO);
 			break;
 		default :
 			errExit("%d is not a valid tariff.", cm->tariff);

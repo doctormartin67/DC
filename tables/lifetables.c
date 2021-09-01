@@ -6,7 +6,6 @@
 #include "errorexit.h"
 
 #define PATH "/home/doctormartin67/Projects/work/tables/tables/" //needs updating!!
-enum {MAXAGE = 130, LENGTHLINE = 64};
 
 static const char *const lifetables[LT_AMOUNT] = {
 	[LXMR] = "LXMR",
@@ -17,26 +16,19 @@ static const char *const lifetables[LT_AMOUNT] = {
 	[LXNIHIL] = "Lxnihil"
 };
 
-static int ltlist[LT_AMOUNT][MAXAGE];
+unsigned long lx[LT_AMOUNT][MAXAGE];
 
-static void makeLifeTable(const char *, int *);
-
-int lx(register unsigned lt, register unsigned age)
-{
-	if (age > MAXAGE) 
-		return 0;
-	else
-		return ltlist[lt][age];
-}
+static void makeLifeTable(const char *, unsigned long *);
 
 void makeLifeTables(void)
 {
 	for (unsigned i = 0; i < LT_AMOUNT; i++) {
-		makeLifeTable(lifetables[i], ltlist[i]);
+		makeLifeTable(lifetables[i], lx[i]);
 	}
 }
 
-static void makeLifeTable(const char name[static restrict 1], int clt[static 1])
+static void makeLifeTable(const char name[static restrict 1],
+		unsigned long clt[static 1])
 { 
 	char path[PATH_MAX]; 
 	char line[LENGTHLINE];
@@ -55,7 +47,7 @@ static void makeLifeTable(const char name[static restrict 1], int clt[static 1])
 			errExit("%s does not contain a ',', so how does "
 					"it separate age from value?", line);
 
-		*clt++ = atoi(++lp);
+		*clt++ = atol(++lp);
 	}
 
 	fclose(lt);
