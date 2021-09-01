@@ -137,38 +137,24 @@ void setdate(Date date[static restrict 1])
 
 
 /*
- * return the minimum date given a list of dates
+ * return the minimum date
  */
-Date *minDate(int argc, ...)
+Date *minDate(Date *d1, Date *d2)
 {
-	Date *min = 0;
-	Date *currmin = 0;
-	va_list dates;
+	if (0 == d1 || 0 == d2) return 0;
 
-	va_start(dates, argc);
-	min = va_arg(dates, Date *);
+	Date *min = d2;
 
-	for (int i = 1; i < argc; i++) {
-		currmin = va_arg(dates, Date *);
-		if (min->year > currmin->year) {
-			min = currmin;
-		} else if (min->year == currmin->year) {
-			if (min->month > currmin->month) {
-				min = currmin;
-			} else if (min->month == currmin->month) {
-				if (min->day > currmin->day)
-					min = currmin;
-			}
+	if (d1->year < d2->year) {
+		min = d1;
+	} else if (d1->year == d2->year) {
+		if (d1->month < d2->month) {
+			min = d1;
+		} else if (d1->month == d2->month) {
+			if (d1->day < d2->day)
+				min = d1;
 		}
 	}
-
-	if (min->month > DEC || min->month < JAN) {
-		errExit("invalid month [%d]", min->month);
-	} else if (min->day > days_in_month_year(min->year, min->month)) {
-		errExit("invalid day [%d]", min->day);
-	}
-
-	va_end(dates);
 
 	return min;
 }

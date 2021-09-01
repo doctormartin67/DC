@@ -3,6 +3,8 @@
 
 #include "libraryheader.h"
 
+#define MINDATE3(X, Y, Z) MINDATE2(MINDATE2(X, Y), Z)
+#define MINDATE2(X, Y) minDate(X, Y)
 /*
  * As of writing this program, the days since 00/00/1900 in excel is around
  * 45000, so it will take a long time until we are at MAXDAYS. I took 2^17
@@ -22,7 +24,7 @@ typedef struct date {
 
 void setdate(Date date[static restrict 1]);
 Date *newDate(unsigned XLday, unsigned year, unsigned month, unsigned day);
-Date *minDate(int, ...);
+Date *minDate(Date *, Date *);
 void printDate(const Date *restrict d);
 
 /*
