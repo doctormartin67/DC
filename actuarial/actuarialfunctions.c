@@ -42,13 +42,13 @@ double axn(register unsigned lt, register double i, register double charge,
 		register double ageX, register double ageXn,
 		register int corr) PURE ;
 double CAP_UKMS_UKZT(double res, double prem, double deltacap, double age,
-		double RA, double ac, double Ex, double ax) PURE ;
+		double RA, double ac, double Ex, double ax) CONST ;
 double CAP_UKMT(double res, double prem, double capdth, double ac,
 		double Ex, double ax, double axcost, double Ax1, double IAx1,
-		double Iax, double cKO) PURE ;
+		double Iax, double cKO) CONST ;
 double CAP_MIXED(double res, double prem, double ac, double Ex,
 		double ax, double axcost, double Ax1, double x10,
-		double MIXEDPS, double cKO) PURE ;
+		double MIXEDPS, double cKO) CONST ;
 
 /* 
  * nAx = v^(1/2)*1Qx + v^(1+1/2)*1Px*1q_{x+1} + ...
@@ -64,8 +64,6 @@ double Ax1n(register unsigned lt, register double i, register double charge,
 	register double value = 0.0;
 
 	if (ageX > ageXn + EPS) {
-		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
-		printf("Ax1n = 0 is taken in this case.\n");
 		return 0;
 	} else {
 		im = (1 + i)/(1 + charge) - 1;
@@ -95,8 +93,6 @@ double IAx1n(register unsigned lt, register double i, register double charge,
 	register double value = 0.0;
 
 	if (ageX > ageXn + EPS) {
-		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
-		printf("Ax1n = 0 is taken in this case.\n");
 		return 0;
 	} else {
 		payments = ageXn - ageX + EPS;
@@ -128,8 +124,6 @@ double Iaxn(register unsigned lt, register double i, register double charge,
 	register double value = 0.0;
 
 	if (ageX > ageXn + EPS) {
-		printf("warning: ageXn = %.6f < ageX = %.6f\n", ageXn, ageX);
-		printf("Iaxn = 0 is taken in this case.\n");
 		return 0;
 	} else {
 		ageXk = ageX + (double)prepost/term;
@@ -307,6 +301,9 @@ double calcCAP(const CurrentMember cm[static restrict 1],
 	       capdth = CI->capdth, age = CI->age, RA = CI->RA;
 	LifeTable *lt = CI->lt;
 
+	if (res < EPS && prem < EPS && deltacap < EPS && capdth < EPS)
+		return 0.0;
+
 	double i = 0.0;
 	double Ex = 0.0;
 	double ax = 0.0;
@@ -362,6 +359,10 @@ double calcRES(const CurrentMember cm[static restrict 1],
 	double cap = CI->cap, prem = CI->prem, deltacap = CI->deltacap, 
 	       capdth = CI->capdth, age = CI->age, RA = CI->RA;
 	LifeTable *lt = CI->lt;
+
+	if (cap < EPS && prem < EPS && deltacap < EPS && capdth < EPS)
+		return 0.0;
+
 	double i = 0.0;
 	double Ex = 0.0;
 	double ax = 0.0;

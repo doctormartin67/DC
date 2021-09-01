@@ -28,8 +28,8 @@ EXEC = main
 # -ffast-math see page 686 in C in a nutshell
 # the OPTFLAGS should be removed for debugging. I also want to check whether with or without
 # -ffast-math gives a big difference
-OPTFLAGS = -O3 -ffast-math
-DEBUGFLAGS = -g -O0
+OPTFLAGS = -Ofast
+DEBUGFLAGS = -g -Og
 GPROFFLAGS = -pg
 CFLAGS = -Wall -Wshadow -Wextra $(GPROFFLAGS)
 LDFLAGS = -lm -lxlsxwriter#libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.

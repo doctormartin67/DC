@@ -94,14 +94,16 @@ inline double npx(register unsigned lt, register double ageX,
 {
 	register double ip1 = 0.0;
 	register double ip2 = 0.0;
+	register double max = 0.0;
 	register unsigned long lxX = 0;
 	register unsigned long lxX1 = 0;
 	register unsigned long lxXn = 0;
 	register unsigned long lxXn1 = 0;
 	ageX += corr;
 	ageXn += corr;
-	ageX = MAX2(0, ageX);
-	ageXn = MAX2(0, ageXn);
+	max = MAXAGE - 2;
+	ageX = MIN2(max, MAX2(0, ageX));
+	ageXn = MIN2(max, MAX2(0, ageXn));
 	lxX = lx[lt][(unsigned)ageX];
 	lxX1 = lx[lt][(unsigned)(ageX + 1)];
 	lxXn = lx[lt][(unsigned)ageXn];
@@ -120,9 +122,9 @@ inline double npx(register unsigned lt, register double ageX,
 inline double nEx(register unsigned lt, register double i, register double charge, 
 		register double ageX, register double ageXn, register int corr)
 {
-	register double im = (1+i)/(1+charge) - 1;
+	register double im = (1 + i)/(1 + charge) - 1;
 	register double n = ageXn - ageX;
-	register double vn = 1/pow(1 + im, n);
+	register double vn = 1 / pow(1 + im, n);
 	register double nPx = npx(lt, ageX, ageXn, corr);
 	return vn * nPx;
 }
@@ -142,22 +144,17 @@ inline double axn(register unsigned lt, register double i, register double charg
 	register int payments = 0;
 	register double ageXk = 0.0;
 	register double value = 0.0;
+	register double termfrac = 0.0;
 
-	if (12 % term != 0) {
-		/* errExit("term [%d] is not divisible by 12", term); */
-	} else if (ageX > ageXn + EPS) {
-		/*
-		printf("warning: ageXn = %.6f < ageX = %.6f\n",
-				ageXn, ageX);
-		printf("axn = 0 is taken in this case.\n");
-		*/
+	if (ageX > ageXn + EPS) {
 		value = 0;
 	} else {
+		termfrac = 1.0 / term;
 		ageXk = ageX + (double)prepost/term;
 		payments = (ageXn - ageX) * term + EPS;
 		while (payments--) {
 			value += nEx(lt, i, charge, ageX, ageXk, corr);
-			ageXk += 1.0/term;
+			ageXk += termfrac;
 		}
 		/* 
 		 * There is a final portion that needs to be added when
@@ -168,10 +165,9 @@ inline double axn(register unsigned lt, register double i, register double charg
 		 * subtract one term from ageXk because the while loop
 		 * adds one too many.
 		 */    
-		ageXk -= 1.0/term * prepost;
+		ageXk -= termfrac * prepost;
 		value /= term;
-		value += (ageXn - ageXk)
-			* nEx(lt, i, charge, ageX,
+		value += (ageXn - ageXk) * nEx(lt, i, charge, ageX,
 					((int)(ageXn*term + EPS))/term
 					+ term*prepost, corr);
 
