@@ -21,13 +21,18 @@ static int ltlist[LT_AMOUNT][MAXAGE];
 
 static void makeLifeTable(const char *, int *);
 
-int lx(register unsigned ltindex, register unsigned age)
+int lx(register unsigned lt, register unsigned age)
 {
-	if (age > MAXAGE) return 0;
-	else {
-		if (0 == ltlist[ltindex][0])
-			makeLifeTable(lifetables[ltindex], ltlist[ltindex]);
-		return ltlist[ltindex][age];
+	if (age > MAXAGE) 
+		return 0;
+	else
+		return ltlist[lt][age];
+}
+
+void makeLifeTables(void)
+{
+	for (unsigned i = 0; i < LT_AMOUNT; i++) {
+		makeLifeTable(lifetables[i], ltlist[i]);
 	}
 }
 

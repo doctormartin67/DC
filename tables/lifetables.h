@@ -10,5 +10,6 @@
 #endif
 
 enum lifetables {LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL, LT_AMOUNT};
-int lx(register unsigned ltindex, register unsigned age) PURE ;
+int lx(register unsigned lt, register unsigned age) PURE ;
+void makeLifeTables(void);
 #endif

@@ -12,8 +12,9 @@ static void prolongate(CurrentMember cm[static 1], int k);
 
 int main(void)
 {
-	userinterface();
+	makeLifeTables();
 
+	userinterface();
 	return 0;
 }
 
@@ -207,7 +208,7 @@ static Date *getDOC(const CurrentMember cm[static 1], int k)
 
 	if (0 == Ndate || 0 == docdate) errExit("invalid date");
 
-	d = minDate(3, Ndate, docdate, cm->DOR);
+	d = MINDATE3(Ndate, docdate, cm->DOR);
 
 	if (d != Ndate) free(Ndate);
 	if (d != docdate) free(docdate);
@@ -228,7 +229,7 @@ static Date *getDOC_prolongation(const CurrentMember cm[static 1], int k)
 
 	if (0 == Ndate || 0 == docdate) errExit("invalid date");
 
-	d = minDate(2, Ndate, docdate);
+	d = MINDATE2(Ndate, docdate);
 
 	if (d != Ndate) free(Ndate);
 	if (d != docdate) free(docdate);
