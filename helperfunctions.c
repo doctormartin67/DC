@@ -107,12 +107,12 @@ double sum(size_t length, double a[restrict length])
 }
 
 /*
- * wrapper for calloc that errExit's if calloc returns NULL
+ * wrapper for calloc that dies if calloc returns NULL
  */
 void *jalloc(size_t n, size_t size)
 {
 	void *p = calloc(n, size);
-	if (0 == p) errExit("calloc returned NULL");
+	if (0 == p) die("calloc returned NULL");
 	
 	return p;
 }

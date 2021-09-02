@@ -108,7 +108,7 @@ inline void nextcol(char next[static 1])
 	}
 
 	while (!isdigit(*s) && '\0' != *s) {
-		if (*s <= 'z' && *s >= 'a') errExit("invalid cell [%s]", next);
+		if (*s <= 'z' && *s >= 'a') die("invalid cell [%s]", next);
 		s++;
 	}
 	s--;

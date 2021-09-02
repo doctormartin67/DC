@@ -89,7 +89,7 @@ Date *newDate(unsigned XLday, unsigned year, unsigned month, unsigned day)
 void setdate(Date date[static restrict 1])
 {
 	if (date->XLday > MAXDAYS - 1)
-		errExit("XLday exceeds the maximum amount of days since "
+		die("XLday exceeds the maximum amount of days since "
 				"00/00/1900 (%d). MAXDAYS constant needs "
 				"increased within code", MAXDAYS);
 

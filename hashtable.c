@@ -42,7 +42,7 @@ List *lookup(const char t[static restrict 1], const char *restrict value,
 	if (0 == pht) {
 		pht = jalloc(1, sizeof(*pht));
 		if (0 == (pht->key = strdup(key)))
-			errExit("[strdup] returned NULL");
+			die("[strdup] returned NULL");
 		pht->next = ht->list[hashval];
 		ht->list[hashval] = pht;
 	} else {
@@ -50,7 +50,7 @@ List *lookup(const char t[static restrict 1], const char *restrict value,
 	}
 
 	if (0 == (pht->value = strdup(value)))
-		errExit("[strdup] returned NULL");
+		die("[strdup] returned NULL");
 
 	return pht;
 }

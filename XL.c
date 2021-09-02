@@ -28,7 +28,7 @@ XLfile *createXL(const char s[static restrict 1])
 	snprintf(xl->fname, sizeof(xl->fname), "%s", s);
 	snprintf(xl->dirname, sizeof(xl->dirname), "%s", s);
 	if (0 == (pt = strstr(xl->dirname, ".xls")))
-		errExit("[%s] not an excel file", s);
+		die("[%s] not an excel file", s);
 	*pt = '\0';
 
 	snprintf(temp, sizeof(temp), "%s%s", xl->dirname, 
@@ -97,7 +97,7 @@ char *cell(const XLfile xl[static restrict 1], unsigned sheet,
 	if (node == 0) return 0;
 
 	if (0 == (node = node->children))
-		errExit("no value found in cell [%s]", s);
+		die("no value found in cell [%s]", s);
 
 	while (node) {
 		/* find cell in found row */
@@ -122,7 +122,7 @@ char *cell(const XLfile xl[static restrict 1], unsigned sheet,
 		childnode = childnode->next;
 	}
 	if (0 == v)
-		errExit("no element <v> for cell [%s]", s);
+		die("no element <v> for cell [%s]", s);
 
 	t = xmlGetProp(node, (const xmlChar *)"t");
 	if (0 == xmlStrcmp(t, (const xmlChar *)"s")) {
@@ -158,7 +158,7 @@ char *findss(const XLfile xl[static restrict 1], int index)
 	node = nodes->nodeTab[index];
 
 	if (0 == (childnode = node->children))
-		errExit("The nodes have no childs, " 
+		die("The nodes have no childs, " 
 				"but the childs hold the string values");
 
 	if (0 == xmlStrcmp(childnode->name, (const xmlChar *)"t")) {
@@ -166,9 +166,9 @@ char *findss(const XLfile xl[static restrict 1], int index)
 	} else if (0 == xmlStrcmp(childnode->name, (const xmlChar *)"r")) {
 		s = getconcatss(childnode);
 	} else
-		errExit("Unknown element [%s]", childnode->name);
+		die("Unknown element [%s]", childnode->name);
 
-	if (0 == s) errExit("string to return is NULL");
+	if (0 == s) die("string to return is NULL");
 
 	return s;
 }
@@ -186,7 +186,7 @@ char *getconcatss(xmlNodePtr cn)
 		while (gcn && 0 != xmlStrcmp(gcn->name, (const xmlChar *)"t"))
 			gcn = gcn->next;
 
-		if (0 == gcn) errExit("no \"t\" element in sharedStrings.xml");
+		if (0 == gcn) die("no \"t\" element in sharedStrings.xml");
 
 		s = (char *)xmlNodeGetContent(gcn);
 		snprintf(temp, sizeof(temp), "%s%s", t, s);
@@ -205,16 +205,16 @@ void setsheetnames(XLfile xl[static restrict 1])
 	char **xls = xl->sheetname;
 	xmlNodePtr p = xmlDocGetRootElement(xl->workbook);
 
-	if (0 == p) errExit("Empty document");
+	if (0 == p) die("Empty document");
 
 	if (0 != xmlStrcmp(p->name, (const xmlChar *) "workbook"))
-		errExit("root node != workbook");
+		die("root node != workbook");
 
 	for (p = p->children; 0 != p; p = p->next)
 		if ((0 == xmlStrcmp(p->name, (const xmlChar *)"sheets")))
 			break;
 
-	if (0 == p) errExit("No \"sheets\" node");
+	if (0 == p) die("No \"sheets\" node");
 
 	for (xmlNodePtr ps = p->children; 0 != ps; ps = ps->next)
 		*xls++ = (char *)xmlGetProp(ps, (const xmlChar *)"name");
@@ -229,7 +229,7 @@ void setnodes(XLfile xl[static restrict 1])
 {
 	xl->nodesetss = getnodeset(xl->sharedStrings, (xmlChar *)XPATHSS);
 	if (0 == (xl->nodesetss->nodesetval))
-		errExit("there are no nodes in sharedStrings.xml");
+		die("there are no nodes in sharedStrings.xml");
 
 	xl->nodesets = jalloc(xl->sheetcnt, sizeof(*xl->nodesets));
 	for (unsigned i = 0; i < xl->sheetcnt; i++) {
@@ -237,7 +237,7 @@ void setnodes(XLfile xl[static restrict 1])
 			= getnodeset(xl->sheets[i], (xmlChar *)XPATHDATA);
 
 		if (0 == (xl->nodesets[i]->nodesetval))
-			errExit("there are no nodes in sheet [%s]",
+			die("there are no nodes in sheet [%s]",
 					xl->sheetname[i]);
 	}
 }
@@ -260,15 +260,15 @@ xmlXPathObjectPtr getnodeset(const xmlDocPtr restrict doc,
 	xmlXPathObjectPtr result;
 	context = xmlXPathNewContext(doc);
 
-	if (0 == context) errExit("xmlXPathNewContext returned NULL");
+	if (0 == context) die("xmlXPathNewContext returned NULL");
 
 	if (xmlXPathRegisterNs(context,  BAD_CAST NSPREFIX, BAD_CAST NSURI))
-		errExit("Unable to register NS with prefix");
+		die("Unable to register NS with prefix");
 
 	result = xmlXPathEvalExpression(xpath, context);
 	xmlXPathFreeContext(context);
 
-	if (0 == result) errExit("xmlXPathEvalExpression returned NULL");
+	if (0 == result) die("xmlXPathEvalExpression returned NULL");
 
 	if(xmlXPathNodeSetIsEmpty(result->nodesetval)) {
 		xmlXPathFreeObject(result);
@@ -302,11 +302,12 @@ void freeXL(XLfile *restrict xl)
 
 void createXLzip(const char s[static 1])
 {
-	char t[strlen(s) + 1];
-	char *pt = t;
-	const char *prevpxls = s, *pxls = 0, *ps = s;
-	char dirname[strlen(s) + 1];
+	size_t len = strlen(s) + 1;
+	char dirname[len];
+	char t[PATH_MAX + 1];
 	char cmd[BUFSIZ];
+	char *pd = dirname;
+	const char *prevpxls = s, *pxls = 0, *ps = s;
 
 	/* 
 	 * find final occurrence of ".xls", usually it should only occur once, 
@@ -314,46 +315,41 @@ void createXLzip(const char s[static 1])
 	 */
 	while (0 != (prevpxls = strstr(prevpxls, ".xls"))) pxls = prevpxls++;
 
-	if (0 == pxls) errExit("[%s] not a valid excel file", s);
+	if (0 == pxls) die("[%s] not a valid excel file", s);
 
-	while (ps < pxls) *pt++ = *ps++;
-	*pt = '\0';
-	strcpy(dirname, t);
+	while (ps < pxls) *pd++ = *ps++;
+	*pd = '\0';
 
-	strcat(t, ".zip");
+	snprintf(t, sizeof(t), "%s.zip", dirname);
 
 	/* remove previous zip file, if it exists */
 	snprintf(cmd, sizeof(cmd), "%s%s%c", "rm -rf '", t, '\'');
 
 	/* THIS IS NOT PORTABLE !!! */
 	if (system(cmd) != 0)
-		errExit("system command [%s] failed, are you on windows?",
-				cmd);
+		die("system command [%s] failed, are you on windows?", cmd);
 
 	snprintf(cmd, sizeof(cmd), 
 			"%s%s%c%s%s%c", "cp '", s, '\'', " '", t, '\'');
 
 	/* THIS IS NOT PORTABLE !!! */
 	if (system(cmd) != 0)
-		errExit("system command [%s] failed, are you on windows?",
-				cmd);
+		die("system command [%s] failed, are you on windows?", cmd);
 
 	/* remove previous folder, if it exists */
 	snprintf(cmd, sizeof(cmd), "%s%s%c", "rm -rf '", dirname, '\'');
 
 	/* THIS IS NOT PORTABLE !!! */
 	if (system(cmd) != 0)
-		errExit("system command [%s] failed, are you on windows?",
-				cmd);
+		die("system command [%s] failed, are you on windows?", cmd);
 
 	if (mkdir(dirname, S_IRWXU | S_IRWXG | S_IRWXO) == -1)
-		errExit("Error making directory [%s]", dirname);
+		die("Error making directory [%s]", dirname);
 
 	snprintf(cmd, sizeof(cmd), "%s%s%s%s%c", 
 			"unzip -q '", t, "' -d '", dirname, '\'');
 
 	/* THIS IS NOT PORTABLE !!! */
 	if (system(cmd) != 0)
-		errExit("system command [%s] failed, are you on windows?",
-				cmd);
+		die("system command [%s] failed, are you on windows?", cmd);
 }

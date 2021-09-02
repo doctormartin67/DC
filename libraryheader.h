@@ -73,6 +73,7 @@ inline int isfloat(const char s[static restrict 1])
 		return 0;
 
 	while (isdigit(*s)) s++;
+	while (isgarbage(*s)) s++;    
 
 	if (*s == '\0')
 		return 1;
@@ -89,6 +90,7 @@ inline int isint(const char s[static restrict 1])
 	if (!isdigit(*s)) return 0;
 
 	while (isdigit(*s)) s++;
+	while (isgarbage(*s)) s++;    
 
 	if (*s == '\0')
 		return 1;

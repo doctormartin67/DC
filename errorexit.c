@@ -9,7 +9,7 @@
 
 static void outputError(int useErr, int err, int flushStdout,
 		const char * restrict format, va_list ap);
-void errExit(const char *restrict format, ...);
+void die(const char *restrict format, ...);
 void errExitEN(int errnum, const char *restrict format, ...);
 
 static void outputError(int useErr, int err, int flushStdout, 
@@ -32,7 +32,7 @@ static void outputError(int useErr, int err, int flushStdout,
 	fflush(stderr);
 }
 
-void errExit(const char *restrict format, ...)
+void die(const char *restrict format, ...)
 {
 	va_list arglist;
 
