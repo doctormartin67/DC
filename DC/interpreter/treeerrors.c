@@ -18,12 +18,12 @@ static TreeError terrno = NOERR;
 /* 
  * Array with error messages for tree errors
  */
-const char *const strterrors[] = 
+const char *const strterrors[TERR_AMOUNT] = 
 {
 	[NOERR] = "No errors found in tree", 
 	[SCERR] = "Select Case without End Select", 
 	[ESERR] = "End Select without Select Case", 
-	[XERR] = "No expression of the form 'x = *'",
+	[XERR] = "Expression not of the form 'x = [0-9]+\\.?[0-9]*'",
 	[CERR] = "Case without Select Case",
 	[NOCERR] = "Select Case without Case",
 	[UNKRULEERR] = "Select Case has unknown rule",
@@ -33,14 +33,24 @@ const char *const strterrors[] =
 	[CONDERR] = "Invalid condition",
 	[TOERR] = "Incorrect use of \"To\" operator",
 	[ISERR] = "Incorrect use of \"Is\" operator",
-	[ELSERR] = "Incorrect use of \"Else\" operator"
+	[ELSERR] = "Incorrect use of \"Else\" operator",
+	[NULLERR] = "Tree string is NULL"
 };
 
-void setterrno(TreeError te) { terrno = te; }
+void setterrno(TreeError te) { 
+	if (te < NOERR || te >= TERR_AMOUNT)
+		die("%d is not a valid TreeError", te);
+	terrno = te;
+}
 
 TreeError getterrno(void) { return terrno; }
 
 const char *strterror(TreeError te) { return strterrors[te]; }
+
+static unsigned isvalid_CaseIs(const char s[static 1]);
+static unsigned isvalid_Case_a_To_b(const char s[static 1]);
+static unsigned isvalid_CaseElse(const char s[static 1]);
+static unsigned isvalid_CaseNumber(const char s[static 1]);
 
 /*
  * Performs initial checks that the tree has the correct structure, i.e.
@@ -49,9 +59,13 @@ const char *strterror(TreeError te) { return strterrors[te]; }
  * 		x = ...
  * End Select
  */
-
-int isvalidTree(const char *t)
+unsigned isvalidTree(const char *t)
 {
+	if (0 == t) {
+		setterrno(NULLERR);	
+		return 0;
+	}
+
 	char *c, *sc, *es, *x;
 	c = strstr(t, C);
 	sc = strstr(t, SC);
@@ -62,7 +76,7 @@ int isvalidTree(const char *t)
 		setterrno(XERR);	
 		return 0;
 	}
-	/* tree of the form 'x = *' is valid */
+
 	if (0 == c && 0 == sc && 0 == es) {
 		return 1;
 	} else if (0 == sc && 0 != es) {
@@ -90,7 +104,7 @@ int isvalidTree(const char *t)
 		} else if (sc < c && c < es) {
 			return 1;
 		} else {
-			printf("[%s] Warning: impossible part of function\n", 
+			printf("[%s] Warning: impossible part of function\n",
 					__func__);
 			return 0;
 		}
@@ -104,142 +118,45 @@ int isvalidTree(const char *t)
 }
 
 /* 
- * checks the conditions of a case. Returns 0 if an error is found and 1 
- * otherwhise
+ * checks the conditions of a case. if compare function is a number, strtok
+ * is used to split conditions and there is atleast 1 condition 'n'.
+ * Returns 0 if an error is found and 1 otherwhise
  */
-int isvalidcond(CaseTree *ct)
+unsigned isvalidBranch(const CaseTree ct[static 1])
 {
-	/* 
-	 * n: number of conditions separated by ',' 
-	 * (there is atleast 1 condition)
-	 */
-	int n = 1;
+	unsigned n = 1;
 	const char *s = ct->cond;
 	char t[strlen(s) + 1];
-	char *pt = t;
-	char *to = strstr(s, "TO");
+	const char *pt = t;
+	const char *to = strstr(s, "TO");
 
 	snprintf(t, sizeof(t), "%s", s);
 	Cmpfunc *cf = ruleset[ct->rule_index].cf;
-
-	while (*pt)
-		if (',' == *pt++) n++;
-
-	pt = strtok(t, ",");
 
 	/*
 	 * check whether the case is of the correct form when comparing numbers
 	 */
 	if (cmpnum == cf) {
+		while (*pt)
+			if (',' == *pt++) n++;
+
+		pt = strtok(t, ",");
+
 		while (n--) {
 			while (isgarbage(*pt)) pt++; 
-			/*
-			 * Case Is ...
-			 */
 			if ('I' == *pt && 'S' == *(pt + 1)) {
-				pt += 2;
-				while (isgarbage(*pt)) pt++; 
-
-				if ('<' == *pt || '>' == *pt) {
-					pt++;
-					if ('=' == *pt) pt++;
-
-					while (isgarbage(*pt)) pt++;
-
-					if (!isdigit(*pt)) {
-						setterrno(ISERR);
-						return 0;
-					}
-
-					while (isdigit(*pt)) pt++;
-
-					if ('.' == *pt) {
-						pt++;
-
-						if (!isdigit(*pt)) {
-							setterrno(ISERR);
-							return 0;
-						}
-
-						while (isdigit(*pt)) pt++;
-
-						while (isgarbage(*pt)) pt++;
-
-						if ('\0' != *pt) {
-							setterrno(ISERR);
-							return 0;
-						}
-					}
-				} else if (isdigit(*pt)) {
-					while (isdigit(*pt)) pt++;
-
-					while (isgarbage(*pt)) pt++;
-
-					if ('\0' != *pt) {
-						setterrno(ISERR);
-						return 0;
-					}
-				} else {
-					setterrno(ISERR);
+				if (!isvalid_CaseIs(pt))
 					return 0;
-				}
-			} else if (0 != to) { /* Case [0-9]+ To [0-9]+ */
-				if (!isdigit(*pt)) {
-					setterrno(TOERR);
+			} else if (0 != to) {
+				if (!isvalid_Case_a_To_b(pt))
 					return 0;
-				}
-
-				while (isdigit(*pt)) pt++;
-
-				if ('.' == *pt) {
-					pt++;
-					while (isdigit(*pt))
-						pt++;
-				}
-
-				while (isgarbage(*pt)) pt++;
-
-				if ('T' == *pt && 'O' == *(pt + 1)) {
-					pt += 2;
-
-					while (isgarbage(*pt)) pt++;
-
-					while (isdigit(*pt)) pt++;
-
-					if ('.' == *pt) {
-						pt++;
-						while (isdigit(*pt)) pt++;
-					}
-
-					while (isgarbage(*pt)) pt++;
-
-					if ('\0' != *pt) {
-						setterrno(TOERR);
-						return 0;
-					}
-				} else {
-					setterrno(TOERR);
-					return 0;
-				}
 			} else if (0 == strncmp(pt, E, strlen(E))) {
-				pt += strlen(E);
-
-				while (isgarbage(*pt)) pt++;
-
-				if ('\0' != *pt) {
-					setterrno(ELSERR);
-					return 0; 
-				}
-			} else if (0 == to) {
-				while (isdigit(*pt)) pt++;
-
-				while (isgarbage(*pt)) pt++;
-
-				if ('\0' != *pt) {
-					setterrno(CONDERR);
+				if (!isvalid_CaseElse(pt))
 					return 0;
-				}
-			} else errExit("impossible condition reached");
+			} else if (0 == to) {
+				if (!isvalid_CaseNumber(pt))
+					return 0;
+			} else die("impossible condition reached");
 
 			pt = strtok(0, ",");
 		}
@@ -247,9 +164,9 @@ int isvalidcond(CaseTree *ct)
 		while (*s) {
 			while (isgarbage(*s)) s++; 
 
-			/* all string conditions should be inside quotes */
 			if ('"' == *s++) {
 				while ('\0' != *s && '"' != *s) s++;
+
 				if ('\0' == *s) {
 					setterrno(QUOTERR); 
 					return 0;
@@ -258,9 +175,9 @@ int isvalidcond(CaseTree *ct)
 					while (isgarbage(*s)) s++;
 
 					if (',' == *s) {
-						; /* OK, continue */
+						s++;
 					} else if ('\0' == *s) {
-						break; /* OK, continue */
+						break;
 					} else if ('"' == *s) {
 						setterrno(SEPERR);			
 						return 0;
@@ -269,7 +186,7 @@ int isvalidcond(CaseTree *ct)
 						return 0;
 					}
 				} else
-					errExit("condition while loop "
+					die("condition while loop "
 							"impossible");
 			}
 			else if (0 == strncmp(ct->cond, E, strlen(E))) {
@@ -278,10 +195,142 @@ int isvalidcond(CaseTree *ct)
 				setterrno(QUOTERR);
 				return 0;
 			}
-
-			s++;
 		}
-	} else errExit("condition while loop impossible (cf unknown)");
+	} else die("condition while loop impossible (cf unknown)");
+
+	return 1;
+}
+
+/*
+ * checks if the leaf is of the form x = [0-9]+\.?[0-9]*
+ */
+unsigned isvalidLeaf(const char s[static 1])
+{
+	if ('X' != *s++) {
+		setterrno(XERR);
+		return 0;
+	}
+	
+	while (isgarbage(*s)) s++;
+
+	if ('=' != *s++) {
+		setterrno(XERR);
+		return 0;
+	}
+
+	while (isgarbage(*s)) s++;
+
+	if (!isdigit(*s)) {
+		setterrno(XERR);
+		return 0;
+	}
+
+	while (isdigit(*s)) s++;
+	
+	if ('.' == *s) {
+		s++;
+		if (!isdigit(*s)) {
+			setterrno(XERR);
+			return 0;
+		}
+
+		while (isdigit(*s)) s++;
+	}
+
+	while (isgarbage(*s)) s++;
+
+	if ('\0' != *s) {
+		if (0 != strncmp(s, C, strlen(C))
+			&& 0 != strncmp(s, ES, strlen(ES))) {
+			setterrno(XERR);
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+/*
+ * checks whether Case Is is valid, f.e.
+ * Case is < 40
+ */
+static unsigned isvalid_CaseIs(const char s[static 1])
+{
+	s += 2;
+	while (isgarbage(*s)) s++; 
+
+	if ('<' == *s || '>' == *s) s++;
+	if ('=' == *s) s++;
+
+	if (!isfloat(s)) {
+		setterrno(ISERR);
+		return 0;
+	} else	
+		return 1;
+}
+
+/*
+ * checks whether Case a To b is valid, f.e.
+ * Case 1 To 10
+ */
+static unsigned isvalid_Case_a_To_b(const char s[static 1])
+{
+	if (!isdigit(*s)) {
+		setterrno(TOERR);
+		return 0;
+	}
+
+	while (isdigit(*s)) s++;
+
+	if ('.' == *s) {
+		s++;
+		while (isdigit(*s)) s++;
+	}
+
+	while (isgarbage(*s)) s++;
+
+	if ('T' == *s && 'O' == *(s + 1)) {
+		s += 2;
+
+		if (!isfloat(s)) {
+			setterrno(TOERR);
+			return 0;
+		}
+	} else {
+		setterrno(TOERR);
+		return 0;
+	}
+
+	return 1;
+}
+
+/*
+ * checks whether Case Else is valid
+ */
+static unsigned isvalid_CaseElse(const char s[static 1])
+{
+	s += strlen(E);
+
+	while (isgarbage(*s)) s++;
+
+	if ('\0' != *s) {
+		setterrno(ELSERR);
+		return 0; 
+	}
+
+	return 1;
+}
+
+/*
+ * checks whether Case number is valid, f.e.
+ * Case 55
+ */
+static unsigned isvalid_CaseNumber(const char s[static 1])
+{
+	if (!isfloat(s)) {
+		setterrno(CONDERR);
+		return 0;
+	}
 
 	return 1;
 }

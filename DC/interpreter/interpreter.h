@@ -48,7 +48,7 @@ typedef struct casetree {
  * This defines a compare function because some rules are strings and some are
  * doubles
  */
-typedef int Cmpfunc(CaseTree *ct, const void *);
+typedef unsigned Cmpfunc(const CaseTree *ct, const void *);
 extern Cmpfunc cmpnum;
 extern Cmpfunc cmpstr;
 
@@ -66,10 +66,10 @@ typedef struct {
 extern Rule ruleset[RULE_AMOUNT];
 
 char *strclean(const char *);
-CaseTree *buildTree(const char *);
-int setRule(const char *);
-double interpret(CaseTree *ct, const void *rule_data[static RULE_AMOUNT]);
-void printTree(CaseTree *ct);
-void freeTree(CaseTree *ct);
+CaseTree *plantTree(const char *);
+double interpret(const CaseTree ct[static 1],
+		const void *rule_data[static RULE_AMOUNT]);
+void printTree(const CaseTree ct[static 1]);
+void chopTree(CaseTree *ct);
 
 #endif

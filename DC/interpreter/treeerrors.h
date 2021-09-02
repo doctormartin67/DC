@@ -3,18 +3,18 @@
 
 #include "interpreter.h"
 
-typedef enum 
-{
+typedef enum {
     NOERR, SCERR, ESERR, XERR, CERR, NOCERR, UNKRULEERR, NORULEERR, QUOTERR, 
-    SEPERR, CONDERR, TOERR, ISERR, ELSERR
+    SEPERR, CONDERR, TOERR, ISERR, ELSERR, NULLERR, TERR_AMOUNT
 } TreeError;
 
-extern const char *const strterrors[];
+extern const char *const strterrors[TERR_AMOUNT];
 
 void setterrno(TreeError te);
 TreeError getterrno(void);
 const char *strterror(TreeError te);
-int isvalidTree(const char *t);
-int isvalidcond(CaseTree *ct);
+unsigned isvalidTree(const char *t);
+unsigned isvalidBranch(const CaseTree ct[static 1]);
+unsigned isvalidLeaf(const char s[static 1]);
 
 #endif

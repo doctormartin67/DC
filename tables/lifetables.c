@@ -37,14 +37,14 @@ static void makeLifeTable(const char name[static restrict 1],
 
 	snprintf(path, sizeof(path), "%s%s", PATH, name);
 
-	if (0 == (lt = fopen(path, "r"))) errExit("can't open %s", path);
+	if (0 == (lt = fopen(path, "r"))) die("can't open %s", path);
 
 	while((fgets(line, LENGTHLINE, lt))) {
 		lp = line;
 		while (',' != *lp && '\0' != *lp) lp++;
 
 		if ('\0' == *lp)
-			errExit("%s does not contain a ',', so how does "
+			die("%s does not contain a ',', so how does "
 					"it separate age from value?", line);
 
 		*clt++ = atol(++lp);

@@ -347,7 +347,7 @@ double calcCAP(const CurrentMember cm[static restrict 1],
 					tff.costKO);
 			break;
 		default :
-			errExit("%d is not a valid tariff.", cm->tariff);
+			die("%d is not a valid tariff.", cm->tariff);
 	}
 
 	return value;
@@ -407,7 +407,7 @@ double calcRES(const CurrentMember cm[static restrict 1],
 				- prem * (1 - tff.admincost) * ax;
 			break;
 		default :
-			errExit("%d is not a valid tariff.", cm->tariff);
+			die("%d is not a valid tariff.", cm->tariff);
 	}
 
 	return value;
@@ -555,7 +555,7 @@ double getamount(const CurrentMember cm[static restrict 1], int k,
 				case PUC : return ART24TOT[PUC] * cm->FFSC[k];
 				case TUC : return (ART24TOT[TUCPS_1]
 							   - ART24TOT[TUC]);
-				default : errExit("method = %d", method);
+				default : die("method = %d", method);
 			}
 			break;
 		case IC :
@@ -565,12 +565,12 @@ double getamount(const CurrentMember cm[static restrict 1], int k,
 				case TUC : return (ART24TOT[TUCPS_1]
 							   - ART24TOT[TUC])
 					   * ass.DR;
-				default : errExit("method = %d", method);
+				default : die("method = %d", method);
 			}
 			break;
 		case ASSETS : return getAssets(cm, k, assets, DEFIMM, RESTOT,
 					      REDCAPTOT);
-		default : errExit("unknown amount [%d]", DBONCICASS);
+		default : die("unknown amount [%d]", DBONCICASS);
 	}
 
 	return 0.0;
@@ -588,7 +588,7 @@ static double getDBO(const CurrentMember cm[static restrict 1], int k, unsigned 
 	else if (TUC == method)
 		liab = ART24TOT[TUC];
 	else
-		errExit("method = %d", method);
+		die("method = %d", method);
 
 	switch (assets) {
 		case PAR113 :
@@ -596,11 +596,11 @@ static double getDBO(const CurrentMember cm[static restrict 1], int k, unsigned 
 			switch (DEFIMM) {
 				case DEF : return MAX2(liab, REDCAPTOT[TUC]);
 				case IMM : return MAX2(liab, RESTOT[TUC]);
-				default : errExit("DEFIMM = %d", DEFIMM);
+				default : die("DEFIMM = %d", DEFIMM);
 			}
 			break;
 		case MATHRES : return liab;
-		default : errExit("assets = %d", assets);
+		default : die("assets = %d", assets);
 	}
 	return liab;
 }
@@ -618,7 +618,7 @@ static double getAssets(const CurrentMember cm[static restrict 1], int k,
 			   break; 
 		case IMM : a = RESTOT[TUC]; 
 			   break;
-		default : errExit("DEFIMM = %d", DEFIMM);
+		default : die("DEFIMM = %d", DEFIMM);
 	}
 
 	if (PAR113 == assets) corrfactor = cm->vn113[k] / cm->vn[k];

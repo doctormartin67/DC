@@ -16,11 +16,16 @@
 #include "treeerrors.h"
 #include "errorexit.h"
 
-/* ruleset is an array which consists of the variables that the user
-   can use to Select Case over. They can be seen as the predetermined
-   variables instead of the user having to define them themselves. */
-/* data (NULL) will be set each time interpret is called because it can
-   be different each time */
+/* maximum amount of tabs in a tree, printTree won't work properly otherwise */
+#define MAXTABS 32
+
+/*
+ * ruleset is an array which consists of the variables that the user
+ * can use to Select Case over. They can be seen as the predetermined
+ * variables instead of the user having to define them themselves.
+ * data (NULL) will be set each time interpret is called because it can
+ * be different each time
+ */
 Rule ruleset[RULE_AMOUNT] = 
 {
 	[AGE] = {"AGE", cmpnum, 0}, 
@@ -28,10 +33,16 @@ Rule ruleset[RULE_AMOUNT] =
 	[CAT] = {"CAT", cmpstr, 0}
 };
 
-/* Before the tree is built, an initial clean is run so that the string to
-   build the tree consists of words separated by 1 space. The string is also
-   set to uppercase to make the interpreter case insensitive. */
-char *strclean(const char *s)
+static int specifyTree(const char t[static 1]);
+static void deforest(CaseTree *ct, char *t, TreeError te);
+static void settabs(unsigned cnt, char s[static 1]);
+
+/*
+ * Before the tree is planted, an initial clean is run so that the string to
+ * plant the tree consists of words separated by 1 space. The string is also
+ * set to uppercase to make the interpreter case insensitive.
+ */
+char *strclean(const char s[static 1])
 {
 	char *t = jalloc(strlen(s) + 1, sizeof(char));
 	char *pt = t;
@@ -47,7 +58,7 @@ char *strclean(const char *s)
 	}
 	*pt = '\0';
 
-	upper(t); // make case insensitive
+	upper(t);
 
 	/*
 	 * END SELECT needs to be replaced with something else, because I need 
@@ -73,64 +84,54 @@ char *strclean(const char *s)
  * The tree is checked for errors in this function, some errors are checked 
  * directly, others are checked with the functions 'isvalid*'. 
  */
-CaseTree *buildTree(const char *s)
+CaseTree *plantTree(const char *s)
 {
 	if (!isvalidTree(s)) return 0;
+
 	char *t = strdup(s);
-	char *const pt = t; /* used to free t */
 	char *c, *sc, *es, *x;
-	c = sc = es = x = 0;
 	char *rulename = 0;
+	char *const pt = t;
+	c = sc = es = x = 0;
 
 	CaseTree *ct = jalloc(1, sizeof(CaseTree));
 	*ct = (CaseTree){0};
-	ct->rule_index = -1; /* no rule yet */
+	ct->rule_index = -1;
 
 	if ((t = strstr(pt, SC)) == 0) { 
 		ct->expr = strstr(pt, X);
+		if (!isvalidLeaf(ct->expr)) {
+			deforest(ct, pt, NOERR);
+			return 0;
+		}
 		return ct;
 	}
 
-	/* at the root there is a rule (f.e. age, cat, reg, ...) */
-	t += strlen(SC); 
-	t++; /* space ' ' at the end of SC */
+	t += strlen(SC) + 1;
 	rulename = t;
 	while ('\0' != *t && ' ' != *t)
 		t++;
 	*t++ = '\0';
 
-	/* return NULL if the next word is 'case', meaning there was no rule */
 	if (0 == strncmp(rulename, C, strlen(C))) {
-		free(pt);
-		freeTree(ct);
-		setterrno(NORULEERR);
+		deforest(ct, pt, NORULEERR);
 		return 0;
 	}
 
-	ct->rule_index = setRule(rulename);
+	ct->rule_index = specifyTree(rulename);
 
-	/* return NULL if the next word was not a known rule */
 	if (-1 == ct->rule_index) {
-		free(pt);
-		freeTree(ct);
-		setterrno(UNKRULEERR);
+		deforest(ct, pt, UNKRULEERR);
 		return 0;
 	}
 
 	for (CaseTree *pct = ct; 0 != pct; pct = pct->next) {
-		/*
-		 * return NULL if there is no 'case' right after select case 
-		 * 'rule'
-		 */
 		if (0 != strncmp(t, C, strlen(C))) {
-			free(pt);
-			freeTree(ct);
-			setterrno(NOCERR);
+			deforest(ct, pt, NOCERR);
 			return 0;
 		}
 
-		t += strlen(C);
-		t++; /* space ' ' at the end of C */
+		t += strlen(C) + 1;
 		pct->cond = t;
 
 		x = strstr(t, X);
@@ -142,9 +143,8 @@ CaseTree *buildTree(const char *s)
 			t = (x < sc ? x : sc);
 
 		*(t - 1) = '\0';
-		if (!isvalidcond(pct)) { /* terrno set by isvalidcond */
-			free(pt);
-			freeTree(ct);
+		if (!isvalidBranch(pct)) {
+			deforest(ct, pt, NOERR);
 			return 0;
 		}
 
@@ -181,18 +181,20 @@ CaseTree *buildTree(const char *s)
 
 			t += strlen(ES) - 1;
 			*t++ = '\0';
-			pct->child = buildTree(prevt);
-		}
-		else
+			pct->child = plantTree(prevt);
+		} else {
+			if (!isvalidLeaf(pct->expr)) {
+				deforest(ct, pt, NOERR);
+				return 0;
+			}
 			pct->child = 0;
+		}
 
 		c = strstr(t, C);
 		es = strstr(t, ES);
 
 		if (0 == es) {
-			free(pt);
-			freeTree(ct);
-			setterrno(SCERR);
+			deforest(ct, pt, SCERR);
 			return 0;
 		}
 
@@ -210,18 +212,17 @@ CaseTree *buildTree(const char *s)
 	return ct;
 }
 
-/* Returns the index of the ruleset array for the given name in the tree. If
-   no rule is found then -1 is returned. */
-int setRule(const char *name)
+/* 
+ * Returns the index of the ruleset array for the given name in the tree, or
+ * -1 of no rule was found
+ */
+ static int specifyTree(const char name[static restrict 1])
 {
-	int index = -1; /* this will be set to the index of the rule name, 
-			   if it remains -1 then an error occured */
-	int len = sizeof(ruleset)/sizeof(ruleset[0]);
+	int index = -1;
 	size_t n = strlen(name);
-	size_t rn; /* ruleset name size */
+	size_t rn = 0;
 
-	/* find rule */
-	for (int i = 0; i < len; i++) {
+	for (unsigned i = 0; i < RULE_AMOUNT; i++) {
 		rn = strlen(ruleset[i].name);
 		if (n != rn)
 			continue;
@@ -232,15 +233,13 @@ int setRule(const char *name)
 	return index;
 }
 
-void printTree(CaseTree *ct)
+void printTree(const CaseTree ct[static 1])
 {
-	static int cnt = 0; /* count the tabs to be used */
-	char tabs[32] = "";
-	char temp[32] = ""; /* used for end of tree (end select) */
+	static unsigned cnt = 0;
+	char tabs[MAXTABS];
+	char temp[MAXTABS];
 
-	for (int i = 0; i < cnt; i++)
-		strcat(tabs, "\t");
-
+	settabs(cnt, tabs);
 	if (-1 == ct->rule_index) {
 		printf("%s\n", ct->expr);
 		return;
@@ -249,21 +248,16 @@ void printTree(CaseTree *ct)
 		printf("%sselect case %s\n", 
 				tabs, ruleset[ct->rule_index].name);
 
-	strcpy(temp, tabs); 
+	snprintf(temp, sizeof(temp), "%s", tabs);
 
-	cnt++; /* when cases start we are one level removed from top */
+	cnt++;
 	while (0 != ct) {
-		strcpy(tabs, "");
-		for (int i = 0; i < cnt; i++)
-			strcat(tabs, "\t");
+		settabs(cnt, tabs);
 		printf("%scase %s\n", tabs, ct->cond);
-
 		cnt++; 
 
 		if (0 == ct->child) {
-			strcpy(tabs, "");
-			for (int i = 0; i < cnt; i++)
-				strcat(tabs, "\t");
+			settabs(cnt, tabs);
 			printf("%s%s\n", tabs, ct->expr);
 		} else
 			printTree(ct->child);
@@ -275,27 +269,44 @@ void printTree(CaseTree *ct)
 	printf("%send select\n", temp);
 }
 
-void freeTree(CaseTree *ct)
+static void settabs(unsigned cnt, char s[static 1])
+{
+	for (unsigned i = 0; i < cnt && i < MAXTABS - 1; i++)
+		*s++ = '\t';
+	*s = '\0';
+}
+
+void chopTree(CaseTree *ct)
 {
 	if (0 != ct) {
-		freeTree(ct->child);	
-		freeTree(ct->next);	
+		chopTree(ct->child);	
+		chopTree(ct->next);	
 		free(ct);
 	}
 }
 
-int cmpnum(CaseTree *ct, const void *pf)
+/*
+ * if an incorrect tree is planted, then it is deforested and terrno is set if
+ * a TreeError other than NOERR is chosen
+ */
+static void deforest(CaseTree *ct, char *t, TreeError te)
 {
+	free(t);
+	chopTree(ct);
+	if (NOERR != te) setterrno(te);
+}
+
+unsigned cmpnum(const CaseTree ct[static restrict 1], const void *pf)
+{
+	unsigned n = 1;
 	double f = *((double *)pf);
 	char tmp[strlen(ct->cond) + 1];
-	snprintf(tmp, sizeof(tmp), "%s", ct->cond);
 	char *cond = tmp;
 
-	int n = 1; /* number of conditions separated by ',' 
-		      (there is atleast 1 condition) */
+	snprintf(tmp, sizeof(tmp), "%s", ct->cond);
+
 	while (*cond)
-		if (',' == *cond++)
-			n++;
+		if (',' == *cond++) n++;
 
 	cond = strtok(tmp, ",");     
 	while (n--) {
@@ -351,19 +362,24 @@ int cmpnum(CaseTree *ct, const void *pf)
 	return 0;
 }
 
-int cmpstr(CaseTree *ct, const void *s)
+/*
+ * compare function that takes a string as a void pointer and compares it with
+ * the condition of the rule. The while loop with break if either the
+ * condition has no more quotes '"', or if the string is equal to the string
+ * inside one of the quotes.
+ * returns 1 if condition matches string in quotes, 0 otherwise
+ */
+unsigned cmpstr(const CaseTree ct[static restrict 1], const void *s)
 {
-	/* Case Else */
 	if (0 == strncmp(ct->cond, E, strlen(E)))
 		return 1;
 
-	const char *ps; 
+	const char *ps = 0;
 	const char *cond = strinside(ct->cond, "\"", "\"");
 	const char *quote = strchr(cond, '"');
 
-	/* while loop will break when NULL == cond */
 	while (1) {
-		ps = (const char *)s;
+		ps = s;
 		while ('\0' != *ps && cond < quote) {
 			if (*ps++ != *cond++)
 				break;
@@ -380,16 +396,19 @@ int cmpstr(CaseTree *ct, const void *s)
 	return 0;
 }
 
-double interpret(CaseTree *ct, const void *rule_data[static RULE_AMOUNT])
+double interpret(const CaseTree ct[static 1],
+		const void *rule_data[static RULE_AMOUNT])
 {
 	double x = 0.0;
-	Cmpfunc *cf;
-	const void *v;
-	for (CaseTree *pct = ct; 0 != pct; ) {
+	Cmpfunc *cf = 0;
+	const void *v = 0;
+	const char *expr = 0;
+	for (const CaseTree *pct = ct; 0 != pct; ) {
+		expr = pct->expr;
 		if (-1 == pct->rule_index) {
-			while ('\0' != *pct->expr && !isdigit(*pct->expr))
-				pct->expr++;
-			x = atof(pct->expr);
+			while ('\0' != *expr && !isdigit(*expr))
+				expr++;
+			x = atof(expr);
 			return x;
 		}
 
@@ -398,10 +417,9 @@ double interpret(CaseTree *ct, const void *rule_data[static RULE_AMOUNT])
 
 		if (cf(pct, v)) {
 			if (0 == (pct->child)) {
-				while ('\0' != *pct->expr 
-						&& !isdigit(*pct->expr))
-					pct->expr++;
-				x = atof(pct->expr);
+				while ('\0' != *expr && !isdigit(*expr))
+					expr++;
+				x = atof(expr);
 				return x;
 			} else {
 				pct = pct->child;

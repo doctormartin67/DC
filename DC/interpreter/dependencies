@@ -49,8 +49,8 @@ interpret.o: interpret.c /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/include/strings.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
- /home/doctormartin67/Projects/library/errorexit.h treeerrors.h \
- interpreter.h
+ /usr/include/ctype.h /home/doctormartin67/Projects/library/errorexit.h \
+ treeerrors.h interpreter.h
 interpreter.o: interpreter.c /usr/include/stdc-predef.h \
  /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
@@ -177,9 +177,9 @@ helperfunctions.o: \
  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h /usr/include/ctype.h \
- /usr/include/errno.h /usr/include/x86_64-linux-gnu/bits/errno.h \
- /usr/include/linux/errno.h /usr/include/x86_64-linux-gnu/asm/errno.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h /usr/include/errno.h \
+ /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
+ /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/dirent.h /usr/include/x86_64-linux-gnu/bits/dirent.h \
  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
@@ -187,7 +187,7 @@ helperfunctions.o: \
  /usr/include/linux/limits.h \
  /usr/include/x86_64-linux-gnu/bits/dirent_ext.h \
  /home/doctormartin67/Projects/library/libraryheader.h \
- /home/doctormartin67/Projects/library/errorexit.h
+ /usr/include/ctype.h /home/doctormartin67/Projects/library/errorexit.h
 errorexit.o: /home/doctormartin67/Projects/library/errorexit.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
@@ -241,5 +241,4 @@ errorexit.o: /home/doctormartin67/Projects/library/errorexit.c \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h /usr/include/errno.h \
  /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
- /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
- /home/doctormartin67/Projects/library/errorexit.h
+ /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h

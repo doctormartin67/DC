@@ -290,7 +290,7 @@ void createData(DataSet ds[static 1])
 	while (0 != *pkey) {
 		// Here we update cell for loop, for example O11 becomes P11
 		if (++countkeys >= KEYS_AMOUNT)
-			errExit("Data has too many keys");
+			die("Data has too many keys");
 		nextcol(keyCell);
 		*++pkey = cell(ds->xl, ds->sheet, keyCell);
 	}
@@ -373,13 +373,15 @@ static unsigned countdigits(unsigned d)
 // THIS FUNCTION IS HORRIBLY CODED, NEEDS UPDATED!!!
 int printresults(DataSet *ds)
 {
+	char *d = strdup(ds->xl->dirname);
 	char results[PATH_MAX];
 	int row = 0;
 	int col = 0;  
 	int index = 0;
 
-	strcpy(results, ds->xl->dirname);
-	strcat(results, "/results.xlsx");
+	snprintf(results, sizeof(results), "%s%s", d, "/results.xlsx");
+	free(d);
+
 	lxw_workbook  *workbook  = workbook_new(results);
 	lxw_worksheet *worksheet = workbook_add_worksheet(workbook, "dataTY");
 	worksheet_set_column(worksheet, 0, 250, 20, NULL);

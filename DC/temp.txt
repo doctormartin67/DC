@@ -1,0 +1,515 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 86.22      0.50     0.50  8466432     0.00     0.00  calcCAP
+  6.90      0.54     0.04   651264     0.00     0.00  calcRES
+  1.72      0.55     0.01  8318666     0.00     0.00  NRA
+  1.72      0.56     0.01   200022     0.00     0.00  lookup
+  1.72      0.57     0.01    57103     0.00     0.00  cell
+  1.72      0.58     0.01    20352     0.00     0.00  evolART24
+  0.00      0.58     0.00  8319942     0.00     0.00  NRATY
+  0.00      0.58     0.00   619832     0.00     0.00  gensum
+  0.00      0.58     0.00   364971     0.00     0.00  jalloc
+  0.00      0.58     0.00   145327     0.00     0.00  newDate
+  0.00      0.58     0.00    86178     0.00     0.00  validateInput
+  0.00      0.58     0.00    71550     0.00     0.00  minDate
+  0.00      0.58     0.00    66144     0.00     0.00  getcmval
+  0.00      0.58     0.00    31164     0.00     0.00  getDOC
+  0.00      0.58     0.00    20670     0.00     0.00  calcA
+  0.00      0.58     0.00    20670     0.00     0.00  calcATY
+  0.00      0.58     0.00    20670     0.00     0.00  calcC
+  0.00      0.58     0.00    20670     0.00     0.00  calcCTY
+  0.00      0.58     0.00    20670     0.00     0.00  calcDTH
+  0.00      0.58     0.00    20670     0.00     0.00  calcDTHTY
+  0.00      0.58     0.00    20670     0.00     0.00  salaryscaleTY
+  0.00      0.58     0.00    20352     0.00     0.00  evolCAPDTH
+  0.00      0.58     0.00    20352     0.00     0.00  evolDBONCIC
+  0.00      0.58     0.00    20352     0.00     0.00  evolEBP
+  0.00      0.58     0.00    20352     0.00     0.00  evolPremiums
+  0.00      0.58     0.00    20352     0.00     0.03  evolRES
+  0.00      0.58     0.00    20352     0.00     0.00  retx
+  0.00      0.58     0.00    20352     0.00     0.00  retxTY
+  0.00      0.58     0.00    20352     0.00     0.00  salaryscale
+  0.00      0.58     0.00    20352     0.00     0.00  wxdef
+  0.00      0.58     0.00    20352     0.00     0.00  wxdefTY
+  0.00      0.58     0.00    20034     0.00     0.00  setGenMatrix
+  0.00      0.58     0.00     9222     0.00     0.00  getDOC_prolongation
+  0.00      0.58     0.00     6678     0.00     0.00  sum
+  0.00      0.58     0.00     2901     0.00     0.00  setdate
+  0.00      0.58     0.00     2406     0.00     0.00  findss
+  0.00      0.58     0.00      318     0.00     0.01  createCM
+  0.00      0.58     0.00      318     0.00     0.00  newHashtable
+  0.00      0.58     0.00      318     0.00     1.76  runmember
+  0.00      0.58     0.00      318     0.00     0.00  setassumptions
+  0.00      0.58     0.00        6     0.00     0.00  getnodeset
+  0.00      0.58     0.00        6     0.00     0.00  makeLifeTable
+  0.00      0.58     0.00        1     0.00    17.16  createDS
+  0.00      0.58     0.00        1     0.00    12.85  createData
+  0.00      0.58     0.00        1     0.00     0.00  createXL
+  0.00      0.58     0.00        1     0.00     0.00  createXLzip
+  0.00      0.58     0.00        1     0.00     0.00  printUI.constprop.0
+  0.00      0.58     0.00        1     0.00     2.85  printresults
+  0.00      0.58     0.00        1     0.00     0.00  printtc
+  0.00      0.58     0.00        1     0.00     0.00  setUIvals.constprop.0
+  0.00      0.58     0.00        1     0.00     0.00  setkey
+  0.00      0.58     0.00        1     0.00     0.00  setnodes
+  0.00      0.58     0.00        1     0.00     0.00  setsheetnames
+  0.00      0.58     0.00        1     0.00     0.00  updateUI.constprop.0
+  0.00      0.58     0.00        1     0.00     0.00  updateValidation
+  0.00      0.58     0.00        1     0.00     0.00  validateColumns
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 1.72% of 0.58 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     97.0    0.00    0.56                 run [1]
+                0.00    0.56     318/318         runmember [2]
+                0.00    0.00       1/1           printresults [15]
+                0.00    0.00       1/1           printtc [52]
+-----------------------------------------------
+                0.00    0.56     318/318         run [1]
+[2]     96.6    0.00    0.56     318         runmember [2]
+                0.00    0.55   20352/20352       evolRES [3]
+                0.01    0.00   20352/20352       evolART24 [12]
+                0.00    0.00   40704/8318666     NRA [9]
+                0.00    0.00   31164/31164       getDOC [17]
+                0.00    0.00   20352/20352       evolEBP [18]
+                0.00    0.00    9222/9222        getDOC_prolongation [19]
+                0.00    0.00  434606/619832      gensum [22]
+                0.00    0.00   40704/8319942     NRATY [21]
+                0.00    0.00   20670/20670       calcDTHTY [32]
+                0.00    0.00   20670/20670       calcDTH [31]
+                0.00    0.00   20352/20670       salaryscaleTY [33]
+                0.00    0.00   20352/20352       salaryscale [39]
+                0.00    0.00   20352/20352       evolCAPDTH [34]
+                0.00    0.00   20352/20352       evolPremiums [36]
+                0.00    0.00   20352/20352       wxdefTY [41]
+                0.00    0.00   20352/20352       wxdef [40]
+                0.00    0.00   20352/20352       retxTY [38]
+                0.00    0.00   20352/20352       retx [37]
+                0.00    0.00   20352/20352       evolDBONCIC [35]
+                0.00    0.00     318/318         setassumptions [46]
+                0.00    0.00     318/364971      jalloc [23]
+                0.00    0.00     318/20670       calcATY [28]
+                0.00    0.00     318/20670       calcA [27]
+                0.00    0.00     318/20670       calcCTY [30]
+                0.00    0.00     318/20670       calcC [29]
+-----------------------------------------------
+                0.00    0.55   20352/20352       runmember [2]
+[3]     94.8    0.00    0.55   20352         evolRES [3]
+                0.50    0.00 8466432/8466432     calcCAP [4]
+                0.04    0.00  651264/651264      calcRES [5]
+                0.01    0.00 8217224/8318666     NRA [9]
+                0.00    0.00 8217224/8319942     NRATY [21]
+                0.00    0.00  142464/364971      jalloc [23]
+-----------------------------------------------
+                0.50    0.00 8466432/8466432     evolRES [3]
+[4]     86.2    0.50    0.00 8466432         calcCAP [4]
+-----------------------------------------------
+                0.04    0.00  651264/651264      evolRES [3]
+[5]      6.9    0.04    0.00  651264         calcRES [5]
+-----------------------------------------------
+                0.00    0.02       1/1           on_startstopbutton_clicked [7]
+[6]      3.0    0.00    0.02       1         createDS [6]
+                0.00    0.01       1/1           createData [8]
+                0.00    0.00     318/318         createCM [13]
+                0.00    0.00       1/1           setkey [20]
+                0.00    0.00       2/364971      jalloc [23]
+                0.00    0.00       1/1           createXL [49]
+                0.00    0.00       1/1           createXLzip [50]
+                0.00    0.00       1/1           validateColumns [58]
+-----------------------------------------------
+                                                 <spontaneous>
+[7]      3.0    0.00    0.02                 on_startstopbutton_clicked [7]
+                0.00    0.02       1/1           createDS [6]
+                0.00    0.00       1/1           setUIvals.constprop.0 [53]
+                0.00    0.00       1/145327      newDate [24]
+-----------------------------------------------
+                0.00    0.01       1/1           createDS [6]
+[8]      2.2    0.00    0.01       1         createData [8]
+                0.01    0.00   57102/57103       cell [11]
+                0.00    0.00   56922/200022      lookup [10]
+                0.00    0.00    2405/2406        findss [44]
+                0.00    0.00     318/318         newHashtable [45]
+                0.00    0.00       2/364971      jalloc [23]
+-----------------------------------------------
+                0.00    0.00    9222/8318666     getDOC_prolongation [19]
+                0.00    0.00   20352/8318666     evolEBP [18]
+                0.00    0.00   31164/8318666     getDOC [17]
+                0.00    0.00   40704/8318666     runmember [2]
+                0.01    0.00 8217224/8318666     evolRES [3]
+[9]      1.7    0.01    0.00 8318666         NRA [9]
+-----------------------------------------------
+                0.00    0.00   20034/200022      setGenMatrix [16]
+                0.00    0.00   56922/200022      createData [8]
+                0.00    0.00   56922/200022      printresults [15]
+                0.00    0.00   66144/200022      getcmval [14]
+[10]     1.7    0.01    0.00  200022         lookup [10]
+                0.00    0.00   56922/364971      jalloc [23]
+-----------------------------------------------
+                0.00    0.00       1/57103       setkey [20]
+                0.01    0.00   57102/57103       createData [8]
+[11]     1.7    0.01    0.00   57103         cell [11]
+-----------------------------------------------
+                0.01    0.00   20352/20352       runmember [2]
+[12]     1.7    0.01    0.00   20352         evolART24 [12]
+                0.00    0.00  144522/619832      gensum [22]
+-----------------------------------------------
+                0.00    0.00     318/318         createDS [6]
+[13]     0.7    0.00    0.00     318         createCM [13]
+                0.00    0.00   66144/66144       getcmval [14]
+                0.00    0.00   20034/20034       setGenMatrix [16]
+                0.00    0.00    1908/145327      newDate [24]
+-----------------------------------------------
+                0.00    0.00   66144/66144       createCM [13]
+[14]     0.6    0.00    0.00   66144         getcmval [14]
+                0.00    0.00   66144/200022      lookup [10]
+                0.00    0.00   66144/86178       validateInput [25]
+-----------------------------------------------
+                0.00    0.00       1/1           run [1]
+[15]     0.5    0.00    0.00       1         printresults [15]
+                0.00    0.00   56922/200022      lookup [10]
+                0.00    0.00    6678/6678        sum [42]
+                0.00    0.00    1276/8319942     NRATY [21]
+                0.00    0.00     318/20670       salaryscaleTY [33]
+-----------------------------------------------
+                0.00    0.00   20034/20034       createCM [13]
+[16]     0.2    0.00    0.00   20034         setGenMatrix [16]
+                0.00    0.00   20034/200022      lookup [10]
+                0.00    0.00   20034/86178       validateInput [25]
+-----------------------------------------------
+                0.00    0.00   31164/31164       runmember [2]
+[17]     0.0    0.00    0.00   31164         getDOC [17]
+                0.00    0.00   31164/8318666     NRA [9]
+                0.00    0.00   62328/145327      newDate [24]
+                0.00    0.00   62328/71550       minDate [26]
+                0.00    0.00   31164/8319942     NRATY [21]
+                0.00    0.00   19296/364971      jalloc [23]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember [2]
+[18]     0.0    0.00    0.00   20352         evolEBP [18]
+                0.00    0.00   20352/8318666     NRA [9]
+                0.00    0.00   61056/145327      newDate [24]
+                0.00    0.00   20352/8319942     NRATY [21]
+-----------------------------------------------
+                0.00    0.00    9222/9222        runmember [2]
+[19]     0.0    0.00    0.00    9222         getDOC_prolongation [19]
+                0.00    0.00    9222/8318666     NRA [9]
+                0.00    0.00   18444/145327      newDate [24]
+                0.00    0.00    9222/8319942     NRATY [21]
+                0.00    0.00    9222/71550       minDate [26]
+-----------------------------------------------
+                0.00    0.00       1/1           createDS [6]
+[20]     0.0    0.00    0.00       1         setkey [20]
+                0.00    0.00       1/57103       cell [11]
+                0.00    0.00       1/2406        findss [44]
+-----------------------------------------------
+                0.00    0.00    1276/8319942     printresults [15]
+                0.00    0.00    9222/8319942     getDOC_prolongation [19]
+                0.00    0.00   20352/8319942     evolEBP [18]
+                0.00    0.00   31164/8319942     getDOC [17]
+                0.00    0.00   40704/8319942     runmember [2]
+                0.00    0.00 8217224/8319942     evolRES [3]
+[21]     0.0    0.00    0.00 8319942         NRATY [21]
+-----------------------------------------------
+                0.00    0.00   40704/619832      evolPremiums [36]
+                0.00    0.00  144522/619832      evolART24 [12]
+                0.00    0.00  434606/619832      runmember [2]
+[22]     0.0    0.00    0.00  619832         gensum [22]
+-----------------------------------------------
+                0.00    0.00       1/364971      setnodes [54]
+                0.00    0.00       2/364971      createData [8]
+                0.00    0.00       2/364971      createDS [6]
+                0.00    0.00       3/364971      createXL [49]
+                0.00    0.00     318/364971      runmember [2]
+                0.00    0.00     636/364971      newHashtable [45]
+                0.00    0.00   19296/364971      getDOC [17]
+                0.00    0.00   56922/364971      lookup [10]
+                0.00    0.00  142464/364971      evolRES [3]
+                0.00    0.00  145327/364971      newDate [24]
+[23]     0.0    0.00    0.00  364971         jalloc [23]
+-----------------------------------------------
+                0.00    0.00       1/145327      on_startstopbutton_clicked [7]
+                0.00    0.00     318/145327      setassumptions [46]
+                0.00    0.00    1272/145327      validateInput [25]
+                0.00    0.00    1908/145327      createCM [13]
+                0.00    0.00   18444/145327      getDOC_prolongation [19]
+                0.00    0.00   61056/145327      evolEBP [18]
+                0.00    0.00   62328/145327      getDOC [17]
+[24]     0.0    0.00    0.00  145327         newDate [24]
+                0.00    0.00  145327/364971      jalloc [23]
+                0.00    0.00    2901/2901        setdate [43]
+-----------------------------------------------
+                0.00    0.00   20034/86178       setGenMatrix [16]
+                0.00    0.00   66144/86178       getcmval [14]
+[25]     0.0    0.00    0.00   86178         validateInput [25]
+                0.00    0.00    1272/145327      newDate [24]
+                0.00    0.00       1/1           updateValidation [57]
+-----------------------------------------------
+                0.00    0.00    9222/71550       getDOC_prolongation [19]
+                0.00    0.00   62328/71550       getDOC [17]
+[26]     0.0    0.00    0.00   71550         minDate [26]
+-----------------------------------------------
+                0.00    0.00     318/20670       runmember [2]
+                0.00    0.00   20352/20670       evolPremiums [36]
+[27]     0.0    0.00    0.00   20670         calcA [27]
+-----------------------------------------------
+                0.00    0.00     318/20670       runmember [2]
+                0.00    0.00   20352/20670       evolPremiums [36]
+[28]     0.0    0.00    0.00   20670         calcATY [28]
+-----------------------------------------------
+                0.00    0.00     318/20670       runmember [2]
+                0.00    0.00   20352/20670       evolPremiums [36]
+[29]     0.0    0.00    0.00   20670         calcC [29]
+-----------------------------------------------
+                0.00    0.00     318/20670       runmember [2]
+                0.00    0.00   20352/20670       evolPremiums [36]
+[30]     0.0    0.00    0.00   20670         calcCTY [30]
+-----------------------------------------------
+                0.00    0.00   20670/20670       runmember [2]
+[31]     0.0    0.00    0.00   20670         calcDTH [31]
+-----------------------------------------------
+                0.00    0.00   20670/20670       runmember [2]
+[32]     0.0    0.00    0.00   20670         calcDTHTY [32]
+-----------------------------------------------
+                0.00    0.00     318/20670       printresults [15]
+                0.00    0.00   20352/20670       runmember [2]
+[33]     0.0    0.00    0.00   20670         salaryscaleTY [33]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember [2]
+[34]     0.0    0.00    0.00   20352         evolCAPDTH [34]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember [2]
+[35]     0.0    0.00    0.00   20352         evolDBONCIC [35]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember [2]
+[36]     0.0    0.00    0.00   20352         evolPremiums [36]
+                0.00    0.00   40704/619832      gensum [22]
+                0.00    0.00   20352/20670       calcATY [28]
+                0.00    0.00   20352/20670       calcA [27]
+                0.00    0.00   20352/20670       calcCTY [30]
+                0.00    0.00   20352/20670       calcC [29]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember [2]
+[37]     0.0    0.00    0.00   20352         retx [37]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember [2]
+[38]     0.0    0.00    0.00   20352         retxTY [38]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember [2]
+[39]     0.0    0.00    0.00   20352         salaryscale [39]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember [2]
+[40]     0.0    0.00    0.00   20352         wxdef [40]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember [2]
+[41]     0.0    0.00    0.00   20352         wxdefTY [41]
+-----------------------------------------------
+                0.00    0.00    6678/6678        printresults [15]
+[42]     0.0    0.00    0.00    6678         sum [42]
+-----------------------------------------------
+                0.00    0.00    2901/2901        newDate [24]
+[43]     0.0    0.00    0.00    2901         setdate [43]
+-----------------------------------------------
+                0.00    0.00       1/2406        setkey [20]
+                0.00    0.00    2405/2406        createData [8]
+[44]     0.0    0.00    0.00    2406         findss [44]
+-----------------------------------------------
+                0.00    0.00     318/318         createData [8]
+[45]     0.0    0.00    0.00     318         newHashtable [45]
+                0.00    0.00     636/364971      jalloc [23]
+-----------------------------------------------
+                0.00    0.00     318/318         runmember [2]
+[46]     0.0    0.00    0.00     318         setassumptions [46]
+                0.00    0.00     318/145327      newDate [24]
+-----------------------------------------------
+                0.00    0.00       6/6           setnodes [54]
+[47]     0.0    0.00    0.00       6         getnodeset [47]
+-----------------------------------------------
+                0.00    0.00       6/6           makeLifeTables [96]
+[48]     0.0    0.00    0.00       6         makeLifeTable [48]
+-----------------------------------------------
+                0.00    0.00       1/1           createDS [6]
+[49]     0.0    0.00    0.00       1         createXL [49]
+                0.00    0.00       3/364971      jalloc [23]
+                0.00    0.00       1/1           setsheetnames [55]
+                0.00    0.00       1/1           setnodes [54]
+-----------------------------------------------
+                0.00    0.00       1/1           createDS [6]
+[50]     0.0    0.00    0.00       1         createXLzip [50]
+-----------------------------------------------
+                0.00    0.00       1/1           setUIvals.constprop.0 [53]
+[51]     0.0    0.00    0.00       1         printUI.constprop.0 [51]
+-----------------------------------------------
+                0.00    0.00       1/1           run [1]
+[52]     0.0    0.00    0.00       1         printtc [52]
+-----------------------------------------------
+                0.00    0.00       1/1           on_startstopbutton_clicked [7]
+[53]     0.0    0.00    0.00       1         setUIvals.constprop.0 [53]
+                0.00    0.00       1/1           printUI.constprop.0 [51]
+-----------------------------------------------
+                0.00    0.00       1/1           createXL [49]
+[54]     0.0    0.00    0.00       1         setnodes [54]
+                0.00    0.00       6/6           getnodeset [47]
+                0.00    0.00       1/364971      jalloc [23]
+-----------------------------------------------
+                0.00    0.00       1/1           createXL [49]
+[55]     0.0    0.00    0.00       1         setsheetnames [55]
+-----------------------------------------------
+                0.00    0.00       1/1           on_openDC_activate [105]
+[56]     0.0    0.00    0.00       1         updateUI.constprop.0 [56]
+-----------------------------------------------
+                0.00    0.00       1/1           validateInput [25]
+[57]     0.0    0.00    0.00       1         updateValidation [57]
+-----------------------------------------------
+                0.00    0.00       1/1           createDS [6]
+[58]     0.0    0.00    0.00       1         validateColumns [58]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+   [9] NRA                    [18] evolEBP                [38] retxTY
+  [21] NRATY                  [36] evolPremiums            [2] runmember
+  [27] calcA                   [3] evolRES                [39] salaryscale
+  [28] calcATY                [44] findss                 [33] salaryscaleTY
+  [29] calcC                  [22] gensum                 [16] setGenMatrix
+   [4] calcCAP                [17] getDOC                 [53] setUIvals.constprop.0
+  [30] calcCTY                [19] getDOC_prolongation    [46] setassumptions
+  [31] calcDTH                [14] getcmval               [43] setdate
+  [32] calcDTHTY              [47] getnodeset             [20] setkey
+   [5] calcRES                [23] jalloc                 [54] setnodes
+  [11] cell                   [10] lookup                 [55] setsheetnames
+  [13] createCM               [48] makeLifeTable          [42] sum
+   [6] createDS               [26] minDate                [56] updateUI.constprop.0
+   [8] createData             [24] newDate                [57] updateValidation
+  [49] createXL               [45] newHashtable           [58] validateColumns
+  [50] createXLzip            [51] printUI.constprop.0    [25] validateInput
+  [12] evolART24              [15] printresults           [40] wxdef
+  [34] evolCAPDTH             [52] printtc                [41] wxdefTY
+  [35] evolDBONCIC            [37] retx
