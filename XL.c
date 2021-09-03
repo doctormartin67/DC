@@ -16,7 +16,7 @@ void nextcol(char *next);
  * from cells in the given excel file 's'. If the excel file could not be
  * created the function returns NULL
  */
-XLfile *createXL(const char s[static restrict 1])
+XLfile *createXL(const char s[restrict static 1])
 {
 	XLfile *xl = jalloc(1, sizeof(*xl));
 	*xl = (XLfile){0};
@@ -71,8 +71,8 @@ XLfile *createXL(const char s[static restrict 1])
  * cell to look in, f.e. "B11". If nothing was found in the cell then the
  * function returns NULL
  */
-char *cell(const XLfile xl[static restrict 1], unsigned sheet,
-		const char s[static restrict 1])
+char *cell(const XLfile xl[restrict static 1], unsigned sheet,
+		const char s[restrict static 1])
 {
 	xmlXPathObjectPtr nodeset = 0;
 	xmlNodeSetPtr nodes = 0;
@@ -145,7 +145,7 @@ char *cell(const XLfile xl[static restrict 1], unsigned sheet,
  * need to be concatenated (don't ask me why, 
  * I figured this out all by myself)
  */
-char *findss(const XLfile xl[static restrict 1], int index)
+char *findss(const XLfile xl[restrict static 1], int index)
 {
 	char *s = 0;
 	xmlXPathObjectPtr nodeset = 0;
@@ -200,7 +200,7 @@ char *getconcatss(xmlNodePtr cn)
  * XLfile struct has an element sheetname which holds all the sheet names of 
  * the excel file. this function uses the workbook.xml file to set them
  */
-void setsheetnames(XLfile xl[static restrict 1])
+void setsheetnames(XLfile xl[restrict static 1])
 {
 	char **xls = xl->sheetname;
 	xmlNodePtr p = xmlDocGetRootElement(xl->workbook);
@@ -225,7 +225,7 @@ void setsheetnames(XLfile xl[static restrict 1])
  * This function uses XPATH functionality of the libxml library to set all the
  * nodes of sharedStrings and the sheets array.
  */
-void setnodes(XLfile xl[static restrict 1])
+void setnodes(XLfile xl[restrict static 1])
 {
 	xl->nodesetss = getnodeset(xl->sharedStrings, (xmlChar *)XPATHSS);
 	if (0 == (xl->nodesetss->nodesetval))
@@ -243,7 +243,7 @@ void setnodes(XLfile xl[static restrict 1])
 }
 
 /* returns xmlDocPtr or NULL if docname could not be found */
-xmlDocPtr getxmlDoc(const char docname[static restrict 1])
+xmlDocPtr getxmlDoc(const char docname[restrict static 1])
 {
 	xmlDocPtr doc;
 	if(0 == (doc = xmlParseFile(docname)))
@@ -254,7 +254,7 @@ xmlDocPtr getxmlDoc(const char docname[static restrict 1])
 }
 
 xmlXPathObjectPtr getnodeset(const xmlDocPtr restrict doc,
-		const xmlChar xpath[static restrict 1])
+		const xmlChar xpath[restrict static 1])
 {
 	xmlXPathContextPtr context;
 	xmlXPathObjectPtr result;

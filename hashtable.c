@@ -5,8 +5,8 @@
 #include "hashtable.h"
 #include "errorexit.h"
 
-struct linked_list *lookup(const char t[static restrict 1],
-		const char *restrict value, Hashtable ht[static restrict 1])
+struct linked_list *lookup(const char t[restrict static 1],
+		const char *restrict value, Hashtable ht[restrict static 1])
 {
 	struct linked_list *pht = 0;
 	register unsigned long hashval = 0;

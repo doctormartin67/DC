@@ -22,7 +22,7 @@ struct date {
 	unsigned day;
 };
 
-void setdate(struct date d[static restrict 1]);
+void setdate(struct date d[restrict static 1]);
 struct date *newDate(unsigned XLday,
 		unsigned year, unsigned month, unsigned day);
 struct date *minDate(struct date *, struct date *);

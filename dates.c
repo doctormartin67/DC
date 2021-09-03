@@ -88,7 +88,7 @@ struct date *newDate(unsigned XLday,
  * excel file. The function uses static arrays to save dates so we don't have
  * to recalculate the same date each time.
  */
-void setdate(struct date d[static restrict 1])
+void setdate(struct date d[restrict static 1])
 {
 	if (d->XLday > MAXDAYS - 1)
 		die("XLday exceeds the maximum amount of days since "

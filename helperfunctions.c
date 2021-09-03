@@ -54,7 +54,7 @@ char *replace(const char s[static 1],
 }
 
 // Check if DIR exists
-int DIRexists(const char dname[static restrict 1])
+int DIRexists(const char dname[restrict static 1])
 {
 	DIR* dir = opendir(dname);
 	if (dir) {
@@ -76,8 +76,8 @@ int DIRexists(const char dname[static restrict 1])
  * neither were found inside 's'.
  */
 
-char *strinside(const char s[static 1], const char begin[static restrict 1],
-		const char end[static restrict 1])
+char *strinside(const char s[static 1], const char begin[restrict static 1],
+		const char end[restrict static 1])
 {
 	char *pb = 0; // pointer to begin in s
 	char *pe = 0; // pointer to end in s

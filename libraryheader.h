@@ -47,7 +47,7 @@ inline char *trim(char s[static 1])
 	return t;
 }
 
-inline void upper(char s[static restrict 1])
+inline void upper(char s[restrict static 1])
 {
 	while(*s) {
 		*s = toupper(*s);
@@ -55,7 +55,7 @@ inline void upper(char s[static restrict 1])
 	}
 }
 
-inline int isfloat(const char s[static restrict 1])
+inline int isfloat(const char s[restrict static 1])
 {
 	while (isgarbage(*s)) s++;    
 
@@ -81,7 +81,7 @@ inline int isfloat(const char s[static restrict 1])
 		return 0;
 }
 
-inline int isint(const char s[static restrict 1])
+inline int isint(const char s[restrict static 1])
 {
 	while (isgarbage(*s)) s++;    
 
