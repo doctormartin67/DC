@@ -4,9 +4,11 @@
 #include "validation.h"
 #include "errorexit.h"
 
-void updateValidation(Validator val[static 1], Status status,
+void updateValidation(Validator *val, Status status,
 		const char *format, ...)
 {
+	if (0 == val) return;
+
 	char s[MAXMSGSIZE];
 	va_list argptr;
 	va_start(argptr, format);

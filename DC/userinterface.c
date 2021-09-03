@@ -29,7 +29,6 @@ static GtkWidget *widgets[WIDGET_AMOUNT];
 static GtkBuilder *builder;
 
 static unsigned running; /* determines whether program is running or not */
-static DataSet *ds;
 static pthread_t thrun;
 
 static UserInput UILY;
@@ -44,7 +43,7 @@ void userinterface()
 
 	builder = gtk_builder_new_from_file(GLADEFILE);
 
-	for (int i = 0; i < WIDGET_AMOUNT; i++)
+	for (unsigned i = 0; i < WIDGET_AMOUNT; i++)
 		widgets[i] = buildWidget(widgetname[i]);
 
 	gtk_builder_connect_signals(builder, 0);
@@ -82,16 +81,14 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 			if (strcmp("Run one run", choice) == 0) {
 				// This needs updating when I start with reconciliation runs!!
 				currrun = runNewRF; 
-				s = pthread_create(&thrun, NULL, run, pl);
+				s = pthread_create(&thrun, 0, run, pl);
 				if (s != 0)
 					errExitEN(s, "[%s] unable to create thread\n", __func__);
 
 				s = pthread_detach(thrun);
 				if (s != 0)
 					errExitEN(s, "[%s] unable to detach thread\n", __func__);
-			}
-			else if (strcmp("Run test case", choice) == 0)
-			{
+			} else if (strcmp("Run test case", choice) == 0) {
 				// This needs updating when I start with reconciliation runs!!
 				currrun = runNewRF; 
 				s = pthread_create(&thrun, 0, runtc, pl);
@@ -101,16 +98,13 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 				s = pthread_detach(thrun);
 				if (s != 0)
 					errExitEN(s, "[%s] unable to detach thread\n", __func__);
-			}
-			else if (strcmp("Run reconciliation", choice) == 0)
+			} else if (strcmp("Run reconciliation", choice) == 0) {
 				printf("something else\n");
-			else
+			} else
 				die("should never reach here");
 
 			g_free(choice);
-		}
-		else
-		{
+		} else {
 			char *MsgErr = setMsgbuf(&validatorLY);
 			GtkDialog *dialog;
 			dialog = GTK_DIALOG(widgets[MSGERR]);
@@ -118,12 +112,8 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 			gtk_widget_show(GTK_WIDGET(dialog));
 			gtk_dialog_run(dialog); 
 			gtk_widget_hide(GTK_WIDGET(dialog));
-
-			freeDS(ds);
-			ds = 0;
 		}
-	}
-	else
+	} else
 		printf("Program is running, wait for it to end\n");
 }
 
@@ -138,9 +128,10 @@ void on_runchoice_changed(GtkComboBox *cb, gpointer *p)
 	if (0 != p) printf("unused pointer [%p]\n", p);
 
 	gchar *choice = 0;
-	if (GTK_COMBO_BOX(widgets[RUNCHOICE]) == cb)
-		choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
-	else
+	if (GTK_COMBO_BOX(widgets[RUNCHOICE]) == cb) {
+		choice = gtk_combo_box_text_get_active_text(
+				GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
+	} else
 		die("something went wrong with GtkComboBox");
 
 	if (strcmp("Run test case", choice) == 0)
@@ -153,7 +144,7 @@ void on_runchoice_changed(GtkComboBox *cb, gpointer *p)
 
 gboolean on_asswindow_delete_event(GtkWidget *w, GdkEvent *e, gpointer p)
 {
-	if (p != NULL) printf("unused pointer [%p]\n", p);
+	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("GdkEventType [%d]\n", gdk_event_get_event_type(e));
 
 	gtk_widget_hide(w);
@@ -167,37 +158,35 @@ void on_close_button_press_event(void)
 
 void on_openDC_activate(GtkMenuItem *m)
 {
-	GtkDialog *dialog;
-	gint res;
+	FILE *fp = 0;
+	char *filename = 0;
+	gint res = 0;
+	GtkDialog *dialog = 0;
+	GtkFileChooser *chooser = 0;
 
 	dialog = GTK_DIALOG(widgets[OPENDCFILE]);
 	gtk_widget_show(GTK_WIDGET(dialog));
 	res = gtk_dialog_run(dialog); 
 
-	if (res == GTK_RESPONSE_ACCEPT)
-	{
-		char *filename;
-		GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+	if (res == GTK_RESPONSE_ACCEPT) {
+		chooser = GTK_FILE_CHOOSER(dialog);
 		filename = gtk_file_chooser_get_filename(chooser);
 		printf("selected file [%s] to open\n", filename);
-		FILE *fp = fopen(filename, "rb");
-		if (fp != NULL)
-		{
-			if (fread(&UILY, sizeof(UILY), 1, fp) != 1)
-				printf("[%s] not a correct .dc file\n", filename);
-			else
-				updateUI(&UILY);
-			if (fclose(fp) == EOF) 
-				die("unable to close file [%s]", filename);
-		}
-		else
-		{
-			fprintf(stderr, "Unable to open file [%s]\n", filename);
-		}
+
+		fp = fopen(filename, "rb");
+		if (0 == fp) die("Unable to open file [%s]", filename);
+
+		if (fread(&UILY, sizeof(UILY), 1, fp) != 1)
+			die("[%s] not a correct .dc file\n", filename);
+
+		updateUI(&UILY);
+
+		if (fclose(fp) == EOF) 
+			die("unable to close file [%s]", filename);
+
 		g_free(filename);
-	}
-	else
-	{
+		filename = 0;
+	} else {
 		printf("Cancelled [%s]\n", gtk_menu_item_get_label(m));
 	}
 
@@ -212,52 +201,46 @@ void on_saveDC_activate(GtkMenuItem *m)
 
 void on_saveasDC_activate(GtkMenuItem *m)
 {
-	GtkDialog *dialog;
-	gint res;
+	FILE *fp = 0;
+	char tmp[BUFSIZ];
+	char *filename = 0;
+	char *p = 0;
+	GtkDialog *dialog = 0;
+	GtkFileChooser *chooser = 0;
+	gint res = 0;
 
 	setUIvals(&UILY);
 	dialog = GTK_DIALOG(widgets[SAVEASDCFILE]);
 	gtk_widget_show(GTK_WIDGET(dialog));
 	res = gtk_dialog_run(dialog); 
 
-	if (res == GTK_RESPONSE_ACCEPT)
-	{
-		char temp[BUFSIZ];
-		char *filename;
-		char *p;
-		GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+	if (res == GTK_RESPONSE_ACCEPT) {
+		chooser = GTK_FILE_CHOOSER(dialog);
 		p = filename = gtk_file_chooser_get_filename(chooser);
 
-		if ((p = strstr(p, ".dc")) == NULL)
-			snprintf(temp, sizeof(temp), "%s.dc", filename);
-		else
-		{ /* Check if last 3 character is ".dc" */
-			while (*p != '\0')
-				p++;
+		if (0 == (p = strstr(p, ".dc"))) {
+			snprintf(tmp, sizeof(tmp), "%s.dc", filename);
+		} else {
+			while (*p != '\0') p++;
 			p -= 3;
 			if (strcmp(p, ".dc") == 0)
-				snprintf(temp, sizeof(temp), "%s", filename);
+				snprintf(tmp, sizeof(tmp), "%s", filename);
 			else
-				snprintf(temp, sizeof(temp), "%s.dc", filename);
+				snprintf(tmp, sizeof(tmp), "%s.dc", filename);
 		}
+		printf("selected file [%s] to save\n", tmp);
 
-		printf("selected file [%s] to save\n", temp);
-		FILE *fp = fopen(temp, "wb");
-		if (fp != NULL)
-		{
-			if (fwrite(&UILY, sizeof(UILY), 1, fp) != 1)
-				die("unable to write to file [%s]", temp);
-			if (fclose(fp) == EOF) 
-				die("unable to close file [%s]", filename);
-		}
-		else
-		{
-			fprintf(stderr, "Unable to open file [%s]\n", temp);
-		}
+		fp = fopen(tmp, "wb");
+		if (0 == fp) die("Unable to open file [%s]\n", tmp);
+
+		if (fwrite(&UILY, sizeof(UILY), 1, fp) != 1)
+			die("unable to write to file [%s]", tmp);
+		if (fclose(fp) == EOF) 
+			die("unable to close file [%s]", filename);
+
 		g_free(filename);
-	}
-	else
-	{
+		p = filename = 0;
+	} else {
 		printf("Cancelled [%s]\n", gtk_menu_item_get_label(m));
 	}
 
@@ -266,20 +249,23 @@ void on_saveasDC_activate(GtkMenuItem *m)
 
 void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 {
-	if (p != NULL) printf("unused pointer [%p]\n", p);
+	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("dialog [%s] closed\n", gtk_file_chooser_button_get_title(b));
 
-	GtkDialog *dialog;
-	char *filename;
+	GtkDialog *dialog = 0;
+	char *filename = 0;
+	char tmp[BUFSIZ];
 
 	dialog = GTK_DIALOG(widgets[OPENEXCELFILE]);
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
 	filename = gtk_file_chooser_get_filename(chooser);
+
 	snprintf(UILY.fname, sizeof(UILY.fname), "%s", filename);
+	snprintf(tmp, sizeof(tmp), "File set to run:\n%s", UILY.fname);
+
 	printf("Excel to run: [%s]\n", UILY.fname);
-	char temp[BUFSIZ];
-	snprintf(temp, sizeof(temp), "File set to run:\n%s", UILY.fname);
-	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), temp); 
+	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), tmp); 
+	g_free(filename);
 }
 
 /* helper functions */
@@ -292,45 +278,49 @@ static GtkWidget *buildWidget(const char w[static 1])
 
 static void *run(void *pl)
 {
+	gtk_label_set_text(GTK_LABEL(pl), "Preparing data...");
+	DataSet *ds = createDS(0, &UILY);
 	char text[BUFSIZ];
-	int tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]))); 
+	unsigned tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	CurrentMember *cm = ds->cm;
 
 	for (unsigned i = 0; i < ds->membercnt; i++) {
 		/* this needs updating when we have a UITY!!! */
 		runmember(cm + i, &UILY, &UILY);
-		snprintf(text, sizeof(text), 
-				"Progress: member %d out of %d members complete", i + 1, ds->membercnt);
-		gtk_label_set_text(GTK_LABEL(pl), text); 
+		snprintf(text, sizeof(text), "Progress: member %u out of %u "
+				"members complete", i + 1, ds->membercnt);
+		gtk_label_set_text(GTK_LABEL(pl), text);
 	}
 
-	// create excel file to print results
 	tc -= 1; // Index is one less than given test case
 	printresults(ds);
 	printtc(ds, tc);
 
 	running = FALSE;
-	return (void *)0;
+	freeDS(ds);
+	return 0;
 }
 
 static void *runtc(void *pl)
 {
+	gtk_label_set_text(GTK_LABEL(pl), "Preparing data...");
+	DataSet *ds = createDS(0, &UILY);
 	char text[BUFSIZ];
-	int tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]))); 
+	unsigned tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	tc -= 1; // Index is one less than given test case
 	CurrentMember *cm = ds->cm + tc;
 
 	printf("testcase: %s chosen\n", cm->key);
 	/* this needs updating when we have a UITY!!! */
 	runmember(cm, &UILY, &UILY);
-	snprintf(text, sizeof(text), "Test case %d has been run", tc + 1);
-	gtk_label_set_text(GTK_LABEL(pl), text); 
+	snprintf(text, sizeof(text), "Test case %u has been run", tc + 1);
+	gtk_label_set_text(GTK_LABEL(pl), text);
 
-	// create excel file to print results
 	printtc(ds, tc);
 
 	running = FALSE;
-	return (void *)0;
+	freeDS(ds);
+	return 0;
 }
 
 static void setUIvals(UserInput UI[static 1])
@@ -433,6 +423,7 @@ static void validateUI(Validator val[static 1], UserInput UI[static 1])
 	char *kc = UI->keycell;
 	char *pt = 0;
 	char *day = 0, *month = 0, *year = 0;
+	const char *tc = 0;
 	struct date *tempDate = 0;
 
 	/* ----- Check keycell -----*/
@@ -550,9 +541,25 @@ static void validateUI(Validator val[static 1], UserInput UI[static 1])
 					UI->SI, validMsg[FLOATERR]);
 		}
 	}
+
+	/* ----- Check test case -----*/
+	tc = gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]));
+	if (!isint(tc) || atoi(tc) < 1) {
+		updateValidation(val, ERROR, "test case [%s] is not valid",
+				tc);
+	}
 }
 
+/*
+ * This is a helper function that will create a temporary DataSet to validate
+ * the data, at which point it is instantly freed. The Validator val is
+ * updated in the process
+ */
 static void validateData(Validator val[static 1], UserInput UI[static 1])
 {
-	if (val->status == OK) ds = createDS(val, UI); 
+	DataSet *ds = 0;
+	if (val->status == OK) {
+		ds = createDS(val, UI); 
+		freeDS(ds);
+	}
 }

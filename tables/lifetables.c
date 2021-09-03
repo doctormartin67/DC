@@ -27,7 +27,7 @@ void makeLifeTables(void)
 	}
 }
 
-static void makeLifeTable(const char name[static restrict 1],
+static void makeLifeTable(const char name[restrict static 1],
 		unsigned long clt[static 1])
 { 
 	char path[PATH_MAX]; 

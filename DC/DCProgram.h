@@ -173,7 +173,6 @@ typedef struct {
 	double nDOA[MAXPROJ]; // years since date of affiliation
 
 	//---Variables that are used for DBO calculation---
-	// For k = 0 these will all be undefined!!
 	double FF[MAXPROJ]; // Funding Factor
 	double FFSC[MAXPROJ]; // Funding Factor Service Cost
 	double qx[MAXPROJ]; // Chance to die within 1 year

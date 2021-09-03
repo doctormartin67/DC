@@ -4,30 +4,30 @@
 #include "hashtable.h"
 #include "errorexit.h"
 
-static void updateART24ACT(CurrentMember cm[static restrict 1], int k);
+static void updateART24ACT(CurrentMember cm[restrict static 1], int k);
 static void updateART24reserves(unsigned method,
-		CurrentMember cm[static restrict 1],
+		CurrentMember cm[restrict static 1],
 		unsigned EREE, unsigned ART24gen, int k);
 static double get_premium_method(unsigned method,
-		CurrentMember cm[static restrict 1], unsigned EREE, int k);
+		CurrentMember cm[restrict static 1], unsigned EREE, int k);
 static void updateART24DEF(CurrentMember cm[static 1], int k);
-static double getDBO(const CurrentMember cm[static restrict 1], int k,
+static double getDBO(const CurrentMember cm[restrict static 1], int k,
 		unsigned method, unsigned assets, unsigned DEFIMM,
 		unsigned PBOTBO,
 		const double ART24TOT[const static METHOD_AMOUNT],
 		const double RESTOT[const static METHOD_AMOUNT],
 		const double REDCAPTOT[const static METHOD_AMOUNT]);
-static double getAssets(const CurrentMember cm[static restrict 1], int k,
+static double getAssets(const CurrentMember cm[restrict static 1], int k,
 		unsigned assets, unsigned DEFIMM,
 		const double RESTOT[const static METHOD_AMOUNT],
 		const double REDCAPTOT[const static METHOD_AMOUNT]);
-static void updateRESCAP(CurrentMember cm[static restrict 1], int k);
-static void updateRESCAPPS(CurrentMember cm[static restrict 1], int k);
-static void updateREDCAPPUC(CurrentMember cm[static restrict 1], int k);
-static void updateRESTUC(CurrentMember cm[static restrict 1], int k);
-static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k);
-static void updateRESTUCPS_1(CurrentMember cm[static restrict 1], int k);
-static void updateREDCAPTUCPS_1(CurrentMember cm[static restrict 1], int k);
+static void updateRESCAP(CurrentMember cm[restrict static 1], int k);
+static void updateRESCAPPS(CurrentMember cm[restrict static 1], int k);
+static void updateREDCAPPUC(CurrentMember cm[restrict static 1], int k);
+static void updateRESTUC(CurrentMember cm[restrict static 1], int k);
+static void updateREDCAPTUC(CurrentMember cm[restrict static 1], int k);
+static void updateRESTUCPS_1(CurrentMember cm[restrict static 1], int k);
+static void updateREDCAPTUCPS_1(CurrentMember cm[restrict static 1], int k);
 
 /*
  * inline functions
@@ -143,7 +143,7 @@ double Iaxn(register unsigned lt, register double i, register double charge,
 	}
 }
 
-void evolCAPDTH(CurrentMember cm[static restrict 1], int k) {
+void evolCAPDTH(CurrentMember cm[restrict static 1], int k) {
 	for (int i = 0; i < EREE_AMOUNT; i++) {
 		cm->DELTACAP[i][k+1] = cm->DELTACAP[i][k];
 		for (int gen = 0; gen < MAXGEN; gen++) {
@@ -155,7 +155,7 @@ void evolCAPDTH(CurrentMember cm[static restrict 1], int k) {
 	}
 }
 
-void evolRES(CurrentMember cm[static restrict 1], int k)
+void evolRES(CurrentMember cm[restrict static 1], int k)
 {
 	updateRESCAP(cm, k);
 	updateRESCAPPS(cm, k);
@@ -166,7 +166,7 @@ void evolRES(CurrentMember cm[static restrict 1], int k)
 	updateREDCAPTUCPS_1(cm, k);
 }
 
-void evolPremiums(CurrentMember cm[static restrict 1], int k)
+void evolPremiums(CurrentMember cm[restrict static 1], int k)
 {
 	double formula = 0.0;
 	double prem = 0.0;
@@ -214,7 +214,7 @@ void evolPremiums(CurrentMember cm[static restrict 1], int k)
 
 }
 
-void evolART24(CurrentMember cm[static restrict 1], int k)
+void evolART24(CurrentMember cm[restrict static 1], int k)
 {
 	if (cm->status & ACT)
 		updateART24ACT(cm, k);
@@ -222,7 +222,7 @@ void evolART24(CurrentMember cm[static restrict 1], int k)
 		updateART24DEF(cm, k);
 }
 
-static void updateART24ACT(CurrentMember cm[static restrict 1], int k)
+static void updateART24ACT(CurrentMember cm[restrict static 1], int k)
 {
 	for (int l = 0; l < EREE_AMOUNT; l++) {
 		for (int m = 0; m < ART24GEN_AMOUNT; m++) {
@@ -234,7 +234,7 @@ static void updateART24ACT(CurrentMember cm[static restrict 1], int k)
 }
 
 static void updateART24reserves(unsigned method,
-		CurrentMember cm[static restrict 1],
+		CurrentMember cm[restrict static 1],
 		unsigned EREE, unsigned ART24gen, int k)
 {
 	unsigned pp = 0.0;
@@ -266,7 +266,7 @@ static void updateART24reserves(unsigned method,
 
 }
 static double get_premium_method(unsigned method,
-		CurrentMember cm[static restrict 1], unsigned EREE, int k)
+		CurrentMember cm[restrict static 1], unsigned EREE, int k)
 {
 	double premium = 0.0;
 
@@ -285,7 +285,7 @@ static double get_premium_method(unsigned method,
 	return premium;
 }
 
-static void updateART24DEF(CurrentMember cm[static restrict 1], int k)
+static void updateART24DEF(CurrentMember cm[restrict static 1], int k)
 {
 	for (int j = 0; j < METHOD_AMOUNT; j++)
 		for (int l = 0; l < EREE_AMOUNT; l++)
@@ -294,7 +294,7 @@ static void updateART24DEF(CurrentMember cm[static restrict 1], int k)
 					cm->ART24[j][l][m][k]; 
 }
 
-double calcCAP(const CurrentMember cm[static restrict 1],
+double calcCAP(const CurrentMember cm[restrict static 1],
 		const CalcInput *restrict CI)
 {
 	double res = CI->res, prem = CI->prem, deltacap = CI->deltacap, 
@@ -353,7 +353,7 @@ double calcCAP(const CurrentMember cm[static restrict 1],
 	return value;
 }
 
-double calcRES(const CurrentMember cm[static restrict 1],
+double calcRES(const CurrentMember cm[restrict static 1],
 		const CalcInput *restrict CI)
 {
 	double cap = CI->cap, prem = CI->prem, deltacap = CI->deltacap, 
@@ -413,7 +413,7 @@ double calcRES(const CurrentMember cm[static restrict 1],
 	return value;
 }
 
-void evolDBONCIC(CurrentMember cm[static restrict 1], int k, 
+void evolDBONCIC(CurrentMember cm[restrict static 1], int k, 
 		const double ART24TOT[const static METHOD_AMOUNT],
 		const double RESTOT[const static METHOD_AMOUNT],
 		const double REDCAPTOT[const static METHOD_AMOUNT])
@@ -462,7 +462,7 @@ void evolDBONCIC(CurrentMember cm[static restrict 1], int k,
 	}
 }
 
-void evolEBP(CurrentMember cm[static restrict 1], int k, 
+void evolEBP(CurrentMember cm[restrict static 1], int k, 
 		const double ART24TOT[const static METHOD_AMOUNT],
 		const double RESTOT[const static METHOD_AMOUNT],
 		const double REDCAPTOT[const static METHOD_AMOUNT])
@@ -539,7 +539,7 @@ void evolEBP(CurrentMember cm[static restrict 1], int k,
 	free(DEFdate);
 }
 
-double getamount(const CurrentMember cm[static restrict 1], int k,
+double getamount(const CurrentMember cm[restrict static 1], int k,
 		unsigned DBONCICASS, unsigned method, unsigned assets,
 		unsigned DEFIMM, unsigned PBOTBO, 
 		const double ART24TOT[const static METHOD_AMOUNT],
@@ -576,7 +576,7 @@ double getamount(const CurrentMember cm[static restrict 1], int k,
 	return 0.0;
 }
 
-static double getDBO(const CurrentMember cm[static restrict 1], int k, unsigned method,
+static double getDBO(const CurrentMember cm[restrict static 1], int k, unsigned method,
 		unsigned assets, unsigned DEFIMM, unsigned PBOTBO, 
 		const double ART24TOT[const static METHOD_AMOUNT],
 		const double RESTOT[const static METHOD_AMOUNT],
@@ -605,7 +605,7 @@ static double getDBO(const CurrentMember cm[static restrict 1], int k, unsigned 
 	return liab;
 }
 
-static double getAssets(const CurrentMember cm[static restrict 1], int k,
+static double getAssets(const CurrentMember cm[restrict static 1], int k,
 		unsigned assets, unsigned DEFIMM,
 		const double RESTOT[const static METHOD_AMOUNT],
 		const double REDCAPTOT[const static METHOD_AMOUNT])
@@ -626,7 +626,7 @@ static double getAssets(const CurrentMember cm[static restrict 1], int k,
 	return a * corrfactor;
 }
 
-static void updateRESCAP(CurrentMember cm[static restrict 1], int k)
+static void updateRESCAP(CurrentMember cm[restrict static 1], int k)
 {
 	CalcInput *CI = jalloc(1, sizeof(*CI));
 
@@ -651,7 +651,7 @@ static void updateRESCAP(CurrentMember cm[static restrict 1], int k)
 	free(CI);
 }
 
-static void updateRESCAPPS(CurrentMember cm[static restrict 1], int k)
+static void updateRESCAPPS(CurrentMember cm[restrict static 1], int k)
 {
 	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
@@ -676,7 +676,7 @@ static void updateRESCAPPS(CurrentMember cm[static restrict 1], int k)
 	free(CI);
 }
 
-static void updateREDCAPPUC(CurrentMember cm[static restrict 1], int k)
+static void updateREDCAPPUC(CurrentMember cm[restrict static 1], int k)
 {
 	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
@@ -719,7 +719,7 @@ static void updateREDCAPPUC(CurrentMember cm[static restrict 1], int k)
 	free(CI);
 }
 
-static void updateRESTUC(CurrentMember cm[static restrict 1], int k)
+static void updateRESTUC(CurrentMember cm[restrict static 1], int k)
 {
 	double ir = 0.0;
 	double Ex = 0.0;
@@ -754,7 +754,7 @@ static void updateRESTUC(CurrentMember cm[static restrict 1], int k)
 	free(CI);
 }
 
-static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k)
+static void updateREDCAPTUC(CurrentMember cm[restrict static 1], int k)
 {
 	CalcInput *CI = jalloc(1, sizeof(*CI));
 	CI->prem = 0;
@@ -853,7 +853,7 @@ static void updateREDCAPTUC(CurrentMember cm[static restrict 1], int k)
 	free(CI);
 }
 
-static void updateRESTUCPS_1(CurrentMember cm[static restrict 1], int k)
+static void updateRESTUCPS_1(CurrentMember cm[restrict static 1], int k)
 {
 	unsigned index = MIN2(k + 1, 2.0);
 	double ir = 0.0;
@@ -889,7 +889,7 @@ static void updateRESTUCPS_1(CurrentMember cm[static restrict 1], int k)
 	free(CI);
 }
 
-static void updateREDCAPTUCPS_1(CurrentMember cm[static restrict 1], int k)
+static void updateREDCAPTUCPS_1(CurrentMember cm[restrict static 1], int k)
 {
 	unsigned index = MIN2(k + 1, 2.0);
 	CalcInput *CI = jalloc(1, sizeof(*CI));

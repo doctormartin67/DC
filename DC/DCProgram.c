@@ -923,15 +923,16 @@ void freeDS(DataSet *ds)
 
 void freeCM(CurrentMember *cm)
 {
+	if (0 == cm) return;
+
 	free(cm->DOB);
 	free(cm->DOE);
 	free(cm->DOL);
 	free(cm->DOS);
 	free(cm->DOA);
 	free(cm->DOR);
-	for (int i = 0; i < MAXPROJ; i++)
+	for (unsigned i = 0; i < MAXPROJ + 1; i++)
 		free(cm->DOC[i]);
-	free(cm->DOC);
 }
 
 /* 
@@ -940,7 +941,7 @@ void freeCM(CurrentMember *cm)
  */
 void validateColumns()
 {
-	unsigned  cnt = 0;
+	unsigned cnt = 0;
 
 	for (unsigned i = 0; i < KEYS_AMOUNT; i++)
 		if (colmissing[i])

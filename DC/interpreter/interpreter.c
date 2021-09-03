@@ -216,7 +216,7 @@ CaseTree *plantTree(const char *s)
  * Returns the index of the ruleset array for the given name in the tree, or
  * -1 of no rule was found
  */
- static int specifyTree(const char name[static restrict 1])
+ static int specifyTree(const char name[restrict static 1])
 {
 	int index = -1;
 	size_t n = strlen(name);
@@ -296,7 +296,7 @@ static void deforest(CaseTree *ct, char *t, TreeError te)
 	if (NOERR != te) setterrno(te);
 }
 
-unsigned cmpnum(const CaseTree ct[static restrict 1], const void *pf)
+unsigned cmpnum(const CaseTree ct[restrict static 1], const void *pf)
 {
 	unsigned n = 1;
 	double f = *((double *)pf);
@@ -369,7 +369,7 @@ unsigned cmpnum(const CaseTree ct[static restrict 1], const void *pf)
  * inside one of the quotes.
  * returns 1 if condition matches string in quotes, 0 otherwise
  */
-unsigned cmpstr(const CaseTree ct[static restrict 1], const void *s)
+unsigned cmpstr(const CaseTree ct[restrict static 1], const void *s)
 {
 	if (0 == strncmp(ct->cond, E, strlen(E)))
 		return 1;
