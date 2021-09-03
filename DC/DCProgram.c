@@ -41,7 +41,7 @@ DataSet *createDS(Validator v[static 1], UserInput UI[static 1])
 	DataSet *ds = jalloc(1, sizeof(*ds));
 	*ds = (DataSet){0};
 
-	for (int i = 0; i < KEYS_AMOUNT; i++)
+	for (unsigned i = 0; i < KEYS_AMOUNT; i++)
 		colmissing[i] = 0;
 
 	val = v;
@@ -65,11 +65,12 @@ DataSet *createDS(Validator v[static 1], UserInput UI[static 1])
 	countMembers(ds);
 	createData(ds);
 
-	ds->cm = jalloc(ds->membercnt, sizeof(*ds->cm));
 	ht = ds->Data;
+	ds->cm = jalloc(ds->membercnt, sizeof(*ds->cm));
 
 	printf("Setting all the values for the affiliates...\n");
-	for (int i = 0; i < ds->membercnt; i++) {
+	for (unsigned i = 0; i < ds->membercnt; i++) {
+		ds->cm[i] = (CurrentMember){0};
 		ds->cm[i].id = i + 1;
 		createCM(&ds->cm[i], *ht++);
 	}
@@ -120,7 +121,7 @@ void createCM(CurrentMember cm[static 1], Hashtable ht[static 1])
 	cm->ART24[PUC][EE][ART24GEN1][0] = atof(getcmval(cm, ART24_C_GEN1, -1, -1));
 	cm->ART24[PUC][EE][ART24GEN2][0] = atof(getcmval(cm, ART24_C_GEN2, -1, -1));
 	/* PUC = TUC = TUCPS_1 */
-	for (int j = 1; j < METHOD_AMOUNT; j++) {
+	for (unsigned j = 1; j < METHOD_AMOUNT; j++) {
 		cm->ART24[j][ER][ART24GEN1][0] = cm->ART24[PUC][ER][ART24GEN1][0];
 		cm->ART24[j][ER][ART24GEN2][0] = cm->ART24[PUC][ER][ART24GEN2][0];
 		cm->ART24[j][EE][ART24GEN1][0] = cm->ART24[PUC][EE][ART24GEN1][0];
@@ -133,12 +134,12 @@ void createCM(CurrentMember cm[static 1], Hashtable ht[static 1])
 	setGenMatrix(cm, cm->CAP, CAP);
 	setGenMatrix(cm, cm->CAPPS, CAPPS);
 	setGenMatrix(cm, cm->CAPDTH, CAPDTH);
-	for (int k = 0; k < METHOD_AMOUNT; k++) {
+	for (unsigned k = 0; k < METHOD_AMOUNT; k++) {
 		setGenMatrix(cm, cm->RES[k], RES);
 		setGenMatrix(cm, cm->RESPS[k], RESPS);
 		setGenMatrix(cm, cm->REDCAP[k], CAPRED);
 	}
-	for (int j = 0; j < MAXGEN; j++) {
+	for (unsigned j = 0; j < MAXGEN; j++) {
 		cm->TAUX[ER][j] = atof(getcmval(cm, TAUX, ER, j + 1));
 		cm->TAUX[EE][j] = atof(getcmval(cm, TAUX, EE, j + 1));      
 	}
@@ -173,7 +174,7 @@ double gensum(const GenMatrix amount[static EREE_AMOUNT],
 {
 	double sum = 0;
 
-	for (int i = 0; i < MAXGEN; i++) sum += amount[EREE][i][k];
+	for (unsigned i = 0; i < MAXGEN; i++) sum += amount[EREE][i][k];
 
 	return sum;
 }
@@ -279,7 +280,7 @@ void createData(DataSet ds[static 1])
 
 	ds->Data = jalloc(ds->membercnt, sizeof(*ds->Data));
 
-	for (int k = 0; k < ds->membercnt; k++)
+	for (unsigned k = 0; k < ds->membercnt; k++)
 		// https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-8.html
 		ds->Data[k] = newHashtable(233, 0); // 179 * 1.3 = 232.7 -> 233 is a prime
 
@@ -299,7 +300,7 @@ void createData(DataSet ds[static 1])
 
 	// start populating Hashtable
 	printf("Creating Data...\n");
-	for (int i = 0; i < ds->membercnt; i++) {
+	for (unsigned i = 0; i < ds->membercnt; i++) {
 		pkey = ds->keys;
 		// Set the initial data (KEY)
 		if (0 == (data = cell(ds->xl, ds->sheet, dataCell))) {
@@ -375,9 +376,9 @@ int printresults(DataSet *ds)
 {
 	char *d = strdup(ds->xl->dirname);
 	char results[PATH_MAX];
-	int row = 0;
-	int col = 0;  
-	int index = 0;
+	unsigned row = 0;
+	unsigned col = 0;  
+	unsigned index = 0;
 
 	snprintf(results, sizeof(results), "%s%s", d, "/results.xlsx");
 	free(d);
@@ -608,10 +609,8 @@ int printtc(DataSet *ds, unsigned tc)
 	worksheet_write_string(worksheet, row, col++, "DTH RES Part", NULL);
 	worksheet_write_string(worksheet, row, col++, "Contr C", NULL);
 
-	for (int i = 0; i < MAXGEN; i++)
-	{
-		for (int j = 0; j < 2; j++) /* Employer and Employee */
-		{
+	for (unsigned i = 0; i < MAXGEN; i++) {
+		for (int j = 0; j < 2; j++) /* Employer and Employee */ {
 			snprintf(temp, sizeof(temp), "CAP GEN %d %c", i + 1, (j == ER ? 'A' : 'C'));
 			worksheet_write_string(worksheet, row, col + 4*i + 32*j, temp, NULL);
 			snprintf(temp, sizeof(temp), "PREMIUM GEN %d %c", i + 1, (j == ER ? 'A' : 'C'));
@@ -874,6 +873,7 @@ int printtc(DataSet *ds, unsigned tc)
 char *getcmval(CurrentMember cm[static 1], DataColumn dc, int EREE, int gen)
 {
 	char value[BUFSIZ];
+	struct linked_list *h = 0;
 
 	if (EREE >= 0 && gen > 0)
 		snprintf(value, sizeof(value), "%s%c%c%s%d", colnames[dc], '_',
@@ -881,7 +881,6 @@ char *getcmval(CurrentMember cm[static 1], DataColumn dc, int EREE, int gen)
 	else
 		snprintf(value, sizeof(value), "%s", colnames[dc]);
 
-	List *h;
 	if (colmissing[dc] || 0 == (h = lookup(value, 0, cm->Data))) {
 		colmissing[dc] = 1;
 		return strdup("0");
@@ -910,13 +909,13 @@ void freeDS(DataSet *ds)
 		free(*s++);
 	free(ds->keys);
 
-	for (int i = 0; i < ds->membercnt; i++)
+	for (unsigned i = 0; i < ds->membercnt; i++)
 		freeCM(&ds->cm[i]);
 	free(ds->cm);
 
 	freeXL(ds->xl);
 
-	for (int i = 0; i < ds->membercnt; i++)
+	for (unsigned i = 0; i < ds->membercnt; i++)
 		freeHashtable(ds->Data[i]);
 	free(ds->Data);
 	free(ds);
@@ -1065,6 +1064,7 @@ void validateInput(DataColumn dc, const CurrentMember cm[static 1],
 
 	size_t lenf = sizeof(floats)/sizeof(floats[0]);
 	size_t lend = sizeof(dates)/sizeof(dates[0]);
+	struct date *tmp = 0;
 	unsigned update = 0;
 	const unsigned nofloat = 0x1;
 	const unsigned neg = 0x2;
@@ -1085,11 +1085,11 @@ void validateInput(DataColumn dc, const CurrentMember cm[static 1],
 
 	for (size_t i = 0; i < lend; i++) {
 		if (dates[i] == dc) {
-			Date *temp = newDate((unsigned)atoi(input), 0, 0, 0);
-			if (0 == temp) {
+			tmp = newDate((unsigned)atoi(input), 0, 0, 0);
+			if (0 == tmp) {
 				update += invaliddate;
 			} else {
-				free(temp);
+				free(tmp);
 			}
 			break;
 		}

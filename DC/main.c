@@ -6,8 +6,9 @@ void userinterface();
 void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
 		UserInput UITY[static 1]);
 static void init_cm(CurrentMember *);
-static Date *getDOC(const CurrentMember cm[static 1], int k);
-static Date *getDOC_prolongation(const CurrentMember cm[static 1], int k);
+static struct date *getDOC(const CurrentMember cm[static 1], int k);
+static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
+		int k);
 static void prolongate(CurrentMember cm[static 1], int k);
 
 int main(void)
@@ -151,10 +152,10 @@ void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
 
 static void init_cm(CurrentMember cm[static 1])
 {
-	Date **doc = cm->DOC;
-	const Date *dob = cm->DOB;
-	const Date *doe = cm->DOE;
-	const Date *doa = cm->DOA;
+	struct date **doc = cm->DOC;
+	const struct date *dob = cm->DOB;
+	const struct date *doe = cm->DOE;
+	const struct date *doa = cm->DOA;
 	double *prem = 0;
 
 	//-  Dates and age  -
@@ -164,20 +165,6 @@ static void init_cm(CurrentMember cm[static 1])
 	cm->nDOA[0] = calcyears(doa, *doc, (1 == doa->day ? 0 : 1));
 
 	cm->kPx[1] = 1;
-	cm->AFSL[0] = 0;
-
-	//-  Expected Benefits Paid  -
-	for (int l = 0; l < MAXPROJ; l++) {
-		cm->PBODTHNCCF[l] = 0;
-		for (int i = 0; i < METHOD_AMOUNT; i++) {
-			cm->EBPDTH[i][l] = 0;
-			for (int j = 0; j < ASSET_AMOUNT; j++) {
-				cm->PBONCCF[i][j][l] = 0;
-				for (int k = 0; k < CF_AMOUNT; k++) 
-					cm->EBP[i][j][k][l] = 0;
-			}
-		}
-	}
 
 	cm->CAPDTHRESPart[0] = 
 		(cm->tariff == UKMS ? 
@@ -196,12 +183,11 @@ static void init_cm(CurrentMember cm[static 1])
 			*prem = MAX2(0.0, *prem - *cm->PREMIUM[EREE][j]);
 		}
 	}
-
 }
 
-static Date *getDOC(const CurrentMember cm[static 1], int k)
+static struct date *getDOC(const CurrentMember cm[static 1], int k)
 {
-	Date *d = 0, *Ndate = 0, *docdate = 0;
+	struct date *d = 0, *Ndate = 0, *docdate = 0;
 
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
 	docdate = newDate(0, cm->DOC[k]->year + 1, cm->DOC[k]->month, 1);
@@ -218,10 +204,11 @@ static Date *getDOC(const CurrentMember cm[static 1], int k)
 	return d;
 }
 
-static Date *getDOC_prolongation(const CurrentMember cm[static 1], int k)
+static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
+		int k)
 {
 	unsigned addyear = 0;
-	Date *d = 0, *Ndate = 0, *docdate = 0;
+	struct date *d = 0, *Ndate = 0, *docdate = 0;
 
 	addyear = (cm->DOC[k]->month >= cm->DOC[1]->month) ? 1 : 0;
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);

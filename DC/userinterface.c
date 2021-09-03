@@ -296,8 +296,7 @@ static void *run(void *pl)
 	int tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]))); 
 	CurrentMember *cm = ds->cm;
 
-	for (int i = 0; i < ds->membercnt; i++)
-	{
+	for (unsigned i = 0; i < ds->membercnt; i++) {
 		/* this needs updating when we have a UITY!!! */
 		runmember(cm + i, &UILY, &UILY);
 		snprintf(text, sizeof(text), 
@@ -434,7 +433,7 @@ static void validateUI(Validator val[static 1], UserInput UI[static 1])
 	char *kc = UI->keycell;
 	char *pt = 0;
 	char *day = 0, *month = 0, *year = 0;
-	Date *tempDate = 0;
+	struct date *tempDate = 0;
 
 	/* ----- Check keycell -----*/
 	upper(kc);

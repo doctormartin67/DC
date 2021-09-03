@@ -477,9 +477,9 @@ void evolEBP(CurrentMember cm[static restrict 1], int k,
 	double probs = 0.0;
 	int yearIMM = 0.0;
 	int yearDEF = 0.0;
-	Date *Ndate = 0;
-	Date *IMMdate = 0;
-	Date *DEFdate = 0;
+	struct date *Ndate = 0;
+	struct date *IMMdate = 0;
+	struct date *DEFdate = 0;
 
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
 	yearIMM = calcyears(cm->DOC[1], cm->DOC[k], 0);

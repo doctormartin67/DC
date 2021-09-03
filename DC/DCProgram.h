@@ -21,10 +21,10 @@
 #define mDTH 0x2 // used to set DTH bit on if death is evaluated
 #define mTUC 0x4 // used to set TUC bit on (off means PUC)
 #define mmaxERContr 0x8 /* used to set bit on if we take the maximum between 
-			   the contributions and the service cost (never used in
-			   case we have PUC methodology) */
+			   the contributions and the service cost
+			   (never used in case we have PUC methodology) */
 #define mmaxPUCTUC 0x10 // used to set bit on if we take maximum of PUC and TUC
-#define mRES 0x20 // used to set bit on in case assets are mathematical reserves
+#define mRES 0x20 // used to set bit in case assets are mathematical reserves
 #define mPAR115 0x30 // used to set bit on in case assets are paragraph 115
 // if neither mRES, mPAR115 bits are on, then we take paragraph 113
 
@@ -99,25 +99,35 @@ typedef struct {
 	gint evaluateDTH;
 } UserInput;
 
+/*
+ * the following typedef is maybe the most important part of the entire
+ * program. Each member of a pension plan has characteristics that need to be
+ * given in the excel file that is used to run. All of the data is
+ * collected and stored in 'CurrentMember' for each member of the plan.
+ * Each column in the excel file corresponds to one of the variables in
+ * CurrentMember under "Variable Declarations"
+ * Under "Variable Definitions" we define extra variables needed in each
+ * run of a member
+ */
 typedef struct {
-	Hashtable *Data; //Data for an affiliate is in the form of a hashtable
-	unsigned id; /* Used to print warning/error messages to user with info */
+	Hashtable *Data;
+	unsigned id; /* Used to print warning/error messages to user */
 
 	//---Variable Declarations---  
-	char *key; // KEY in data
-	char *regl; // REGLEMENT
+	char *key; // KEY
+	char *regl; // REGLEMENT (plan rule)
 	char *name; // NAME
 	char *contract; // CONTRACT number
-	unsigned status; /* 0000 0000 0000 0111 means single male active member and 
-				  active contract */
-	Date *DOB; // date of birth
-	Date *DOE; // date of entry
-	Date *DOL; // date of leaving
-	Date *DOS; // date of situation
-	Date *DOA; // date of affiliation
-	Date *DOR; // date of retirement
-	Date *DOC[MAXPROJ + 1]; // date of calculation
-	char *category; // for example blue collar, white collar, management, ...
+	unsigned status; /* 0000 0000 0000 0111 means single male active member
+			    and active contract */
+	struct date *DOB; // date of birth
+	struct date *DOE; // date of entry
+	struct date *DOL; // date of leaving
+	struct date *DOS; // date of situation
+	struct date *DOA; // date of affiliation
+	struct date *DOR; // date of retirement
+	struct date *DOC[MAXPROJ + 1]; // date of calculation
+	char *category; // f.e. blue collar, white collar, management, ...
 	double sal[MAXPROJ]; // salary
 	double PG; // pensioengrondslag (I have never needed this)
 	double PT; // part time
@@ -127,24 +137,22 @@ typedef struct {
 	double KO; // death lump sum (kapitaal overlijden)
 	double annINV; // annuity in case of invalidity
 	double contrINV; // contribution for invalidity insurance
+
+	/*
+	 * Article 24 of the Belgium law (WAP)
+	 */
 	double ART24[METHOD_AMOUNT][EREE_AMOUNT][ART24GEN_AMOUNT][MAXPROJ]; 
-	// Currently there are 2 generations for article 24 and 3 methods needed
-	GenMatrix CAP[2]; // Pension lump sum (Employer-Employee, generations, loops)
-	GenMatrix CAPPS[2]; /* Pension lump sum profit sharing 
-			       (Employer-Employee, generations, loops)*/
-	GenMatrix REDCAP[TUCPS_1 + 1][2]; /* Reduced lump sum 
-					     (Employer-Employee, generations, Method, loops)*/
-	double TAUX[2][MAXGEN]; /* return guarentee insurer
-				   (Employer-Employee, generations, loops)*/
-	GenMatrix PREMIUM[2]; // Contribution (Employer-Employee, generations, loops)
-	GenMatrix RES[TUCPS_1 + 1][2]; // Reserves (Employer-Employee, generations, Method, loops)
-	GenMatrix RESPS[TUCPS_1 + 1][2]; /* Profit Sharing Reserves 
-					    (Employer-Employee, generations, Method, loops)*/
-	double DELTACAP[2][MAXPROJ]; // Delta Cap (AXA) (Employer-Employee, generations, loops)
+	GenMatrix CAP[EREE_AMOUNT]; // Pension lump sum
+	GenMatrix CAPPS[EREE_AMOUNT]; /* Pension lump sum profit sharing */
+	GenMatrix REDCAP[METHOD_AMOUNT][EREE_AMOUNT]; /* Reduced lump sum */
+	double TAUX[EREE_AMOUNT][MAXGEN]; /* return guarentee insurer */
+	GenMatrix PREMIUM[EREE_AMOUNT];
+	GenMatrix RES[METHOD_AMOUNT][EREE_AMOUNT]; // Reserves
+	GenMatrix RESPS[METHOD_AMOUNT][EREE_AMOUNT]; /* Profit Sharing */
+	double DELTACAP[EREE_AMOUNT][MAXPROJ]; // Delta Cap (AXA)
 	double X10; // MIXED combination
-	GenMatrix CAPDTH[2]; /* Death lump sum (used for UKMT)
-				(Employer-Employee, generations, loops)*/
-	GenMatrix RP[2]; // Risk Premium
+	GenMatrix CAPDTH[EREE_AMOUNT]; /* Death lump sum (used for UKMT) */
+	GenMatrix RP[EREE_AMOUNT]; // Risk Premium
 	double CAO; // collectieve arbeidsovereenkomst
 	char *ORU;
 	char *CHOICEDTH; // Choice of death insurance
@@ -156,11 +164,11 @@ typedef struct {
 	char *GRDGR;
 	char *plan;
 	double baranc; // baremic ancienity
-	unsigned extra; /* 0000 0000 0000 0011
-				 means prepensioner whose salary we increase at k = -1 */
+	unsigned extra; /* 0000 0000 0000 0011 means prepensioner whose salary
+			   we increase at k = -1 */
 
-	//---Variable definitions---    
-	double age[MAXPROJ + 1]; // age of affiliate
+	//---Variable Definitions---    
+	double age[MAXPROJ + 1];
 	double nDOE[MAXPROJ]; // years since date of entry
 	double nDOA[MAXPROJ]; // years since date of affiliation
 
@@ -169,21 +177,24 @@ typedef struct {
 	double FF[MAXPROJ]; // Funding Factor
 	double FFSC[MAXPROJ]; // Funding Factor Service Cost
 	double qx[MAXPROJ]; // Chance to die within 1 year
-	double wxdef[MAXPROJ]; // Turnover rate within 1 year (deferred payment)
-	double wximm[MAXPROJ]; // Turnover rate within 1 year (immediate payment)
-	double retx[MAXPROJ]; // Chance to retire within 1 year (usually 100% at 65)
+	double wxdef[MAXPROJ]; // Turnover rate for 1 year (deferred payment)
+	double wximm[MAXPROJ]; // Turnover rate for 1 year (immediate payment)
+	double retx[MAXPROJ]; // Retirement rate for 1 year (mostly 100% at 65)
 	double nPk[MAXPROJ]; // Chance to live from now until retirement
 	double kPx[MAXPROJ]; // Chance to live from the start until now
 	double vk[MAXPROJ]; // 1/(1+DR)^k with DR = discount rate
 	double vn[MAXPROJ]; // 1/(1+DR)^n with DR = discount rate
-	double vk113[MAXPROJ]; // 1/(1+DR)^k with DR = discount rate according to IAS19 $113
-	double vn113[MAXPROJ]; // 1/(1+DR)^n with DR = discount rate according to IAS19 $113
+	double vk113[MAXPROJ]; /* 1/(1+DR)^k with DR = discount rate
+				  according to IAS19 $113 */
+	double vn113[MAXPROJ]; /* 1/(1+DR)^n with DR = discount rate
+				  according to IAS19 $113 */
 
-	double DBORET[2][3][MAXPROJ]; // DBO Retirement (PUC - TUC, Method Assets, loops)
-	double NCRET[2][3][MAXPROJ]; // Normal Cost Retirement (PUC - TUC, Method Assets, loops)
-	double ICNCRET[2][3][MAXPROJ]; /* Interest Cost on Normal Cost Retirement 
-					  (PUC - TUC, Method Assets, loops) */
-	double assets[3][MAXPROJ]; // Plan Assets ($115, Mathematical Reserves, $113)
+	// Retirement
+	double DBORET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; // DBO
+	double NCRET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; // Normal Cost
+	// Interest Cost on Normal Cost 
+	double ICNCRET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; 
+	double assets[ASSET_AMOUNT][MAXPROJ];
 	double AFSL[MAXPROJ];
 
 	//---DBO DTH---
@@ -193,30 +204,42 @@ typedef struct {
 	double DBODTHRiskPart[MAXPROJ]; // DBO Death Risk Part
 	double NCDTHRESPart[MAXPROJ]; // NC Death Reserves Part
 	double NCDTHRiskPart[MAXPROJ]; // NC Death Risk Part
-	double ICNCDTHRESPart[MAXPROJ]; // Interest Cost on Normal Cost Death Reserves Part
-	double ICNCDTHRiskPart[MAXPROJ]; // Interest Cost on Normal Cost Death Risk Part
+	double ICNCDTHRESPart[MAXPROJ]; /* Interest Cost on Normal Cost Death
+					   Reserves Part */
+	double ICNCDTHRiskPart[MAXPROJ]; /* Interest Cost on Normal Cost Death
+					    Risk Part */
 
 	//---CASHFLOWS---
 	double EBP[METHOD_AMOUNT][ASSET_AMOUNT][CF_AMOUNT][MAXPROJ];
-	double PBONCCF[METHOD_AMOUNT][ASSET_AMOUNT][MAXPROJ]; // PBO Normal Cost Cashflows
+	double PBONCCF[METHOD_AMOUNT][ASSET_AMOUNT][MAXPROJ]; // Normal Cost
 	double EBPDTH[METHOD_AMOUNT][MAXPROJ]; // Expected Benefits Paid Death
 	double PBODTHNCCF[MAXPROJ]; // PBO Death Normal Cost Cashflows
 } CurrentMember;
 
+/*
+ * When the XLfile is created from an excel file, the properties of the
+ * parts of that file are stored in a struct DataSet.
+ * In particular, we need to know
+ * - the excel file (xl) to retrieve data
+ * - where the data starts (cell with keyrow and keycolumn)
+ * - all the keys that the hashtable will use
+ * - the keynode used for libxml
+ * - the sheet that the data lies in
+ * - the amount of members in the data
+ * - the user input that the data will run with (f.e. the assumptions)
+ */
 typedef struct {
-	unsigned keyrow; /* find the row in the excel file where 
-		       the keys are to use in the hashtable */
+	unsigned keyrow;
+	unsigned sheet;
+	unsigned membercnt;
+	char **keys;
 	char keycolumn[4];
-	char **keys; // This points to the array of keys in excel
+	char datasheet[256];
 	xmlNodePtr keynode;
-	char datasheet[256]; // This is the sheet where the data lies
-	unsigned sheet; // This is the index of the sheet where the data lies
 	XLfile *xl;
-	Hashtable **Data; // This will be set using createData function below
-	int membercnt;
-	CurrentMember *cm; // This is a pointer to the affiliates	 
-	UserInput *UI; /* this will point to the static UserInput struct created in 
-			  userinterface.c */
+	Hashtable **Data;
+	CurrentMember *cm;
+	UserInput *UI; 
 } DataSet;
 
 //---Useful functions for CurrentMembers---
@@ -224,7 +247,7 @@ double gensum(const GenMatrix amount[], unsigned EREE, unsigned loop);
 
 //---Assumptions declarations---
 typedef struct {
-	Date *DOC; /* This is DOC[1] which is the start of the run through affiliates.
+	struct date *DOC; /* This is DOC[1] which is the start of the run through affiliates.
 		      DOC[0] is date of situation.*/
 	double infl; // Inflation
 	double DR; // Discount Rate
