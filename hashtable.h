@@ -1,34 +1,29 @@
 #ifndef HASHTABLE
 #define HASHTABLE
 
-typedef struct list {
-	struct list *next;
+struct linked_list {
+	struct linked_list *next;
 	char *key;
 	char *value;
-} List;
+};
 
+/* 
+ * casesens = 1 for case sensitive, casesens = 0 for insensitive
+ */
 typedef struct {
-	List **list;
+	struct linked_list **list;
 	unsigned long hashsize;
-
-	/* 
-	 * casesens = 1 for case sensitive, casesens = 0 for insensitive
-	 */
 	unsigned casesens; 
 } Hashtable;
 
 /* 
- * search the hashtable for the key and return the found List if value == NULL.
- * if value is not NULL, update the List with the value
+ * search the hashtable for the key and return the found linked_list if value == 0.
+ * if value is not 0, update the linked_list with the value
  */
-List *lookup(const char key[static restrict 1], const char *restrict value,
-		Hashtable *restrict ht);
-
-/* 
- * This allocates memory for n Hashtable pointers
- */
+struct linked_list *lookup(const char key[static restrict 1],
+		const char *restrict value, Hashtable *restrict ht);
 Hashtable *newHashtable(size_t n, unsigned casesens);
 void freeHashtable(Hashtable *restrict ht);
-void freeList(List *restrict l);
+void freeList(struct linked_list *restrict l);
 
 #endif

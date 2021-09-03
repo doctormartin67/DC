@@ -15,17 +15,18 @@ enum months {JAN = 1, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
 extern const unsigned commondays[DEC + 1];
 extern const unsigned leapdays[DEC + 1];
 
-typedef struct date {
+struct date {
 	unsigned XLday;
 	unsigned year;
 	unsigned month;
 	unsigned day;
-} Date;
+};
 
-void setdate(Date date[static restrict 1]);
-Date *newDate(unsigned XLday, unsigned year, unsigned month, unsigned day);
-Date *minDate(Date *, Date *);
-void printDate(const Date *restrict d);
+void setdate(struct date d[static restrict 1]);
+struct date *newDate(unsigned XLday,
+		unsigned year, unsigned month, unsigned day);
+struct date *minDate(struct date *, struct date *);
+void printDate(const struct date *restrict d);
 
 /*
  * inline functions
@@ -50,8 +51,8 @@ inline unsigned days_in_month_year(unsigned year, unsigned month)
  * Calculate the time in years between two dates
  * m is the amount of months to subtract (usually 0 or 1)
  */
-inline double calcyears(const Date d1[static 1], const Date d2[static 1],
-		int m)
+inline double calcyears(const struct date d1[static 1],
+		const struct date d2[static 1], int m)
 {
 	register double y1 = d1->year;
 	register double y2 = d2->year;
@@ -61,18 +62,18 @@ inline double calcyears(const Date d1[static 1], const Date d2[static 1],
 	return y2 - y1 + (m2 - m1 - m)/12;
 }
 
-inline Date *Datedup(const Date *restrict d)
+inline struct date *Datedup(const struct date *restrict d)
 {
 	if (!d) return 0;
 
-	Date *date = jalloc(1, sizeof(*date));
+	struct date *newdate = jalloc(1, sizeof(*newdate));
 
-	date->XLday = d->XLday;
-	date->year = d->year;
-	date->month = d->month;
-	date->day = d->day;
+	newdate->XLday = d->XLday;
+	newdate->year = d->year;
+	newdate->month = d->month;
+	newdate->day = d->day;
 
-	return date;
+	return newdate;
 }
 
 #endif

@@ -5,10 +5,10 @@
 #include "hashtable.h"
 #include "errorexit.h"
 
-List *lookup(const char t[static restrict 1], const char *restrict value,
-		Hashtable ht[static restrict 1])
+struct linked_list *lookup(const char t[static restrict 1],
+		const char *restrict value, Hashtable ht[static restrict 1])
 {
-	List *pht = 0;
+	struct linked_list *pht = 0;
 	register unsigned long hashval = 0;
 	char *s = 0, key[strlen(t) + 1];
 
@@ -77,7 +77,7 @@ void freeHashtable(Hashtable *restrict ht)
 	free(ht);
 }
 
-void freeList(List *restrict l)
+void freeList(struct linked_list *restrict l)
 {
 	if (0 != l) {
 		free(l->key);

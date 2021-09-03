@@ -17,7 +17,7 @@ typedef struct {
 	char fname[PATH_MAX + 1];
 	char dirname[PATH_MAX + 1];
 	char **sheetname;
-	unsigned int sheetcnt;
+	unsigned sheetcnt;
 	xmlDocPtr workbook;
 	xmlDocPtr sharedStrings;
 	xmlXPathObjectPtr nodesetss;
