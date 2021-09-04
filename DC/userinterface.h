@@ -26,14 +26,4 @@ void on_saveDC_activate(GtkMenuItem *m);
 void on_saveasDC_activate(GtkMenuItem *m);
 void on_LYfilechooserbutton_file_set(GtkFileChooserButton *, gpointer);
 
-/* helper functions */
-static GtkWidget *buildWidget(const char *);
-static void *run(void *);
-static void *runtc(void *pl);
-static void setUIvals(UserInput *UI);
-static void updateUI(UserInput *UI);
-static void printUI(UserInput *UI);
-static void validateUI(Validator *, UserInput *);
-static void validateData(Validator *, UserInput *);
-
 #endif

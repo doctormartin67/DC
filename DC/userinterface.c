@@ -25,14 +25,30 @@ const char *const widgetname[WIDGET_AMOUNT] = {
 	[ASSWINDOW] = "asswindow", [MSGERR] = "MsgErr", [FILENAME] = "filename"
 };
 
+struct gui_data {
+	char *s;
+	gpointer pl;
+};
+
 static GtkWidget *widgets[WIDGET_AMOUNT];
 static GtkBuilder *builder;
 
 static unsigned running; /* determines whether program is running or not */
-static pthread_t thrun;
 
 static UserInput UILY;
 static Validator validatorLY;
+
+/* helper functions */
+static GtkWidget *buildWidget(const char *);
+static gpointer run(gpointer pl);
+static gpointer runtc(gpointer pl);
+static gpointer stoprun(gpointer data);
+gboolean update_gui(gpointer data);
+static void setUIvals(UserInput *UI);
+static void updateUI(UserInput *UI);
+static void printUI(UserInput *UI);
+static void validateUI(Validator *, UserInput *);
+static void validateData(Validator *, UserInput *);
 
 extern void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
 		UserInput UITY[static 1]);
@@ -67,8 +83,8 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 	printf("[%s] pressed\n", gtk_button_get_label(b));
 
 	if (!running) {
-		setUIvals(&UILY);
 
+		setUIvals(&UILY);
 		validatorLY = (Validator) {0};
 		validatorLY.status = OK;
 		validateUI(&validatorLY, &UILY); 
@@ -76,28 +92,15 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 
 		if (validatorLY.status != ERROR) {
 			running = TRUE;
-			int s = 0; /* used for error printing */
 			gchar *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
 			if (strcmp("Run one run", choice) == 0) {
 				// This needs updating when I start with reconciliation runs!!
 				currrun = runNewRF; 
-				s = pthread_create(&thrun, 0, run, pl);
-				if (s != 0)
-					errExitEN(s, "[%s] unable to create thread\n", __func__);
-
-				s = pthread_detach(thrun);
-				if (s != 0)
-					errExitEN(s, "[%s] unable to detach thread\n", __func__);
+				g_thread_new("run", run, pl);
 			} else if (strcmp("Run test case", choice) == 0) {
 				// This needs updating when I start with reconciliation runs!!
 				currrun = runNewRF; 
-				s = pthread_create(&thrun, 0, runtc, pl);
-				if (s != 0)
-					errExitEN(s, "[%s] unable to create thread\n", __func__);
-
-				s = pthread_detach(thrun);
-				if (s != 0)
-					errExitEN(s, "[%s] unable to detach thread\n", __func__);
+				g_thread_new("runtc", runtc, pl);
 			} else if (strcmp("Run reconciliation", choice) == 0) {
 				printf("something else\n");
 			} else
@@ -112,9 +115,10 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 			gtk_widget_show(GTK_WIDGET(dialog));
 			gtk_dialog_run(dialog); 
 			gtk_widget_hide(GTK_WIDGET(dialog));
+			running = FALSE;
 		}
-	} else
-		printf("Program is running, wait for it to end\n");
+	} else {
+	}
 }
 
 void on_interpreterbutton_clicked(GtkButton *b, gpointer *w)
@@ -276,23 +280,33 @@ static GtkWidget *buildWidget(const char w[static 1])
 	return widget;
 }
 
-static void *run(void *pl)
+static gpointer run(gpointer pl)
 {
-	gtk_label_set_text(GTK_LABEL(pl), "Preparing data...");
-	DataSet *ds = createDS(0, &UILY);
+	unsigned tc = 0;
+	DataSet *ds = 0;
+	CurrentMember *cm = 0;
 	char text[BUFSIZ];
-	unsigned tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
-	CurrentMember *cm = ds->cm;
+	struct gui_data gd = {"Preparing data...", pl};
+	update_gui(&gd);
+
+	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
+	tc -= 1; // Index is one less than given test case
+	ds = createDS(0, &UILY);
+	cm = ds->cm;
 
 	for (unsigned i = 0; i < ds->membercnt; i++) {
+		if (FALSE == running) {
+			freeDS(ds);
+			return stoprun(&gd);
+		}
 		/* this needs updating when we have a UITY!!! */
 		runmember(cm + i, &UILY, &UILY);
 		snprintf(text, sizeof(text), "Progress: member %u out of %u "
 				"members complete", i + 1, ds->membercnt);
-		gtk_label_set_text(GTK_LABEL(pl), text);
+		gd.s = text;
+		update_gui(&gd);
 	}
 
-	tc -= 1; // Index is one less than given test case
 	printresults(ds);
 	printtc(ds, tc);
 
@@ -301,26 +315,50 @@ static void *run(void *pl)
 	return 0;
 }
 
-static void *runtc(void *pl)
+static gpointer runtc(gpointer pl)
 {
-	gtk_label_set_text(GTK_LABEL(pl), "Preparing data...");
-	DataSet *ds = createDS(0, &UILY);
+	unsigned tc = 0;
+	DataSet *ds = 0;
+	CurrentMember *cm = 0;
 	char text[BUFSIZ];
-	unsigned tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
+	struct gui_data gd = {"Preparing data...", pl};
+	update_gui(&gd);
+
+	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	tc -= 1; // Index is one less than given test case
-	CurrentMember *cm = ds->cm + tc;
+	ds = createDS(0, &UILY);
+	cm = ds->cm + tc;
 
 	printf("testcase: %s chosen\n", cm->key);
+	if (FALSE == running) {
+		freeDS(ds);
+		return stoprun(&gd);
+	}
 	/* this needs updating when we have a UITY!!! */
 	runmember(cm, &UILY, &UILY);
 	snprintf(text, sizeof(text), "Test case %u has been run", tc + 1);
-	gtk_label_set_text(GTK_LABEL(pl), text);
+	gd.s = text;
+	update_gui(&gd);
 
 	printtc(ds, tc);
 
 	running = FALSE;
 	freeDS(ds);
 	return 0;
+}
+
+static gpointer stoprun(gpointer data)
+{
+	struct gui_data *gd = data;
+	gd->s = "Progress: stopped";
+	update_gui(gd);
+	return 0;
+}
+
+gboolean update_gui(gpointer data) {
+	struct gui_data *gd = data;
+	gtk_label_set_text(GTK_LABEL(gd->pl), gd->s);
+	return FALSE;
 }
 
 static void setUIvals(UserInput UI[static 1])
