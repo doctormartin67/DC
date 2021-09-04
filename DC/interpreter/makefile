@@ -7,18 +7,18 @@ MV = mv
 # paths:
 PROJECTPATH = /home/doctormartin67/Projects
 LIBPATH = $(PROJECTPATH)/library
-TABLEPATH = $(PROJECTPATH)/work/tables
-ACTPATH = $(PROJECTPATH)/work/actuarial
-INCLUDE = -I. -I$(LIBPATH) -I$(TABLEPATH) -I$(ACTPATH)
+TABLEPATH =
+ACTPATH =
+INCLUDE = -I. -I$(LIBPATH)
 BINPATH = /home/doctormartin67/bin
 
 # objects:
 XML = `xml2-config --cflags` `xml2-config --libs`
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -rdynamic
-MISCOBJS = $(TABLEPATH)/lifetables.o $(ACTPATH)/actuarialfunctions.o DCProgram.o client.o validation.o
-LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/hashtable.o $(LIBPATH)/dates.o $(LIBPATH)/errorexit.o $(LIBPATH)/XL.o
-GTKOBJS = userinterface.o
-EXEC = main
+MISCOBJS = interpreter.o treeerrors.o
+LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/errorexit.o
+GTKOBJS =
+EXEC = interpret
 
 # flags: 
 # -g if you want to debug, 
@@ -28,11 +28,11 @@ EXEC = main
 # -ffast-math see page 686 in C in a nutshell
 # the OPTFLAGS should be removed for debugging. I also want to check whether with or without
 # -ffast-math gives a big difference
-OPTFLAGS = -Ofast
-DEBUGFLAGS = -g -Og
-GPROFFLAGS = -pg
+OPTFLAGS =
+DEBUGFLAGS = -g
+GPROFFLAGS =
 CFLAGS = -Wall -Wshadow -Wextra $(GPROFFLAGS)
-LDFLAGS = -lm -lxlsxwriter#libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.
+LDFLAGS = #libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.
 #***Start makefile***
 
 # phony targets:

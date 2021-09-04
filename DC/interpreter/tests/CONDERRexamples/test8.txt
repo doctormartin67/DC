@@ -1,0 +1,22 @@
+select case reg 
+	case "123"
+		select case cat
+			case "crap", "BC", "WC", "crap2"
+				select case age
+					case <40: x=0.01
+					case 40 to 60: x = 0.03
+					case else: x = 0.02
+				end select
+			case else
+				x = 0.05
+		end select
+	case else
+		x = 0.06
+end select
+tests:
+39,123,BC=0.01
+41,123,BC=0.03
+12,123,WC=0.01
+62,123,WC=0.02
+52,123,bla=0.05
+52,23,bla=0.06

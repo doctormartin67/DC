@@ -12,3 +12,6 @@ core
 gmon.out
 #TODO file
 TODO*
+#binaries
+main
+interpret
