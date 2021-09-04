@@ -122,7 +122,7 @@ unsigned isvalidTree(const char *t)
  * is used to split conditions and there is atleast 1 condition 'n'.
  * Returns 0 if an error is found and 1 otherwhise
  */
-unsigned isvalidBranch(const CaseTree ct[static 1])
+unsigned isvalidBranch(const struct casetree ct[static 1])
 {
 	unsigned n = 1;
 	const char *s = ct->cond;

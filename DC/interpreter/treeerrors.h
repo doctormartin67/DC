@@ -14,7 +14,7 @@ void setterrno(TreeError te);
 TreeError getterrno(void);
 const char *strterror(TreeError te);
 unsigned isvalidTree(const char *t);
-unsigned isvalidBranch(const CaseTree ct[static 1]);
+unsigned isvalidBranch(const struct casetree ct[static 1]);
 unsigned isvalidLeaf(const char s[static 1]);
 
 #endif

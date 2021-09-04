@@ -1,11 +1,13 @@
-/* This is an interpreter than will interpret a text buffer that will be input
-   as VBA Select Case syntax by the user. To understand more about how that
-   works it's best to read up on the syntax of Select Case. CaseTree is a 
-   linked list that will point to the various cases input by the user. 
-   The tree consists of all the Select Cases with the root of the tree being 
-   determined by the rule and each case points to the next one. If there is 
-   a select case within another select case then 'child' will point to the
-   first case of the subtree. */
+/* 
+ * This is an interpreter than will interpret a text buffer that will be input
+ * as VBA Select Case syntax by the user. To understand more about how that
+ * works it's best to read up on the syntax of Select Case. struct casetree is
+ * a linked list that will point to the various cases input by the user. 
+ * The tree consists of all the Select Cases with the root of the tree being 
+ * determined by the rule and each case points to the next one. If there is 
+ * a select case within another select case then 'child' will point to the
+ * first case of the subtree.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +28,7 @@
  * data (NULL) will be set each time interpret is called because it can
  * be different each time
  */
-Rule ruleset[RULE_AMOUNT] = 
+struct rule ruleset[RULE_AMOUNT] = 
 {
 	[AGE] = {"AGE", cmpnum, 0}, 
 	[REG] = {"REG", cmpstr, 0}, 
@@ -34,7 +36,7 @@ Rule ruleset[RULE_AMOUNT] =
 };
 
 static int specifyTree(const char t[static 1]);
-static void deforest(CaseTree *ct, char *t, TreeError te);
+static void deforest(struct casetree *ct, char *t, TreeError te);
 static void settabs(unsigned cnt, char s[static 1]);
 
 /*
@@ -77,14 +79,14 @@ char *strclean(const char s[static 1])
 }
 
 /*
- * Build a tree which is a linked list of 'CaseTree' structs. Each case has 
+ * Build a tree which is a linked list of casetree structs. Each case has 
  * has a rule and a pointer to the next case. If there is a nested select 
- * case then the CaseTree also has a pointer to the first case via the child
+ * case then the casetree also has a pointer to the first case via the child
  * element. 
  * The tree is checked for errors in this function, some errors are checked 
  * directly, others are checked with the functions 'isvalid*'. 
  */
-CaseTree *plantTree(const char *s)
+struct casetree *plantTree(const char *s)
 {
 	if (!isvalidTree(s)) return 0;
 
@@ -94,8 +96,8 @@ CaseTree *plantTree(const char *s)
 	char *const pt = t;
 	c = sc = es = x = 0;
 
-	CaseTree *ct = jalloc(1, sizeof(CaseTree));
-	*ct = (CaseTree){0};
+	struct casetree *ct = jalloc(1, sizeof(*ct));
+	*ct = (struct casetree){0};
 	ct->rule_index = -1;
 
 	if ((t = strstr(pt, SC)) == 0) { 
@@ -125,7 +127,7 @@ CaseTree *plantTree(const char *s)
 		return 0;
 	}
 
-	for (CaseTree *pct = ct; 0 != pct; pct = pct->next) {
+	for (struct casetree *pct = ct; 0 != pct; pct = pct->next) {
 		if (0 != strncmp(t, C, strlen(C))) {
 			deforest(ct, pt, NOCERR);
 			return 0;
@@ -203,7 +205,7 @@ CaseTree *plantTree(const char *s)
 			pct->next = 0;
 		} else {
 			t = c;
-			pct->next = jalloc(1, sizeof(CaseTree));
+			pct->next = jalloc(1, sizeof(*pct->next));
 			pct->next->rule_index = pct->rule_index;
 		}
 		*(t - 1) = '\0';
@@ -233,7 +235,7 @@ CaseTree *plantTree(const char *s)
 	return index;
 }
 
-void printTree(const CaseTree ct[static 1])
+void printTree(const struct casetree ct[static 1])
 {
 	static unsigned cnt = 0;
 	char tabs[MAXTABS];
@@ -276,7 +278,7 @@ static void settabs(unsigned cnt, char s[static 1])
 	*s = '\0';
 }
 
-void chopTree(CaseTree *ct)
+void chopTree(struct casetree *ct)
 {
 	if (0 != ct) {
 		chopTree(ct->child);	
@@ -289,14 +291,14 @@ void chopTree(CaseTree *ct)
  * if an incorrect tree is planted, then it is deforested and terrno is set if
  * a TreeError other than NOERR is chosen
  */
-static void deforest(CaseTree *ct, char *t, TreeError te)
+static void deforest(struct casetree *ct, char *t, TreeError te)
 {
 	free(t);
 	chopTree(ct);
 	if (NOERR != te) setterrno(te);
 }
 
-unsigned cmpnum(const CaseTree ct[restrict static 1], const void *pf)
+unsigned cmpnum(const struct casetree ct[restrict static 1], const void *pf)
 {
 	unsigned n = 1;
 	double f = *((double *)pf);
@@ -369,7 +371,7 @@ unsigned cmpnum(const CaseTree ct[restrict static 1], const void *pf)
  * inside one of the quotes.
  * returns 1 if condition matches string in quotes, 0 otherwise
  */
-unsigned cmpstr(const CaseTree ct[restrict static 1], const void *s)
+unsigned cmpstr(const struct casetree ct[restrict static 1], const void *s)
 {
 	if (0 == strncmp(ct->cond, E, strlen(E)))
 		return 1;
@@ -396,14 +398,14 @@ unsigned cmpstr(const CaseTree ct[restrict static 1], const void *s)
 	return 0;
 }
 
-double interpret(const CaseTree ct[static 1],
+double interpret(const struct casetree ct[static 1],
 		const void *rule_data[static RULE_AMOUNT])
 {
 	double x = 0.0;
 	Cmpfunc *cf = 0;
 	const void *v = 0;
 	const char *expr = 0;
-	for (const CaseTree *pct = ct; 0 != pct; ) {
+	for (const struct casetree *pct = ct; 0 != pct; ) {
 		expr = pct->expr;
 		if (-1 == pct->rule_index) {
 			while ('\0' != *expr && !isdigit(*expr))

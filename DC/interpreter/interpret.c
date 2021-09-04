@@ -20,7 +20,8 @@
 
 #define TESTS "tests:"
 
-unsigned testTree(const CaseTree ct[static 1], FILE *fp, unsigned options);
+unsigned testTree(const struct casetree ct[static 1], FILE *fp,
+		unsigned options);
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +37,7 @@ int main(int argc, char *argv[])
 	unsigned index = 0;
 
 	TreeError te = NOERR;
-	CaseTree *ct = 0;
+	struct casetree *ct = 0;
 
 	if (argc < 2) die("syntax: interpret [-p|s] file1 [file2] [...]");
 
@@ -119,7 +120,8 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-unsigned testTree(const CaseTree ct[static 1], FILE *fp, unsigned options)
+unsigned testTree(const struct casetree ct[static 1], FILE *fp,
+		unsigned options)
 {
 	unsigned status = 0;
 	double dage = 0.0;

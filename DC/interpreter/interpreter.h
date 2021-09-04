@@ -19,57 +19,52 @@
  * rule is added by the programmer, don't forget to add a rule to the ruleset 
  * array and also to the rule data that will be used as input.
  */
-enum rules {AGE, REG, CAT, RULE_AMOUNT};
+enum {AGE, REG, CAT, RULE_AMOUNT};
 
-typedef struct casetree {
-	/* 
-	 * the index of the rule determines what needs to be checked,
-	 * (will be set to one of the enum rules) for example:
-	 * age, reglement, category, ...
-	 */
+/* 
+ * A casetree struct consists of:
+ * - the index of the rule that determines what needs to be checked
+ * - condition, f.e. Is < 40, "WC", "12220", ... used to test the rule
+ * - expression, f.e. x = 0.01, this can also be a select case because 
+ *   select cases can be nested and so the expression needs to be 
+ *   reevaluated 
+ * - next case in current Select Case
+ * - child that points to nested Select Case within a Case
+ */
+struct casetree {
 	int rule_index;     
-
-	/* 
-	 * condition, f.e. Is < 40, "WC", "12220", ... used to test the rule
-	 */
 	char *cond;     
-
-	/* 
-	 * expression, f.e. x = 0.01, this can also be a select case because 
-	 * select cases can be nested and so the expression needs to be 
-	 * reevaluated 
-	 */
 	char *expr;     
-	struct casetree *next; /* next case in current select case */
-	struct casetree *child; /* points to nested case */ 
-} CaseTree;
+	struct casetree *next;
+	struct casetree *child;
+};
 
 /* 
  * This defines a compare function because some rules are strings and some are
  * doubles
  */
-typedef unsigned Cmpfunc(const CaseTree *ct, const void *);
+typedef unsigned Cmpfunc(const struct casetree *ct, const void *);
 extern Cmpfunc cmpnum;
 extern Cmpfunc cmpstr;
 
 /* 
- * A Rule is used to check the condition in the tree against the data that is
+ * A rule is used to check the condition in the tree against the data that is
  * in the excel file for the affiliate. If there is a match then that 
  * expression is taken for the interpret function to return.
  */
-typedef struct {
+struct rule {
 	char *name;
 	Cmpfunc *cf;
 	void *data;
-} Rule;
+};
 
-extern Rule ruleset[RULE_AMOUNT];
+extern struct rule ruleset[RULE_AMOUNT];
 
 char *strclean(const char *);
-CaseTree *plantTree(const char *);
-double interpret(const CaseTree ct[static 1],
+struct casetree *plantTree(const char *);
+double interpret(const struct casetree ct[static 1],
 		const void *rule_data[static RULE_AMOUNT]);
-void printTree(const CaseTree ct[static 1]);
-void chopTree(CaseTree *ct);
+void printTree(const struct casetree ct[static 1]);
+void chopTree(struct casetree *ct);
 
 #endif
