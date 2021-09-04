@@ -56,11 +56,14 @@ DataSet *createDS(Validator v[static 1], UserInput UI[static 1])
 	if (0 == ds->xl) {
 		updateValidation(val, ERROR, "Unable to parse excel file [%s],"
 				"is the file empty?", s);
-		return ds;
+		freeDS(ds);
+		return 0;
 	}
 
-	if (!setkey(ds))
-		return ds;
+	if (!setkey(ds)) {
+		freeDS(ds);
+		return 0;
+	}
 
 	countMembers(ds);
 	createData(ds);
