@@ -1,9 +1,9 @@
 #define _GNU_SOURCE
-#include "DCProgram.h"
 #include "libraryheader.h"
 #include "xlsxwriter.h"
 #include "errorexit.h"
 #include "XL.h"
+#include "assumptions.h"
 
 static void clean_double_keys(char *keys[static 1]);
 static unsigned countdigits(unsigned d);
@@ -1133,40 +1133,4 @@ void validateInput(DataColumn dc, const CurrentMember cm[static 1],
 		updateValidation(val, WARNING, "Member [%d][%s] has [%s = %s],"
 				"expected between 0 and 1", cm->id, cm->key,
 				key, input); 
-}
-
-/* --- Assumptions functions --- */
-double salaryscale(const CurrentMember cm[static 1], int k)
-{
-	return (*ass.SS)(cm, k);
-}
-
-double calcA(const CurrentMember cm[static 1], int k)
-{
-	return (*ass.calcA)(cm, k);
-}
-
-double calcC(const CurrentMember cm[static 1], int k)
-{
-	return (*ass.calcC)(cm, k);
-}
-
-double calcDTH(const CurrentMember cm[static 1], int k)
-{
-	return (*ass.calcDTH)(cm, k);
-}
-
-double NRA(const CurrentMember cm[static 1], int k)
-{
-	return (*ass.NRA)(cm, k);
-}
-
-double wxdef(const CurrentMember cm[static 1], int k)
-{
-	return (*ass.wxdef)(cm, k);
-}
-
-double retx(const CurrentMember cm[static 1], int k)
-{
-	return (*ass.retx)(cm, k);
 }

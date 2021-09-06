@@ -63,7 +63,7 @@ extern struct rule ruleset[RULE_AMOUNT];
 char *strclean(const char *);
 struct casetree *plantTree(const char *);
 double interpret(const struct casetree ct[static 1],
-		const void *rule_data[static RULE_AMOUNT]);
+		const void *const rule_data[const static RULE_AMOUNT]);
 void printTree(const struct casetree ct[static 1]);
 void chopTree(struct casetree *ct);
 

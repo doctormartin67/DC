@@ -1,11 +1,12 @@
 #include "libraryheader.h"
 #include "actuarialfunctions.h"
 #include "errorexit.h"
+#include "assumptions.h"
 
 void userinterface();
-void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
-		UserInput UITY[static 1]);
+void runmember(CurrentMember cm[static 1]);
 static void init_cm(CurrentMember *);
+static void settariffs(const CurrentMember cm[static 1]);
 static struct date *getDOC(const CurrentMember cm[static 1], int k);
 static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
 		int k);
@@ -19,8 +20,7 @@ int main(void)
 	return 0;
 }
 
-void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
-		UserInput UITY[static 1])
+void runmember(CurrentMember cm[static 1])
 {
 	double ERprem = 0.0;
 	double EEprem = 0.0;
@@ -36,7 +36,6 @@ void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
 	double RESTOT[METHOD_AMOUNT] = {0};
 	double REDCAPTOT[METHOD_AMOUNT] = {0};
 
-	setassumptions(cm, UILY, UITY); 
 	init_cm(cm);
 
 	for (int k = 1; k < MAXPROJ; k++) {
@@ -159,7 +158,8 @@ static void init_cm(CurrentMember cm[static 1])
 	double *prem = 0;
 
 	//-  Dates and age  -
-	*doc = Datedup(cm->DOS);
+	doc[0] = Datedup(cm->DOS);
+	doc[1] = Datedup(ass.DOC);
 	cm->age[0] = calcyears(dob, *doc, 1);
 	cm->nDOE[0] = calcyears(doe, *doc, (1 == doe->day ? 0 : 1));
 	cm->nDOA[0] = calcyears(doa, *doc, (1 == doa->day ? 0 : 1));
@@ -175,14 +175,67 @@ static void init_cm(CurrentMember cm[static 1])
 	cm->CAPDTHRiskPart[0] = calcDTH(cm, 0); 
 
 	//-  Premium  -
-	for (int EREE = 0; EREE < EREE_AMOUNT; EREE++) {
-		prem = cm->PREMIUM[EREE][MAXGEN-1];
-		*prem = (EREE == ER ? calcA(cm, 0) : calcC(cm, 0));
+	for (int l = 0; l < EREE_AMOUNT; l++) {
+		prem = cm->PREMIUM[l][MAXGEN-1];
+		*prem = (l == ER ? calcA(cm, 0) : calcC(cm, 0));
 		for (int j = 0; j < MAXGEN-1; j++) {
-			prem = cm->PREMIUM[EREE][MAXGEN-1];
-			*prem = MAX2(0.0, *prem - *cm->PREMIUM[EREE][j]);
+			prem = cm->PREMIUM[l][MAXGEN-1];
+			*prem = MAX2(0.0, *prem - *cm->PREMIUM[l][j]);
 		}
 	}
+	
+	settariffs(cm);
+}
+
+static void settariffs(const CurrentMember cm[static 1])
+{
+	//-  Life Tables  -
+	unsigned lxr = (cm->status & MALE ? LXMR : LXFR);
+	unsigned lxk = (cm->status & MALE ? LXMK : LXFKP);
+	for (int l = 0; l < EREE_AMOUNT; l++) {
+		for (int j = 0; j < MAXGEN; j++) {
+			switch(cm->tariff) {
+				case UKMS :
+					tff.ltINS[l][j].lt = LXNIHIL;
+					tff.ltAfterTRM[l][j].lt = LXNIHIL;
+					break;
+				case UKZT :
+					if (cm->status & ACT) {
+						tff.ltINS[l][j].lt = lxk;
+						tff.ltAfterTRM[l][j].lt = lxr;
+					} else {
+						tff.ltINS[l][j].lt = lxr;
+						tff.ltAfterTRM[l][j].lt =
+							tff.ltINS[l][j].lt;
+					}
+					break;
+				case UKMT :
+					tff.ltINS[l][j].lt = lxk;
+					tff.ltAfterTRM[l][j].lt =
+						tff.ltINS[l][j].lt;
+					break;
+				case MIXED :
+					tff.ltINS[l][j].lt = lxk;
+					tff.ltAfterTRM[l][j].lt =
+						tff.ltINS[l][j].lt;
+					break;
+			}
+			tff.ltINS[l][j].i = cm->TAUX[l][j];
+			tff.ltAfterTRM[l][j].i = cm->TAUX[l][j];
+		}
+		tff.ltProlong[l].lt = tff.ltINS[l][0].lt;
+		tff.ltProlongAfterTRM[l].lt = tff.ltAfterTRM[l][0].lt;
+		tff.ltProlong[l].i = tff.ltINS[l][MAXGEN-1].i;
+		tff.ltProlongAfterTRM[l].i = tff.ltAfterTRM[l][MAXGEN-1].i; 
+	}
+	//-  Remaining Tariffs  -
+	tff.costRES = (currrun >= runNewData ? 0.001 : 0.001);
+	tff.WDDTH = (currrun >= runNewData ? 0.3 : 0.3);
+	tff.costKO = (currrun >= runNewData ? 0.0008 : 0.0008);
+	tff.admincost = (currrun >= runNewData ? 0.05 : 0.05);
+	tff.MIXEDPS = (currrun >= runNewData ? 1 : 1);
+	tff.prepost = (currrun >= runNewData ? 1 : 1);
+	tff.term = (currrun >= runNewData ? 12 : 12);
 }
 
 static struct date *getDOC(const CurrentMember cm[static 1], int k)

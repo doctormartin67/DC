@@ -3,6 +3,7 @@
 #include "actuarialfunctions.h"
 #include "hashtable.h"
 #include "errorexit.h"
+#include "assumptions.h"
 
 static void updateART24ACT(CurrentMember cm[restrict static 1], int k);
 static void updateART24reserves(unsigned method,

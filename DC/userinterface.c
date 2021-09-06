@@ -1,6 +1,9 @@
 #include "userinterface.h"
 #include "libraryheader.h"
 #include "errorexit.h"
+#include "interpreter.h"
+#include "treeerrors.h"
+#include "assumptions.h"
 
 #define NOT_RUNNING 01
 #define RUNNING 02
@@ -16,15 +19,14 @@ const char *const validMsg[ERR_AMOUNT] = {
 const char *const widgetname[WIDGET_AMOUNT] = {
 	[SHEETNAME] = "sheetname", [KEYCELL] = "keycell", [DOC] = "DOC",
 	[DR] = "DR", [AGECORR] = "agecorr", [INFL] = "infl",
-	[TRM_PERCDEF] = "TRM_PercDef", [DR113] = "DR113",
-	[SS] = "SS", [STANDARD] = "standard",
-	[ASSETS] = "assets", [PARAGRAPH] = "paragraph", [PUCTUC] = "PUCTUC",
+	[TRM_PERCDEF] = "TRM_PercDef", [DR113] = "DR113", [SS] = "SS",
+	[STANDARD] = "standard", [ASSETS] = "assets",
+	[PARAGRAPH] = "paragraph", [PUCTUC] = "PUCTUC",
 	[CASHFLOWS] = "cashflows", [EVALUATEDTH] = "evaluateDTH",
-	[RUNCHOICE] = "runchoice",
-	[TESTCASEBOX] = "testcasebox", [TESTCASE] = "testcase",
-	[OPENDCFILE] = "openDCFile", [SAVEASDCFILE] = "saveasDCFile",
-	[OPENEXCELFILE] = "openExcelFile", [WINDOW] = "window",
-	[ASSWINDOW] = "asswindow", [MSGERR] = "MsgErr",
+	[RUNCHOICE] = "runchoice", [TESTCASEBOX] = "testcasebox",
+	[TESTCASE] = "testcase", [OPENDCFILE] = "openDCFile",
+	[SAVEASDCFILE] = "saveasDCFile", [OPENEXCELFILE] = "openExcelFile",
+	[WINDOW] = "window", [ASSWINDOW] = "asswindow", [MSGERR] = "MsgErr",
 	[FILENAME] = "filename", [STARTSTOP] = "startstop"
 };
 
@@ -53,8 +55,7 @@ static void printUI(UserInput *UI);
 static void validateUI(Validator *, UserInput *);
 static void validateData(Validator *, UserInput *);
 
-extern void runmember(CurrentMember cm[static 1], UserInput UILY[static 1],
-		UserInput UITY[static 1]);
+extern void runmember(CurrentMember cm[static 1]);
 
 void userinterface()
 {
@@ -305,13 +306,14 @@ static gpointer run(gpointer pl)
 	ds = createDS(0, &UILY);
 	cm = ds->cm;
 
+	/* this needs updating when we have a UITY!!! */
+	setassumptions(&UILY, &UILY);
 	for (unsigned i = 0; i < ds->membercnt; i++) {
 		if (run_state & INTERRUPTED) {
 			freeDS(ds);
 			return stoprun(&gd);
 		}
-		/* this needs updating when we have a UITY!!! */
-		runmember(cm + i, &UILY, &UILY);
+		runmember(cm + i);
 		snprintf(text, sizeof(text), "Progress: member %u out of %u "
 				"members complete", i + 1, ds->membercnt);
 		gd.s = text;
@@ -348,7 +350,8 @@ static gpointer runtc(gpointer pl)
 		return stoprun(&gd);
 	}
 	/* this needs updating when we have a UITY!!! */
-	runmember(cm, &UILY, &UILY);
+	setassumptions(&UILY, &UILY);
+	runmember(cm);
 	snprintf(text, sizeof(text), "Test case %u has been run", tc + 1);
 	gd.s = text;
 	g_idle_add(update_gui, &gd);
@@ -492,6 +495,7 @@ static void validateUI(Validator val[static 1], UserInput UI[static 1])
 	char *day = 0, *month = 0, *year = 0;
 	const char *tc = 0;
 	struct date *tempDate = 0;
+	struct casetree *ct = 0;
 
 	/* ----- Check keycell -----*/
 	upper(kc);
@@ -599,6 +603,15 @@ static void validateUI(Validator val[static 1], UserInput UI[static 1])
 	}
 
 	/* ----- Check Salary Increase -----*/
+	ct = plantTree(strclean(UI->SS));
+	if (NOERR != getterrno()) {
+		updateValidation(val, ERROR, "Salary Increase interpreter: %s",
+				strterror(getterrno()));
+		setterrno(NOERR);
+	}
+
+	chopTree(ct);
+	ct = 0;
 
 	/* ----- Check test case -----*/
 	tc = gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]));

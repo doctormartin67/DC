@@ -9,15 +9,17 @@ PROJECTPATH = /home/doctormartin67/Projects
 LIBPATH = $(PROJECTPATH)/library
 TABLEPATH = $(PROJECTPATH)/work/tables
 ACTPATH = $(PROJECTPATH)/work/actuarial
-INCLUDE = -I. -I$(LIBPATH) -I$(TABLEPATH) -I$(ACTPATH)
+INTPATH = $(PROJECTPATH)/work/DC/interpreter
+INCLUDE = -I. -I$(LIBPATH) -I$(TABLEPATH) -I$(ACTPATH) -I$(INTPATH)
 BINPATH = /home/doctormartin67/bin
 
 # objects:
 XML = `xml2-config --cflags` `xml2-config --libs`
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -rdynamic
-MISCOBJS = $(TABLEPATH)/lifetables.o $(ACTPATH)/actuarialfunctions.o DCProgram.o client.o validation.o
+MISCOBJS = $(TABLEPATH)/lifetables.o $(ACTPATH)/actuarialfunctions.o DCProgram.o assumptions.o validation.o
 LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/hashtable.o $(LIBPATH)/dates.o $(LIBPATH)/errorexit.o $(LIBPATH)/XL.o
 GTKOBJS = userinterface.o
+INTOBJS = $(INTPATH)/interpreter.o $(INTPATH)/treeerrors.o
 EXEC = main
 
 # flags: 
@@ -39,7 +41,7 @@ LDFLAGS = -lm -lxlsxwriter#libraries to include: -lm is Math, -lxlsxwriter is an
 .PHONY: debug clean
 
 # targets:
-$(EXEC) debug: $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
+$(EXEC) debug: $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS) $(INTOBJS)
 	$(CC) -o $(EXEC) $^ $(LDFLAGS) $(GPROFFLAGS) $(GTK) $(XML)
 	$(CP) $(EXEC) $(BINPATH)
 
@@ -48,14 +50,14 @@ $(EXEC): CFLAGS += $(OPTFLAGS)
 debug: CFLAGS += $(DEBUGFLAGS)
 
 clean:
-	$(RM) $(BINPATH)/$(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
+	$(RM) $(BINPATH)/$(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS) $(INTOBJS)
 
 # dependencies:
 %.o: %.c
 	$(CC) $(INCLUDE) -c $< -o $@ $(GTK) $(XML) $(CFLAGS) 
 
 # clever way to add all dependencies, see page 723 of C in a nutshell.
-dependencies: $(EXEC).c $(MISCOBJS:.o=.c) $(LIBOBJS:.o=.c) $(GTKOBJS:.o=.c)
+dependencies: $(EXEC).c $(MISCOBJS:.o=.c) $(LIBOBJS:.o=.c) $(GTKOBJS:.o=.c) $(INTOBJS:.o=.c)
 	$(CC) -M $(INCLUDE) $(GTK) $(XML) $^ > $@
 
 include dependencies

@@ -399,13 +399,13 @@ unsigned cmpstr(const struct casetree ct[restrict static 1], const void *s)
 }
 
 double interpret(const struct casetree ct[static 1],
-		const void *rule_data[static RULE_AMOUNT])
+		const void *const rule_data[const static RULE_AMOUNT])
 {
 	double x = 0.0;
 	Cmpfunc *cf = 0;
 	const void *v = 0;
 	const char *expr = 0;
-	for (const struct casetree *pct = ct; 0 != pct; ) {
+	for (const struct casetree *pct = ct; 0 != pct; pct = pct->next) {
 		expr = pct->expr;
 		if (-1 == pct->rule_index) {
 			while ('\0' != *expr && !isdigit(*expr))
@@ -429,7 +429,7 @@ double interpret(const struct casetree ct[static 1],
 			}
 		}
 
-		pct = pct->next;
+		
 	}
 
 	printf("Warning in %s: no case was found in tree:\n", __func__);

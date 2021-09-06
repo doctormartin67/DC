@@ -243,34 +243,6 @@ typedef struct {
 //---Useful functions for CurrentMembers---
 double gensum(const GenMatrix amount[], unsigned EREE, unsigned loop);
 
-//---Assumptions declarations---
-typedef struct {
-	struct date *DOC; /* This is DOC[1] which is the start of the run through affiliates.
-		      DOC[0] is date of situation.*/
-	double infl; // Inflation
-	double DR; // Discount Rate
-	double DR113; // Discount Rate under $113 of IAS19  
-	short agecorr; // Age Correction
-	double (*SS)(const CurrentMember *cm, int k); // Salary Scale
-	double (*calcA)(const CurrentMember *cm, int k); // Formula for Employer retirement contribution
-	double (*calcC)(const CurrentMember *cm, int k); // Formula for Employee retirement contribution  
-	double (*calcDTH)(const CurrentMember *cm, int k); // Formula for Capital Death
-	double (*NRA)(const CurrentMember *cm, int k);
-	double (*wxdef)(const CurrentMember *cm, int k); // Turnover rate with deferred payment
-	double (*retx)(const CurrentMember *cm, int k); // Turnover rate with deferred payment
-
-	//Assumptions that usually won't change from year to year
-	unsigned incrSalk0; // determine whether sal gets increased at k = 0 
-	unsigned incrSalk1; // determine whether sal gets increased at k = 1 
-	double TRM_PercDef; /* Percentage of deferred members that will keep their
-			       reserves with the current employer at termination (usually equals 1)*/
-	unsigned method; // Methodology, we use bits here
-	double taxes; /* used for the Service cost because the taxes shouldn't be included
-			 in the admin cost (usually equal to 0.1326 */
-} Assumptions;
-
-Assumptions ass; // Assumptions
-
 //---Reconciliation declarations---
 enum runs {runLY, runUpdateInflation, runUpdateDR, runRF,
 	runNewData, runNewMethodology, runNewMortality,
@@ -287,14 +259,6 @@ static const char *runnames[] = {"Reported Last Year", "Update Inflation",
 	"Sensitivity Inflation -", "Sensitivity Inflation +", "Sensitivity Salary Increase -", 
 	"Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
 unsigned currrun; // Current run
-void setassumptions(CurrentMember *cm, UserInput *UILY, UserInput *UITY);
-double salaryscale(const CurrentMember *cm, int k);
-double calcA(const CurrentMember *cm, int k);
-double calcC(const CurrentMember *cm, int k);
-double calcDTH(const CurrentMember *cm, int k);
-double NRA(const CurrentMember *cm, int k);
-double wxdef(const CurrentMember *cm, int k);
-double retx(const CurrentMember *cm, int k);
 
 //---Tariff Structure---
 typedef struct {
@@ -305,10 +269,10 @@ typedef struct {
 } LifeTable;
 
 typedef struct {
-	LifeTable ltINS[2][MAXGEN]; // Life Table Insurer
-	LifeTable ltAfterTRM[2][MAXGEN]; // Life Table after termination
-	LifeTable ltProlong[2]; // Life Table Prolongation (i = last generation of insurer)
-	LifeTable ltProlongAfterTRM[2]; // Life Table Prolongation (i = last generation of insurer)  
+	LifeTable ltINS[EREE_AMOUNT][MAXGEN]; // Insurer
+	LifeTable ltAfterTRM[EREE_AMOUNT][MAXGEN]; // after termination
+	LifeTable ltProlong[EREE_AMOUNT]; // Prolongation
+	LifeTable ltProlongAfterTRM[EREE_AMOUNT];
 	double costRES; // Cost on reserves
 	double WDDTH; // Profit sharing death (winstdeelname)
 	double costKO; // cost on Death lump sum (kapitaal overlijden)
