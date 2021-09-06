@@ -86,7 +86,6 @@ typedef struct {
 	char infl[16];
 	char TRM_PercDef[16];
 	char DR113[16];
-	char SI[16];
 	char SS[BUFSIZ]; /* This could be a large text describing salary scale with select cases */
 	/* turnover still needs to be added !!! */
 

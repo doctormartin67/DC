@@ -17,14 +17,15 @@ const char *const widgetname[WIDGET_AMOUNT] = {
 	[SHEETNAME] = "sheetname", [KEYCELL] = "keycell", [DOC] = "DOC",
 	[DR] = "DR", [AGECORR] = "agecorr", [INFL] = "infl",
 	[TRM_PERCDEF] = "TRM_PercDef", [DR113] = "DR113",
-	[FIXEDSIENTRY] = "fixedSIentry", [SS] = "SS", [STANDARD] = "standard",
+	[SS] = "SS", [STANDARD] = "standard",
 	[ASSETS] = "assets", [PARAGRAPH] = "paragraph", [PUCTUC] = "PUCTUC",
 	[CASHFLOWS] = "cashflows", [EVALUATEDTH] = "evaluateDTH",
-	[FIXEDSIRADIOBUTTON] = "fixedSIradiobutton", [RUNCHOICE] = "runchoice",
+	[RUNCHOICE] = "runchoice",
 	[TESTCASEBOX] = "testcasebox", [TESTCASE] = "testcase",
 	[OPENDCFILE] = "openDCFile", [SAVEASDCFILE] = "saveasDCFile",
 	[OPENEXCELFILE] = "openExcelFile", [WINDOW] = "window",
-	[ASSWINDOW] = "asswindow", [MSGERR] = "MsgErr", [FILENAME] = "filename"
+	[ASSWINDOW] = "asswindow", [MSGERR] = "MsgErr",
+	[FILENAME] = "filename", [STARTSTOP] = "startstop"
 };
 
 struct gui_data {
@@ -74,21 +75,17 @@ void userinterface()
 }
 
 /* signal functions */
-void on_SIradiobutton_toggled(GtkRadioButton *rb, GtkWidget *w)
-{
-	gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb));
-	gtk_widget_set_sensitive(w, state);
-}
-
 void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
 	char *MsgErr = 0;
 	gchar *choice = 0;
 	GtkDialog *dialog = 0;
-	printf("[%s] pressed\n", gtk_button_get_label(b));
 
 	if (run_state & NOT_RUNNING) {
 
+		run_state = RUNNING;
+		gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
+				"media-playback-stop", GTK_ICON_SIZE_BUTTON);
 		setUIvals(&UILY);
 		validatorLY = (Validator) {0};
 		validatorLY.status = OK;
@@ -96,7 +93,6 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 		validateData(&validatorLY, &UILY);
 
 		if (validatorLY.status != ERROR) {
-			run_state = RUNNING;
 			choice = gtk_combo_box_text_get_active_text(
 					GTK_COMBO_BOX_TEXT(
 						widgets[RUNCHOICE]));
@@ -125,6 +121,11 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 			gtk_widget_show(GTK_WIDGET(dialog));
 			gtk_dialog_run(dialog); 
 			gtk_widget_hide(GTK_WIDGET(dialog));
+			run_state = NOT_RUNNING;
+			gtk_image_set_from_icon_name(
+					GTK_IMAGE(widgets[STARTSTOP]),
+					"media-playback-start",
+					GTK_ICON_SIZE_BUTTON);
 		}
 	} else {
 		run_state = INTERRUPTED;
@@ -322,6 +323,8 @@ static gpointer run(gpointer pl)
 
 	freeDS(ds);
 	run_state = NOT_RUNNING;
+	gtk_image_set_from_icon_name( GTK_IMAGE(widgets[STARTSTOP]),
+			"media-playback-start", GTK_ICON_SIZE_BUTTON);
 	return 0;
 }
 
@@ -354,6 +357,8 @@ static gpointer runtc(gpointer pl)
 
 	freeDS(ds);
 	run_state = NOT_RUNNING;
+	gtk_image_set_from_icon_name( GTK_IMAGE(widgets[STARTSTOP]),
+			"media-playback-start", GTK_ICON_SIZE_BUTTON);
 	return 0;
 }
 
@@ -363,6 +368,8 @@ static gpointer stoprun(gpointer data)
 	gd->s = "Progress: stopped";
 	update_gui(gd);
 	run_state = NOT_RUNNING;
+	gtk_image_set_from_icon_name( GTK_IMAGE(widgets[STARTSTOP]),
+			"media-playback-start", GTK_ICON_SIZE_BUTTON);
 	return 0;
 }
 
@@ -378,32 +385,45 @@ static void setUIvals(UserInput UI[static 1])
 			gtk_entry_get_text(GTK_ENTRY(widgets[SHEETNAME])));
 	snprintf(UI->keycell, sizeof(UI->keycell), "%s", 
 			gtk_entry_get_text(GTK_ENTRY(widgets[KEYCELL])));
-	snprintf(UI->DOC, sizeof(UI->DOC), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DOC])));
-	snprintf(UI->DR, sizeof(UI->DR), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DR])));
+	snprintf(UI->DOC, sizeof(UI->DOC), "%s", gtk_entry_get_text(
+				GTK_ENTRY(widgets[DOC])));
+	snprintf(UI->DR, sizeof(UI->DR), "%s", gtk_entry_get_text(
+				GTK_ENTRY(widgets[DR])));
 	snprintf(UI->agecorr, sizeof(UI->agecorr), "%s", 
 			gtk_entry_get_text(GTK_ENTRY(widgets[AGECORR])));
-	snprintf(UI->infl, sizeof(UI->infl), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[INFL])));
+	snprintf(UI->infl, sizeof(UI->infl), "%s", gtk_entry_get_text(
+				GTK_ENTRY(widgets[INFL])));
 	snprintf(UI->TRM_PercDef, sizeof(UI->TRM_PercDef), "%s", 
 			gtk_entry_get_text(GTK_ENTRY(widgets[TRM_PERCDEF])));
-	snprintf(UI->DR113, sizeof(UI->DR113), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[DR113])));
+	snprintf(UI->DR113, sizeof(UI->DR113), "%s", gtk_entry_get_text(
+				GTK_ENTRY(widgets[DR113])));
 
-	snprintf(UI->SI, sizeof(UI->SI), "%s", gtk_entry_get_text(GTK_ENTRY(widgets[FIXEDSIENTRY])));
-	/* Text view is rather tedious to retrieve text from, this is why this seems so random */
-	GtkTextBuffer *temp = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widgets[SS]));
+	/* 
+	 * Text view is rather tedious to retrieve text from,
+	 * this is why this seems so random
+	 */
+	GtkTextBuffer *temp = gtk_text_view_get_buffer(
+			GTK_TEXT_VIEW(widgets[SS]));
 	gchar *s = 0;
 	GtkTextIter begin, end;
-	gtk_text_buffer_get_iter_at_offset(temp, &begin, (gint)0);
-	gtk_text_buffer_get_iter_at_offset(temp, &end, (gint)-1);
+	gtk_text_buffer_get_iter_at_offset(temp, &begin, 0);
+	gtk_text_buffer_get_iter_at_offset(temp, &end, -1);
 	s = gtk_text_buffer_get_text(temp, &begin, &end, TRUE);
 	snprintf(UI->SS, sizeof(UI->SS), "%s", s);
 	g_free(s);
 
-	UI->standard = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[STANDARD]));
-	UI->assets = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[ASSETS]));
-	UI->paragraph = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[PARAGRAPH]));
-	UI->PUCTUC = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[PUCTUC]));
-	UI->cashflows = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[CASHFLOWS]));
-	UI->evaluateDTH = gtk_combo_box_get_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]));
+	UI->standard = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(widgets[STANDARD]));
+	UI->assets = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(widgets[ASSETS]));
+	UI->paragraph = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(widgets[PARAGRAPH]));
+	UI->PUCTUC = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(widgets[PUCTUC]));
+	UI->cashflows = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(widgets[CASHFLOWS]));
+	UI->evaluateDTH = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(widgets[EVALUATEDTH]));
 
 	printUI(UI);
 }
@@ -424,7 +444,6 @@ static void updateUI(UserInput UI[static 1])
 	gtk_entry_set_text(GTK_ENTRY(widgets[INFL]), UI->infl);
 	gtk_entry_set_text(GTK_ENTRY(widgets[TRM_PERCDEF]), UI->TRM_PercDef);
 	gtk_entry_set_text(GTK_ENTRY(widgets[DR113]), UI->DR113);
-	gtk_entry_set_text(GTK_ENTRY(widgets[FIXEDSIENTRY]), UI->SI);
 
 	GtkTextBuffer *temp = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widgets[SS]));
 	gtk_text_buffer_set_text(temp, UI->SS, -1);
@@ -452,7 +471,6 @@ static void printUI(UserInput UI[static 1])
 	printf("infl [%s]\n", UI->infl);
 	printf("TRM_PercDef [%s]\n", UI->TRM_PercDef);
 	printf("DR113 [%s]\n", UI->DR113);
-	printf("SI [%s]\n", UI->SI);
 	printf("SS [%s]\n", UI->SS);
 
 	/* --- Methodology --- */
@@ -581,15 +599,6 @@ static void validateUI(Validator val[static 1], UserInput UI[static 1])
 	}
 
 	/* ----- Check Salary Increase -----*/
-	if (gtk_toggle_button_get_active(
-				GTK_TOGGLE_BUTTON(
-					widgets[FIXEDSIRADIOBUTTON]))) {
-		if (!isfloat(UI->SI)) {
-			updateValidation(val, ERROR, "Salary Increase [%s], "
-					"expected of the form %s", 
-					UI->SI, validMsg[FLOATERR]);
-		}
-	}
 
 	/* ----- Check test case -----*/
 	tc = gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]));

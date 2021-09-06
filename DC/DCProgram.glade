@@ -951,28 +951,16 @@ the salary will increase with 0.032 each year.</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="halign">start</property>
+                                        <property name="margin_bottom">10</property>
                                         <property name="spacing">10</property>
                                         <child>
-                                          <object class="GtkLabel">
-                                            <property name="width_request">140</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">True</property>
-                                            <property name="position">0</property>
-                                          </packing>
+                                          <placeholder/>
                                         </child>
                                         <child>
-                                          <object class="GtkRadioButton" id="fixedSIradiobutton">
-                                            <property name="label" translatable="yes">Fixed amount:</property>
+                                          <object class="GtkLabel">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="receives_default">False</property>
-                                            <property name="active">True</property>
-                                            <property name="draw_indicator">True</property>
-                                            <signal name="toggled" handler="on_SIradiobutton_toggled" object="fixedSIentry" swapped="no"/>
+                                            <property name="can_focus">False</property>
+                                            <property name="width_chars">15</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -981,12 +969,12 @@ the salary will increase with 0.032 each year.</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkEntry" id="fixedSIentry">
+                                          <object class="GtkButton" id="SIinterpreterbutton">
+                                            <property name="label" translatable="yes">Open interpreter</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
-                                            <property name="tooltip_text" translatable="yes">The amount filled in here is the salary increase on top of inflation.</property>
-                                            <property name="max_length">15</property>
-                                            <property name="placeholder_text" translatable="yes">f.e. 0.005</property>
+                                            <property name="receives_default">True</property>
+                                            <signal name="clicked" handler="on_interpreterbutton_clicked" object="asswindow" swapped="no"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -1002,63 +990,7 @@ the salary will increase with 0.032 each year.</property>
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkBox">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="halign">start</property>
-                                        <property name="margin_bottom">10</property>
-                                        <property name="spacing">10</property>
-                                        <child>
-                                          <object class="GtkLabel">
-                                            <property name="width_request">140</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">True</property>
-                                            <property name="position">0</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkRadioButton" id="variableSIradiobutton">
-                                            <property name="label" translatable="yes">Variable amount:</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="receives_default">False</property>
-                                            <property name="tooltip_text" translatable="yes">The salary increase depends on other factors, f.e. age.</property>
-                                            <property name="active">True</property>
-                                            <property name="draw_indicator">True</property>
-                                            <property name="group">fixedSIradiobutton</property>
-                                            <signal name="toggled" handler="on_SIradiobutton_toggled" object="SIinterpreterbutton" swapped="no"/>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">True</property>
-                                            <property name="position">1</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkButton" id="SIinterpreterbutton">
-                                            <property name="label" translatable="yes">Open interpreter</property>
-                                            <property name="visible">True</property>
-                                            <property name="sensitive">False</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="receives_default">True</property>
-                                            <signal name="clicked" handler="on_interpreterbutton_clicked" object="asswindow" swapped="no"/>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">True</property>
-                                            <property name="position">2</property>
-                                          </packing>
-                                        </child>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">9</property>
-                                      </packing>
+                                      <placeholder/>
                                     </child>
                                     <child>
                                       <placeholder/>
@@ -1498,7 +1430,7 @@ the salary will increase with 0.032 each year.</property>
                         <property name="always_show_image">True</property>
                         <signal name="clicked" handler="on_startstopbutton_clicked" object="progresslabel" swapped="no"/>
                         <child>
-                          <object class="GtkImage">
+                          <object class="GtkImage" id="startstop">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="icon_name">media-playback-start</property>
@@ -1590,7 +1522,7 @@ the salary will increase with 0.032 each year.</property>
                         <property name="margin_bottom">10</property>
                         <property name="label" translatable="yes">This program is a working project. 
 Any bug reports or suggestions for improvement are highly appreciated.
-Contact: Joseph Ralston - joseph.ralston@aon.com</property>
+Contact: Joseph Ralston - joseph-ralston@hotmail.com</property>
                         <property name="selectable">True</property>
                         <attributes>
                           <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
