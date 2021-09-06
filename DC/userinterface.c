@@ -298,7 +298,7 @@ static gpointer run(gpointer pl)
 	CurrentMember *cm = 0;
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};
-	update_gui(&gd);
+	g_idle_add(update_gui, &gd);
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	tc -= 1; // Index is one less than given test case
@@ -315,7 +315,7 @@ static gpointer run(gpointer pl)
 		snprintf(text, sizeof(text), "Progress: member %u out of %u "
 				"members complete", i + 1, ds->membercnt);
 		gd.s = text;
-		update_gui(&gd);
+		g_idle_add(update_gui, &gd);
 	}
 
 	printresults(ds);
@@ -335,7 +335,7 @@ static gpointer runtc(gpointer pl)
 	CurrentMember *cm = 0;
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};
-	update_gui(&gd);
+	g_idle_add(update_gui, &gd);
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	tc -= 1; // Index is one less than given test case
@@ -351,7 +351,7 @@ static gpointer runtc(gpointer pl)
 	runmember(cm, &UILY, &UILY);
 	snprintf(text, sizeof(text), "Test case %u has been run", tc + 1);
 	gd.s = text;
-	update_gui(&gd);
+	g_idle_add(update_gui, &gd);
 
 	printtc(ds, tc);
 
@@ -366,7 +366,7 @@ static gpointer stoprun(gpointer data)
 {
 	struct gui_data *gd = data;
 	gd->s = "Progress: stopped";
-	update_gui(gd);
+	g_idle_add(update_gui, gd);
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name( GTK_IMAGE(widgets[STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
