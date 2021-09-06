@@ -1,8 +1,10 @@
-#include <pthread.h>
 #include "userinterface.h"
 #include "libraryheader.h"
 #include "errorexit.h"
 
+#define NOT_RUNNING 01
+#define RUNNING 02
+#define INTERRUPTED 04
 
 const char *const validMsg[ERR_AMOUNT] = {
 	[DATEERR] = "[dd/mm/yyyy]", 
@@ -33,7 +35,7 @@ struct gui_data {
 static GtkWidget *widgets[WIDGET_AMOUNT];
 static GtkBuilder *builder;
 
-static unsigned running; /* determines whether program is running or not */
+static _Atomic unsigned run_state = NOT_RUNNING;
 
 static UserInput UILY;
 static Validator validatorLY;
@@ -80,9 +82,12 @@ void on_SIradiobutton_toggled(GtkRadioButton *rb, GtkWidget *w)
 
 void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
+	char *MsgErr = 0;
+	gchar *choice = 0;
+	GtkDialog *dialog = 0;
 	printf("[%s] pressed\n", gtk_button_get_label(b));
 
-	if (!running) {
+	if (run_state & NOT_RUNNING) {
 
 		setUIvals(&UILY);
 		validatorLY = (Validator) {0};
@@ -91,8 +96,10 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 		validateData(&validatorLY, &UILY);
 
 		if (validatorLY.status != ERROR) {
-			running = TRUE;
-			gchar *choice = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widgets[RUNCHOICE]));
+			run_state = RUNNING;
+			choice = gtk_combo_box_text_get_active_text(
+					GTK_COMBO_BOX_TEXT(
+						widgets[RUNCHOICE]));
 			if (strcmp("Run one run", choice) == 0) {
 				// This needs updating when I start with reconciliation runs!!
 				currrun = runNewRF; 
@@ -108,16 +115,19 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 
 			g_free(choice);
 		} else {
-			char *MsgErr = setMsgbuf(&validatorLY);
-			GtkDialog *dialog;
+			MsgErr = setMsgbuf(&validatorLY);
 			dialog = GTK_DIALOG(widgets[MSGERR]);
-			gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", MsgErr);
+
+			gtk_message_dialog_format_secondary_text(
+					GTK_MESSAGE_DIALOG(dialog), 
+					"%s", MsgErr);
+
 			gtk_widget_show(GTK_WIDGET(dialog));
 			gtk_dialog_run(dialog); 
 			gtk_widget_hide(GTK_WIDGET(dialog));
-			running = FALSE;
 		}
 	} else {
+		run_state = INTERRUPTED;
 	}
 }
 
@@ -295,7 +305,7 @@ static gpointer run(gpointer pl)
 	cm = ds->cm;
 
 	for (unsigned i = 0; i < ds->membercnt; i++) {
-		if (FALSE == running) {
+		if (run_state & INTERRUPTED) {
 			freeDS(ds);
 			return stoprun(&gd);
 		}
@@ -310,8 +320,8 @@ static gpointer run(gpointer pl)
 	printresults(ds);
 	printtc(ds, tc);
 
-	running = FALSE;
 	freeDS(ds);
+	run_state = NOT_RUNNING;
 	return 0;
 }
 
@@ -330,7 +340,7 @@ static gpointer runtc(gpointer pl)
 	cm = ds->cm + tc;
 
 	printf("testcase: %s chosen\n", cm->key);
-	if (FALSE == running) {
+	if (run_state & INTERRUPTED) {
 		freeDS(ds);
 		return stoprun(&gd);
 	}
@@ -342,8 +352,8 @@ static gpointer runtc(gpointer pl)
 
 	printtc(ds, tc);
 
-	running = FALSE;
 	freeDS(ds);
+	run_state = NOT_RUNNING;
 	return 0;
 }
 
@@ -352,6 +362,7 @@ static gpointer stoprun(gpointer data)
 	struct gui_data *gd = data;
 	gd->s = "Progress: stopped";
 	update_gui(gd);
+	run_state = NOT_RUNNING;
 	return 0;
 }
 
