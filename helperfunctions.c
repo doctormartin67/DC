@@ -9,11 +9,13 @@
 /*
  * inline functions
  */
-int isgarbage(int c);
+unsigned isgarbage(int c);
 char *trim(char *);
 void upper(char *restrict);
-int isfloat(const char *restrict);
-int isint(const char *restrict);
+unsigned isfloat(const char *restrict);
+unsigned isint(const char *restrict);
+unsigned isfloatc(const char *restrict, int c);
+unsigned isintc(const char *restrict, int c);
 
 // replace all occurences of string oldW with newW in s
 char *replace(const char s[static 1],

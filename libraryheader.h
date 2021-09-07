@@ -25,7 +25,7 @@ void *jalloc(size_t n, size_t size);
 /*
  * inline functions
  */
-inline int isgarbage(int c) 
+inline unsigned isgarbage(int c) 
 {
 	const char *s = GARBAGE;
 
@@ -55,19 +55,22 @@ inline void upper(char s[restrict static 1])
 	}
 }
 
-inline int isfloat(const char s[restrict static 1])
+/*
+ * returns 1 if s is a float, otherwhise returns 0
+ */
+inline unsigned isfloat(const char s[restrict static 1])
 {
 	while (isgarbage(*s)) s++;    
 
-	if(*s == '+' || *s == '-') s++;
+	if('+' == *s || '-' == *s) s++;
 
 	if (!isdigit(*s)) return 0;
 
 	while (isdigit(*s)) s++;
 
-	if (*s == '\0')
+	if ('\0' == *s)
 		return 1;
-	else if (*s == '.')
+	else if ('.' == *s)
 		s++;
 	else
 		return 0;
@@ -75,24 +78,78 @@ inline int isfloat(const char s[restrict static 1])
 	while (isdigit(*s)) s++;
 	while (isgarbage(*s)) s++;    
 
-	if (*s == '\0')
+	if ('\0' == *s)
 		return 1;
 	else
 		return 0;
 }
 
-inline int isint(const char s[restrict static 1])
+/*
+ * returns 1 if s is an integer, otherwhise returns 0
+ */
+inline unsigned isint(const char s[restrict static 1])
 {
 	while (isgarbage(*s)) s++;    
 
-	if(*s == '+' || *s == '-') s++;
+	if('+' == *s || '-' == *s) s++;
 
 	if (!isdigit(*s)) return 0;
 
 	while (isdigit(*s)) s++;
 	while (isgarbage(*s)) s++;    
 
-	if (*s == '\0')
+	if ('\0' == *s)
+		return 1;
+	else
+		return 0;
+}
+
+/*
+ * returns 1 of s is a float up until the character c or '\0' is reached,
+ * otherwhise returns 0
+ */
+inline unsigned isfloatc(const char s[restrict static 1], int c)
+{
+	while (isgarbage(*s)) s++;    
+
+	if('+' == *s || '-' == *s) s++;
+
+	if (!isdigit(*s)) return 0;
+
+	while (isdigit(*s)) s++;
+
+	if (*s == c || '\0' == *s)
+		return 1;
+	else if ('.' == *s)
+		s++;
+	else
+		return 0;
+
+	while (isdigit(*s)) s++;
+	while (isgarbage(*s)) s++;    
+
+	if (*s == c || '\0' == *s)
+		return 1;
+	else
+		return 0;
+}
+
+/*
+ * returns 1 of s is an integer up until the character c or '\0' is reached,
+ * otherwhise returns 0
+ */
+inline unsigned isintc(const char s[restrict static 1], int c)
+{
+	while (isgarbage(*s)) s++;    
+
+	if('+' == *s || '-' == *s) s++;
+
+	if (!isdigit(*s)) return 0;
+
+	while (isdigit(*s)) s++;
+	while (isgarbage(*s)) s++;    
+
+	if (*s == c || '\0' == *s)
 		return 1;
 	else
 		return 0;
