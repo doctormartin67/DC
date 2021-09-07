@@ -251,13 +251,14 @@ enum runs {runLY, runUpdateInflation, runUpdateDR, runRF,
 enum sensruns {runsensDuration = 21, runsensDRminus, runsensDRplus, runsensInflationminus,
 	runsensInflationplus, runsensSSminus, runsensSSplus,
 	runsensAgeCorrminus, runsensAgeCorrplus};
-static const char *runnames[] = {"Reported Last Year", "Update Inflation",
+/*static const char *runnames[] = {"Reported Last Year", "Update Inflation",
 	"Update Discount Rate", "Roll Forward", "New Data", "New Methodology", "New Mortality",
 	"New Turnover", "New NRA", "New Inflation", "New Salary Increase", "New Discount Rate", 
 	"New Roll Forward", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", 
 	"Sensitivity Duration", "Sensitivity Discount Rate -", "Sensitivity Discount Rate +", 
 	"Sensitivity Inflation -", "Sensitivity Inflation +", "Sensitivity Salary Increase -", 
 	"Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
+	*/
 unsigned currrun; // Current run
 
 //---Tariff Structure---

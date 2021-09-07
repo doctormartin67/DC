@@ -46,7 +46,7 @@
   </object>
   <object class="GtkWindow" id="asswindow">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Interpreter</property>
+    <property name="title" translatable="yes">Salary Increase Interpreter</property>
     <property name="destroy_with_parent">True</property>
     <signal name="delete-event" handler="on_asswindow_delete_event" swapped="no"/>
     <child type="titlebar">
@@ -80,7 +80,12 @@ Select Case age
 		x = 0.03
 End Select
 
-The interpreter is case insensitive (meaning you could write select case, Select Case, selECT CASE, ...)</property>
+If the assumption is fixed, i.e. does not depend on anything, you can simply type for example
+x = 0.03
+
+The interpreter is case insensitive (meaning you could write select case, Select Case, selECT CASE, ...)
+If you make a mistake, an error message will appear once you try to run the program, but the interpreter
+is quite forgiving, so please try to type the Select Case tree as correctly as possible.</property>
             <attributes>
               <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
             </attributes>
@@ -100,6 +105,10 @@ The interpreter is case insensitive (meaning you could write select case, Select
                 <property name="height_request">200</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
               </object>
             </child>
           </object>
