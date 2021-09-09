@@ -1,3 +1,13 @@
+/*
+ * primitive calculator that will be used to calculate the user input of
+ * f.e. the premium of a pension plan. 
+ * it uses a stack of addition operators, and with each addition operator
+ * there can be many multiplication operators that first need to be multiplied
+ * f.e.
+ * 5 + 7 - 6*4
+ * the stack will have the elements 5, 7, and -24, which will then be added to
+ * produce the result.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "errorexit.h"
@@ -5,16 +15,17 @@
 
 enum {STACK_SIZE = 128};
 
-static unsigned topstack = 0;
+static unsigned top = 0;
 static double stack[STACK_SIZE];
 
 double eval_expr(const char s[static 1]);
 static double addop(const char *s[static 1]);
 static double multop(const char *s[static 1]);
 static unsigned isop(int c);
-static void checkbrackets(const char *s[static 1]);
+static void nextmultop(const char *s[static 1]);
 static void push(double a);
 static double pop(void);
+unsigned valid_brackets(const char s[static 1]);
 
 int main(void)
 {
@@ -26,6 +37,9 @@ int main(void)
 			break;
 		}
 	}
+
+	if (!valid_brackets(buf)) die("Incorrect brackets");
+
 	printf("%f\n", eval_expr(buf));
 	return 0;
 }
@@ -33,6 +47,9 @@ int main(void)
 /*
  * evaluates the expression given by s. Assumes the expression does not start
  * with white space
+ * The function pushes each addition operator to the stack.
+ * This function has indirect recursion because it can be recalled in multop
+ * when there are brackets to evaluate the brackets first.
  */
 double eval_expr(const char s[static 1])
 {
@@ -56,6 +73,7 @@ double eval_expr(const char s[static 1])
 				pushed++;
 				break;
 			case ')' :
+				printf("pushed = %u\n", pushed);
 			case '\0':
 				goto evaluation;
 				break;
@@ -75,6 +93,12 @@ evaluation:
 	return result;
 }
 
+/*
+ * finds the next addition operator and moves the pointer to the next addition
+ * operand f.e. if the string at this point is "5*3 + 6" it will return 15 and
+ * the pointer will be at "+ 6" ready for the next operator to be pushed to the
+ * stack
+ */
 static double addop(const char *s[static 1])
 {
 	double m = multop(s);
@@ -107,44 +131,51 @@ static double addop(const char *s[static 1])
 	}
 }
 
+/*
+ * finds the next multiplication operator and moves to the next operand
+ * if it encounters an open bracket the process is started again recursively
+ * and the pointer is moved to the next point just after the corresponding
+ * closed bracket
+ */
 static double multop(const char *s[static 1])
 {
 	const char *t = 0;
+	int sign = 1;
 
 	while (isgarbage(**s)) (*s)++;    
 	t = *s;
 
-	switch (**s) {
-		case '+' :
-		case '-' :
-			(*s)++;
-			break;
-		case '(' :
-			(*s)++;
-			while (isgarbage(**s)) (*s)++;
-
-			t = *s;
-			
-			checkbrackets(s);
-
-			while (isgarbage(**s)) (*s)++;
-
-			return eval_expr(t);			
-	}
-
-	if (!isdigit(**s)) die("Invalid operator");
-
-	while (isdigit(**s)) (*s)++;
-
-	if ('.' == **s) {
+	if ('+' == **s) {
+		if ('(' == *(*s + 1)) die("Invalid operator");
 		(*s)++;
-		if (!isdigit(**s)) die("Invalid operator");
+	} else if ( '-' == **s) {
+		sign = -1;
+		(*s)++;
 	}
 
-	while (isdigit(**s)) (*s)++;
-	while (isgarbage(**s)) (*s)++;
+	if ('(' == **s) {
+		(*s)++;
+		while (isgarbage(**s)) (*s)++;
 
-	return atof(t);
+		t = *s;
+
+		nextmultop(s);
+
+		return sign * eval_expr(t);			
+	} else {
+		if (!isdigit(**s)) die("Invalid operator");
+		while (isdigit(**s)) (*s)++;
+
+		if ('.' == **s) {
+			(*s)++;
+			if (!isdigit(**s)) die("Invalid operator");
+			while (isdigit(**s)) (*s)++;
+		}
+
+		while (isgarbage(**s)) (*s)++;
+
+		return atof(t);
+	}
 }
 
 static unsigned isop(int c)
@@ -152,7 +183,11 @@ static unsigned isop(int c)
 	return '+' == c || '-' == c || '*' == c || '/' == c;
 }
 
-static void checkbrackets(const char *s[static 1])
+/*
+ * helper function for multop when an open bracket is encountered to move to
+ * the corresponding closed bracket
+ */
+static void nextmultop(const char *s[static 1])
 {
 	unsigned brackets = 1;
 	
@@ -176,25 +211,50 @@ static void checkbrackets(const char *s[static 1])
 				break;
 		}
 	}
+	while (isgarbage(**s)) (*s)++;
 }
 
 static void push(double a)
 {
-	if (STACK_SIZE - 1 < topstack) {
+	if (STACK_SIZE - 1 < top) {
 		die("stack overflow");
 	} else {
-		stack[topstack++] = a;
+		stack[top++] = a;
 	}
 	printf("%f pushed\n", a);
 }
 
 static double pop(void)
 {
-	if (0 == topstack) {
+	if (0 == top) {
 		die("stack underflow");
 	} else {
-		printf("%f popped\n", stack[topstack - 1]);
-		return stack[--topstack];
+		printf("%f popped\n", stack[top - 1]);
+		return stack[--top];
 	}
 	return 0.0;
+}
+
+/*
+ * before the expression is evaulated, the brackets must be checked */
+unsigned valid_brackets(const char s[static 1])
+{
+	unsigned br = 0;
+	unsigned validity = 0;
+
+	while (*s) {
+		switch (*s) {
+			case '(' :
+				br++;
+				break;
+			case ')' :
+				if (!br--) return validity;
+		}
+		s++;
+	}
+	
+	if (!br) validity = 1;
+	else validity = 0;
+
+	return validity;
 }

@@ -279,22 +279,22 @@ static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
 
 static void prolongate(CurrentMember cm[static 1], int k)
 {
-	for (int EREE = 0; EREE < EREE_AMOUNT; EREE++) {
-		cm->PREMIUM[EREE][MAXGEN-1][k] = gensum(cm->PREMIUM, EREE, k);
-		cm->CAPDTH[EREE][MAXGEN-1][k] = gensum(cm->CAPDTH, EREE, k);
+	for (int i = 0; i < EREE_AMOUNT; i++) {
+		cm->PREMIUM[i][MAXGEN-1][k] = gensum(cm->PREMIUM, i, k);
+		cm->CAPDTH[i][MAXGEN-1][k] = gensum(cm->CAPDTH, i, k);
 		for (int l = 0; l < METHOD_AMOUNT; l++) {
-			cm->RES[l][EREE][MAXGEN-1][k] =
-				gensum(cm->RES[l], EREE, k);
-			cm->RESPS[l][EREE][MAXGEN-1][k] =
-				gensum(cm->RESPS[l], EREE, k); 
+			cm->RES[l][i][MAXGEN-1][k] =
+				gensum(cm->RES[l], i, k);
+			cm->RESPS[l][i][MAXGEN-1][k] =
+				gensum(cm->RESPS[l], i, k); 
 		}
-		cm->DELTACAP[EREE][k] = 0;
+		cm->DELTACAP[i][k] = 0;
 		for (int j = 0; j < MAXGEN-1; j++) {
-			cm->PREMIUM[EREE][j][k] = 0;
-			cm->CAPDTH[EREE][j][k] = 0;
+			cm->PREMIUM[i][j][k] = 0;
+			cm->CAPDTH[i][j][k] = 0;
 			for (int l = 0; l < METHOD_AMOUNT; l++) {
-				cm->RES[l][EREE][j][k] = 0;
-				cm->RESPS[l][EREE][j][k] = 0;
+				cm->RES[l][i][j][k] = 0;
+				cm->RESPS[l][i][j][k] = 0;
 			} 
 		}
 	}
