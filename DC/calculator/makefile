@@ -32,7 +32,7 @@ OPTFLAGS =
 DEBUGFLAGS = -g
 GPROFFLAGS =
 CFLAGS = -Wall -Wshadow -Wextra $(GPROFFLAGS)
-LDFLAGS = #libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.
+LDFLAGS = -lm#libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.
 #***Start makefile***
 
 # phony targets:

@@ -10,6 +10,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "errorexit.h"
 #include "libraryheader.h"
 
@@ -136,17 +137,20 @@ static double addop(const char *s[static 1])
  * if it encounters an open bracket the process is started again recursively
  * and the pointer is moved to the next point just after the corresponding
  * closed bracket
+ * if the operator is followed by a caret '^', it is taken to the power of the
+ * next multiplication operator. This means that '^' will be from right to
+ * left, f.e. 2^(1+2)^2 = 2^((1+2)^2) and not (2^(1+2))^2
  */
 static double multop(const char *s[static 1])
 {
 	const char *t = 0;
 	int sign = 1;
+	double op = 0.0;
 
 	while (isgarbage(**s)) (*s)++;    
 	t = *s;
 
 	if ('+' == **s) {
-		if ('(' == *(*s + 1)) die("Invalid operator");
 		(*s)++;
 	} else if ( '-' == **s) {
 		sign = -1;
@@ -161,9 +165,8 @@ static double multop(const char *s[static 1])
 
 		nextmultop(s);
 
-		return sign * eval_expr(t);			
-	} else {
-		if (!isdigit(**s)) die("Invalid operator");
+		op = sign * eval_expr(t);			
+	} else if (isdigit(**s)) {
 		while (isdigit(**s)) (*s)++;
 
 		if ('.' == **s) {
@@ -174,8 +177,17 @@ static double multop(const char *s[static 1])
 
 		while (isgarbage(**s)) (*s)++;
 
-		return atof(t);
+		op = atof(t);
+	} else {
+		die("Invalid operator");
 	}
+
+	if ('^' == **s) {
+		(*s)++;
+		op = pow(op, multop(s)); /* CHECK FOR VALID OPERATORS??!! */
+	}
+
+	return op;
 }
 
 static unsigned isop(int c)
