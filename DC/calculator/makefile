@@ -16,9 +16,9 @@ BINPATH = /home/doctormartin67/bin
 XML = `xml2-config --cflags` `xml2-config --libs`
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -rdynamic
 MISCOBJS =
-LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/errorexit.o
+LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/errorexit.o calculator.o
 GTKOBJS =
-EXEC = calculator
+EXEC = jcalc
 
 # flags: 
 # -g if you want to debug, 

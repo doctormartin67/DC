@@ -15,6 +15,7 @@
 #include <math.h>
 #include "errorexit.h"
 #include "libraryheader.h"
+#include "calculator.h"
 
 enum {STACK_SIZE = 128};
 enum {MAX, MIN, FUNC_AMOUNT};
@@ -27,9 +28,6 @@ struct calculator_func {
 static unsigned top = 0;
 static double stack[STACK_SIZE];
 
-unsigned valid_brackets(const char s[static 1]);
-unsigned valid_separators(const char s[static 1]);
-double eval_expr(const char s[static 1]);
 static double addop(const char *s[static 1]);
 static double multop(const char *s[static 1]);
 static void nextmultop(const char *s[static 1]);
@@ -44,25 +42,6 @@ static struct calculator_func func[FUNC_AMOUNT] = {
 	[MAX] = {"MAX", max},
 	[MIN] = {"MIN", min}
 };
-
-
-int main(void)
-{
-	char buf[BUFSIZ];
-
-	for (size_t i = 0; i < sizeof(buf); i++) {
-		if (EOF == (buf[i] = getchar())) {
-			buf[i] = '\0';
-			break;
-		}
-	}
-
-	if (!valid_brackets(buf)) die("Incorrect brackets");
-	if (!valid_separators(buf)) die("',' outside function");
-
-	printf("%f\n", eval_expr(buf));
-	return 0;
-}
 
 /*
  * evaluates the expression given by s.
@@ -307,6 +286,8 @@ unsigned valid_separators(const char s[static 1])
 
 /*
  * checks whether the given separator lies within one of the functions in func
+ * it checks whether there are brackets surrounding the separator and whether
+ * there is a known function at the start
  */
 static unsigned infunc(const char s[static 1], const char sep[static 1])
 {
@@ -382,6 +363,11 @@ static unsigned isfunc(const char s[static 1], unsigned *findex)
 	return 0;
 }
 
+/*
+ * given a string excluding the open bracket at the start, find the maximum of
+ * values separated by ','.
+ * f.e. 5, 1, 3 will return 5
+ */
 static double max(const char s[static 1])
 {
 	double curr = 0;
@@ -398,6 +384,11 @@ static double max(const char s[static 1])
 	return m;
 }
 
+/*
+ * given a string excluding the open bracket at the start, find the minumum of
+ * values separated by ','.
+ * f.e. 5, 1, 3 will return 1
+ */
 static double min(const char s[static 1])
 {
 	double curr = 0;
