@@ -48,7 +48,7 @@ $(EXEC): CFLAGS += $(OPTFLAGS)
 debug: CFLAGS += $(DEBUGFLAGS)
 
 clean:
-	$(RM) $(BINPATH)/$(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
+	$(RM) $(BINPATH)/$(EXEC) $(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
 
 # dependencies:
 %.o: %.c

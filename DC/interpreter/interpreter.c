@@ -46,7 +46,7 @@ static void settabs(unsigned cnt, char s[static 1]);
  */
 char *strclean(const char s[static 1])
 {
-	char *t = jalloc(strlen(s) + 1, sizeof(char));
+	char *t = jalloc(strlen(s) + 1, sizeof(*t));
 	char *pt = t;
 
 	while (*s) {
@@ -185,6 +185,7 @@ struct casetree *plantTree(const char *s)
 			*t++ = '\0';
 			pct->child = plantTree(prevt);
 		} else {
+			printf("expr = %s\n", pct->expr);
 			if (!isvalidLeaf(pct->expr)) {
 				deforest(ct, pt, NOERR);
 				return 0;
@@ -405,35 +406,34 @@ double interpret(const struct casetree ct[static 1],
 	Cmpfunc *cf = 0;
 	const void *v = 0;
 	const char *expr = 0;
-	for (const struct casetree *pct = ct; 0 != pct; pct = pct->next) {
-		expr = pct->expr;
-		if (-1 == pct->rule_index) {
+
+	while (0 != ct) {
+		expr = ct->expr;
+		if (-1 == ct->rule_index) {
 			while ('\0' != *expr && !isdigit(*expr))
 				expr++;
 			x = atof(expr);
 			return x;
 		}
 
-		v = rule_data[pct->rule_index];
-		cf = ruleset[pct->rule_index].cf;
+		v = rule_data[ct->rule_index];
+		cf = ruleset[ct->rule_index].cf;
 
-		if (cf(pct, v)) {
-			if (0 == (pct->child)) {
+		if (cf(ct, v)) {
+			if (0 == (ct->child)) {
 				while ('\0' != *expr && !isdigit(*expr))
 					expr++;
 				x = atof(expr);
 				return x;
 			} else {
-				pct = pct->child;
+				ct = ct->child;
 				continue;
 			}
+		} else {
+			ct = ct->next;	
 		}
-
-		
 	}
 
-	printf("Warning in %s: no case was found in tree:\n", __func__);
-	printTree(ct);
-	printf("The assumption will be equal to zero in this case.\n");
-	return x;
+	printf("Warning: End of tree reached with no case matched\n");
+	return 0.0;
 }

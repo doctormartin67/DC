@@ -9,13 +9,14 @@ PROJECTPATH = /home/doctormartin67/Projects
 LIBPATH = $(PROJECTPATH)/library
 TABLEPATH =
 ACTPATH =
-INCLUDE = -I. -I$(LIBPATH)
+INTPATH = $(PROJECTPATH)/work/DC/interpreter
+INCLUDE = -I. -I$(LIBPATH) -I$(INTPATH)
 BINPATH = /home/doctormartin67/bin
 
 # objects:
 XML = `xml2-config --cflags` `xml2-config --libs`
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -rdynamic
-MISCOBJS =
+MISCOBJS = $(INTPATH)/treeerrors.o $(INTPATH)/interpreter.o
 LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/errorexit.o calculator.o
 GTKOBJS =
 EXEC = jcalc
@@ -48,7 +49,7 @@ $(EXEC): CFLAGS += $(OPTFLAGS)
 debug: CFLAGS += $(DEBUGFLAGS)
 
 clean:
-	$(RM) $(BINPATH)/$(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
+	$(RM) $(BINPATH)/$(EXEC) $(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS)
 
 # dependencies:
 %.o: %.c

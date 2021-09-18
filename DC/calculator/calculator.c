@@ -16,8 +16,9 @@
 #include "errorexit.h"
 #include "libraryheader.h"
 #include "calculator.h"
+#include "treeerrors.h"
 
-enum {STACK_SIZE = 128};
+enum {STACK_SIZE = 256};
 enum {MAX, MIN, FUNC_AMOUNT};
 
 struct calculator_func {
@@ -37,6 +38,7 @@ static unsigned isfunc(const char s[static 1], unsigned *findex);
 static unsigned infunc(const char s[static 1], const char sep[static 1]);
 static double max(const char s[static 1]);
 static double min(const char s[static 1]);
+static double cancel_calc(TreeError te);
 
 static struct calculator_func func[FUNC_AMOUNT] = {
 	[MAX] = {"MAX", max},
@@ -68,7 +70,7 @@ double eval_expr(const char s[static 1])
 				break;
 			case ',' :
 				if (0 == pushed)
-					die("no expression between ','");
+					return cancel_calc(COMMAERR);
 			case ')' :
 			case '\0':
 				goto evaluation;
@@ -111,19 +113,18 @@ static double addop(const char *s[static 1])
 				(*s)++;
 				while (isgarbage(**s)) (*s)++;    
 				if ('*' == **s || '/' == **s)
-					die("two ops %c%c", '*', **s);
+					return cancel_calc(TWOOPERR);
 				m *= multop(s);
 				break;
 			case '/' :	
 				(*s)++;
 				while (isgarbage(**s)) (*s)++;    
 				if ('*' == **s || '/' == **s)
-					die("two ops %c%c", '/', **s);
+					return cancel_calc(TWOOPERR);
 				m /= multop(s);
 				break;
 			default :
-				die("expected operator in between operands");
-				break;
+				return cancel_calc(OPERANDERR);
 		}
 	}
 }
@@ -167,7 +168,7 @@ static double multop(const char *s[static 1])
 		while (isdigit(**s)) (*s)++;
 		if ('.' == **s) {
 			(*s)++;
-			if (!isdigit(**s)) die("Invalid operator");
+			if (!isdigit(**s)) return cancel_calc(INVOPERR);
 			while (isdigit(**s)) (*s)++;
 		}
 		while (isgarbage(**s)) (*s)++;
@@ -177,7 +178,7 @@ static double multop(const char *s[static 1])
 	} else if (isfunc(*s, &findex)) {
 		*s += strlen(func[findex].name);
 		while (isgarbage(**s)) (*s)++;
-		if ('(' != **s) die("Expected '(' after function name");
+		if ('(' != **s) return cancel_calc(FUNCBRERR);
 		(*s)++;
 		t = *s;
 		nextmultop(s);
@@ -185,7 +186,8 @@ static double multop(const char *s[static 1])
 		op = sign * func[findex].func(t);
 
 	} else {
-		die("Invalid operator");
+		(*s)++;
+		return cancel_calc(INVOPERR);
 	}
 
 	if ('^' == **s) {
@@ -204,7 +206,10 @@ static void nextmultop(const char *s[static 1])
 {
 	unsigned brackets = 1;
 	
-	if (')' == **s) die("expected expression within brackets");
+	if (')' == **s) {
+		cancel_calc(NOEXPRBRERR);
+		return;
+	}
 
 	while (brackets) {
 		switch (**s) {
@@ -376,7 +381,7 @@ static double max(const char s[static 1])
 	for (const char *next = strchr(s, ','); next;
 			next = strchr(next, ',')) {
 		next++;
-		if (')' == *next) die("',' directly followed by ')'");
+		if (')' == *next) return cancel_calc(COMMAERR);
 		curr = eval_expr(next);
 		m = MAX2(m, curr);
 	}
@@ -397,10 +402,16 @@ static double min(const char s[static 1])
 	for (const char *next = strchr(s, ','); next;
 			next = strchr(next, ',')) {
 		next++;
-		if (')' == *next) die("',' directly followed by ')'");
+		if (')' == *next) return cancel_calc(COMMAERR);
 		curr = eval_expr(next);
 		m = MIN2(m, curr);
 	}
 
 	return m;
+}
+
+static double cancel_calc(TreeError te)
+{
+	if (NOERR == getterrno()) setterrno(te);
+	return 0.0;
 }

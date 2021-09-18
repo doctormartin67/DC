@@ -125,6 +125,7 @@ unsigned testTree(const struct casetree ct[static 1], FILE *fp,
 {
 	unsigned status = 0;
 	double dage = 0.0;
+	double result = 0.0, testresult = 0.0;
 	char test[BUFSIZ];
 	const void **rule_data = calloc(RULE_AMOUNT, sizeof(*rule_data));
 	char *age, *reg, *cat, *value;
@@ -157,7 +158,10 @@ unsigned testTree(const struct casetree ct[static 1], FILE *fp,
 		rule_data[REG] = reg;
 		rule_data[CAT] = cat;
 
-		if (interpret(ct, rule_data) == atof(value)) {
+		result = interpret(ct, rule_data);
+		testresult = atof(value);
+
+		if (result == testresult) {
 			if (options & OPT_VERBOSE) {
 				printf("%s,%s,%s=%s ", age, reg, cat, value);
 				printf("%sPASSED%s\n", GREEN, NORMAL);
@@ -165,7 +169,8 @@ unsigned testTree(const struct casetree ct[static 1], FILE *fp,
 		} else {
 			if (options & OPT_VERBOSE) {
 				printf("%s,%s,%s=%s ", age, reg, cat, value);
-				printf("%sFAILED%s\n", RED, NORMAL);
+				printf("%sFAILED (%f != %f)%s\n", RED, result,
+						testresult, NORMAL);
 			}
 			status = 1;
 		}

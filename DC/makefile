@@ -50,7 +50,7 @@ $(EXEC): CFLAGS += $(OPTFLAGS)
 debug: CFLAGS += $(DEBUGFLAGS)
 
 clean:
-	$(RM) $(BINPATH)/$(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS) $(INTOBJS)
+	$(RM) $(BINPATH)/$(EXEC) $(EXEC) $(EXEC).o $(MISCOBJS) $(LIBOBJS) $(GTKOBJS) $(INTOBJS)
 
 # dependencies:
 %.o: %.c

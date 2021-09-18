@@ -34,7 +34,13 @@ const char *const strterrors[TERR_AMOUNT] =
 	[TOERR] = "Incorrect use of \"To\" operator",
 	[ISERR] = "Incorrect use of \"Is\" operator",
 	[ELSERR] = "Incorrect use of \"Else\" operator",
-	[NULLERR] = "Tree string is NULL"
+	[NULLERR] = "Tree string is NULL",
+	[COMMAERR] = "Invalid use of ',' separator in expression",
+	[TWOOPERR] = "'*' or '/' followed by another '*' or '/'",
+	[OPERANDERR] = "No operator in between two operands",
+	[INVOPERR] = "Invalid operator",
+	[FUNCBRERR] = "Open bracket '(' missing after function name",
+	[NOEXPRBRERR] = "Missing expression within brackets"
 };
 
 void setterrno(TreeError te) { 
