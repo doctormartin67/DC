@@ -35,6 +35,7 @@ struct rule ruleset[RULE_AMOUNT] =
 	[CAT] = {"CAT", cmpstr, 0}
 };
 
+static struct casetree *growBranch(char **t);
 static int specifyTree(const char t[static 1]);
 static void deforest(struct casetree *ct, char *t, TreeError te);
 static void settabs(unsigned cnt, char s[static 1]);
@@ -153,43 +154,8 @@ struct casetree *plantTree(const char *s)
 		pct->expr = t;
 
 		if (0 == strncmp(t, SC, strlen(SC))) {
-			char *prevt = t++;
-
-			/*
-			 * select cases can be nested, we need to find the 
-			 * final end select of this tree
-			 */
-			int nests = 1;
-
-			while (nests) {
-				sc = strstr(t, SC);
-				es = strstr(t, ES);
-
-				if (0 == sc || sc > es) {
-					t = es;
-					nests--;
-				} else {
-					t = sc;
-					nests++;
-				}
-				t++;
-			}
-
-			/*
-			 * when nests hits zero, t should be at end select 
-			 * (the +1 is because we add 1 to t in the while loop)
-			 */
-			assert(t == es + 1);
-
-			t += strlen(ES) - 1;
-			*t++ = '\0';
-			pct->child = plantTree(prevt);
+			pct->child = growBranch(&t);
 		} else {
-			printf("expr = %s\n", pct->expr);
-			if (!isvalidLeaf(pct->expr)) {
-				deforest(ct, pt, NOERR);
-				return 0;
-			}
 			pct->child = 0;
 		}
 
@@ -210,7 +176,52 @@ struct casetree *plantTree(const char *s)
 			pct->next->rule_index = pct->rule_index;
 		}
 		*(t - 1) = '\0';
+
+		if (!isvalidLeaf(pct->expr)) {
+			deforest(ct, pt, NOERR);
+			return 0;
+		}
 	}
+
+	return ct;
+}
+
+/*
+ * When trees are nested we need to grow a child tree within a tree.
+ * finds where the current tree ends, taking into account more potential
+ * branches and returns the tree
+ */
+static struct casetree *growBranch(char **t)
+{
+	struct casetree *ct = 0;
+	char *pt = (*t)++;
+	char *sc, *es;
+	int nests = 1;
+	sc = es = 0;
+
+	while (nests) {
+		sc = strstr(*t, SC);
+		es = strstr(*t, ES);
+
+		if (0 == sc || sc > es) {
+			*t = es;
+			nests--;
+		} else {
+			*t = sc;
+			nests++;
+		}
+		(*t)++;
+	}
+
+	/*
+	 * when nests hits zero, t should be at end select 
+	 * (the +1 is because we add 1 to t in the while loop)
+	 */
+	assert(*t == es + 1);
+
+	(*t) += strlen(ES) - 1;
+	*(*t)++ = '\0';
+	ct = plantTree(pt);
 
 	return ct;
 }

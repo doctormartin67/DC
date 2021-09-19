@@ -4,13 +4,13 @@ select case reg
 			case "CASE ", "crap", "BC", "WC", "crap2"
 				select case age
 					case is <40: x=0.01
-					case 40 to 60: x = 0.03
+					case 40 to 60: x = MAX(0.03, 0)
 					case else: x = 0.02
 				end select
 			case else
 				select case age
-				    case is < 25: x=0.05
-				    case is < 35: x=0.06
+				    case is < 25: x= MIN(0.05, 10)
+				    case is < 35: x= 0.06 * 2 - 0.06 + 1/2-0.5
 				    case is < 45: x=0.07
 				    case is < 55: x=0.08
 				    case else: x=0.09

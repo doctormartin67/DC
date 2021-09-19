@@ -265,13 +265,19 @@ unsigned valid_brackets(const char s[static 1])
 				br++;
 				break;
 			case ')' :
-				if (!br--) return validity;
+				if (!br--) {
+					setterrno(INCBRERR);
+					return validity;
+				}
 		}
 		s++;
 	}
 	
 	if (!br) validity = 1;
-	else validity = 0;
+	else {
+		setterrno(INCBRERR);
+		validity = 0;
+	}
 
 	return validity;
 }
@@ -282,7 +288,10 @@ unsigned valid_brackets(const char s[static 1])
 unsigned valid_separators(const char s[static 1])
 {
 	for (const char *sep = strchr(s, ','); sep; sep = strchr(sep, ',')) {
-		if (!infunc(s, sep)) return 0;
+		if (!infunc(s, sep)) {
+			setterrno(COMMAERR);
+			return 0;
+		}
 		sep++;
 	}
 

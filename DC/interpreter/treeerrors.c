@@ -9,6 +9,7 @@
 #include "libraryheader.h"
 #include "errorexit.h"
 #include "treeerrors.h"
+#include "calculator.h"
 
 /* 
  * Set to the error found (if any) while building the tree.
@@ -23,7 +24,7 @@ const char *const strterrors[TERR_AMOUNT] =
 	[NOERR] = "No errors found in tree", 
 	[SCERR] = "Select Case without End Select", 
 	[ESERR] = "End Select without Select Case", 
-	[XERR] = "Expression not of the form 'x = [0-9]+\\.?[0-9]*'",
+	[XERR] = "Expression not of the form 'x = *'",
 	[CERR] = "Case without Select Case",
 	[NOCERR] = "Select Case without Case",
 	[UNKRULEERR] = "Select Case has unknown rule",
@@ -40,7 +41,8 @@ const char *const strterrors[TERR_AMOUNT] =
 	[OPERANDERR] = "No operator in between two operands",
 	[INVOPERR] = "Invalid operator",
 	[FUNCBRERR] = "Open bracket '(' missing after function name",
-	[NOEXPRBRERR] = "Missing expression within brackets"
+	[NOEXPRBRERR] = "Missing expression within brackets",
+	[INCBRERR] = "Inconsistent usage of brackets '(' ')'"
 };
 
 void setterrno(TreeError te) { 
@@ -208,10 +210,16 @@ unsigned isvalidBranch(const struct casetree ct[static 1])
 }
 
 /*
- * checks if the leaf is of the form x = [0-9]+\.?[0-9]*
+ * checks if the leaf is a valid expression that begins with 'X=' followed by
+ * a valid calculator expression. It may also begin with Select Case, in which
+ * case the tree has branches and we will check the leaves of these branches
+ * at a later stage
  */
 unsigned isvalidLeaf(const char s[static 1])
 {
+	if (0 == strncmp(s, SC, strlen(SC)))
+		return 1;
+
 	if ('X' != *s++) {
 		setterrno(XERR);
 		return 0;
@@ -224,33 +232,13 @@ unsigned isvalidLeaf(const char s[static 1])
 		return 0;
 	}
 
-	while (isgarbage(*s)) s++;
-
-	if (!isdigit(*s)) {
-		setterrno(XERR);
+	if (!valid_brackets(s) || !valid_separators(s))
 		return 0;
-	}
-
-	while (isdigit(*s)) s++;
 	
-	if ('.' == *s) {
-		s++;
-		if (!isdigit(*s)) {
-			setterrno(XERR);
+	if (NOERR == getterrno()) {
+		eval_expr(s);
+		if (NOERR != getterrno())
 			return 0;
-		}
-
-		while (isdigit(*s)) s++;
-	}
-
-	while (isgarbage(*s)) s++;
-
-	if ('\0' != *s) {
-		if (0 != strncmp(s, C, strlen(C))
-			&& 0 != strncmp(s, ES, strlen(ES))) {
-			setterrno(XERR);
-			return 0;
-		}
 	}
 
 	return 1;

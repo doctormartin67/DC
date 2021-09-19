@@ -9,13 +9,14 @@ PROJECTPATH = /home/doctormartin67/Projects
 LIBPATH = $(PROJECTPATH)/library
 TABLEPATH =
 ACTPATH =
-INCLUDE = -I. -I$(LIBPATH)
+CALCPATH = $(PROJECTPATH)/work/DC/calculator
+INCLUDE = -I. -I$(LIBPATH) -I$(CALCPATH)
 BINPATH = /home/doctormartin67/bin
 
 # objects:
 XML = `xml2-config --cflags` `xml2-config --libs`
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -rdynamic
-MISCOBJS = interpreter.o treeerrors.o
+MISCOBJS = interpreter.o treeerrors.o $(CALCPATH)/calculator.o
 LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/errorexit.o
 GTKOBJS =
 EXEC = interpret
@@ -32,7 +33,7 @@ OPTFLAGS =
 DEBUGFLAGS = -g
 GPROFFLAGS =
 CFLAGS = -Wall -Wshadow -Wextra $(GPROFFLAGS)
-LDFLAGS = #libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.
+LDFLAGS = -lm#libraries to include: -lm is Math, -lxlsxwriter is an excel reader lib.
 #***Start makefile***
 
 # phony targets:
