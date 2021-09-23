@@ -38,11 +38,31 @@ static unsigned isfunc(const char s[static 1], unsigned *findex);
 static unsigned infunc(const char s[static 1], const char sep[static 1]);
 static double max(const char s[static 1]);
 static double min(const char s[static 1]);
+static unsigned isvar(const char s[static 1], unsigned *vindex);
 static double cancel_calc(TreeError te);
 
 static struct calculator_func func[FUNC_AMOUNT] = {
 	[MAX] = {"MAX", max},
 	[MIN] = {"MIN", min}
+};
+
+/*
+ * var_set is an array which consists of the variables that the user
+ * can use. They can be seen as the predetermined variables instead of the user
+ * having to define them themselves.
+ * data (NULL) will be set each time interpret is called because it can
+ * be different each time
+ * is_number is set to 1 if the variable is considered a number, 0 if it is
+ * considered a string.
+ * In the calculator all the variables are number, but the interpreter that
+ * uses Select Case needs to check strings to determine which case to take
+ */
+struct variable var_set[VAR_AMOUNT] = 
+{
+	[AGE] = {"AGE", 1, 0}, 
+	[REG] = {"REG", 0, 0}, 
+	[CAT] = {"CAT", 0, 0},
+	[PREM] = {"PREM", 1, 0}
 };
 
 /*
@@ -142,9 +162,11 @@ static double addop(const char *s[static 1])
 static double multop(const char *s[static 1])
 {
 	unsigned findex = 0;
+	unsigned vindex = 0;
 	int sign = 1;
 	const char *t = 0;
 	double op = 0.0;
+	double *var = 0;
 
 	while (isgarbage(**s)) (*s)++;    
 	t = *s;
@@ -184,6 +206,15 @@ static double multop(const char *s[static 1])
 		nextmultop(s);
 
 		op = sign * func[findex].func(t);
+
+	} else if (isvar(*s, &vindex)) {
+		*s += strlen(var_set[vindex].name);
+		while (isgarbage(**s)) (*s)++;
+
+		if (0 == (var = var_set[vindex].data))
+			die("variable [%s] not set", var_set[vindex].name);
+
+		op = sign * *var;
 
 	} else {
 		(*s)++;
@@ -417,6 +448,26 @@ static double min(const char s[static 1])
 	}
 
 	return m;
+}
+
+/*
+ * returns 1 if the string starts with one of the variables defined in var_set
+ * and is a number, 0 otherwise. It will also set *vindex to the index of the
+ * variable given in var_set if vindex is not NULL
+ */
+static unsigned isvar(const char s[static 1], unsigned *vindex)
+{
+	char *name = 0;
+	for (unsigned i = 0; i < VAR_AMOUNT; i++) {
+		name = var_set[i].name;
+		if (0 == strncmp(s, name, strlen(name))) {
+			if (!var_set[i].is_number) cancel_calc(NUMERR);
+			if (vindex) *vindex = i;
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 static double cancel_calc(TreeError te)

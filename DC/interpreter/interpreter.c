@@ -17,24 +17,9 @@
 #include "libraryheader.h"
 #include "treeerrors.h"
 #include "errorexit.h"
-#include "calculator.h"
 
 /* maximum amount of tabs in a tree, printTree won't work properly otherwise */
 #define MAXTABS 32
-
-/*
- * ruleset is an array which consists of the variables that the user
- * can use to Select Case over. They can be seen as the predetermined
- * variables instead of the user having to define them themselves.
- * data (NULL) will be set each time interpret is called because it can
- * be different each time
- */
-struct rule ruleset[RULE_AMOUNT] = 
-{
-	[AGE] = {"AGE", cmpnum, 0}, 
-	[REG] = {"REG", cmpstr, 0}, 
-	[CAT] = {"CAT", cmpstr, 0}
-};
 
 static struct casetree *growBranch(char **t);
 static int specifyTree(const char t[static 1]);
@@ -228,7 +213,7 @@ static struct casetree *growBranch(char **t)
 }
 
 /* 
- * Returns the index of the ruleset array for the given name in the tree, or
+ * Returns the index of the var_set array for the given name in the tree, or
  * -1 of no rule was found
  */
  static int specifyTree(const char name[restrict static 1])
@@ -237,11 +222,11 @@ static struct casetree *growBranch(char **t)
 	size_t n = strlen(name);
 	size_t rn = 0;
 
-	for (unsigned i = 0; i < RULE_AMOUNT; i++) {
-		rn = strlen(ruleset[i].name);
+	for (unsigned i = 0; i < VAR_AMOUNT; i++) {
+		rn = strlen(var_set[i].name);
 		if (n != rn)
 			continue;
-		else if (0 == strncmp(name, ruleset[i].name, n)) 
+		else if (0 == strncmp(name, var_set[i].name, n)) 
 			index = i;
 	}
 
@@ -261,7 +246,7 @@ void printTree(const struct casetree ct[static 1])
 	}
 	else
 		printf("%sselect case %s\n", 
-				tabs, ruleset[ct->rule_index].name);
+				tabs, var_set[ct->rule_index].name);
 
 	snprintf(temp, sizeof(temp), "%s", tabs);
 
@@ -412,7 +397,7 @@ unsigned cmpstr(const struct casetree ct[restrict static 1], const void *s)
 }
 
 double interpret(const struct casetree ct[static 1],
-		const void *const rule_data[const static RULE_AMOUNT])
+		const void *const rule_data[const static VAR_AMOUNT])
 {
 	double x = 0.0;
 	Cmpfunc *cf = 0;
@@ -430,7 +415,10 @@ double interpret(const struct casetree ct[static 1],
 		}
 
 		v = rule_data[ct->rule_index];
-		cf = ruleset[ct->rule_index].cf;
+		if (var_set[ct->rule_index].is_number)
+			cf = cmpnum;
+		else
+			cf = cmpstr;
 
 		if (cf(ct, v)) {
 			if (0 == (ct->child)) {

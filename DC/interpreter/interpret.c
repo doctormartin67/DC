@@ -127,7 +127,7 @@ unsigned testTree(const struct casetree ct[static 1], FILE *fp,
 	double dage = 0.0;
 	double result = 0.0, testresult = 0.0;
 	char test[BUFSIZ];
-	const void **rule_data = calloc(RULE_AMOUNT, sizeof(*rule_data));
+	const void **rule_data = calloc(VAR_AMOUNT, sizeof(*rule_data));
 	char *age, *reg, *cat, *value;
 	const char *temp = 0;
 	age = reg = cat = value = 0;

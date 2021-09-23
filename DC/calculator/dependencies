@@ -21,7 +21,8 @@ jcalc.o: jcalc.c /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/sys_errlist.h \
  /home/doctormartin67/Projects/library/errorexit.h calculator.h \
  /home/doctormartin67/Projects/work/DC/interpreter/treeerrors.h \
- /home/doctormartin67/Projects/work/DC/interpreter/interpreter.h
+ /home/doctormartin67/Projects/work/DC/interpreter/interpreter.h \
+ calculator.h
 treeerrors.o: \
  /home/doctormartin67/Projects/work/DC/interpreter/treeerrors.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
@@ -53,7 +54,8 @@ treeerrors.o: \
  /home/doctormartin67/Projects/library/libraryheader.h \
  /home/doctormartin67/Projects/library/errorexit.h \
  /home/doctormartin67/Projects/work/DC/interpreter/treeerrors.h \
- /home/doctormartin67/Projects/work/DC/interpreter/interpreter.h
+ /home/doctormartin67/Projects/work/DC/interpreter/interpreter.h \
+ calculator.h
 interpreter.o: \
  /home/doctormartin67/Projects/work/DC/interpreter/interpreter.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
@@ -109,7 +111,7 @@ interpreter.o: \
  /home/doctormartin67/Projects/library/libraryheader.h \
  /home/doctormartin67/Projects/work/DC/interpreter/treeerrors.h \
  /home/doctormartin67/Projects/work/DC/interpreter/interpreter.h \
- /home/doctormartin67/Projects/library/errorexit.h
+ calculator.h /home/doctormartin67/Projects/library/errorexit.h
 helperfunctions.o: \
  /home/doctormartin67/Projects/library/helperfunctions.c \
  /usr/include/stdc-predef.h /usr/include/string.h \
@@ -279,4 +281,5 @@ calculator.o: calculator.c /usr/include/stdc-predef.h \
  /home/doctormartin67/Projects/library/errorexit.h \
  /home/doctormartin67/Projects/library/libraryheader.h calculator.h \
  /home/doctormartin67/Projects/work/DC/interpreter/treeerrors.h \
- /home/doctormartin67/Projects/work/DC/interpreter/interpreter.h
+ /home/doctormartin67/Projects/work/DC/interpreter/interpreter.h \
+ calculator.h

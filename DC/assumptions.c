@@ -1,7 +1,7 @@
 #include "assumptions.h"
 #include "lifetables.h"
 
-static const void *parameters[RULE_AMOUNT];
+static const void *parameters[VAR_AMOUNT];
 
 static void setparameters(const CurrentMember cm[static 1], int k);
 

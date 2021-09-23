@@ -42,7 +42,8 @@ const char *const strterrors[TERR_AMOUNT] =
 	[INVOPERR] = "Invalid operator",
 	[FUNCBRERR] = "Open bracket '(' missing after function name",
 	[NOEXPRBRERR] = "Missing expression within brackets",
-	[INCBRERR] = "Inconsistent usage of brackets '(' ')'"
+	[INCBRERR] = "Inconsistent usage of brackets '(' ')'",
+	[NUMERR] = "One or more string variables used as double"
 };
 
 void setterrno(TreeError te) { 
@@ -139,7 +140,11 @@ unsigned isvalidBranch(const struct casetree ct[static 1])
 	const char *to = strstr(s, "TO");
 
 	snprintf(t, sizeof(t), "%s", s);
-	Cmpfunc *cf = ruleset[ct->rule_index].cf;
+	Cmpfunc *cf = 0;
+	if (var_set[ct->rule_index].is_number)
+		cf = cmpnum;
+	else
+		cf = cmpstr;
 
 	/*
 	 * check whether the case is of the correct form when comparing numbers

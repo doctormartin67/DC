@@ -5,6 +5,7 @@
 #ifndef INTERPRETER
 #define INTERPRETER
 
+#include "calculator.h"
 /* 
  * key words for Select Case in VBA
  */
@@ -13,13 +14,6 @@
 #define ES "END SELEC67" /* 67 is explained in interpreter.c:strclean.c */
 #define X "X" /* An expression is of the form x = ... */
 #define E "ELSE"
-
-/* 
- * The indices of each rule within the ruleset array declared below. When a new
- * rule is added by the programmer, don't forget to add a rule to the ruleset 
- * array and also to the rule data that will be used as input.
- */
-enum {AGE, REG, CAT, RULE_AMOUNT};
 
 /* 
  * A casetree struct consists of:
@@ -47,23 +41,10 @@ typedef unsigned Cmpfunc(const struct casetree *ct, const void *);
 extern Cmpfunc cmpnum;
 extern Cmpfunc cmpstr;
 
-/* 
- * A rule is used to check the condition in the tree against the data that is
- * in the excel file for the affiliate. If there is a match then that 
- * expression is taken for the interpret function to return.
- */
-struct rule {
-	char *name;
-	Cmpfunc *cf;
-	void *data;
-};
-
-extern struct rule ruleset[RULE_AMOUNT];
-
 char *strclean(const char *);
 struct casetree *plantTree(const char *);
 double interpret(const struct casetree ct[static 1],
-		const void *const rule_data[const static RULE_AMOUNT]);
+		const void *const rule_data[const static VAR_AMOUNT]);
 void printTree(const struct casetree ct[static 1]);
 void chopTree(struct casetree *ct);
 
