@@ -103,7 +103,8 @@ interpreter.o: interpreter.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/include/strings.h /usr/include/ctype.h /usr/include/assert.h \
  /home/doctormartin67/Projects/library/libraryheader.h treeerrors.h \
- interpreter.h /home/doctormartin67/Projects/library/errorexit.h
+ interpreter.h /home/doctormartin67/Projects/library/errorexit.h \
+ /home/doctormartin67/Projects/work/DC/calculator/calculator.h
 treeerrors.o: treeerrors.c /usr/include/stdc-predef.h \
  /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \

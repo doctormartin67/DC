@@ -17,6 +17,7 @@
 #include "libraryheader.h"
 #include "treeerrors.h"
 #include "errorexit.h"
+#include "calculator.h"
 
 /* maximum amount of tabs in a tree, printTree won't work properly otherwise */
 #define MAXTABS 32
@@ -421,9 +422,10 @@ double interpret(const struct casetree ct[static 1],
 	while (0 != ct) {
 		expr = ct->expr;
 		if (-1 == ct->rule_index) {
-			while ('\0' != *expr && !isdigit(*expr))
+			while ('\0' != *expr && '=' != *expr)
 				expr++;
-			x = atof(expr);
+			if ('=' == *expr) expr++;
+			x = eval_expr(expr);
 			return x;
 		}
 
@@ -432,9 +434,10 @@ double interpret(const struct casetree ct[static 1],
 
 		if (cf(ct, v)) {
 			if (0 == (ct->child)) {
-				while ('\0' != *expr && !isdigit(*expr))
+				while ('\0' != *expr && '=' != *expr)
 					expr++;
-				x = atof(expr);
+				if ('=' == *expr) expr++;
+				x = eval_expr(expr);
 				return x;
 			} else {
 				ct = ct->child;
