@@ -48,7 +48,7 @@ typedef struct {
 
 Assumptions ass;
 
-void setassumptions(UserInput *UILY, UserInput *UITY);
+void setassumptions(struct user_input *UILY, struct user_input *UITY);
 double salaryscale(const CurrentMember *cm, int k);
 double calcA(const CurrentMember *cm, int k);
 double calcC(const CurrentMember *cm, int k);

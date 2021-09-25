@@ -5,7 +5,8 @@ static const void *parameters[VAR_AMOUNT];
 
 static void setparameters(const CurrentMember cm[static 1], int k);
 
-void setassumptions(UserInput UILY[static 1], UserInput UITY[static 1])
+void setassumptions(struct user_input UILY[static 1],
+		struct user_input UITY[static 1])
 {
 	char temp[BUFSIZ];
 	char *year, *month, *day;

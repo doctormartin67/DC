@@ -44,83 +44,6 @@
       <action-widget response="-5">button7</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkWindow" id="asswindow">
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Salary Increase Interpreter</property>
-    <property name="destroy_with_parent">True</property>
-    <signal name="delete-event" handler="on_asswindow_delete_event" swapped="no"/>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
-    <child>
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_left">10</property>
-            <property name="margin_right">10</property>
-            <property name="margin_top">10</property>
-            <property name="margin_bottom">10</property>
-            <property name="label" translatable="yes">Below is a simple interpreter to understand the assumption based on 1 or more variables.
-The interpreter understands the following variables:
-	- age
-	- cat (corresponds to column CATEGORY in the data)
-	- reg (corresponds to column NO REGLEMENT in the data)
-	- x (This is the assumption in question)
-The interpreter only understands "Select Case", but you can use it in the same way that VBA works. 
-For example:
-Select Case age
-	Case Is &lt; 40
-		x = 0.05
-	Case Else
-		x = 0.03
-End Select
-
-If the assumption is fixed, i.e. does not depend on anything, you can simply type for example
-x = 0.03
-
-The interpreter is case insensitive (meaning you could write select case, Select Case, selECT CASE, ...)
-If you make a mistake, an error message will appear once you try to run the program, but the interpreter
-is quite forgiving, so please try to type the Select Case tree as correctly as possible.</property>
-            <attributes>
-              <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkViewport">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkTextView" id="SS">
-                <property name="height_request">200</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="margin_left">10</property>
-                <property name="margin_right">10</property>
-                <property name="margin_top">10</property>
-                <property name="margin_bottom">10</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-  </object>
   <object class="GtkFileFilter" id="filefilterDC">
     <patterns>
       <pattern>*.dc</pattern>
@@ -983,7 +906,7 @@ the salary will increase with 0.032 each year.</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">True</property>
-                                            <signal name="clicked" handler="on_interpreterbutton_clicked" object="asswindow" swapped="no"/>
+                                            <signal name="clicked" handler="on_interpreterbutton_clicked" object="interpreterwindow" swapped="no"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -1413,7 +1336,6 @@ the salary will increase with 0.032 each year.</property>
                           <item translatable="yes">Run reconciliation</item>
                           <item translatable="yes">Run test case</item>
                         </items>
-                        <signal name="changed" handler="on_runchoice_changed" swapped="no"/>
                         <child internal-child="entry">
                           <object class="GtkEntry">
                             <property name="can_focus">False</property>
@@ -1477,6 +1399,7 @@ the salary will increase with 0.032 each year.</property>
                 </child>
                 <child>
                   <object class="GtkBox" id="testcasebox">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkLabel">
@@ -1559,6 +1482,83 @@ Contact: Joseph Ralston - joseph-ralston@hotmail.com</property>
               </object>
             </child>
           </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="interpreterwindow">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Salary Increase Interpreter</property>
+    <property name="destroy_with_parent">True</property>
+    <signal name="delete-event" handler="on_interpreterwindow_delete_event" swapped="no"/>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">10</property>
+            <property name="margin_right">10</property>
+            <property name="margin_top">10</property>
+            <property name="margin_bottom">10</property>
+            <property name="label" translatable="yes">Below is a simple interpreter to understand the assumption based on 1 or more variables.
+The interpreter understands the following variables:
+	- age
+	- cat (corresponds to column CATEGORY in the data)
+	- reg (corresponds to column NO REGLEMENT in the data)
+	- x (This is the assumption in question)
+The interpreter only understands "Select Case", but you can use it in the same way that VBA works. 
+For example:
+Select Case age
+	Case Is &lt; 40
+		x = 0.05
+	Case Else
+		x = 0.03
+End Select
+
+If the assumption is fixed, i.e. does not depend on anything, you can simply type for example
+x = 0.03
+
+The interpreter is case insensitive (meaning you could write select case, Select Case, selECT CASE, ...)
+If you make a mistake, an error message will appear once you try to run the program, but the interpreter
+is quite forgiving, so please try to type the Select Case tree as correctly as possible.</property>
+            <attributes>
+              <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkViewport">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkTextView" id="SS">
+                <property name="height_request">200</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
     </child>

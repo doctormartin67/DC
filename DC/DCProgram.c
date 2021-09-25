@@ -34,7 +34,7 @@ static int colmissing[KEYS_AMOUNT];
 
 static Validator *val;
 
-DataSet *createDS(Validator v[static 1], UserInput UI[static 1])
+DataSet *createDS(Validator v[static 1], struct user_input UI[static 1])
 {
 	const char *s = UI->fname;
 	Hashtable **ht = 0;

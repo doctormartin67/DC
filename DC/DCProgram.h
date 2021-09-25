@@ -73,7 +73,7 @@ static const double ART24TAUX[EREE_AMOUNT][ART24GEN_AMOUNT] = {
 typedef double GenMatrix[MAXGEN][MAXPROJ]; 
 
 //---Data Declarations---
-typedef struct {
+struct user_input {
 	/* --- Data --- */
 	char fname[PATH_MAX];
 	char sheetname[32];
@@ -96,7 +96,7 @@ typedef struct {
 	gint PUCTUC;
 	gint cashflows;
 	gint evaluateDTH;
-} UserInput;
+};
 
 /*
  * the following typedef is maybe the most important part of the entire
@@ -237,7 +237,7 @@ typedef struct {
 	XLfile *xl;
 	Hashtable **Data;
 	CurrentMember *cm;
-	UserInput *UI; 
+	struct user_input *UI; 
 } DataSet;
 
 //---Useful functions for CurrentMembers---
@@ -286,7 +286,7 @@ typedef struct {
 Tariff tff; // Tariff structure
 
 //---Data Functions---
-DataSet *createDS(Validator *, UserInput *);
+DataSet *createDS(Validator *, struct user_input *);
 void createCM(CurrentMember *, Hashtable *);
 void freeDS(DataSet *ds);
 void freeCM(CurrentMember *cm);
