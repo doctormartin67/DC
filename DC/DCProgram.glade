@@ -434,7 +434,7 @@
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">Data sheet name:</property>
@@ -476,7 +476,7 @@
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">First cell of Data:</property>
@@ -584,7 +584,7 @@ All the values used should be decimal numbers, not percentage
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">DOC:</property>
@@ -626,7 +626,7 @@ All the values used should be decimal numbers, not percentage
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">DR:</property>
@@ -668,7 +668,7 @@ All the values used should be decimal numbers, not percentage
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">Age Correction:</property>
@@ -710,7 +710,7 @@ All the values used should be decimal numbers, not percentage
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">Inflation:</property>
@@ -752,7 +752,7 @@ All the values used should be decimal numbers, not percentage
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">Termination:</property>
@@ -795,7 +795,7 @@ All the values used should be decimal numbers, not percentage
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">DR paragraph 113:</property>
@@ -838,7 +838,7 @@ All the values used should be decimal numbers, not percentage
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="valign">start</property>
@@ -886,13 +886,25 @@ the salary will increase with 0.032 each year.</property>
                                         <property name="margin_bottom">10</property>
                                         <property name="spacing">10</property>
                                         <child>
-                                          <placeholder/>
-                                        </child>
-                                        <child>
                                           <object class="GtkLabel">
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="width_chars">15</property>
+                                            <property name="width_chars">19</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="SS_interpreterbutton">
+                                            <property name="label" translatable="yes">Open interpreter</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <signal name="clicked" handler="on_SS_interpreterbutton_clicked" object="interpreterwindow" swapped="no"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -900,25 +912,143 @@ the salary will increase with 0.032 each year.</property>
                                             <property name="position">1</property>
                                           </packing>
                                         </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">8</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="margin_bottom">10</property>
+                                        <property name="spacing">10</property>
                                         <child>
-                                          <object class="GtkButton" id="SIinterpreterbutton">
-                                            <property name="label" translatable="yes">Open interpreter</property>
+                                          <object class="GtkLabel">
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="receives_default">True</property>
-                                            <signal name="clicked" handler="on_interpreterbutton_clicked" object="interpreterwindow" swapped="no"/>
+                                            <property name="can_focus">False</property>
+                                            <property name="label" translatable="yes">Turnover:</property>
+                                            <attributes>
+                                              <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
+                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
                                             <property name="fill">True</property>
-                                            <property name="position">2</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="turnover_interpreterbutton">
+                                            <property name="label" translatable="yes">Open interpreter</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <signal name="clicked" handler="on_turnover_interpreterbutton_clicked" object="interpreterwindow" swapped="no"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
                                           </packing>
                                         </child>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
-                                        <property name="position">8</property>
+                                        <property name="position">9</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="margin_bottom">10</property>
+                                        <property name="spacing">10</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="width_request">200</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="label" translatable="yes">Retirement Probability:</property>
+                                            <attributes>
+                                              <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
+                                            </attributes>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="retx_interpreterbutton">
+                                            <property name="label" translatable="yes">Open interpreter</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <signal name="clicked" handler="on_retx_interpreterbutton_clicked" object="interpreterwindow" swapped="no"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">10</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="margin_bottom">10</property>
+                                        <property name="spacing">10</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="width_request">200</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="label" translatable="yes">Normal Retirement Age:</property>
+                                            <attributes>
+                                              <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
+                                            </attributes>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="NRA_interpreterbutton">
+                                            <property name="label" translatable="yes">Open interpreter</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <signal name="clicked" handler="on_NRA_interpreterbutton_clicked" object="interpreterwindow" swapped="no"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">11</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -995,7 +1125,7 @@ the salary will increase with 0.032 each year.</property>
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">Standard:</property>
@@ -1039,7 +1169,7 @@ the salary will increase with 0.032 each year.</property>
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">Assets:</property>
@@ -1083,7 +1213,7 @@ the salary will increase with 0.032 each year.</property>
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">Paragraph:</property>
@@ -1127,7 +1257,7 @@ the salary will increase with 0.032 each year.</property>
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">PUC/TUC:</property>
@@ -1171,7 +1301,7 @@ the salary will increase with 0.032 each year.</property>
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">EBP PBO/TBO:</property>
@@ -1216,7 +1346,7 @@ the salary will increase with 0.032 each year.</property>
                                         <property name="spacing">10</property>
                                         <child>
                                           <object class="GtkLabel">
-                                            <property name="width_request">150</property>
+                                            <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">Death Benefit:</property>
@@ -1488,7 +1618,7 @@ Contact: Joseph Ralston - joseph-ralston@hotmail.com</property>
   </object>
   <object class="GtkWindow" id="interpreterwindow">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Salary Increase Interpreter</property>
+    <property name="title" translatable="yes">Interpreter</property>
     <property name="destroy_with_parent">True</property>
     <signal name="delete-event" handler="on_interpreterwindow_delete_event" swapped="no"/>
     <child type="titlebar">
@@ -1543,7 +1673,7 @@ is quite forgiving, so please try to type the Select Case tree as correctly as p
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkTextView" id="SS">
+              <object class="GtkTextView" id="interpretertext">
                 <property name="height_request">200</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>

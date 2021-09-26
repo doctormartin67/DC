@@ -1,28 +1,16 @@
 #include "userinterface.h"
 
+/*
+ * This points at the current text that will be set by the open
+ * interpreter window once it closes
+ */
+static char *current_interpreter;
+
+static void set_interpreter_text(char *intprtr, const char *s);
+
 void on_close_button_press_event(void)
 {
 	gtk_main_quit();
-}
-
-void on_interpreterbutton_clicked(GtkButton *b, gpointer *w)
-{
-	printf("[%s] pressed\n", gtk_button_get_label(b));
-	gtk_widget_show_all(GTK_WIDGET(w));
-}
-
-/*
- * when interpreter window is closed, we don't want it to be deleted, but just
- * hidden
- */
-gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
-		gpointer p)
-{
-	if (0 != p) printf("unused pointer [%p]\n", p);
-	printf("GdkEventType [%d]\n", gdk_event_get_event_type(e));
-
-	gtk_widget_hide(w);
-	return TRUE;
 }
 
 /*
@@ -147,4 +135,96 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 	printf("Excel to run: [%s]\n", ui->fname);
 	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), tmp); 
 	g_free(filename);
+}
+
+/*
+ * when interpreter window is closed, we don't want it to be deleted, but just
+ * hidden
+ * the function will set the current interpreter to the text inside the window
+ * the current interpreter will be set depending on which button was pressed
+ * to open the interpreter
+ */
+gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
+		gpointer p)
+{
+	if (0 != p) printf("unused pointer [%p]\n", p);
+	printf("GdkEventType [%d]\n", gdk_event_get_event_type(e));
+
+	GtkTextBuffer *temp = gtk_text_view_get_buffer(
+			GTK_TEXT_VIEW(widgets[INTERPRETERTEXT]));
+	gchar *s = 0;
+	GtkTextIter begin, end;
+	gtk_text_buffer_get_iter_at_offset(temp, &begin, 0);
+	gtk_text_buffer_get_iter_at_offset(temp, &end, -1);
+	s = gtk_text_buffer_get_text(temp, &begin, &end, TRUE);
+
+	if (0 == current_interpreter) 
+		die("current_interpreter was not set, this is impossible");
+	snprintf(current_interpreter, INTERPRETERTEXT_SIZE, "%s", s);
+	g_free(s);
+
+	gtk_widget_hide(w);
+	return TRUE;
+}
+
+/*
+ * opens the interpreter and sets current_interpreter to the salary scale
+ * array address
+ */
+void on_SS_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->SS, "Salary Scale Interpreter");
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+/*
+ * opens the interpreter and sets current_interpreter to the turnover
+ * array address
+ */
+void on_turnover_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->turnover, "Turnover Interpreter");
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+/*
+ * opens the interpreter and sets current_interpreter to the retx
+ * array address
+ */
+void on_retx_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->retx, "Retirement Probability Interpreter");
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+/*
+ * opens the interpreter and sets current_interpreter to the NRA
+ * array address
+ */
+void on_NRA_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->NRA, "NRA Interpreter");
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+/*
+ * sets the interpreter text to the given interpreter and sets the title of
+ * the interpreter window to s
+ * also updates the current_interpreter to intprtr
+ */
+static void set_interpreter_text(char *intprtr, const char *s)
+{
+	GtkTextBuffer *temp = gtk_text_view_get_buffer(
+			GTK_TEXT_VIEW(widgets[INTERPRETERTEXT]));
+	gtk_text_buffer_set_text(temp, intprtr, -1);
+	current_interpreter = intprtr;
+	gtk_window_set_title(GTK_WINDOW(widgets[INTERPRETERWINDOW]), s);
 }

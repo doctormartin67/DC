@@ -14,9 +14,9 @@ const char *const validMsg[ERR_AMOUNT] = {
 const char *const widgetname[WIDGET_AMOUNT] = {
 	[SHEETNAME] = "sheetname", [KEYCELL] = "keycell", [DOC] = "DOC",
 	[DR] = "DR", [AGECORR] = "agecorr", [INFL] = "infl",
-	[TRM_PERCDEF] = "TRM_PercDef", [DR113] = "DR113", [SS] = "SS",
-	[STANDARD] = "standard", [ASSETS] = "assets",
-	[PARAGRAPH] = "paragraph", [PUCTUC] = "PUCTUC",
+	[TRM_PERCDEF] = "TRM_PercDef", [DR113] = "DR113",
+	[INTERPRETERTEXT] = "interpretertext", [STANDARD] = "standard",
+	[ASSETS] = "assets", [PARAGRAPH] = "paragraph", [PUCTUC] = "PUCTUC",
 	[CASHFLOWS] = "cashflows", [EVALUATEDTH] = "evaluateDTH",
 	[RUNCHOICE] = "runchoice", [TESTCASEBOX] = "testcasebox",
 	[TESTCASE] = "testcase", [OPENDCFILE] = "openDCFile",
@@ -88,20 +88,6 @@ void set_user_input(struct user_input UI[static 1])
 	snprintf(UI->DR113, sizeof(UI->DR113), "%s", gtk_entry_get_text(
 				GTK_ENTRY(widgets[DR113])));
 
-	/* 
-	 * Text view is rather tedious to retrieve text from,
-	 * this is why this seems so random
-	 */
-	GtkTextBuffer *temp = gtk_text_view_get_buffer(
-			GTK_TEXT_VIEW(widgets[SS]));
-	gchar *s = 0;
-	GtkTextIter begin, end;
-	gtk_text_buffer_get_iter_at_offset(temp, &begin, 0);
-	gtk_text_buffer_get_iter_at_offset(temp, &end, -1);
-	s = gtk_text_buffer_get_text(temp, &begin, &end, TRUE);
-	snprintf(UI->SS, sizeof(UI->SS), "%s", s);
-	g_free(s);
-
 	UI->standard = gtk_combo_box_get_active(
 			GTK_COMBO_BOX(widgets[STANDARD]));
 	UI->assets = gtk_combo_box_get_active(
@@ -135,16 +121,19 @@ void update_user_interface(struct user_input UI[static 1])
 	gtk_entry_set_text(GTK_ENTRY(widgets[TRM_PERCDEF]), UI->TRM_PercDef);
 	gtk_entry_set_text(GTK_ENTRY(widgets[DR113]), UI->DR113);
 
-	GtkTextBuffer *temp = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widgets[SS]));
-	gtk_text_buffer_set_text(temp, UI->SS, -1);
-
 	/* --- Methodology --- */
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[STANDARD]), UI->standard);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[ASSETS]), UI->assets);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PARAGRAPH]), UI->paragraph);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PUCTUC]), UI->PUCTUC);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[CASHFLOWS]), UI->cashflows);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]), UI->evaluateDTH);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[STANDARD]),
+			UI->standard);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[ASSETS]),
+			UI->assets);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PARAGRAPH]),
+			UI->paragraph);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PUCTUC]),
+			UI->PUCTUC);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[CASHFLOWS]),
+			UI->cashflows);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]),
+			UI->evaluateDTH);
 }
 
 void print_user_input(struct user_input UI[static 1])
@@ -162,6 +151,9 @@ void print_user_input(struct user_input UI[static 1])
 	printf("TRM_PercDef [%s]\n", UI->TRM_PercDef);
 	printf("DR113 [%s]\n", UI->DR113);
 	printf("SS [%s]\n", UI->SS);
+	printf("turnover [%s]\n", UI->turnover);
+	printf("Retirement Probability [%s]\n", UI->retx);
+	printf("Normal Retirement Age [%s]\n", UI->NRA);
 
 	/* --- Methodology --- */
 	printf("standard [%d]\n", UI->standard); 
@@ -183,6 +175,10 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
 	const char *tc = 0;
 	struct date *tempDate = 0;
 	struct casetree *ct = 0;
+
+	/* ----- Check File -----*/
+	if (!*UI->fname)
+		updateValidation(val, ERROR, "No file selected to run");
 
 	/* ----- Check keycell -----*/
 	upper(kc);
@@ -293,6 +289,39 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
 	ct = plantTree(strclean(UI->SS));
 	if (NOERR != getterrno()) {
 		updateValidation(val, ERROR, "Salary Increase interpreter: %s",
+				strterror(getterrno()));
+		setterrno(NOERR);
+	}
+
+	chopTree(ct);
+	ct = 0;
+
+	/* ----- Check Turnover -----*/
+	ct = plantTree(strclean(UI->turnover));
+	if (NOERR != getterrno()) {
+		updateValidation(val, ERROR, "Turnover interpreter: %s",
+				strterror(getterrno()));
+		setterrno(NOERR);
+	}
+
+	chopTree(ct);
+	ct = 0;
+
+	/* ----- Check Retirement Probability -----*/
+	ct = plantTree(strclean(UI->retx));
+	if (NOERR != getterrno()) {
+		updateValidation(val, ERROR, "Retirement Probability "
+				"interpreter: %s", strterror(getterrno()));
+		setterrno(NOERR);
+	}
+
+	chopTree(ct);
+	ct = 0;
+
+	/* ----- Check NRA -----*/
+	ct = plantTree(strclean(UI->NRA));
+	if (NOERR != getterrno()) {
+		updateValidation(val, ERROR, "NRA interpreter: %s",
 				strterror(getterrno()));
 		setterrno(NOERR);
 	}

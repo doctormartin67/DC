@@ -34,9 +34,18 @@ void setassumptions(struct user_input UILY[static 1],
 		(currrun >= runNewSS ?
 		 plantTree(strclean(UITY->SS)) :
 		 plantTree(strclean(UILY->SS)));
-	ass.ct[IA_NRA] = 0;
-	ass.ct[IA_WXDEF] = 0;
-	ass.ct[IA_RETX] = 0;
+	ass.ct[IA_NRA] =
+		(currrun >= runNewNRA ?
+		 plantTree(strclean(UITY->NRA)) :
+		 plantTree(strclean(UILY->NRA)));
+	ass.ct[IA_WXDEF] =
+		(currrun >= runNewTurnover ?
+		 plantTree(strclean(UITY->turnover)) :
+		 plantTree(strclean(UILY->turnover)));
+	ass.ct[IA_RETX] =
+		(currrun >= runNewNRA ?
+		 plantTree(strclean(UITY->retx)) :
+		 plantTree(strclean(UILY->retx)));
 	ass.ct[IA_CALCA] = 0;
 	ass.ct[IA_CALCC] = 0;
 	ass.ct[IA_CALCDTH] = 0;
@@ -56,8 +65,7 @@ void setassumptions(struct user_input UILY[static 1],
 
 static void setparameters(const CurrentMember cm[static 1], int k)
 {
-	double age = cm->age[k];
-	parameters[AGE] = &age;
+	parameters[AGE] = &cm->age[k];
 	parameters[REG] = cm->regl;
 	parameters[CAT] = cm->category;
 }
@@ -85,21 +93,18 @@ double calcDTH(const CurrentMember cm[static 1], int k)
 
 double NRA(const CurrentMember cm[static 1], int k)
 {
-	return 65;
+	setparameters(cm, k);
+	return interpret(ass.ct[IA_NRA], parameters);
 }
 
 double wxdef(const CurrentMember cm[static 1], int k)
 {
-	if (cm->age[k] < 60)
-		return 0.01;
-	else
-		return 0;
+	setparameters(cm, k);
+	return interpret(ass.ct[IA_WXDEF], parameters);
 }
 
 double retx(const CurrentMember cm[static 1], int k)
 {
-	if (cm->age[k] < 65)
-		return 0;
-	else
-		return 1;
+	setparameters(cm, k);
+	return interpret(ass.ct[IA_RETX], parameters);
 }

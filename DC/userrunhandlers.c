@@ -20,6 +20,7 @@ gboolean update_gui(gpointer data);
 
 void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
+	printf("[%s] pressed\n", gtk_button_get_label(b));
 	Validator validatorLY = (Validator) {0};
 	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	char *MsgErr = 0;
