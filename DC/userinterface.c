@@ -12,17 +12,25 @@ const char *const validMsg[ERR_AMOUNT] = {
 };
 
 const char *const widgetname[WIDGET_AMOUNT] = {
-	[SHEETNAME] = "sheetname", [KEYCELL] = "keycell", [DOC] = "DOC",
+	[SHEETNAME] = "sheetname", [KEYCELL] = "keycell", [W_DOC_LY] = "DOC",
 	[DR] = "DR", [AGECORR] = "agecorr", [INFL] = "infl",
 	[TRM_PERCDEF] = "TRM_PercDef", [DR113] = "DR113",
 	[INTERPRETERTEXT] = "interpretertext", [STANDARD] = "standard",
-	[ASSETS] = "assets", [PARAGRAPH] = "paragraph", [PUCTUC] = "PUCTUC",
-	[CASHFLOWS] = "cashflows", [EVALUATEDTH] = "evaluateDTH",
-	[RUNCHOICE] = "runchoice", [TESTCASEBOX] = "testcasebox",
-	[TESTCASE] = "testcase", [OPENDCFILE] = "openDCFile",
-	[SAVEASDCFILE] = "saveasDCFile", [OPENEXCELFILE] = "openExcelFile",
-	[WINDOW] = "window", [INTERPRETERWINDOW] = "interpreterwindow",
-	[MSGERR] = "MsgErr", [FILENAME] = "filename", [STARTSTOP] = "startstop"
+	[W_ASSETS_LY] = "assets", [PUCTUC] = "PUCTUC",
+	[MAXPUCTUC] = "maxPUCTUC", [MAXERCONTR] = "maxERContr",
+	[EVALUATEDTH] = "evaluateDTH", [RUNCHOICE] = "runchoice",
+	[TESTCASEBOX] = "testcasebox", [TESTCASE] = "testcase",
+	[OPENDCFILE] = "openDCFile", [SAVEASDCFILE] = "saveasDCFile",
+	[OPENEXCELFILE] = "openExcelFile", [WINDOW] = "window",
+	[INTERPRETERWINDOW] = "interpreterwindow", [MSGERR] = "MsgErr",
+	[FILENAME] = "filename", [STARTSTOP] = "startstop"
+};
+
+const char *const ui_var_names[UI_AMOUNT] = {
+	[UI_SS] = "Salary Scale",
+	[UI_TURNOVER] = "Turnover",
+	[UI_RETX] = "Retirement Probability",
+	[UI_NRA] = "Normal Retirement Age"
 };
 
 GtkWidget *widgets[WIDGET_AMOUNT];
@@ -75,30 +83,31 @@ void set_user_input(struct user_input UI[static 1])
 			gtk_entry_get_text(GTK_ENTRY(widgets[SHEETNAME])));
 	snprintf(UI->keycell, sizeof(UI->keycell), "%s", 
 			gtk_entry_get_text(GTK_ENTRY(widgets[KEYCELL])));
-	snprintf(UI->DOC, sizeof(UI->DOC), "%s", gtk_entry_get_text(
-				GTK_ENTRY(widgets[DOC])));
-	snprintf(UI->DR, sizeof(UI->DR), "%s", gtk_entry_get_text(
-				GTK_ENTRY(widgets[DR])));
-	snprintf(UI->agecorr, sizeof(UI->agecorr), "%s", 
+	snprintf(UI->var[UI_DOC], sizeof(UI->var[UI_DOC]), "%s",
+			gtk_entry_get_text(GTK_ENTRY(widgets[W_DOC_LY])));
+	snprintf(UI->var[UI_DR], sizeof(UI->var[UI_DR]), "%s",
+			gtk_entry_get_text(GTK_ENTRY(widgets[DR])));
+	snprintf(UI->var[UI_AGECORR], sizeof(UI->var[UI_AGECORR]), "%s", 
 			gtk_entry_get_text(GTK_ENTRY(widgets[AGECORR])));
-	snprintf(UI->infl, sizeof(UI->infl), "%s", gtk_entry_get_text(
-				GTK_ENTRY(widgets[INFL])));
-	snprintf(UI->TRM_PercDef, sizeof(UI->TRM_PercDef), "%s", 
+	snprintf(UI->var[UI_INFL], sizeof(UI->var[UI_INFL]), "%s",
+			gtk_entry_get_text(GTK_ENTRY(widgets[INFL])));
+	snprintf(UI->var[UI_TRM_PERCDEF], sizeof(UI->var[UI_TRM_PERCDEF]),
+			"%s",
 			gtk_entry_get_text(GTK_ENTRY(widgets[TRM_PERCDEF])));
-	snprintf(UI->DR113, sizeof(UI->DR113), "%s", gtk_entry_get_text(
-				GTK_ENTRY(widgets[DR113])));
+	snprintf(UI->var[UI_DR113], sizeof(UI->var[UI_DR113]), "%s",
+			gtk_entry_get_text(GTK_ENTRY(widgets[DR113])));
 
-	UI->standard = gtk_combo_box_get_active(
+	UI->method[METH_STANDARD] = gtk_combo_box_get_active(
 			GTK_COMBO_BOX(widgets[STANDARD]));
-	UI->assets = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(widgets[ASSETS]));
-	UI->paragraph = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(widgets[PARAGRAPH]));
-	UI->PUCTUC = gtk_combo_box_get_active(
+	UI->method[METH_ASSETS] = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(widgets[W_ASSETS_LY]));
+	UI->method[METH_DBO] = gtk_combo_box_get_active(
 			GTK_COMBO_BOX(widgets[PUCTUC]));
-	UI->cashflows = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(widgets[CASHFLOWS]));
-	UI->evaluateDTH = gtk_combo_box_get_active(
+	UI->method[METH_MAXPUCTUC] = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(widgets[MAXPUCTUC]));
+	UI->method[METH_MAXERCONTR] = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(widgets[MAXERCONTR]));
+	UI->method[METH_EVALDTH] = gtk_combo_box_get_active(
 			GTK_COMBO_BOX(widgets[EVALUATEDTH]));
 
 	print_user_input(UI);
@@ -114,26 +123,27 @@ void update_user_interface(struct user_input UI[static 1])
 	gtk_entry_set_text(GTK_ENTRY(widgets[KEYCELL]), UI->keycell);
 
 	/* --- Assumptions --- */
-	gtk_entry_set_text(GTK_ENTRY(widgets[DOC]), UI->DOC);
-	gtk_entry_set_text(GTK_ENTRY(widgets[DR]), UI->DR);
-	gtk_entry_set_text(GTK_ENTRY(widgets[AGECORR]), UI->agecorr);
-	gtk_entry_set_text(GTK_ENTRY(widgets[INFL]), UI->infl);
-	gtk_entry_set_text(GTK_ENTRY(widgets[TRM_PERCDEF]), UI->TRM_PercDef);
-	gtk_entry_set_text(GTK_ENTRY(widgets[DR113]), UI->DR113);
+	gtk_entry_set_text(GTK_ENTRY(widgets[W_DOC_LY]), UI->var[UI_DOC]);
+	gtk_entry_set_text(GTK_ENTRY(widgets[DR]), UI->var[UI_DR]);
+	gtk_entry_set_text(GTK_ENTRY(widgets[AGECORR]), UI->var[UI_AGECORR]);
+	gtk_entry_set_text(GTK_ENTRY(widgets[INFL]), UI->var[UI_INFL]);
+	gtk_entry_set_text(GTK_ENTRY(widgets[TRM_PERCDEF]),
+			UI->var[UI_TRM_PERCDEF]);
+	gtk_entry_set_text(GTK_ENTRY(widgets[DR113]), UI->var[UI_DR113]);
 
 	/* --- Methodology --- */
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[STANDARD]),
-			UI->standard);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[ASSETS]),
-			UI->assets);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PARAGRAPH]),
-			UI->paragraph);
+			UI->method[METH_STANDARD]);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[W_ASSETS_LY]),
+			UI->method[METH_ASSETS]);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PUCTUC]),
-			UI->PUCTUC);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[CASHFLOWS]),
-			UI->cashflows);
+			UI->method[METH_DBO]);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[MAXPUCTUC]),
+			UI->method[METH_MAXPUCTUC]);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[MAXERCONTR]),
+			UI->method[METH_MAXERCONTR]);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]),
-			UI->evaluateDTH);
+			UI->method[METH_EVALDTH]);
 }
 
 void print_user_input(struct user_input UI[static 1])
@@ -144,31 +154,30 @@ void print_user_input(struct user_input UI[static 1])
 	printf("keycell [%s]\n", UI->keycell);
 
 	/* --- Assumptions --- */
-	printf("DOC [%s]\n", UI->DOC);
-	printf("DR [%s]\n", UI->DR);
-	printf("agecorr [%s]\n", UI->agecorr);
-	printf("infl [%s]\n", UI->infl);
-	printf("TRM_PercDef [%s]\n", UI->TRM_PercDef);
-	printf("DR113 [%s]\n", UI->DR113);
-	printf("SS [%s]\n", UI->SS);
-	printf("turnover [%s]\n", UI->turnover);
-	printf("Retirement Probability [%s]\n", UI->retx);
-	printf("Normal Retirement Age [%s]\n", UI->NRA);
+	printf("DOC [%s]\n", UI->var[UI_DOC]);
+	printf("DR [%s]\n", UI->var[UI_DR]);
+	printf("agecorr [%s]\n", UI->var[UI_AGECORR]);
+	printf("infl [%s]\n", UI->var[UI_INFL]);
+	printf("TRM_PercDef [%s]\n", UI->var[UI_TRM_PERCDEF]);
+	printf("DR113 [%s]\n", UI->var[UI_DR113]);
 
+	for (unsigned i = 0; i < UI_AMOUNT; i++) {
+		printf("%s [%s]\n", ui_var_names[i], UI->var[i]);
+	}
 	/* --- Methodology --- */
-	printf("standard [%d]\n", UI->standard); 
-	printf("assets [%d]\n", UI->assets); 
-	printf("paragraph [%d]\n", UI->paragraph); 
-	printf("PUCTUC [%d]\n", UI->PUCTUC); 
-	printf("cashflows [%d]\n", UI->cashflows); 
-	printf("evaluateDTH [%d]\n", UI->evaluateDTH); 
+	printf("standard [%d]\n", UI->method[METH_STANDARD]); 
+	printf("assets [%d]\n", UI->method[METH_ASSETS]); 
+	printf("PUCTUC [%d]\n", UI->method[METH_DBO]); 
+	printf("max(PUC, TUC) [%d]\n", UI->method[METH_MAXPUCTUC]); 
+	printf("max(SC, Contr A) [%d]\n", UI->method[METH_MAXERCONTR]);
+	printf("evaluateDTH [%d]\n", UI->method[METH_EVALDTH]); 
 }
 
 void validateUI(Validator val[static 1], struct user_input UI[static 1])
 {
 	size_t len = 0;
 	register unsigned colcnt = 0;
-	char temp[strlen(UI->DOC) + 1];
+	char temp[strlen(UI->var[UI_DOC]) + 1];
 	char *kc = UI->keycell;
 	char *pt = 0;
 	char *day = 0, *month = 0, *year = 0;
@@ -224,7 +233,7 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
 
 	/* ----- Check DOC -----*/
 
-	snprintf(temp, sizeof(temp), "%s", UI->DOC);
+	snprintf(temp, sizeof(temp), "%s", UI->var[UI_DOC]);
 
 	day = strtok(temp, "/");
 	month = strtok(0, "/");
@@ -233,101 +242,70 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
 	if (0 == day || 0 == month || 0 == year) {
 		updateValidation(val, ERROR, "DOC [%s], "
 				"expected of the form %s",
-				UI->DOC, validMsg[DATEERR]);
+				UI->var[UI_DOC], validMsg[DATEERR]);
 	} else {
 		if (!isint(day) || !isint(month) || !isint(year)) {
 			updateValidation(val, ERROR, "DOC [%s], expected of "
 					"the form %s", 
-					UI->DOC, validMsg[DATEERR]);
+					UI->var[UI_DOC], validMsg[DATEERR]);
 		}
 
 		tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
 		if (0 == tempDate) {
 			updateValidation(val, ERROR, "DOC [%s], "
 					"expected of the form %s", 
-					UI->DOC, validMsg[DATEERR]);
+					UI->var[UI_DOC], validMsg[DATEERR]);
 		}
 		free(tempDate);
 	}
 
 	/* ----- Check DR -----*/
-	if (!isfloat(UI->DR)) {
+	if (!isfloat(UI->var[UI_DR])) {
 		updateValidation(val, ERROR, "DR [%s], "
 				"expected of the form %s",
-				UI->DR, validMsg[FLOATERR]);
+				UI->var[UI_DR], validMsg[FLOATERR]);
 	}
 
 	/* ----- Check Age Correction -----*/
-	if (!isint(UI->agecorr)) {
+	if (!isint(UI->var[UI_AGECORR])) {
 		updateValidation(val, ERROR, "Age Correction [%s], "
 				"expected of the form %s", 
-				UI->agecorr, validMsg[AGECORRERR]);
+				UI->var[UI_AGECORR], validMsg[AGECORRERR]);
 	}
 
 	/* ----- Check Inflation -----*/
-	if (!isfloat(UI->infl)) {
+	if (!isfloat(UI->var[UI_INFL])) {
 		updateValidation(val, ERROR, "Inflation [%s], "
 				"expected of the form %s", 
-				UI->infl, validMsg[FLOATERR]);
+				UI->var[UI_INFL], validMsg[FLOATERR]);
 	}
 
 	/* ----- Check Termination percentage -----*/
-	if (!isfloat(UI->TRM_PercDef)) {
+	if (!isfloat(UI->var[UI_TRM_PERCDEF])) {
 		updateValidation(val, ERROR, "Termination % [%s] (usually 1), "
 				"expected of the form %s", 
-				UI->TRM_PercDef, validMsg[FLOATERR]);
+				UI->var[UI_TRM_PERCDEF], validMsg[FLOATERR]);
 	}
 
 	/* ----- Check DR 113 -----*/
-	if (!isfloat(UI->DR113)) {
+	if (!isfloat(UI->var[UI_DR113])) {
 		updateValidation(val, WARNING, "DR $113 [%s], "
 				"expected of the form %s", 
-				UI->DR113, validMsg[FLOATERR]);
+				UI->var[UI_DR113], validMsg[FLOATERR]);
 	}
 
-	/* ----- Check Salary Increase -----*/
-	ct = plantTree(strclean(UI->SS));
-	if (NOERR != getterrno()) {
-		updateValidation(val, ERROR, "Salary Increase interpreter: %s",
-				strterror(getterrno()));
-		setterrno(NOERR);
-	}
+	/* ----- Check Tree Variables -----*/
+	for (unsigned i = 0; i < UI_AMOUNT; i++) {
+		ct = plantTree(strclean(UI->var[i]));
+		if (NOERR != getterrno()) {
+			updateValidation(val, ERROR, "%s: %s", ui_var_names[i],
+					strterror(getterrno()));
+			setterrno(NOERR);
+		}
 
-	chopTree(ct);
-	ct = 0;
-
-	/* ----- Check Turnover -----*/
-	ct = plantTree(strclean(UI->turnover));
-	if (NOERR != getterrno()) {
-		updateValidation(val, ERROR, "Turnover interpreter: %s",
-				strterror(getterrno()));
-		setterrno(NOERR);
-	}
-
-	chopTree(ct);
-	ct = 0;
-
-	/* ----- Check Retirement Probability -----*/
-	ct = plantTree(strclean(UI->retx));
-	if (NOERR != getterrno()) {
-		updateValidation(val, ERROR, "Retirement Probability "
-				"interpreter: %s", strterror(getterrno()));
-		setterrno(NOERR);
-	}
-
-	chopTree(ct);
-	ct = 0;
-
-	/* ----- Check NRA -----*/
-	ct = plantTree(strclean(UI->NRA));
-	if (NOERR != getterrno()) {
-		updateValidation(val, ERROR, "NRA interpreter: %s",
-				strterror(getterrno()));
-		setterrno(NOERR);
-	}
-
-	chopTree(ct);
-	ct = 0;
+		chopTree(ct);
+		ct = 0;
+}
 
 	/* ----- Check test case -----*/
 	tc = gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]));

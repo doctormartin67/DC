@@ -175,7 +175,7 @@ void on_SS_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->SS, "Salary Scale Interpreter");
+	set_interpreter_text(ui->var[UI_SS], ui_var_names[UI_SS]);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -187,7 +187,7 @@ void on_turnover_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->turnover, "Turnover Interpreter");
+	set_interpreter_text(ui->var[UI_TURNOVER], ui_var_names[UI_TURNOVER]);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -199,7 +199,7 @@ void on_retx_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->retx, "Retirement Probability Interpreter");
+	set_interpreter_text(ui->var[UI_RETX], ui_var_names[UI_RETX]);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -211,7 +211,7 @@ void on_NRA_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->NRA, "NRA Interpreter");
+	set_interpreter_text(ui->var[UI_NRA], ui_var_names[UI_NRA]);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 

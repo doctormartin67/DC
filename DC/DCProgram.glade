@@ -1143,10 +1143,10 @@ the salary will increase with 0.032 each year.</property>
                                           <object class="GtkComboBoxText" id="standard">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="active">0</property>
+                                            <property name="active">1</property>
                                             <items>
-                                              <item translatable="yes">IAS</item>
                                               <item translatable="yes">FAS</item>
+                                              <item translatable="yes">IAS</item>
                                             </items>
                                           </object>
                                           <packing>
@@ -1187,10 +1187,11 @@ the salary will increase with 0.032 each year.</property>
                                           <object class="GtkComboBoxText" id="assets">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="active">0</property>
+                                            <property name="active">1</property>
                                             <items>
-                                              <item translatable="yes">PARAGRAPH</item>
+                                              <item translatable="yes">PARAGRAPH 115</item>
                                               <item translatable="yes">RESERVES</item>
+                                              <item translatable="yes">PARAGRAPH 113</item>
                                             </items>
                                           </object>
                                           <packing>
@@ -1204,50 +1205,6 @@ the salary will increase with 0.032 each year.</property>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
                                         <property name="position">2</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkBox">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="spacing">10</property>
-                                        <child>
-                                          <object class="GtkLabel">
-                                            <property name="width_request">200</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Paragraph:</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
-                                            </attributes>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">True</property>
-                                            <property name="position">0</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkComboBoxText" id="paragraph">
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="active">0</property>
-                                            <items>
-                                              <item translatable="yes">115</item>
-                                              <item translatable="yes">113</item>
-                                            </items>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">True</property>
-                                            <property name="position">1</property>
-                                          </packing>
-                                        </child>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">3</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -1291,6 +1248,51 @@ the salary will increase with 0.032 each year.</property>
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
+                                        <property name="position">3</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="spacing">10</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="width_request">200</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="label" translatable="yes">Apply max(PUC, TUC):</property>
+                                            <attributes>
+                                              <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
+                                            </attributes>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkComboBoxText" id="maxPUCTUC">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="tooltip_text" translatable="yes">If true, the maximum of the projected unit credit liability with future premiums and without future premiums is taken.</property>
+                                            <property name="active">0</property>
+                                            <items>
+                                              <item translatable="yes">false</item>
+                                              <item translatable="yes">true</item>
+                                            </items>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
                                         <property name="position">4</property>
                                       </packing>
                                     </child>
@@ -1304,7 +1306,7 @@ the salary will increase with 0.032 each year.</property>
                                             <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">EBP PBO/TBO:</property>
+                                            <property name="label" translatable="yes">Apply max(SC, Contr A):</property>
                                             <attributes>
                                               <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
                                             </attributes>
@@ -1316,13 +1318,14 @@ the salary will increase with 0.032 each year.</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkComboBoxText" id="cashflows">
+                                          <object class="GtkComboBoxText" id="maxERContr">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="tooltip_text" translatable="yes">If true, the maximum of the service cost and employer contribution is taken to determine the final service cost.</property>
                                             <property name="active">0</property>
                                             <items>
-                                              <item translatable="yes">TBO</item>
-                                              <item translatable="yes">PBO</item>
+                                              <item translatable="yes">false</item>
+                                              <item translatable="yes">true</item>
                                             </items>
                                           </object>
                                           <packing>
@@ -1367,8 +1370,8 @@ the salary will increase with 0.032 each year.</property>
                                             <property name="tooltip_text" translatable="yes">This determines whether or not death benefit is valued.</property>
                                             <property name="active">0</property>
                                             <items>
-                                              <item translatable="yes">true</item>
                                               <item translatable="yes">false</item>
+                                              <item translatable="yes">true</item>
                                             </items>
                                           </object>
                                           <packing>

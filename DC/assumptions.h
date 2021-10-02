@@ -1,7 +1,7 @@
 #ifndef ASSUMPTIONS
 #define ASSUMPTIONS
 
-#include "DCProgram.h"
+#include "userinterface.h"
 #include "interpreter.h"
 
 enum {
@@ -48,7 +48,7 @@ typedef struct {
 
 Assumptions ass;
 
-void setassumptions(struct user_input *UILY, struct user_input *UITY);
+void setassumptions(void);
 double salaryscale(const CurrentMember *cm, int k);
 double calcA(const CurrentMember *cm, int k);
 double calcC(const CurrentMember *cm, int k);

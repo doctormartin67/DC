@@ -92,8 +92,7 @@ static gpointer run(gpointer pl)
 	ds = createDS(0, ui);
 	cm = ds->cm;
 
-	/* this needs updating when we have a UITY!!! */
-	setassumptions(ui, ui);
+	setassumptions();
 	for (unsigned i = 0; i < ds->membercnt; i++) {
 		if (run_state & INTERRUPTED) {
 			freeDS(ds);
@@ -136,8 +135,7 @@ static gpointer runtc(gpointer pl)
 		freeDS(ds);
 		return stoprun(&gd);
 	}
-	/* this needs updating when we have a UITY!!! */
-	setassumptions(ui, ui);
+	setassumptions();
 	runmember(cm);
 	snprintf(text, sizeof(text), "Test case %u has been run", tc + 1);
 	gd.s = text;

@@ -25,7 +25,7 @@
 			   (never used in case we have PUC methodology) */
 #define mmaxPUCTUC 0x10 // used to set bit on if we take maximum of PUC and TUC
 #define mRES 0x20 // used to set bit in case assets are mathematical reserves
-#define mPAR115 0x30 // used to set bit on in case assets are paragraph 115
+#define mPAR115 0x40 // used to set bit on in case assets are paragraph 115
 // if neither mRES, mPAR115 bits are on, then we take paragraph 113
 
 //-  extra BITS  -
@@ -57,7 +57,7 @@ enum assets {PAR115, MATHRES, PAR113, ASSET_AMOUNT};
 // TBO Cashflows
 enum cashflows {PBO, TBO, CF_AMOUNT};
 
-enum {INTERPRETERTEXT_SIZE = BUFSIZ};
+enum {INTERPRETERTEXT_SIZE = 4096};
 
 static const double ART24TAUX[EREE_AMOUNT][ART24GEN_AMOUNT] = {
 	[ER] = {
@@ -83,130 +83,34 @@ typedef double GenMatrix[MAXGEN][MAXPROJ];
  * struct and so we can still read older versions of the user_input struct
  * as binary files
  */
+
+/*
+ * used as index for all the variables in the user interface
+ * a variable declared larger than UI_AMOUNT is not considered as a
+ * "tree variable", meaning it's not determined by select case, but just as a
+ * fixed value
+ */
+enum {
+	UI_SS, UI_TURNOVER, UI_RETX, UI_NRA, UI_AMOUNT, UI_DOC = UI_AMOUNT,
+	UI_DR, UI_AGECORR, UI_INFL, UI_TRM_PERCDEF, UI_DR113, UI_MAX = 128
+};
+
+/*
+ * used as index for the variables defined under methodology
+ */
+enum {
+	METH_STANDARD, METH_ASSETS, METH_DBO, METH_MAXPUCTUC, METH_EVALDTH,
+	METH_MAXERCONTR, METH_AMOUNT, METH_MAX = 32
+};
+extern const char *const ui_var_names[UI_AMOUNT];
+
 struct user_input {
 	/* --- Data --- */
 	char fname[PATH_MAX];
 	char sheetname[32];
-	char keycell[11];
-
-	/* --- Assumptions --- */
-	char DOC[11];
-	char DR[16];
-	char agecorr[16];
-	char infl[16];
-	char TRM_PercDef[16];
-	char DR113[16];
-
-	char SS[INTERPRETERTEXT_SIZE]; 
-	char turnover[INTERPRETERTEXT_SIZE]; 
-	char retx[INTERPRETERTEXT_SIZE]; 
-	char NRA[INTERPRETERTEXT_SIZE]; 
-	char free2[INTERPRETERTEXT_SIZE]; 
-	char free3[INTERPRETERTEXT_SIZE]; 
-	char free4[INTERPRETERTEXT_SIZE]; 
-	char free5[INTERPRETERTEXT_SIZE]; 
-	char free6[INTERPRETERTEXT_SIZE]; 
-	char free7[INTERPRETERTEXT_SIZE]; 
-	char free8[INTERPRETERTEXT_SIZE]; 
-	char free9[INTERPRETERTEXT_SIZE]; 
-	char free10[INTERPRETERTEXT_SIZE]; 
-	char free11[INTERPRETERTEXT_SIZE]; 
-	char free12[INTERPRETERTEXT_SIZE]; 
-	char free13[INTERPRETERTEXT_SIZE]; 
-	char free14[INTERPRETERTEXT_SIZE]; 
-	char free15[INTERPRETERTEXT_SIZE]; 
-	char free16[INTERPRETERTEXT_SIZE]; 
-	char free17[INTERPRETERTEXT_SIZE]; 
-	char free18[INTERPRETERTEXT_SIZE]; 
-	char free19[INTERPRETERTEXT_SIZE]; 
-	char free20[INTERPRETERTEXT_SIZE]; 
-	char free21[INTERPRETERTEXT_SIZE]; 
-	char free22[INTERPRETERTEXT_SIZE]; 
-	char free23[INTERPRETERTEXT_SIZE]; 
-	char free24[INTERPRETERTEXT_SIZE]; 
-	char free25[INTERPRETERTEXT_SIZE]; 
-	char free26[INTERPRETERTEXT_SIZE]; 
-	char free27[INTERPRETERTEXT_SIZE]; 
-	char free28[INTERPRETERTEXT_SIZE]; 
-	char free29[INTERPRETERTEXT_SIZE]; 
-	char free30[INTERPRETERTEXT_SIZE]; 
-	char free31[INTERPRETERTEXT_SIZE]; 
-	char free32[INTERPRETERTEXT_SIZE]; 
-	char free33[INTERPRETERTEXT_SIZE]; 
-	char free34[INTERPRETERTEXT_SIZE]; 
-	char free35[INTERPRETERTEXT_SIZE]; 
-	char free36[INTERPRETERTEXT_SIZE]; 
-	char free37[INTERPRETERTEXT_SIZE]; 
-	char free38[INTERPRETERTEXT_SIZE]; 
-	char free39[INTERPRETERTEXT_SIZE]; 
-	char free40[INTERPRETERTEXT_SIZE]; 
-	char free41[INTERPRETERTEXT_SIZE]; 
-	char free42[INTERPRETERTEXT_SIZE]; 
-	char free43[INTERPRETERTEXT_SIZE]; 
-	char free44[INTERPRETERTEXT_SIZE]; 
-	char free45[INTERPRETERTEXT_SIZE]; 
-	char free46[INTERPRETERTEXT_SIZE]; 
-	char free47[INTERPRETERTEXT_SIZE]; 
-	char free48[INTERPRETERTEXT_SIZE]; 
-	char free49[INTERPRETERTEXT_SIZE]; 
-	char free50[INTERPRETERTEXT_SIZE]; 
-	char free51[INTERPRETERTEXT_SIZE]; 
-	char free52[INTERPRETERTEXT_SIZE]; 
-	char free53[INTERPRETERTEXT_SIZE]; 
-	char free54[INTERPRETERTEXT_SIZE]; 
-	char free55[INTERPRETERTEXT_SIZE]; 
-	char free56[INTERPRETERTEXT_SIZE]; 
-	char free57[INTERPRETERTEXT_SIZE]; 
-	char free58[INTERPRETERTEXT_SIZE]; 
-	char free59[INTERPRETERTEXT_SIZE]; 
-	char free60[INTERPRETERTEXT_SIZE]; 
-	char free61[INTERPRETERTEXT_SIZE]; 
-	char free62[INTERPRETERTEXT_SIZE]; 
-	char free63[INTERPRETERTEXT_SIZE]; 
-	char free64[INTERPRETERTEXT_SIZE]; 
-	char free65[INTERPRETERTEXT_SIZE]; 
-	char free66[INTERPRETERTEXT_SIZE]; 
-	char free68[INTERPRETERTEXT_SIZE]; 
-	char free69[INTERPRETERTEXT_SIZE]; 
-	char free70[INTERPRETERTEXT_SIZE]; 
-	char free71[INTERPRETERTEXT_SIZE]; 
-	char free72[INTERPRETERTEXT_SIZE]; 
-	char free73[INTERPRETERTEXT_SIZE]; 
-	char free74[INTERPRETERTEXT_SIZE]; 
-	char free75[INTERPRETERTEXT_SIZE]; 
-	char free76[INTERPRETERTEXT_SIZE]; 
-	char free77[INTERPRETERTEXT_SIZE]; 
-	char free78[INTERPRETERTEXT_SIZE]; 
-	char free79[INTERPRETERTEXT_SIZE]; 
-	char free80[INTERPRETERTEXT_SIZE]; 
-	char free81[INTERPRETERTEXT_SIZE]; 
-	char free82[INTERPRETERTEXT_SIZE]; 
-	char free83[INTERPRETERTEXT_SIZE]; 
-	char free84[INTERPRETERTEXT_SIZE]; 
-	char free85[INTERPRETERTEXT_SIZE]; 
-	char free86[INTERPRETERTEXT_SIZE]; 
-	char free87[INTERPRETERTEXT_SIZE]; 
-	char free88[INTERPRETERTEXT_SIZE]; 
-	char free89[INTERPRETERTEXT_SIZE]; 
-	char free90[INTERPRETERTEXT_SIZE]; 
-	char free91[INTERPRETERTEXT_SIZE]; 
-	char free92[INTERPRETERTEXT_SIZE]; 
-	char free93[INTERPRETERTEXT_SIZE]; 
-	char free94[INTERPRETERTEXT_SIZE]; 
-	char free95[INTERPRETERTEXT_SIZE]; 
-	char free96[INTERPRETERTEXT_SIZE]; 
-	char free97[INTERPRETERTEXT_SIZE]; 
-	char free98[INTERPRETERTEXT_SIZE]; 
-	char free99[INTERPRETERTEXT_SIZE]; 
-	char free100[INTERPRETERTEXT_SIZE]; 
-
-	/* --- Methodology --- */
-	gint standard;
-	gint assets;
-	gint paragraph;
-	gint PUCTUC;
-	gint cashflows;
-	gint evaluateDTH;
+	char keycell[16];
+	char var[UI_MAX][INTERPRETERTEXT_SIZE]; 
+	gint method[METH_MAX];
 };
 
 /*
