@@ -30,7 +30,13 @@ const char *const ui_var_names[UI_AMOUNT] = {
 	[UI_SS] = "Salary Scale",
 	[UI_TURNOVER] = "Turnover",
 	[UI_RETX] = "Retirement Probability",
-	[UI_NRA] = "Normal Retirement Age"
+	[UI_NRA] = "Normal Retirement Age",
+	[UI_ADMINCOST] = "Administration Cost",
+	[UI_COSTRES] = "Cost on Reserves",
+	[UI_COSTKO] = "Cost on Lump Sum Life",
+	[UI_WD] = "Profit Sharing for Mortality",
+	[UI_PREPOST] = "Immediate or Due payments",
+	[UI_TERM] = "Payment Frequency"
 };
 
 GtkWidget *widgets[WIDGET_AMOUNT];

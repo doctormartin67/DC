@@ -30,9 +30,16 @@ void on_openDC_activate(GtkMenuItem *m);
 void on_saveDC_activate(GtkMenuItem *m);
 void on_saveasDC_activate(GtkMenuItem *m);
 void on_LYfilechooserbutton_file_set(GtkFileChooserButton *, gpointer);
+
 void on_SS_interpreterbutton_clicked(GtkButton *b, gpointer *w);
 void on_turnover_interpreterbutton_clicked(GtkButton *b, gpointer *w);
 void on_retx_interpreterbutton_clicked(GtkButton *b, gpointer *w);
 void on_NRA_interpreterbutton_clicked(GtkButton *b, gpointer *w);
+void on_admincost_interpreterbutton_clicked(GtkButton *b, gpointer *w);
+void on_costRES_interpreterbutton_clicked(GtkButton *b, gpointer *w);
+void on_costKO_interpreterbutton_clicked(GtkButton *b, gpointer *w);
+void on_WD_interpreterbutton_clicked(GtkButton *b, gpointer *w);
+void on_prepost_interpreterbutton_clicked(GtkButton *b, gpointer *w);
+void on_term_interpreterbutton_clicked(GtkButton *b, gpointer *w);
 
 #endif

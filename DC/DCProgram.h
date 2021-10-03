@@ -91,7 +91,8 @@ typedef double GenMatrix[MAXGEN][MAXPROJ];
  * fixed value
  */
 enum {
-	UI_SS, UI_TURNOVER, UI_RETX, UI_NRA, UI_AMOUNT, UI_DOC = UI_AMOUNT,
+	UI_SS, UI_TURNOVER, UI_RETX, UI_NRA, UI_ADMINCOST, UI_COSTRES,
+	UI_COSTKO, UI_WD, UI_PREPOST, UI_TERM, UI_AMOUNT, UI_DOC = UI_AMOUNT,
 	UI_DR, UI_AGECORR, UI_INFL, UI_TRM_PERCDEF, UI_DR113, UI_MAX = 128
 };
 
@@ -294,8 +295,8 @@ typedef struct {
 	double costKO; // cost on Death lump sum (kapitaal overlijden)
 	double admincost; // Administration cost
 	double MIXEDPS;
-	int prepost; // prenumerando-postnumerando
-	int term; // term of payments
+	unsigned prepost; // prenumerando-postnumerando
+	unsigned term; // term of payments
 } Tariff;
 
 Tariff tff; // Tariff structure
@@ -307,7 +308,7 @@ void freeDS(DataSet *ds);
 void freeCM(CurrentMember *cm);
 void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn);
 char *getcmval(CurrentMember *cm, DataColumn, int EREE, int gen);
-void validateColumns();
+void validateColumns(void);
 void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
 		const char *input);
 /* This function will allocate memory based on membercnt for the underlying

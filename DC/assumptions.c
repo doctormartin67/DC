@@ -4,6 +4,8 @@
 static const void *parameters[VAR_AMOUNT];
 
 static void set_methodology(struct user_input ui[static 1]);
+static void replant(struct casetree **ct, const struct user_input ui[static 1],
+		unsigned it);
 static void setparameters(const CurrentMember cm[static 1], int k);
 
 void setassumptions(void)
@@ -85,6 +87,42 @@ static void set_methodology(struct user_input ui[static 1])
 	else
 		ass.taxes = 0;
 
+}
+
+void set_tariffs(const CurrentMember cm[static 1])
+{
+	struct casetree *ct = 0;
+	struct user_input *ui = 0;
+	/* this needs updating when we have a UITY!!! */
+	if (currrun >= runNewData)
+		ui = get_user_input(USER_INPUT_LY);
+	else
+		ui = get_user_input(USER_INPUT_LY);
+
+	setparameters(cm, 0);
+
+	replant(&ct, ui, UI_ADMINCOST);
+	tff.admincost = interpret(ct, parameters);
+	replant(&ct, ui, UI_COSTRES);
+	tff.costRES = interpret(ct, parameters);
+	replant(&ct, ui, UI_COSTKO);
+	tff.costKO = interpret(ct, parameters);
+	replant(&ct, ui, UI_WD);
+	tff.WDDTH = interpret(ct, parameters);
+	tff.MIXEDPS = (currrun >= runNewData ? 1 : 1);
+	replant(&ct, ui, UI_PREPOST);
+	tff.prepost = interpret(ct, parameters);
+	replant(&ct, ui, UI_TERM);
+	tff.term = interpret(ct, parameters);
+	chopTree(ct);
+}
+
+static void replant(struct casetree **ct, const struct user_input *ui,
+		unsigned it)
+{
+	if (it >= UI_AMOUNT) die("Unknown casetree");
+	chopTree(*ct);
+	*ct = plantTree(strclean(ui->var[it]));
 }
 
 static void setparameters(const CurrentMember cm[static 1], int k)

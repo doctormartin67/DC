@@ -228,14 +228,7 @@ static void settariffs(const CurrentMember cm[static 1])
 		tff.ltProlong[l].i = tff.ltINS[l][MAXGEN-1].i;
 		tff.ltProlongAfterTRM[l].i = tff.ltAfterTRM[l][MAXGEN-1].i; 
 	}
-	//-  Remaining Tariffs  -
-	tff.costRES = (currrun >= runNewData ? 0.001 : 0.001);
-	tff.WDDTH = (currrun >= runNewData ? 0.3 : 0.3);
-	tff.costKO = (currrun >= runNewData ? 0.0008 : 0.0008);
-	tff.admincost = (currrun >= runNewData ? 0.05 : 0.05);
-	tff.MIXEDPS = (currrun >= runNewData ? 1 : 1);
-	tff.prepost = (currrun >= runNewData ? 1 : 1);
-	tff.term = (currrun >= runNewData ? 12 : 12);
+	set_tariffs(cm);
 }
 
 static struct date *getDOC(const CurrentMember cm[static 1], int k)

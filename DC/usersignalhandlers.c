@@ -215,6 +215,55 @@ void on_NRA_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
+void on_admincost_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->var[UI_ADMINCOST],
+			ui_var_names[UI_ADMINCOST]);
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+void on_costRES_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->var[UI_COSTRES], ui_var_names[UI_COSTRES]);
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+void on_costKO_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->var[UI_COSTKO], ui_var_names[UI_COSTKO]);
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+void on_WD_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->var[UI_WD], ui_var_names[UI_WD]);
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+void on_prepost_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->var[UI_PREPOST], ui_var_names[UI_PREPOST]);
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+void on_term_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->var[UI_TERM], ui_var_names[UI_TERM]);
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
 /*
  * sets the interpreter text to the given interpreter and sets the title of
  * the interpreter window to s
