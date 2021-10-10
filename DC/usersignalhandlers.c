@@ -280,6 +280,22 @@ void on_ltTERM_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
+void on_contrA_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->var[UI_CONTRA], ui_var_names[UI_CONTRA]);
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
+void on_contrC_interpreterbutton_clicked(GtkButton *b, gpointer *w)
+{
+	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_interpreter_text(ui->var[UI_CONTRC], ui_var_names[UI_CONTRC]);
+	gtk_widget_show_all(GTK_WIDGET(w));
+}
+
 /*
  * sets the interpreter text to the given interpreter and sets the title of
  * the interpreter window to s

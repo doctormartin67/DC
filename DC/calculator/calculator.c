@@ -59,34 +59,36 @@ static struct calculator_func func[FUNC_AMOUNT] = {
  */
 struct variable var_set[VAR_AMOUNT] = 
 {
-	[VAR_AGE] = {"AGE", 1, 0}, 
-	[VAR_REG] = {"REG", 0, 0}, 
-	[VAR_CAT] = {"CAT", 0, 0},
-	[VAR_STATUS] = {"STATUS", 0, 0},
-	[VAR_SEX] = {"SEX", 1, 0},
-	[VAR_COMBINATION] = {"COMBINATION", 0, 0},
-	[VAR_LXMR] = {"LXMR", 1, 0},
-	[VAR_LXFR] = {"LXFR", 1, 0},
-	[VAR_LXMK] = {"LXMK", 1, 0},
-	[VAR_LXFK] = {"LXFK", 1, 0},
-	[VAR_LXFKP] = {"LXFKP", 1, 0},
-	[VAR_LXNIHIL] = {"LXNIHIL", 1, 0},
+	[VAR_AGE] = {"AGE", 1, .v.d = 0.0}, 
+	[VAR_REG] = {"REG", 0, .v.s = ""}, 
+	[VAR_CAT] = {"CAT", 0, .v.s = ""},
+	[VAR_STATUS] = {"STATUS", 0, .v.s = ""},
+	[VAR_SEX] = {"SEX", 1, .v.d = 0.0},
+	[VAR_COMBINATION] = {"COMBINATION", 0, .v.s = ""},
+	[VAR_LXMR] = {"LXMR", 1, .v.d = 0.0},
+	[VAR_LXFR] = {"LXFR", 1, .v.d = 0.0},
+	[VAR_LXMK] = {"LXMK", 1, .v.d = 0.0},
+	[VAR_LXFK] = {"LXFK", 1, .v.d = 0.0},
+	[VAR_LXFKP] = {"LXFKP", 1, .v.d = 0.0},
+	[VAR_LXNIHIL] = {"LXNIHIL", 1, .v.d = 0.0},
 };
 
-void init_var(const void *parameters[VAR_AMOUNT])
+void init_var(const union value parameters[VAR_AMOUNT])
 {
-	static double n = 0.0;
-	static char *s = "test";
+	double d = 0.0;
+	const char *s = "test";
 
-	for (unsigned int i = 0; i < VAR_AMOUNT; i++) {
-		if (0 == parameters) {
-			if (var_set[i].is_number)
-				var_set[i].data = &n;
-			else
-				var_set[i].data = s;
-		} else {
-			var_set[i].data = parameters[i];
+	for (unsigned i = 0; i < VAR_AMOUNT; i++) {
+		if (0 != parameters) {
+			d = parameters[i].d;
+			s = parameters[i].s;
 		}
+
+		if (var_set[i].is_number)
+			var_set[i].v.d = d;
+		else
+			snprintf(var_set[i].v.s, sizeof(var_set[i].v.s),
+					"%s", s);
 	}
 }
 
@@ -191,7 +193,7 @@ static double multop(const char *s[static 1])
 	int sign = 1;
 	const char *t = 0;
 	double op = 0.0;
-	const double *var = 0;
+	double var = 0.0;
 
 	while (isgarbage(**s)) (*s)++;    
 	t = *s;
@@ -236,10 +238,8 @@ static double multop(const char *s[static 1])
 		*s += strlen(var_set[vindex].name);
 		while (isgarbage(**s)) (*s)++;
 
-		if (0 == (var = var_set[vindex].data))
-			die("variable [%s] not set", var_set[vindex].name);
-
-		op = sign * *var;
+		var = var_set[vindex].v.d;
+		op = sign * var;
 
 	} else {
 		(*s)++;

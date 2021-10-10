@@ -38,7 +38,9 @@ const char *const ui_var_names[UI_AMOUNT] = {
 	[UI_PREPOST] = "Immediate or Due payments",
 	[UI_TERM] = "Payment Frequency",
 	[UI_LTINS] = "Life Tables Insurer",
-	[UI_LTTERM] = "Life Tables After Termination"
+	[UI_LTTERM] = "Life Tables After Termination",
+	[UI_CONTRA] = "Employer Contribution",
+	[UI_CONTRC] = "Employee Contribution"
 };
 
 GtkWidget *widgets[WIDGET_AMOUNT];
@@ -302,6 +304,7 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
 				UI->var[UI_DR113], validMsg[FLOATERR]);
 	}
 
+	init_var(0);
 	/* ----- Check Tree Variables -----*/
 	for (unsigned i = 0; i < UI_AMOUNT; i++) {
 		ct = plantTree(strclean(UI->var[i]));

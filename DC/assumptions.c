@@ -1,7 +1,7 @@
 #include "assumptions.h"
 #include "lifetables.h"
 
-static const void *parameters[VAR_AMOUNT];
+static union value parameters[VAR_AMOUNT];
 
 static void set_methodology(struct user_input ui[static 1]);
 static void replant(struct casetree **ct, const struct user_input ui[static 1],
@@ -91,6 +91,8 @@ static void set_methodology(struct user_input ui[static 1])
 
 void set_tariffs(const CurrentMember cm[static 1])
 {
+	unsigned ltins = 0;
+	unsigned ltterm = 0;
 	struct casetree *ct = 0;
 	struct user_input *ui = 0;
 	/* this needs updating when we have a UITY!!! */
@@ -114,6 +116,27 @@ void set_tariffs(const CurrentMember cm[static 1])
 	tff.prepost = interpret(ct, parameters);
 	replant(&ct, ui, UI_TERM);
 	tff.term = interpret(ct, parameters);
+
+	replant(&ct, ui, UI_LTINS);
+	ltins = interpret(ct, parameters);
+	printf("interpret = %f\n", interpret(ct, parameters));
+	replant(&ct, ui, UI_LTTERM);
+	ltterm = interpret(ct, parameters);
+	printf("interpret = %f\n", interpret(ct, parameters));
+	printf("ltins = %d, ltterm = %d\n", ltins, ltterm);
+	for (int l = 0; l < EREE_AMOUNT; l++) {
+		for (int j = 0; j < MAXGEN; j++) {
+			tff.ltINS[l][j].lt = ltins;
+			tff.ltAfterTRM[l][j].lt = ltterm;
+			tff.ltINS[l][j].i = cm->TAUX[l][j];
+			tff.ltAfterTRM[l][j].i = cm->TAUX[l][j];
+		}
+		tff.ltProlong[l].lt = tff.ltINS[l][0].lt;
+		tff.ltProlongAfterTRM[l].lt = tff.ltAfterTRM[l][0].lt;
+		tff.ltProlong[l].i = tff.ltINS[l][MAXGEN-1].i;
+		tff.ltProlongAfterTRM[l].i = tff.ltAfterTRM[l][MAXGEN-1].i;
+	}
+
 	chopTree(ct);
 }
 
@@ -132,33 +155,33 @@ static void replant(struct casetree **ct, const struct user_input *ui,
  */
 static void setparameters(const CurrentMember cm[static 1], int k)
 {
-	static double lt[LT_AMOUNT] = {
+	size_t len = MAX_STRING_SIZE;
+	double sex = 1.0;
+	double lt[LT_AMOUNT] = {
 		LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL
 	};
 
-	static char status[4];
-	static double sex = 1.0;
-
-	if (cm->status & ACT)
-		snprintf(status, sizeof(status), "%s", "ACT");
-	else
-		snprintf(status, sizeof(status), "%s", "DEF");
-	
 	if (cm->status & MALE)
 		sex = 1.0;
 	else
 		sex = 2.0;
 
-	parameters[VAR_AGE] = &cm->age[k];
-	parameters[VAR_REG] = cm->regl;
-	parameters[VAR_CAT] = cm->category;
-	parameters[VAR_STATUS] = status;
-	parameters[VAR_SEX] = &sex;
+	parameters[VAR_AGE].d = cm->age[k];
+	snprintf(parameters[VAR_REG].s, len, "%s", cm->regl);
+	snprintf(parameters[VAR_CAT].s, len, "%s", cm->category);
 
-	parameters[VAR_COMBINATION] = inscomb[cm->tariff];
+	if (cm->status & ACT)
+		snprintf(parameters[VAR_STATUS].s, len, "%s", "ACT");
+	else
+		snprintf(parameters[VAR_STATUS].s, len, "%s", "DEF");
+	
+	parameters[VAR_SEX].d = sex;
+
+	snprintf(parameters[VAR_COMBINATION].s, len, "%s",
+			inscomb[cm->tariff]);
 
 	for (unsigned i = VAR_LXMR; i < LT_AMOUNT + VAR_LXMR; i++)
-		parameters[i] = lt + i - VAR_LXMR;
+		parameters[i].d = lt[i - VAR_LXMR];
 	
 	init_var(parameters);
 }

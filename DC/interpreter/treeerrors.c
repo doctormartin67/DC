@@ -243,7 +243,6 @@ unsigned isvalidLeaf(const char s[static 1])
 		return 0;
 	
 	if (NOERR == getterrno()) {
-		init_var(0);
 		eval_expr(s);
 		if (NOERR != getterrno())
 			return 0;

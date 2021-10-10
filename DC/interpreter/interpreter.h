@@ -37,14 +37,14 @@ struct casetree {
  * This defines a compare function because some rules are strings and some are
  * doubles
  */
-typedef unsigned Cmpfunc(const struct casetree *ct, const void *);
+typedef unsigned Cmpfunc(const struct casetree *ct, const union value v);
 extern Cmpfunc cmpnum;
 extern Cmpfunc cmpstr;
 
 char *strclean(const char *);
 struct casetree *plantTree(const char *);
 double interpret(const struct casetree ct[static 1],
-		const void *const rule_data[const static VAR_AMOUNT]);
+		const union value rule_data[const static VAR_AMOUNT]);
 void printTree(const struct casetree ct[static 1]);
 void chopTree(struct casetree *ct);
 

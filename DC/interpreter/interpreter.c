@@ -296,10 +296,11 @@ static void deforest(struct casetree *ct, char *t, TreeError te)
 	if (NOERR != te) setterrno(te);
 }
 
-unsigned cmpnum(const struct casetree ct[restrict static 1], const void *pf)
+unsigned cmpnum(const struct casetree ct[restrict static 1],
+		const union value v)
 {
 	unsigned n = 1;
-	double f = *((double *)pf);
+	double f = v.d;
 	char tmp[strlen(ct->cond) + 1];
 	char *cond = tmp;
 
@@ -369,7 +370,8 @@ unsigned cmpnum(const struct casetree ct[restrict static 1], const void *pf)
  * inside one of the quotes.
  * returns 1 if condition matches string in quotes, 0 otherwise
  */
-unsigned cmpstr(const struct casetree ct[restrict static 1], const void *s)
+unsigned cmpstr(const struct casetree ct[restrict static 1],
+		const union value v)
 {
 	if (0 == strncmp(ct->cond, E, strlen(E)))
 		return 1;
@@ -379,7 +381,7 @@ unsigned cmpstr(const struct casetree ct[restrict static 1], const void *s)
 	const char *quote = strchr(cond, '"');
 
 	while (1) {
-		ps = s;
+		ps = v.s;
 		while ('\0' != *ps && cond < quote) {
 			if (*ps++ != *cond++) {
 				ps--;
@@ -400,11 +402,11 @@ unsigned cmpstr(const struct casetree ct[restrict static 1], const void *s)
 }
 
 double interpret(const struct casetree ct[static 1],
-		const void *const rule_data[const static VAR_AMOUNT])
+		const union value rule_data[const static VAR_AMOUNT])
 {
 	double x = 0.0;
 	Cmpfunc *cf = 0;
-	const void *v = 0;
+	union value v = (union value){0};
 	const char *expr = 0;
 
 	while (0 != ct) {
@@ -417,11 +419,14 @@ double interpret(const struct casetree ct[static 1],
 			return x;
 		}
 
-		v = rule_data[ct->rule_index];
-		if (var_set[ct->rule_index].is_number)
+		if (var_set[ct->rule_index].is_number) {
+			v.d = rule_data[ct->rule_index].d;
 			cf = cmpnum;
-		else
+		} else {
+			snprintf(v.s, sizeof(v.s), "%s",
+					rule_data[ct->rule_index].s);
 			cf = cmpstr;
+		}
 
 		if (cf(ct, v)) {
 			if (0 == (ct->child)) {
