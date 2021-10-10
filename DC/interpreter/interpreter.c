@@ -381,8 +381,11 @@ unsigned cmpstr(const struct casetree ct[restrict static 1], const void *s)
 	while (1) {
 		ps = s;
 		while ('\0' != *ps && cond < quote) {
-			if (*ps++ != *cond++)
+			if (*ps++ != *cond++) {
+				ps--;
+				cond--;
 				break;
+			}
 		}
 		if (cond == quote)
 			return 1;

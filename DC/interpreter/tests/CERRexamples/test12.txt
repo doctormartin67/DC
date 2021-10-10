@@ -4,22 +4,22 @@ end select reg
 			case "BC"
 				select case age
 					case < 40
-						x = 0.01
+						xyzvalue = 0.01
 					case else
-						x = 0.02
+						xyzvalue = 0.02
 				end select
 			case "WC"
 				select case age
 					case <40
-						x = 0.03
+						xyzvalue = 0.03
 					case else
-						x = 0.04
+						xyzvalue = 0.04
 				end select
 			case else
-				x = 0.05
+				xyzvalue = 0.05
 		end select
 	case else
-		x = 0.06
+		xyzvalue = 0.06
 end select
 tests:
 39,123,BC=0.01

@@ -1716,7 +1716,7 @@ the salary will increase with 0.032 each year.</property>
                                             <property name="width_request">200</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Life table insurer (ACT):</property>
+                                            <property name="label" translatable="yes">Life table insurer:</property>
                                             <attributes>
                                               <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
                                             </attributes>
@@ -1728,44 +1728,25 @@ the salary will increase with 0.032 each year.</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <placeholder/>
+                                          <object class="GtkButton" id="ltINS_interpreterbutton">
+                                            <property name="label" translatable="yes">Open interpreter</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="tooltip_text" translatable="yes">Determine life tables used by insurance company.</property>
+                                            <signal name="clicked" handler="on_ltINS_interpreterbutton_clicked" object="interpreterwindow" swapped="no"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
                                         </child>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
                                         <property name="position">7</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkBox">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="spacing">10</property>
-                                        <child>
-                                          <object class="GtkLabel">
-                                            <property name="width_request">200</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Life table insurer (DEF):</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="DejaVu Math TeX Gyre 10"/>
-                                            </attributes>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">True</property>
-                                            <property name="position">0</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <placeholder/>
-                                        </child>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">8</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -1790,14 +1771,29 @@ the salary will increase with 0.032 each year.</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <placeholder/>
+                                          <object class="GtkButton" id="ltTERM_interpreterbutton">
+                                            <property name="label" translatable="yes">Open interpreter</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="tooltip_text" translatable="yes">Determine life tables used by insurance company once the affiliate leaves the company.</property>
+                                            <signal name="clicked" handler="on_ltTERM_interpreterbutton_clicked" object="interpreterwindow" swapped="no"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
                                         </child>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
-                                        <property name="position">9</property>
+                                        <property name="position">8</property>
                                       </packing>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
                                     </child>
                                     <child>
                                       <placeholder/>

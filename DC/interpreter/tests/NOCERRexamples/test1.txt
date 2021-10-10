@@ -1,20 +1,20 @@
 select case reg
 select case age
 	case is < 25
-		x = 0.01
+		xyzvalue = 0.01
 	case < 30.5
-		x = 0.02
+		xyzvalue = 0.02
 	case is <40
-		x = 0.03
+		xyzvalue = 0.03
 	case< 45
-		x = 0.04
+		xyzvalue = 0.04
 	case is< 50.1
-		x = 0.05
+		xyzvalue = 0.05
 	case is < 55
-		x = 0.06
+		xyzvalue = 0.06
 	case is < 60
-		x = 0.07
-	case else: x = 0
+		xyzvalue = 0.07
+	case else: xyzvalue = 0
 end select
 end select
 tests:

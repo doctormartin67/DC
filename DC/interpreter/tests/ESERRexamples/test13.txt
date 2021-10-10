@@ -1,7 +1,7 @@
 				elect case age
-					case is <40: x=0.01
-					case 40 to 60: x = 0.03
-					case else: x = 0.02
+					case is <40: xyzvalue=0.01
+					case 40 to 60: xyzvalue = 0.03
+					case else: xyzvalue = 0.02
 				end select
 tests:
 39,123,BC=0.01

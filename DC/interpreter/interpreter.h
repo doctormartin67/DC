@@ -12,14 +12,14 @@
 #define C "CASE"
 #define SC "SELECT CA67"
 #define ES "END SELEC67" /* 67 is explained in interpreter.c:strclean.c */
-#define X "X" /* An expression is of the form x = ... */
+#define X "XYZVALUE" /* An expression is of the form xyzvalue = ... */
 #define E "ELSE"
 
 /* 
  * A casetree struct consists of:
  * - the index of the rule that determines what needs to be checked
  * - condition, f.e. Is < 40, "WC", "12220", ... used to test the rule
- * - expression, f.e. x = 0.01, this can also be a select case because 
+ * - expression, f.e. xyzvalue = 0.01, this can also be a select case because 
  *   select cases can be nested and so the expression needs to be 
  *   reevaluated 
  * - next case in current Select Case

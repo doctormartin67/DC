@@ -14,6 +14,6 @@
 #endif
 
 enum {MAXAGE = 130, LENGTHLINE = 64};
-enum lifetables {LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL, LT_AMOUNT};
+enum {LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL, LT_AMOUNT};
 void makeLifeTables(void);
 #endif

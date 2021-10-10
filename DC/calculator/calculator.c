@@ -22,7 +22,7 @@ enum {STACK_SIZE = 256};
 enum {MAX, MIN, FUNC_AMOUNT};
 
 struct calculator_func {
-	char *name;
+	const char *const name;
 	double (*func)(const char s[static 1]);
 };
 
@@ -59,11 +59,36 @@ static struct calculator_func func[FUNC_AMOUNT] = {
  */
 struct variable var_set[VAR_AMOUNT] = 
 {
-	[AGE] = {"AGE", 1, 0}, 
-	[REG] = {"REG", 0, 0}, 
-	[CAT] = {"CAT", 0, 0},
-	[PREM] = {"PREM", 1, 0}
+	[VAR_AGE] = {"AGE", 1, 0}, 
+	[VAR_REG] = {"REG", 0, 0}, 
+	[VAR_CAT] = {"CAT", 0, 0},
+	[VAR_STATUS] = {"STATUS", 0, 0},
+	[VAR_SEX] = {"SEX", 1, 0},
+	[VAR_COMBINATION] = {"COMBINATION", 0, 0},
+	[VAR_LXMR] = {"LXMR", 1, 0},
+	[VAR_LXFR] = {"LXFR", 1, 0},
+	[VAR_LXMK] = {"LXMK", 1, 0},
+	[VAR_LXFK] = {"LXFK", 1, 0},
+	[VAR_LXFKP] = {"LXFKP", 1, 0},
+	[VAR_LXNIHIL] = {"LXNIHIL", 1, 0},
 };
+
+void init_var(const void *parameters[VAR_AMOUNT])
+{
+	static double n = 0.0;
+	static char *s = "test";
+
+	for (unsigned int i = 0; i < VAR_AMOUNT; i++) {
+		if (0 == parameters) {
+			if (var_set[i].is_number)
+				var_set[i].data = &n;
+			else
+				var_set[i].data = s;
+		} else {
+			var_set[i].data = parameters[i];
+		}
+	}
+}
 
 /*
  * evaluates the expression given by s.
@@ -166,7 +191,7 @@ static double multop(const char *s[static 1])
 	int sign = 1;
 	const char *t = 0;
 	double op = 0.0;
-	double *var = 0;
+	const double *var = 0;
 
 	while (isgarbage(**s)) (*s)++;    
 	t = *s;
@@ -457,10 +482,14 @@ static double min(const char s[static 1])
  */
 static unsigned isvar(const char s[static 1], unsigned *vindex)
 {
-	char *name = 0;
+	unsigned len = 0;
+	unsigned slen = 0;
+	const char *name = 0;
 	for (unsigned i = 0; i < VAR_AMOUNT; i++) {
 		name = var_set[i].name;
-		if (0 == strncmp(s, name, strlen(name))) {
+		len = strlen(name);
+		slen = MIN2(len, strlen(s));
+		if (0 == strncmp(s, name, len) && !isalnum(s[slen])) {
 			if (!var_set[i].is_number) cancel_calc(NUMERR);
 			if (vindex) *vindex = i;
 			return 1;

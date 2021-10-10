@@ -3,21 +3,21 @@ select case reg
 		select case cat
 			case "crap", "BC", "WC", "crap2"
 				select case age
-					case <40: x=0.01
-					case 40 to 60: x = 0.03
-					case else: x = 0.02
+					case <40: xyzvalue=0.01
+					case 40 to 60: xyzvalue = 0.03
+					case else: xyzvalue = 0.02
 				end select
 			case else
 				select case age
 				    case is < 25: y=0.05
-				    case is < 35: x=0.06
-				    case is < 45: x=0.07
-				    case is < 55: x=0.08
-				    case else: x=0.09
+				    case is < 35: xyzvalue=0.06
+				    case is < 45: xyzvalue=0.07
+				    case is < 55: xyzvalue=0.08
+				    case else: xyzvalue=0.09
 				end select
 		end select
 	case else
-		x = 0.10
+		xyzvalue = 0.10
 end select
 tests:
 39,123,BC=0.01

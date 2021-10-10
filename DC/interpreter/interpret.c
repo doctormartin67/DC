@@ -154,9 +154,9 @@ unsigned testTree(const struct casetree ct[static 1], FILE *fp,
 			die("invalid test: %s", test);
 
 		dage = atof(age);
-		rule_data[AGE] = &dage;
-		rule_data[REG] = reg;
-		rule_data[CAT] = cat;
+		rule_data[VAR_AGE] = &dage;
+		rule_data[VAR_REG] = reg;
+		rule_data[VAR_CAT] = cat;
 
 		result = interpret(ct, rule_data);
 		testresult = atof(value);

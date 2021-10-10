@@ -6,7 +6,7 @@ static const void *parameters[VAR_AMOUNT];
 static void set_methodology(struct user_input ui[static 1]);
 static void replant(struct casetree **ct, const struct user_input ui[static 1],
 		unsigned it);
-static void setparameters(const CurrentMember cm[static 1], int k);
+static void setparameters(const CurrentMember *cm, int k);
 
 void setassumptions(void)
 {
@@ -125,11 +125,42 @@ static void replant(struct casetree **ct, const struct user_input *ui,
 	*ct = plantTree(strclean(ui->var[it]));
 }
 
+/*
+ * sets the parameters used in the interpreter. If cm == 0 then the parameters
+ * will just be set as test values, which is usually used to check the validity
+ * of the interpreter.
+ */
 static void setparameters(const CurrentMember cm[static 1], int k)
 {
-	parameters[AGE] = &cm->age[k];
-	parameters[REG] = cm->regl;
-	parameters[CAT] = cm->category;
+	static double lt[LT_AMOUNT] = {
+		LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL
+	};
+
+	static char status[4];
+	static double sex = 1.0;
+
+	if (cm->status & ACT)
+		snprintf(status, sizeof(status), "%s", "ACT");
+	else
+		snprintf(status, sizeof(status), "%s", "DEF");
+	
+	if (cm->status & MALE)
+		sex = 1.0;
+	else
+		sex = 2.0;
+
+	parameters[VAR_AGE] = &cm->age[k];
+	parameters[VAR_REG] = cm->regl;
+	parameters[VAR_CAT] = cm->category;
+	parameters[VAR_STATUS] = status;
+	parameters[VAR_SEX] = &sex;
+
+	parameters[VAR_COMBINATION] = inscomb[cm->tariff];
+
+	for (unsigned i = VAR_LXMR; i < LT_AMOUNT + VAR_LXMR; i++)
+		parameters[i] = lt + i - VAR_LXMR;
+	
+	init_var(parameters);
 }
 
 double salaryscale(const CurrentMember cm[static 1], int k)

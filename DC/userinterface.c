@@ -36,7 +36,9 @@ const char *const ui_var_names[UI_AMOUNT] = {
 	[UI_COSTKO] = "Cost on Lump Sum Life",
 	[UI_WD] = "Profit Sharing for Mortality",
 	[UI_PREPOST] = "Immediate or Due payments",
-	[UI_TERM] = "Payment Frequency"
+	[UI_TERM] = "Payment Frequency",
+	[UI_LTINS] = "Life Tables Insurer",
+	[UI_LTTERM] = "Life Tables After Termination"
 };
 
 GtkWidget *widgets[WIDGET_AMOUNT];

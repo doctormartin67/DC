@@ -42,7 +42,8 @@ enum {ER, EE, EREE_AMOUNT};// Employer index, Employer index
 // article 24 index (1,75%)
 enum {ART24GEN1, ART24GEN2, ART24GEN_AMOUNT};
 #define ART24admincost 0.05 // Maximum admin cost that may be applied to Employer contribution
-enum inscomb {UKMS, UKZT, UKMT, MIXED};
+enum {UKMS, UKZT, UKMT, MIXED, INSCOMB_AMOUNT};
+extern const char *const inscomb[INSCOMB_AMOUNT];
 // projected unit credit with future premiums
 // projected unit credit without future premiums
 /* projected unit credit with future premiums,
@@ -88,11 +89,14 @@ typedef double GenMatrix[MAXGEN][MAXPROJ];
  * used as index for all the variables in the user interface
  * a variable declared larger than UI_AMOUNT is not considered as a
  * "tree variable", meaning it's not determined by select case, but just as a
- * fixed value
+ * fixed value. This means that the first half of the array are the interpreter
+ * variables, the second half are the fixed variables
  */
 enum {
 	UI_SS, UI_TURNOVER, UI_RETX, UI_NRA, UI_ADMINCOST, UI_COSTRES,
-	UI_COSTKO, UI_WD, UI_PREPOST, UI_TERM, UI_AMOUNT, UI_DOC = UI_AMOUNT,
+	UI_COSTKO, UI_WD, UI_PREPOST, UI_TERM, UI_LTINS, UI_LTTERM,
+	UI_AMOUNT,
+	UI_DOC = 64,
 	UI_DR, UI_AGECORR, UI_INFL, UI_TRM_PERCDEF, UI_DR113, UI_MAX = 128
 };
 

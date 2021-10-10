@@ -30,6 +30,11 @@ const char *const colnames[KEYS_AMOUNT] = {
 	[PLAN] = "plan", [BARANC] = "Baremische ancienniteit",
 	[INCSALFIRSTYEAR] = "increaseSalFirstYear", [PREP] = "CCRA"
 };
+
+const char *const inscomb[INSCOMB_AMOUNT] = {
+	[UKMS] = "UKMS", [UKZT] = "UKZT", [UKMT] = "UKMT", [MIXED] = "MIXED"
+};
+
 static int colmissing[KEYS_AMOUNT];
 
 static Validator *val;
@@ -110,10 +115,9 @@ void createCM(CurrentMember cm[static 1], Hashtable ht[static 1])
 	cm->NRA = atof(getcmval(cm, NORMRA, -1, -1));
 	cm->kids = (unsigned)atoi(getcmval(cm, ENF, -1, -1));
 	cm->tariff = 0;
-	if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKMS") == 0)  cm->tariff = UKMS;
-	if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKZT") == 0)  cm->tariff = UKZT;
-	if (strcmp(getcmval(cm, TARIEF, -1, -1), "UKMT") == 0)  cm->tariff = UKMT;
-	if (strcmp(getcmval(cm, TARIEF, -1, -1), "MIXED") == 0)  cm->tariff = MIXED;
+	for (unsigned i = 0; i < INSCOMB_AMOUNT; i++)
+		if (strcmp(getcmval(cm, TARIEF, -1, -1), inscomb[i]) == 0)
+			cm->tariff = i;
 	cm->KO = atof(getcmval(cm, KO, -1, -1));
 	cm->annINV = atof(getcmval(cm, RENTINV, -1, -1));
 	cm->contrINV = atof(getcmval(cm, CONTRINV, -1, -1));

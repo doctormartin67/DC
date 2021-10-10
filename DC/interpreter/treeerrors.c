@@ -24,7 +24,7 @@ const char *const strterrors[TERR_AMOUNT] =
 	[NOERR] = "No errors found in tree", 
 	[SCERR] = "Select Case without End Select", 
 	[ESERR] = "End Select without Select Case", 
-	[XERR] = "Expression not of the form 'x = *'",
+	[XERR] = "Expression not of the form 'xyzvalue = *'",
 	[CERR] = "Case without Select Case",
 	[NOCERR] = "Select Case without Case",
 	[UNKRULEERR] = "Select Case has unknown rule",
@@ -65,7 +65,7 @@ static unsigned isvalid_CaseNumber(const char s[static 1]);
  * Performs initial checks that the tree has the correct structure, i.e.
  * Select Case ...
  * 	Case ...
- * 		x = ...
+ * 		xyzvalue = ...
  * End Select
  */
 unsigned isvalidTree(const char *t)
@@ -215,20 +215,22 @@ unsigned isvalidBranch(const struct casetree ct[static 1])
 }
 
 /*
- * checks if the leaf is a valid expression that begins with 'X=' followed by
- * a valid calculator expression. It may also begin with Select Case, in which
- * case the tree has branches and we will check the leaves of these branches
- * at a later stage
+ * checks if the leaf is a valid expression that begins with 'XYZVALUE='
+ * followed by a valid calculator expression. It may also begin with
+ * Select Case, in which case the tree has branches and we will check the
+ * leaves of these branches at a later stage
  */
 unsigned isvalidLeaf(const char s[static 1])
 {
 	if (0 == strncmp(s, SC, strlen(SC)))
 		return 1;
 
-	if ('X' != *s++) {
+	if (0 != strncmp(s, X, strlen(X))) {
 		setterrno(XERR);
 		return 0;
 	}
+
+	s += strlen(X);
 	
 	while (isgarbage(*s)) s++;
 
@@ -241,6 +243,7 @@ unsigned isvalidLeaf(const char s[static 1])
 		return 0;
 	
 	if (NOERR == getterrno()) {
+		init_var(0);
 		eval_expr(s);
 		if (NOERR != getterrno())
 			return 0;
