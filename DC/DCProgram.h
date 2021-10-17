@@ -326,6 +326,5 @@ void countMembers(DataSet *ds);
 
 //---Results Functions---
 int printresults(DataSet *ds);
-int printtc(DataSet *ds, unsigned tc); // tc = test case
 
 #endif

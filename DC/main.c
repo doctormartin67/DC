@@ -6,7 +6,6 @@
 void userinterface();
 void runmember(CurrentMember cm[static 1]);
 static void init_cm(CurrentMember *);
-static void settariffs(const CurrentMember cm[static 1]);
 static struct date *getDOC(const CurrentMember cm[static 1], int k);
 static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
 		int k);
@@ -184,50 +183,6 @@ static void init_cm(CurrentMember cm[static 1])
 		}
 	}
 	
-	settariffs(cm);
-}
-
-static void settariffs(const CurrentMember cm[static 1])
-{
-	//-  Life Tables  -
-	unsigned lxr = (cm->status & MALE ? LXMR : LXFR);
-	unsigned lxk = (cm->status & MALE ? LXMK : LXFKP);
-	for (int l = 0; l < EREE_AMOUNT; l++) {
-		for (int j = 0; j < MAXGEN; j++) {
-			switch(cm->tariff) {
-				case UKMS :
-					tff.ltINS[l][j].lt = LXNIHIL;
-					tff.ltAfterTRM[l][j].lt = LXNIHIL;
-					break;
-				case UKZT :
-					if (cm->status & ACT) {
-						tff.ltINS[l][j].lt = lxk;
-						tff.ltAfterTRM[l][j].lt = lxr;
-					} else {
-						tff.ltINS[l][j].lt = lxr;
-						tff.ltAfterTRM[l][j].lt =
-							tff.ltINS[l][j].lt;
-					}
-					break;
-				case UKMT :
-					tff.ltINS[l][j].lt = lxk;
-					tff.ltAfterTRM[l][j].lt =
-						tff.ltINS[l][j].lt;
-					break;
-				case MIXED :
-					tff.ltINS[l][j].lt = lxk;
-					tff.ltAfterTRM[l][j].lt =
-						tff.ltINS[l][j].lt;
-					break;
-			}
-			tff.ltINS[l][j].i = cm->TAUX[l][j];
-			tff.ltAfterTRM[l][j].i = cm->TAUX[l][j];
-		}
-		tff.ltProlong[l].lt = tff.ltINS[l][0].lt;
-		tff.ltProlongAfterTRM[l].lt = tff.ltAfterTRM[l][0].lt;
-		tff.ltProlong[l].i = tff.ltINS[l][MAXGEN-1].i;
-		tff.ltProlongAfterTRM[l].i = tff.ltAfterTRM[l][MAXGEN-1].i; 
-	}
 	set_tariffs(cm);
 }
 

@@ -1,5 +1,6 @@
 #include "userinterface.h"
 #include "assumptions.h"
+#include "printresults.h"
 
 #define NOT_RUNNING 01
 #define RUNNING 02
@@ -137,7 +138,7 @@ static gpointer runtc(gpointer pl)
 	}
 	setassumptions();
 	runmember(cm);
-	snprintf(text, sizeof(text), "Test case %u has been run", tc + 1);
+	snprintf(text, sizeof(text), "%s [%u] has been run", cm->key, tc + 1);
 	gd.s = text;
 	g_idle_add(update_gui, &gd);
 

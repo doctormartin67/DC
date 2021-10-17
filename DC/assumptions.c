@@ -119,11 +119,8 @@ void set_tariffs(const CurrentMember cm[static 1])
 
 	replant(&ct, ui, UI_LTINS);
 	ltins = interpret(ct, parameters);
-	printf("interpret = %f\n", interpret(ct, parameters));
 	replant(&ct, ui, UI_LTTERM);
 	ltterm = interpret(ct, parameters);
-	printf("interpret = %f\n", interpret(ct, parameters));
-	printf("ltins = %d, ltterm = %d\n", ltins, ltterm);
 	for (int l = 0; l < EREE_AMOUNT; l++) {
 		for (int j = 0; j < MAXGEN; j++) {
 			tff.ltINS[l][j].lt = ltins;

@@ -17,7 +17,7 @@ BINPATH = /home/doctormartin67/bin
 # objects:
 XML = `xml2-config --cflags` `xml2-config --libs`
 GTK = `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -rdynamic
-MISCOBJS = $(TABLEPATH)/lifetables.o $(ACTPATH)/actuarialfunctions.o DCProgram.o assumptions.o validation.o
+MISCOBJS = $(TABLEPATH)/lifetables.o $(ACTPATH)/actuarialfunctions.o DCProgram.o assumptions.o validation.o printresults.o
 LIBOBJS = $(LIBPATH)/helperfunctions.o $(LIBPATH)/hashtable.o $(LIBPATH)/dates.o $(LIBPATH)/errorexit.o $(LIBPATH)/XL.o
 GTKOBJS = userinterface.o usersignalhandlers.o userrunhandlers.o
 INTOBJS = $(INTPATH)/interpreter.o $(INTPATH)/treeerrors.o
