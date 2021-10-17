@@ -44,6 +44,7 @@ enum {
  * create an excel file called TestCase[tc] with all the values for a given
  * person in the data to test the results.
  */
-unsigned printtc(DataSet *ds, unsigned tc);
+unsigned printtc(const DataSet *ds, unsigned tc);
+unsigned printresults(const DataSet *ds);
 
 #endif

@@ -324,7 +324,4 @@ void createData(DataSet *ds);
 int setkey(DataSet *ds);
 void countMembers(DataSet *ds);
 
-//---Results Functions---
-int printresults(DataSet *ds);
-
 #endif
