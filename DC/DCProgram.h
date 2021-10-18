@@ -86,6 +86,14 @@ typedef double GenMatrix[MAXGEN][MAXPROJ];
  */
 
 /*
+ * This enum defines extra variables that might be needed for the plan rules
+ */
+enum {
+	CEIL1, CEIL2, CEIL3, CEIL4, CEIL5, CEIL6, CEIL7, CEIL8, CEIL9, CEIL10,
+	EXTRA_AMOUNT
+};
+
+/*
  * used as index for all the variables in the user interface
  * a variable declared larger than UI_AMOUNT is not considered as a
  * "tree variable", meaning it's not determined by select case, but just as a
@@ -99,7 +107,9 @@ enum {
 	UI_CONTRA, UI_CONTRC,
 	UI_AMOUNT,
 	UI_DOC = 64,
-	UI_DR, UI_AGECORR, UI_INFL, UI_TRM_PERCDEF, UI_DR113, UI_MAX = 128
+	UI_DR, UI_AGECORR, UI_INFL, UI_TRM_PERCDEF, UI_DR113,
+	UI_EXTRA, 
+	UI_MAX = 128
 };
 
 /*

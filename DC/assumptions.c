@@ -146,9 +146,7 @@ static void replant(struct casetree **ct, const struct user_input *ui,
 }
 
 /*
- * sets the parameters used in the interpreter. If cm == 0 then the parameters
- * will just be set as test values, which is usually used to check the validity
- * of the interpreter.
+ * sets the parameters used in the interpreter.
  */
 static void setparameters(const CurrentMember cm[static 1], int k)
 {
@@ -173,6 +171,8 @@ static void setparameters(const CurrentMember cm[static 1], int k)
 		snprintf(parameters[VAR_STATUS].s, len, "%s", "DEF");
 	
 	parameters[VAR_SEX].d = sex;
+	parameters[VAR_SAL].d = cm->sal[k];
+	parameters[VAR_PT].d = cm->PT;
 
 	snprintf(parameters[VAR_COMBINATION].s, len, "%s",
 			inscomb[cm->tariff]);

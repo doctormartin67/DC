@@ -64,6 +64,8 @@ struct variable var_set[VAR_AMOUNT] =
 	[VAR_CAT] = {"CAT", 0, .v.s = ""},
 	[VAR_STATUS] = {"STATUS", 0, .v.s = ""},
 	[VAR_SEX] = {"SEX", 1, .v.d = 0.0},
+	[VAR_SAL] = {"SAL", 1, .v.d = 0.0},
+	[VAR_PT] = {"PT", 1, .v.d = 0.0},
 	[VAR_COMBINATION] = {"COMBINATION", 0, .v.s = ""},
 	[VAR_LXMR] = {"LXMR", 1, .v.d = 0.0},
 	[VAR_LXFR] = {"LXFR", 1, .v.d = 0.0},

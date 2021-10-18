@@ -26,6 +26,13 @@ const char *const widgetname[WIDGET_AMOUNT] = {
 	[FILENAME] = "filename", [STARTSTOP] = "startstop"
 };
 
+const char *const extra_var_name[EXTRA_AMOUNT] = {
+	[CEIL1] = "ceil1", [CEIL2] = "ceil2", [CEIL3] = "ceil3",
+	[CEIL4] = "ceil4", [CEIL5] = "ceil5", [CEIL6] = "ceil6",
+	[CEIL7] = "ceil7", [CEIL8] = "ceil8", [CEIL9] = "ceil9",
+	[CEIL10] = "ceil10"
+};
+
 const char *const ui_var_names[UI_AMOUNT] = {
 	[UI_SS] = "Salary Scale",
 	[UI_TURNOVER] = "Turnover",
@@ -44,6 +51,7 @@ const char *const ui_var_names[UI_AMOUNT] = {
 };
 
 GtkWidget *widgets[WIDGET_AMOUNT];
+GtkWidget *extra_widgets[EXTRA_AMOUNT];
 static GtkBuilder *builder;
 
 static struct user_input UILY;
@@ -59,6 +67,8 @@ void userinterface()
 
 	for (unsigned i = 0; i < WIDGET_AMOUNT; i++)
 		widgets[i] = buildWidget(widgetname[i]);
+	for (unsigned i = 0; i < EXTRA_AMOUNT; i++)
+		extra_widgets[i] = buildWidget(extra_var_name[i]);
 
 	gtk_builder_connect_signals(builder, 0);
 	g_signal_connect(widgets[WINDOW], "destroy",
@@ -107,6 +117,13 @@ void set_user_input(struct user_input UI[static 1])
 	snprintf(UI->var[UI_DR113], sizeof(UI->var[UI_DR113]), "%s",
 			gtk_entry_get_text(GTK_ENTRY(widgets[DR113])));
 
+	for (unsigned i = UI_EXTRA; i < UI_EXTRA + EXTRA_AMOUNT; i++) {
+		snprintf(UI->var[i], sizeof(UI->var[i]), "%s",
+				gtk_entry_get_text(GTK_ENTRY(
+						extra_widgets[i
+						- UI_EXTRA])));
+	}
+
 	UI->method[METH_STANDARD] = gtk_combo_box_get_active(
 			GTK_COMBO_BOX(widgets[STANDARD]));
 	UI->method[METH_ASSETS] = gtk_combo_box_get_active(
@@ -141,6 +158,11 @@ void update_user_interface(struct user_input UI[static 1])
 			UI->var[UI_TRM_PERCDEF]);
 	gtk_entry_set_text(GTK_ENTRY(widgets[DR113]), UI->var[UI_DR113]);
 
+	for (unsigned i = UI_EXTRA; i < UI_EXTRA + EXTRA_AMOUNT; i++) {
+		gtk_entry_set_text(GTK_ENTRY(extra_widgets[i - UI_EXTRA]),
+				UI->var[i]);
+	}
+
 	/* --- Methodology --- */
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[STANDARD]),
 			UI->method[METH_STANDARD]);
@@ -171,9 +193,13 @@ void print_user_input(struct user_input UI[static 1])
 	printf("TRM_PercDef [%s]\n", UI->var[UI_TRM_PERCDEF]);
 	printf("DR113 [%s]\n", UI->var[UI_DR113]);
 
-	for (unsigned i = 0; i < UI_AMOUNT; i++) {
-		printf("%s [%s]\n", ui_var_names[i], UI->var[i]);
+	for (unsigned i = UI_EXTRA; i < UI_EXTRA + EXTRA_AMOUNT; i++) {
+		printf("%s [%s]\n", extra_var_name[i - UI_EXTRA], UI->var[i]);
 	}
+
+	for (unsigned i = 0; i < UI_AMOUNT; i++)
+		printf("%s [%s]\n", ui_var_names[i], UI->var[i]);
+
 	/* --- Methodology --- */
 	printf("standard [%d]\n", UI->method[METH_STANDARD]); 
 	printf("assets [%d]\n", UI->method[METH_ASSETS]); 

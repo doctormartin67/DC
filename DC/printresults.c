@@ -9,6 +9,8 @@ static struct variable tc_print[TC_AMOUNT] = {
 	[TC_DOC] = {"DOC", 0, .v.s = ""},
 	[TC_AGE] = {"Age", 1, .v.d = 0.0},
 	[TC_SAL] = {"Salary", 1, .v.d = 0.0},
+	[TC_NDOA] = {"Service DoA", 1, .v.d = 0.0},
+	[TC_NDOE] = {"Service DoE", 1, .v.d = 0.0},
 	[TC_CONTRA] = {"Contr A", 1, .v.d = 0.0},
 	[TC_DTHRISK] = {"DTH Risk Part", 1, .v.d = 0.0},
 	[TC_DTHRES] = {"DTH RES Part", 1, .v.d = 0.0},
@@ -234,6 +236,8 @@ static void set_row_values(CurrentMember *cm, int row)
 
 	tc_print[TC_AGE].v.d = cm->age[row];
 	tc_print[TC_SAL].v.d = cm->sal[row];
+	tc_print[TC_NDOA].v.d = cm->nDOA[row];
+	tc_print[TC_NDOE].v.d = cm->nDOE[row];
 	tc_print[TC_CONTRA].v.d = gensum(cm->PREMIUM, ER, row);
 	tc_print[TC_DTHRISK].v.d = cm->CAPDTHRiskPart[row];
 	tc_print[TC_DTHRES].v.d = cm->CAPDTHRESPart[row];

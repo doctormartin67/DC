@@ -15,6 +15,8 @@ enum {
 
 extern const char *const widgetname[WIDGET_AMOUNT]; 
 extern GtkWidget *widgets[WIDGET_AMOUNT];
+extern const char *const extra_var_name[EXTRA_AMOUNT]; 
+extern GtkWidget *extra_widgets[EXTRA_AMOUNT];
 
 struct user_input *get_user_input(unsigned ui);
 void set_user_input(struct user_input *);

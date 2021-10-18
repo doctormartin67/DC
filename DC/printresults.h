@@ -12,8 +12,8 @@ enum {NO_PRERR, NAME_PRERR};
  * the appropriate column
  */
 enum {
-	TC_KEY, TC_DOC, TC_AGE, TC_SAL = TC_AGE + 2, TC_CONTRA = TC_SAL + 4,
-	TC_DTHRISK = TC_CONTRA + 4, TC_DTHRES, TC_CONTRC,
+	TC_KEY, TC_DOC, TC_AGE, TC_SAL = TC_AGE + 2, TC_NDOA = TC_SAL + 2,
+	TC_NDOE, TC_CONTRA, TC_DTHRISK = TC_CONTRA + 4, TC_DTHRES, TC_CONTRC,
 
 	/* These are special because they have multiple generations */
 	TC_CAP, TC_PREM, TC_RESPS, TC_RES,
