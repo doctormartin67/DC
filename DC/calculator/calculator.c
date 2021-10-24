@@ -66,13 +66,27 @@ struct variable var_set[VAR_AMOUNT] =
 	[VAR_SEX] = {"SEX", 1, .v.d = 0.0},
 	[VAR_SAL] = {"SAL", 1, .v.d = 0.0},
 	[VAR_PT] = {"PT", 1, .v.d = 0.0},
+	[VAR_NDOA] = {"NDOA", 1, .v.d = 0.0},
+	[VAR_NDOE] = {"NDOE", 1, .v.d = 0.0},
 	[VAR_COMBINATION] = {"COMBINATION", 0, .v.s = ""},
+
 	[VAR_LXMR] = {"LXMR", 1, .v.d = 0.0},
 	[VAR_LXFR] = {"LXFR", 1, .v.d = 0.0},
 	[VAR_LXMK] = {"LXMK", 1, .v.d = 0.0},
 	[VAR_LXFK] = {"LXFK", 1, .v.d = 0.0},
 	[VAR_LXFKP] = {"LXFKP", 1, .v.d = 0.0},
 	[VAR_LXNIHIL] = {"LXNIHIL", 1, .v.d = 0.0},
+
+	[VAR_CEIL1] = {"CEIL1", 1, .v.d = 0.0},
+	[VAR_CEIL2] = {"CEIL2", 1, .v.d = 0.0},
+	[VAR_CEIL3] = {"CEIL3", 1, .v.d = 0.0},
+	[VAR_CEIL4] = {"CEIL4", 1, .v.d = 0.0},
+	[VAR_CEIL5] = {"CEIL5", 1, .v.d = 0.0},
+	[VAR_CEIL6] = {"CEIL6", 1, .v.d = 0.0},
+	[VAR_CEIL7] = {"CEIL7", 1, .v.d = 0.0},
+	[VAR_CEIL8] = {"CEIL8", 1, .v.d = 0.0},
+	[VAR_CEIL9] = {"CEIL9", 1, .v.d = 0.0},
+	[VAR_CEIL10] = {"CEIL10", 1, .v.d = 0.0},
 };
 
 void init_var(const union value parameters[VAR_AMOUNT])

@@ -50,6 +50,7 @@ Assumptions ass;
 
 void setassumptions(void);
 void set_tariffs(const CurrentMember *cm);
+void setparameters(const CurrentMember *cm, int k);
 double salaryscale(const CurrentMember *cm, int k);
 double calcA(const CurrentMember *cm, int k);
 double calcC(const CurrentMember *cm, int k);

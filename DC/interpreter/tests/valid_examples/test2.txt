@@ -1,0 +1,22 @@
+select case reg
+	case "7229"
+		xyzvalue = 0.01
+	case "14455"
+		xyzvalue = 0.02
+	case "7204", "7228"
+		xyzvalue = 0.03
+	case "7203"
+		xyzvalue = 0.04
+	case "14286"
+		xyzvalue = 0.05
+	case "7161"
+		xyzvalue = 0.06
+end select
+tests:
+1,7229,BC=0.01
+1,14455,BC=0.02
+1,7204,BC=0.03
+1,7228,BC=0.03
+1,7203,BC=0.04
+1,14286,BC=0.05
+1,7161,BC=0.06

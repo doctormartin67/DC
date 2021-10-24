@@ -35,6 +35,7 @@ void runmember(CurrentMember cm[static 1])
 	double RESTOT[METHOD_AMOUNT] = {0};
 	double REDCAPTOT[METHOD_AMOUNT] = {0};
 
+	setparameters(cm, 0);
 	init_cm(cm);
 
 	for (int k = 1; k < MAXPROJ; k++) {
@@ -67,6 +68,8 @@ void runmember(CurrentMember cm[static 1])
 				cm->DOC[k]->year 
 				- cm->DOC[k-1]->year 
 				+ (1 == k ? ass.incrSalk1 : 0));
+
+		setparameters(cm, k);
 
 		evolCAPDTH(cm, k - 1);
 		evolRES(cm, k - 1); 

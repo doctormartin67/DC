@@ -1,12 +1,18 @@
+#include <math.h>
 #include "assumptions.h"
 #include "lifetables.h"
 
 static union value parameters[VAR_AMOUNT];
 
+/*
+ * This array holds extra variables for example ceilings.
+ * The variables are increased with inflation
+ */
+double extra_var[EXTRA_AMOUNT][MAXPROJ];
+
 static void set_methodology(struct user_input ui[static 1]);
 static void replant(struct casetree **ct, const struct user_input ui[static 1],
 		unsigned it);
-static void setparameters(const CurrentMember *cm, int k);
 
 void setassumptions(void)
 {
@@ -56,7 +62,10 @@ void setassumptions(void)
 		(currrun >= runNewNRA ?
 		 plantTree(strclean(UITY->var[UI_RETX])) :
 		 plantTree(strclean(UILY->var[UI_RETX])));
-	ass.ct[IA_CALCA] = 0;
+	ass.ct[IA_CALCA] = 
+		(currrun >= runNewMethodology ?
+		 plantTree(strclean(UITY->var[UI_CONTRA])) :
+		 plantTree(strclean(UILY->var[UI_CONTRA])));
 	ass.ct[IA_CALCC] = 0;
 	ass.ct[IA_CALCDTH] = 0;
 
@@ -100,8 +109,6 @@ void set_tariffs(const CurrentMember cm[static 1])
 		ui = get_user_input(USER_INPUT_LY);
 	else
 		ui = get_user_input(USER_INPUT_LY);
-
-	setparameters(cm, 0);
 
 	replant(&ct, ui, UI_ADMINCOST);
 	tff.admincost = interpret(ct, parameters);
@@ -148,13 +155,27 @@ static void replant(struct casetree **ct, const struct user_input *ui,
 /*
  * sets the parameters used in the interpreter.
  */
-static void setparameters(const CurrentMember cm[static 1], int k)
+void setparameters(const CurrentMember cm[static 1], int k)
 {
+	/* this needs updating when we have a UITY!!! */
+	struct user_input *UITY = get_user_input(USER_INPUT_LY);
+
 	size_t len = MAX_STRING_SIZE;
 	double sex = 1.0;
 	double lt[LT_AMOUNT] = {
 		LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL
 	};
+
+	for (unsigned i = 0; i < EXTRA_AMOUNT; i++) {
+		if (0 == k)
+			extra_var[i][k] = atof(UITY->var[i + UI_EXTRA]);
+		if (0 < k)	
+			extra_var[i][k] = extra_var[i][k-1]
+				* pow((1 + ass.infl),
+						cm->DOC[k]->year 
+						- cm->DOC[k-1]->year 
+						+ (1 == k ? ass.incrSalk1 :0));
+	}
 
 	if (cm->status & MALE)
 		sex = 1.0;
@@ -173,25 +194,30 @@ static void setparameters(const CurrentMember cm[static 1], int k)
 	parameters[VAR_SEX].d = sex;
 	parameters[VAR_SAL].d = cm->sal[k];
 	parameters[VAR_PT].d = cm->PT;
+	parameters[VAR_NDOA].d = cm->nDOA[k];
+	parameters[VAR_NDOE].d = cm->nDOE[k];
 
 	snprintf(parameters[VAR_COMBINATION].s, len, "%s",
 			inscomb[cm->tariff]);
 
 	for (unsigned i = VAR_LXMR; i < LT_AMOUNT + VAR_LXMR; i++)
 		parameters[i].d = lt[i - VAR_LXMR];
+
+	/* this needs updating when we have a UITY!!! */
+	for (unsigned i = VAR_CEIL1; i < EXTRA_AMOUNT + VAR_CEIL1; i++)
+		parameters[i].d = extra_var[i - VAR_CEIL1][k];
 	
 	init_var(parameters);
 }
 
 double salaryscale(const CurrentMember cm[static 1], int k)
 {
-	setparameters(cm, k);
 	return ass.infl + interpret(ass.ct[IA_SS], parameters);
 }
 
 double calcA(const CurrentMember cm[static 1], int k)
 {
-	return gensum(cm->PREMIUM, ER, 0);
+	return interpret(ass.ct[IA_CALCA], parameters);
 }
 
 double calcC(const CurrentMember cm[static 1], int k)
@@ -206,18 +232,15 @@ double calcDTH(const CurrentMember cm[static 1], int k)
 
 double NRA(const CurrentMember cm[static 1], int k)
 {
-	setparameters(cm, k);
 	return interpret(ass.ct[IA_NRA], parameters);
 }
 
 double wxdef(const CurrentMember cm[static 1], int k)
 {
-	setparameters(cm, k);
 	return interpret(ass.ct[IA_WXDEF], parameters);
 }
 
 double retx(const CurrentMember cm[static 1], int k)
 {
-	setparameters(cm, k);
 	return interpret(ass.ct[IA_RETX], parameters);
 }

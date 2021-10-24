@@ -330,6 +330,16 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
 				UI->var[UI_DR113], validMsg[FLOATERR]);
 	}
 
+	/* ----- Check extra variables -----*/
+	for (unsigned i = UI_EXTRA; i < UI_EXTRA + EXTRA_AMOUNT; i++) {
+		if (!isfloat(UI->var[i])) {
+			updateValidation(val, ERROR, "%s [%s], "
+					"expected of the form %s", 
+					extra_var_name[i - UI_EXTRA],
+					UI->var[i], validMsg[FLOATERR]);
+		}
+	}
+
 	init_var(0);
 	/* ----- Check Tree Variables -----*/
 	for (unsigned i = 0; i < UI_AMOUNT; i++) {

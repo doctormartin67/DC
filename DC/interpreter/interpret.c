@@ -127,7 +127,7 @@ unsigned testTree(const struct casetree ct[static 1], FILE *fp,
 	double dage = 0.0;
 	double result = 0.0, testresult = 0.0;
 	char test[BUFSIZ];
-	const void **rule_data = calloc(VAR_AMOUNT, sizeof(*rule_data));
+	union value *rule_data = calloc(VAR_AMOUNT, sizeof(*rule_data));
 	char *age, *reg, *cat, *value;
 	const char *temp = 0;
 	age = reg = cat = value = 0;
@@ -154,9 +154,9 @@ unsigned testTree(const struct casetree ct[static 1], FILE *fp,
 			die("invalid test: %s", test);
 
 		dage = atof(age);
-		rule_data[VAR_AGE] = &dage;
-		rule_data[VAR_REG] = reg;
-		rule_data[VAR_CAT] = cat;
+		rule_data[VAR_AGE].d = dage;
+		snprintf(rule_data[VAR_REG].s, MAX_STRING_SIZE, "%s", reg);
+		snprintf(rule_data[VAR_CAT].s, MAX_STRING_SIZE, "%s", cat);
 
 		result = interpret(ct, rule_data);
 		testresult = atof(value);
