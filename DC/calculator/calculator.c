@@ -456,10 +456,12 @@ static unsigned isfunc(const char s[static 1], unsigned *findex)
  */
 static double max(const char s[static 1])
 {
+	const char *end = s;
 	double curr = 0;
 	double m = eval_expr(s);
+	nextmultop(&end);
 
-	for (const char *next = strchr(s, ','); next;
+	for (const char *next = strchr(s, ','); next && next < end;
 			next = strchr(next, ',')) {
 		next++;
 		if (')' == *next) return cancel_calc(COMMAERR);
@@ -477,10 +479,12 @@ static double max(const char s[static 1])
  */
 static double min(const char s[static 1])
 {
+	const char *end = s;
 	double curr = 0;
 	double m = eval_expr(s);
+	nextmultop(&end);
 
-	for (const char *next = strchr(s, ','); next;
+	for (const char *next = strchr(s, ','); next && next < end;
 			next = strchr(next, ',')) {
 		next++;
 		if (')' == *next) return cancel_calc(COMMAERR);
