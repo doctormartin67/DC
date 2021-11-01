@@ -26,36 +26,48 @@ const char *const widgetname[WIDGET_AMOUNT] = {
 	[FILENAME] = "filename", [STARTSTOP] = "startstop"
 };
 
-const char *const extra_var_name[EXTRA_AMOUNT] = {
-	[CEIL1] = "ceil1", [CEIL2] = "ceil2", [CEIL3] = "ceil3",
-	[CEIL4] = "ceil4", [CEIL5] = "ceil5", [CEIL6] = "ceil6",
-	[CEIL7] = "ceil7", [CEIL8] = "ceil8", [CEIL9] = "ceil9",
-	[CEIL10] = "ceil10"
+const struct user_input ui_interpreter_variables[UI_AMOUNT] = {
+	[UI_SS] = {"Salary Scale", INTERPRETERTEXT},
+	[UI_TURNOVER] = {"Turnover", INTERPRETERTEXT},
+	[UI_RETX] = {"Retirement Probability", INTERPRETERTEXT},
+	[UI_NRA] = {"Normal Retirement Age", INTERPRETERTEXT},
+	[UI_ADMINCOST] = {"Administration Cost", INTERPRETERTEXT},
+	[UI_COSTRES] = {"Cost on Reserves", INTERPRETERTEXT},
+	[UI_COSTKO] = {"Cost on Lump Sum Life", INTERPRETERTEXT},
+	[UI_WD] = {"Profit Sharing for Mortality", INTERPRETERTEXT},
+	[UI_PREPOST] = {"Immediate or Due payments", INTERPRETERTEXT},
+	[UI_TERM] = {"Payment Frequency", INTERPRETERTEXT},
+	[UI_LTINS] = {"Life Tables Insurer", INTERPRETERTEXT},
+	[UI_LTTERM] = {"Life Tables After Termination", INTERPRETERTEXT},
+	[UI_CONTRA] = {"Employer Contribution", INTERPRETERTEXT},
+	[UI_CONTRC] = {"Employee Contribution", INTERPRETERTEXT}
 };
 
-const char *const ui_var_names[UI_AMOUNT] = {
-	[UI_SS] = "Salary Scale",
-	[UI_TURNOVER] = "Turnover",
-	[UI_RETX] = "Retirement Probability",
-	[UI_NRA] = "Normal Retirement Age",
-	[UI_ADMINCOST] = "Administration Cost",
-	[UI_COSTRES] = "Cost on Reserves",
-	[UI_COSTKO] = "Cost on Lump Sum Life",
-	[UI_WD] = "Profit Sharing for Mortality",
-	[UI_PREPOST] = "Immediate or Due payments",
-	[UI_TERM] = "Payment Frequency",
-	[UI_LTINS] = "Life Tables Insurer",
-	[UI_LTTERM] = "Life Tables After Termination",
-	[UI_CONTRA] = "Employer Contribution",
-	[UI_CONTRC] = "Employee Contribution"
+const struct user_input ui_fixed_variables[UI_FIXED_AMOUNT] = {
+	[UI_SHEETNAME] = {"Sheet name", SHEETNAME},
+	[UI_DOC] = {"DOC", W_DOC_LY},
+	[UI_DR] = {"DR", DR},
+	[UI_AGECORR] = {"Age Correction", AGECORR},
+	[UI_INFL] = {"Inflation", INFL},
+	[UI_TRM_PERCDEF] = {"Termination percentage", TRM_PERCDEF},
+	[UI_DR113] = {"DR $113", DR113}
+};
+
+const struct user_input ui_method_variables[COMBO_AMOUNT] = {
+	[COMBO_STANDARD] = {"Standard IAS/FAS", STANDARD},
+	[COMBO_ASSETS] = {"Assets", W_ASSETS_LY},
+	[COMBO_PUCTUC] = {"PUC/TUC", PUCTUC},
+	[COMBO_MAXPUCTUC] = {"max(PUC, TUC)", MAXPUCTUC},
+	[COMBO_MAXERCONTR] = {"max(NC, ER Contr)", MAXERCONTR},
+	[COMBO_EVALDTH] = {"Evaluate Death", EVALUATEDTH}
 };
 
 GtkWidget *widgets[WIDGET_AMOUNT];
-GtkWidget *extra_widgets[EXTRA_AMOUNT];
 static GtkBuilder *builder;
 
-static struct user_input UILY;
-static struct user_input UITY;
+enum {HT_USER_INPUT_SIZE = 131};
+static Hashtable *ht_user_input_LY;
+static Hashtable *ht_user_input_TY;
 
 static GtkWidget *buildWidget(const char *);
 
@@ -63,12 +75,13 @@ void userinterface()
 {
 	gtk_init(0, 0);
 
+	ht_user_input_LY = newHashtable(HT_USER_INPUT_SIZE, 0);
+	ht_user_input_TY = newHashtable(HT_USER_INPUT_SIZE, 0);
+
 	builder = gtk_builder_new_from_file(GLADEFILE);
 
 	for (unsigned i = 0; i < WIDGET_AMOUNT; i++)
 		widgets[i] = buildWidget(widgetname[i]);
-	for (unsigned i = 0; i < EXTRA_AMOUNT; i++)
-		extra_widgets[i] = buildWidget(extra_var_name[i]);
 
 	gtk_builder_connect_signals(builder, 0);
 	g_signal_connect(widgets[WINDOW], "destroy",
@@ -86,154 +99,120 @@ static GtkWidget *buildWidget(const char w[static 1])
 	return widget;
 }
 
-struct user_input *get_user_input(unsigned ui)
+Hashtable *get_user_input(unsigned ui)
 {
 	if (USER_INPUT_LY == ui) {
-		return &UILY;
+		return ht_user_input_LY;
 	} else if (USER_INPUT_TY == ui) { 
-		return &UITY;
+		return ht_user_input_TY;
 	} else die("ui not equal to USER_INPUT_LY or USER_INPUT_TY");
 
 	return 0;
 }
 
-void set_user_input(struct user_input UI[static 1])
+void set_user_input(Hashtable ht[static 1])
 {
-	snprintf(UI->sheetname, sizeof(UI->sheetname), "%s", 
-			gtk_entry_get_text(GTK_ENTRY(widgets[SHEETNAME])));
-	snprintf(UI->keycell, sizeof(UI->keycell), "%s", 
-			gtk_entry_get_text(GTK_ENTRY(widgets[KEYCELL])));
-	snprintf(UI->var[UI_DOC], sizeof(UI->var[UI_DOC]), "%s",
-			gtk_entry_get_text(GTK_ENTRY(widgets[W_DOC_LY])));
-	snprintf(UI->var[UI_DR], sizeof(UI->var[UI_DR]), "%s",
-			gtk_entry_get_text(GTK_ENTRY(widgets[DR])));
-	snprintf(UI->var[UI_AGECORR], sizeof(UI->var[UI_AGECORR]), "%s", 
-			gtk_entry_get_text(GTK_ENTRY(widgets[AGECORR])));
-	snprintf(UI->var[UI_INFL], sizeof(UI->var[UI_INFL]), "%s",
-			gtk_entry_get_text(GTK_ENTRY(widgets[INFL])));
-	snprintf(UI->var[UI_TRM_PERCDEF], sizeof(UI->var[UI_TRM_PERCDEF]),
-			"%s",
-			gtk_entry_get_text(GTK_ENTRY(widgets[TRM_PERCDEF])));
-	snprintf(UI->var[UI_DR113], sizeof(UI->var[UI_DR113]), "%s",
-			gtk_entry_get_text(GTK_ENTRY(widgets[DR113])));
+	char tmp[64];
+	char *kc = 0;
+	const char *key = 0;
+	unsigned wgt = 0;
 
-	for (unsigned i = UI_EXTRA; i < UI_EXTRA + EXTRA_AMOUNT; i++) {
-		snprintf(UI->var[i], sizeof(UI->var[i]), "%s",
-				gtk_entry_get_text(GTK_ENTRY(
-						extra_widgets[i
-						- UI_EXTRA])));
+	kc = strdup(gtk_entry_get_text(GTK_ENTRY(widgets[KEYCELL])));
+	upper(kc);
+	ht_set("keycell", kc, ht);
+	free(kc);
+	kc = 0;
+	
+	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
+		key = ui_fixed_variables[i].key;
+		wgt = ui_fixed_variables[i].widget;
+		ht_set(key, gtk_entry_get_text(GTK_ENTRY(widgets[wgt])), ht);
 	}
 
-	UI->method[METH_STANDARD] = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(widgets[STANDARD]));
-	UI->method[METH_ASSETS] = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(widgets[W_ASSETS_LY]));
-	UI->method[METH_DBO] = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(widgets[PUCTUC]));
-	UI->method[METH_MAXPUCTUC] = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(widgets[MAXPUCTUC]));
-	UI->method[METH_MAXERCONTR] = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(widgets[MAXERCONTR]));
-	UI->method[METH_EVALDTH] = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(widgets[EVALUATEDTH]));
+	for (unsigned i = 0; i < METHOD_AMOUNT; i++) {
+		key = ui_method_variables[i].key;
+		wgt = ui_method_variables[i].widget;
+		snprintf(tmp, sizeof(tmp), "%d", gtk_combo_box_get_active(
+					GTK_COMBO_BOX(widgets[wgt])));
+		ht_set(key, tmp, ht);
+	}
 
-	print_user_input(UI);
+	printHashtable(ht);
 }
 
-void update_user_interface(struct user_input UI[static 1])
+void update_user_interface(Hashtable ht[static 1])
 {
 	/* --- Data --- */
 	char s[BUFSIZ];
-	snprintf(s, sizeof(s), "File set to run:\n%s", UI->fname);
+	const char *key = 0;
+	unsigned wgt = 0;
+
+	snprintf(s, sizeof(s), "File set to run:\n%s", ht_get("fname", ht));
 	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), s); 
-	gtk_entry_set_text(GTK_ENTRY(widgets[SHEETNAME]), UI->sheetname);
-	gtk_entry_set_text(GTK_ENTRY(widgets[KEYCELL]), UI->keycell);
 
-	/* --- Assumptions --- */
-	gtk_entry_set_text(GTK_ENTRY(widgets[W_DOC_LY]), UI->var[UI_DOC]);
-	gtk_entry_set_text(GTK_ENTRY(widgets[DR]), UI->var[UI_DR]);
-	gtk_entry_set_text(GTK_ENTRY(widgets[AGECORR]), UI->var[UI_AGECORR]);
-	gtk_entry_set_text(GTK_ENTRY(widgets[INFL]), UI->var[UI_INFL]);
-	gtk_entry_set_text(GTK_ENTRY(widgets[TRM_PERCDEF]),
-			UI->var[UI_TRM_PERCDEF]);
-	gtk_entry_set_text(GTK_ENTRY(widgets[DR113]), UI->var[UI_DR113]);
-
-	for (unsigned i = UI_EXTRA; i < UI_EXTRA + EXTRA_AMOUNT; i++) {
-		gtk_entry_set_text(GTK_ENTRY(extra_widgets[i - UI_EXTRA]),
-				UI->var[i]);
+	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
+		key = ui_fixed_variables[i].key;
+		wgt = ui_fixed_variables[i].widget;
+		gtk_entry_set_text(GTK_ENTRY(widgets[wgt]), ht_get(key, ht));
 	}
 
-	/* --- Methodology --- */
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[STANDARD]),
-			UI->method[METH_STANDARD]);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[W_ASSETS_LY]),
-			UI->method[METH_ASSETS]);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[PUCTUC]),
-			UI->method[METH_DBO]);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[MAXPUCTUC]),
-			UI->method[METH_MAXPUCTUC]);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[MAXERCONTR]),
-			UI->method[METH_MAXERCONTR]);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[EVALUATEDTH]),
-			UI->method[METH_EVALDTH]);
-}
-
-void print_user_input(struct user_input UI[static 1])
-{
-	/* --- Data --- */
-	printf("file name [%s]\n", UI->fname);
-	printf("sheet name [%s]\n", UI->sheetname);
-	printf("keycell [%s]\n", UI->keycell);
-
-	/* --- Assumptions --- */
-	printf("DOC [%s]\n", UI->var[UI_DOC]);
-	printf("DR [%s]\n", UI->var[UI_DR]);
-	printf("agecorr [%s]\n", UI->var[UI_AGECORR]);
-	printf("infl [%s]\n", UI->var[UI_INFL]);
-	printf("TRM_PercDef [%s]\n", UI->var[UI_TRM_PERCDEF]);
-	printf("DR113 [%s]\n", UI->var[UI_DR113]);
-
-	for (unsigned i = UI_EXTRA; i < UI_EXTRA + EXTRA_AMOUNT; i++) {
-		printf("%s [%s]\n", extra_var_name[i - UI_EXTRA], UI->var[i]);
+	for (unsigned i = 0; i < METHOD_AMOUNT; i++) {
+		key = ui_method_variables[i].key;
+		wgt = ui_method_variables[i].widget;
+		gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[wgt]),
+				atoi(ht_get(key, ht)));
 	}
-
-	for (unsigned i = 0; i < UI_AMOUNT; i++)
-		printf("%s [%s]\n", ui_var_names[i], UI->var[i]);
-
-	/* --- Methodology --- */
-	printf("standard [%d]\n", UI->method[METH_STANDARD]); 
-	printf("assets [%d]\n", UI->method[METH_ASSETS]); 
-	printf("PUCTUC [%d]\n", UI->method[METH_DBO]); 
-	printf("max(PUC, TUC) [%d]\n", UI->method[METH_MAXPUCTUC]); 
-	printf("max(SC, Contr A) [%d]\n", UI->method[METH_MAXERCONTR]);
-	printf("evaluateDTH [%d]\n", UI->method[METH_EVALDTH]); 
 }
 
-void validateUI(Validator val[static 1], struct user_input UI[static 1])
+void validateUI(Validator val[static 1], Hashtable ht[static 1])
 {
+	unsigned err = 0;
+	const char *key = 0;
+	for (unsigned i = 0; i < UI_AMOUNT; i++) {
+		key = ui_interpreter_variables[i].key;
+		if (!ht_get(key, ht)) {
+			updateValidation(val, ERROR, "%s undefined", key);
+			err++;
+		}
+	}
+	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
+		key = ui_fixed_variables[i].key;
+		if (!ht_get(key, ht)) {
+			updateValidation(val, ERROR, "%s undefined", key);
+			err++;
+		}
+	}
+	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
+		key = ui_method_variables[i].key;
+		if (!ht_get(key, ht)) {
+			updateValidation(val, ERROR, "%s undefined", key);
+			err++;
+		}
+	}
+	if (err) return;
+
+	key = ht_get(ui_fixed_variables[UI_DOC].key, ht);
 	size_t len = 0;
 	register unsigned colcnt = 0;
-	char temp[strlen(UI->var[UI_DOC]) + 1];
-	char *kc = UI->keycell;
-	char *pt = 0;
+	char temp[strlen(key) + 1];
+	const char *kc = ht_get("keycell", ht);
+	const char *pt = 0;
 	char *day = 0, *month = 0, *year = 0;
 	const char *tc = 0;
 	struct date *tempDate = 0;
 	struct casetree *ct = 0;
 
 	/* ----- Check File -----*/
-	if (!*UI->fname)
+	if (!ht_get("fname", ht))
 		updateValidation(val, ERROR, "No file selected to run");
 
 	/* ----- Check keycell -----*/
-	upper(kc);
 	len = strlen(kc);
-	gtk_entry_set_text(GTK_ENTRY(widgets[KEYCELL]), UI->keycell);
 
 	if (kc[0] < 'A' || kc[0] > 'Z') {
 		updateValidation(val, ERROR, "KEY cell [%s], "
 				"expected of the form %s", 
-				UI->keycell, validMsg[CELLERR]);
+				ht_get("keycell", ht), validMsg[CELLERR]);
 	} else if (len > 1) {
 		pt = kc + 1;
 		colcnt++;
@@ -246,13 +225,15 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
 		if (colcnt > 3) {
 			updateValidation(val, ERROR, "KEY cell [%s], "
 					"expected of the form %s", 
-					UI->keycell, validMsg[CELLERR]);
+					ht_get("keycell", ht),
+					validMsg[CELLERR]);
 		}
 
 		if ('\0' == *pt) {
 			updateValidation(val, ERROR, "KEY cell [%s], "
 					"expected of the form %s", 
-					UI->keycell, validMsg[CELLERR]);
+					ht_get("keycell", ht),
+					validMsg[CELLERR]);
 		}
 
 		while (isdigit(*pt)) pt++;
@@ -260,16 +241,18 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
 		if ('\0' != *pt) {
 			updateValidation(val, ERROR, "KEY cell [%s], "
 					"expected of the form %s", 
-					UI->keycell, validMsg[CELLERR]);
+					ht_get("keycell", ht),
+					validMsg[CELLERR]);
 		}
 	} else if (1 == len)
 		updateValidation(val, ERROR, "KEY cell [%s], "
 				"expected of the form %s", 
-				UI->keycell, validMsg[CELLERR]);
+				ht_get("keycell", ht),
+				validMsg[CELLERR]);
 
 	/* ----- Check DOC -----*/
 
-	snprintf(temp, sizeof(temp), "%s", UI->var[UI_DOC]);
+	snprintf(temp, sizeof(temp), "%s", key);
 
 	day = strtok(temp, "/");
 	month = strtok(0, "/");
@@ -278,81 +261,78 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
 	if (0 == day || 0 == month || 0 == year) {
 		updateValidation(val, ERROR, "DOC [%s], "
 				"expected of the form %s",
-				UI->var[UI_DOC], validMsg[DATEERR]);
+				key, validMsg[DATEERR]);
 	} else {
 		if (!isint(day) || !isint(month) || !isint(year)) {
 			updateValidation(val, ERROR, "DOC [%s], expected of "
 					"the form %s", 
-					UI->var[UI_DOC], validMsg[DATEERR]);
+					key, validMsg[DATEERR]);
 		}
 
 		tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
 		if (0 == tempDate) {
 			updateValidation(val, ERROR, "DOC [%s], "
 					"expected of the form %s", 
-					UI->var[UI_DOC], validMsg[DATEERR]);
+					key, validMsg[DATEERR]);
 		}
 		free(tempDate);
 	}
 
 	/* ----- Check DR -----*/
-	if (!isfloat(UI->var[UI_DR])) {
+	key = ht_get(ui_fixed_variables[UI_DR].key, ht);
+	if (!isfloat(key)) {
 		updateValidation(val, ERROR, "DR [%s], "
 				"expected of the form %s",
-				UI->var[UI_DR], validMsg[FLOATERR]);
+				key, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check Age Correction -----*/
-	if (!isint(UI->var[UI_AGECORR])) {
+	key = ht_get(ui_fixed_variables[UI_AGECORR].key, ht);
+	if (!isint(key)) {
 		updateValidation(val, ERROR, "Age Correction [%s], "
 				"expected of the form %s", 
-				UI->var[UI_AGECORR], validMsg[AGECORRERR]);
+				key, validMsg[AGECORRERR]);
 	}
 
 	/* ----- Check Inflation -----*/
-	if (!isfloat(UI->var[UI_INFL])) {
+	key = ht_get(ui_fixed_variables[UI_INFL].key, ht);
+	if (!isfloat(key)) {
 		updateValidation(val, ERROR, "Inflation [%s], "
 				"expected of the form %s", 
-				UI->var[UI_INFL], validMsg[FLOATERR]);
+				key, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check Termination percentage -----*/
-	if (!isfloat(UI->var[UI_TRM_PERCDEF])) {
+	key = ht_get(ui_fixed_variables[UI_TRM_PERCDEF].key, ht);
+	if (!isfloat(key)) {
 		updateValidation(val, ERROR, "Termination % [%s] (usually 1), "
 				"expected of the form %s", 
-				UI->var[UI_TRM_PERCDEF], validMsg[FLOATERR]);
+				key, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check DR 113 -----*/
-	if (!isfloat(UI->var[UI_DR113])) {
+	key = ht_get(ui_fixed_variables[UI_DR113].key, ht);
+	if (!isfloat(key)) {
 		updateValidation(val, WARNING, "DR $113 [%s], "
 				"expected of the form %s", 
-				UI->var[UI_DR113], validMsg[FLOATERR]);
-	}
-
-	/* ----- Check extra variables -----*/
-	for (unsigned i = UI_EXTRA; i < UI_EXTRA + EXTRA_AMOUNT; i++) {
-		if (!isfloat(UI->var[i])) {
-			updateValidation(val, ERROR, "%s [%s], "
-					"expected of the form %s", 
-					extra_var_name[i - UI_EXTRA],
-					UI->var[i], validMsg[FLOATERR]);
-		}
+				key, validMsg[FLOATERR]);
 	}
 
 	init_var(0);
 	/* ----- Check Tree Variables -----*/
 	for (unsigned i = 0; i < UI_AMOUNT; i++) {
-		ct = plantTree(strclean(UI->var[i]));
+		ct = plantTree(strclean(ht_get(ui_interpreter_variables[i].key,
+						ht)));
 		if (NOERR != getterrno()) {
-			updateValidation(val, ERROR, "%s: %s", ui_var_names[i],
+			updateValidation(val, ERROR, "%s: %s",
+					ui_interpreter_variables[i].key,
 					strterror(getterrno()));
 			setterrno(NOERR);
 		}
 
 		chopTree(ct);
 		ct = 0;
-}
+	}
 
 	/* ----- Check test case -----*/
 	tc = gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]));
@@ -367,11 +347,11 @@ void validateUI(Validator val[static 1], struct user_input UI[static 1])
  * the data, at which point it is instantly freed. The Validator val is
  * updated in the process
  */
-void validateData(Validator val[static 1], struct user_input UI[static 1])
+void validateData(Validator val[static 1], Hashtable ht[static 1])
 {
 	DataSet *ds = 0;
 	if (val->status == OK) {
-		ds = createDS(val, UI); 
+		ds = createDS(val, ht); 
 		freeDS(ds);
 	}
 }

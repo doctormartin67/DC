@@ -38,9 +38,9 @@ static int colmissing[KEYS_AMOUNT];
 
 static Validator *val;
 
-DataSet *createDS(Validator v[static 1], struct user_input UI[static 1])
+DataSet *createDS(Validator v[static 1], Hashtable ht_ui[static 1])
 {
-	const char *s = UI->fname;
+	const char *s = ht_get("fname", ht_ui);
 	Hashtable **ht = 0;
 	DataSet *ds = jalloc(1, sizeof(*ds));
 	*ds = (DataSet){0};
@@ -55,7 +55,7 @@ DataSet *createDS(Validator v[static 1], struct user_input UI[static 1])
 	XLfile *xl = createXL(s);
 
 	ds->xl = xl;
-	ds->UI = UI;
+	ds->ht_user_input = ht_ui;
 
 	if (0 == ds->xl) {
 		updateValidation(val, ERROR, "Unable to parse excel file [%s],"
@@ -189,6 +189,7 @@ int setkey(DataSet ds[static 1])
 {
 	XLfile *xl = ds->xl;
 	char *c = 0;
+	const char *kc = 0;
 	char *row = 0; 
 	char **xls = xl->sheetname;
 	unsigned i = 0;
@@ -196,11 +197,12 @@ int setkey(DataSet ds[static 1])
 	xmlNodeSetPtr nodes = 0;
 	xmlNodePtr node = 0;
 
-	setcol(ds->keycolumn, ds->UI->keycell);
-	ds->keyrow = getrow(ds->UI->keycell);
+	kc = ht_get("keycell", ds->ht_user_input);
+	setcol(ds->keycolumn, kc);
+	ds->keyrow = getrow(kc);
 
 	snprintf(ds->datasheet, sizeof(ds->datasheet), 
-			"%s", ds->UI->sheetname);
+			"%s", ht_get("sheetname", ds->ht_user_input));
 	for (i = 0; i < xl->sheetcnt; i++)
 		if (!strcmp(xls[i], ds->datasheet))
 			break;
@@ -210,10 +212,9 @@ int setkey(DataSet ds[static 1])
 		return 0;
 	} else {
 		/* Check whether cell that was provided has anything in it */
-		if (0 == (c = cell(ds->xl, ds->sheet, ds->UI->keycell))) {
+		if (0 == (c = cell(ds->xl, ds->sheet, kc))) {
 			updateValidation(val, ERROR, 
-					"Nothing in cell [%s] found",
-					ds->UI->keycell);
+					"Nothing in cell [%s] found", kc);
 			return 0;
 		}
 		free(c);
@@ -233,8 +234,7 @@ int setkey(DataSet ds[static 1])
 
 		if (0 == (ds->keynode = node)) {
 			updateValidation(val, ERROR, 
-					"Nothing in cell [%s] found",
-					ds->UI->keycell);
+					"Nothing in cell [%s] found", kc);
 			return 0;
 		} else
 			return 1;
@@ -310,16 +310,16 @@ void createData(DataSet ds[static 1])
 		pkey = ds->keys;
 		// Set the initial data (KEY)
 		if (0 == (data = cell(ds->xl, ds->sheet, dataCell))) {
-			lookup(*pkey++, "0", *(ds->Data + i));
+			ht_set(*pkey++, "0", *(ds->Data + i));
 		} else {
-			lookup(*pkey++, data, *(ds->Data + i));
+			ht_set(*pkey++, data, *(ds->Data + i));
 			free(data);
 		}
 		nextcol(dataCell);
 		while (0 != *pkey) {
 			while (0 == (data = cell(ds->xl, ds->sheet, dataCell))) {
 				if (0 != *pkey)
-					lookup(*pkey++, "0", *(ds->Data + i));
+					ht_set(*pkey++, "0", *(ds->Data + i));
 				else
 					break;
 				// Here we update cell for loop, for example O11 becomes P11
@@ -327,7 +327,7 @@ void createData(DataSet ds[static 1])
 			}
 
 			if (0 != *pkey) {
-				lookup(*pkey++, data, *(ds->Data + i));
+				ht_set(*pkey++, data, *(ds->Data + i));
 				free(data);
 			} else {
 				free(data);
@@ -377,10 +377,11 @@ static unsigned countdigits(unsigned d)
 	return cnt;
 }
 
-char *getcmval(CurrentMember cm[static 1], DataColumn dc, int EREE, int gen)
+const char *getcmval(CurrentMember cm[static 1], DataColumn dc, int EREE,
+		int gen)
 {
 	char value[BUFSIZ];
-	struct linked_list *h = 0;
+	const char *h = 0;
 
 	if (EREE >= 0 && gen > 0)
 		snprintf(value, sizeof(value), "%s%c%c%s%d", colnames[dc], '_',
@@ -388,12 +389,12 @@ char *getcmval(CurrentMember cm[static 1], DataColumn dc, int EREE, int gen)
 	else
 		snprintf(value, sizeof(value), "%s", colnames[dc]);
 
-	if (colmissing[dc] || 0 == (h = lookup(value, 0, cm->Data))) {
+	if (colmissing[dc] || 0 == (h = ht_get(value, cm->Data))) {
 		colmissing[dc] = 1;
 		return strdup("0");
 	} else {
-		validateInput(dc, cm, value, h->value);
-		return h->value;
+		validateInput(dc, cm, value, h);
+		return h;
 	}
 }
 

@@ -23,7 +23,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
 	Validator validatorLY = (Validator) {0};
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	char *MsgErr = 0;
 	gchar *choice = 0;
 	GtkDialog *dialog = 0;
@@ -33,10 +33,10 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 		run_state = RUNNING;
 		gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
 				"media-playback-stop", GTK_ICON_SIZE_BUTTON);
-		set_user_input(ui);
+		set_user_input(ht);
 		validatorLY.status = OK;
-		validateUI(&validatorLY, ui); 
-		validateData(&validatorLY, ui);
+		validateUI(&validatorLY, ht); 
+		validateData(&validatorLY, ht);
 
 		if (validatorLY.status != ERROR) {
 			choice = gtk_combo_box_text_get_active_text(
@@ -80,7 +80,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 
 static gpointer run(gpointer pl)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	unsigned tc = 0;
 	DataSet *ds = 0;
 	CurrentMember *cm = 0;
@@ -90,7 +90,7 @@ static gpointer run(gpointer pl)
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	tc -= 1; // Index is one less than given test case
-	ds = createDS(0, ui);
+	ds = createDS(0, ht);
 	cm = ds->cm;
 
 	setassumptions();
@@ -118,7 +118,7 @@ static gpointer run(gpointer pl)
 
 static gpointer runtc(gpointer pl)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	unsigned tc = 0;
 	DataSet *ds = 0;
 	CurrentMember *cm = 0;
@@ -128,7 +128,7 @@ static gpointer runtc(gpointer pl)
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	tc -= 1; // Index is one less than given test case
-	ds = createDS(0, ui);
+	ds = createDS(0, ht);
 	cm = ds->cm + tc;
 
 	printf("testcase: %s chosen\n", cm->key);

@@ -78,59 +78,6 @@ typedef double GenMatrix[MAXGEN][MAXPROJ];
 //---Data Declarations---
 
 /*
- * This data structure will hold the user input that can be saved by user as a
- * ".dc" file. The reason there are many free variables is so that if a
- * variable needs to be added, it won't alter the memory structure of the
- * struct and so we can still read older versions of the user_input struct
- * as binary files
- */
-
-/*
- * This enum defines extra variables that might be needed for the plan rules
- */
-enum {
-	CEIL1, CEIL2, CEIL3, CEIL4, CEIL5, CEIL6, CEIL7, CEIL8, CEIL9, CEIL10,
-	EXTRA_AMOUNT
-};
-
-/*
- * used as index for all the variables in the user interface
- * a variable declared larger than UI_AMOUNT is not considered as a
- * "tree variable", meaning it's not determined by select case, but just as a
- * fixed value. This means that the first half of the array are the interpreter
- * variables, the second half are the fixed variables
- */
-enum {
-	UI_SS, UI_TURNOVER, UI_RETX, UI_NRA,
-	UI_ADMINCOST, UI_COSTRES, UI_COSTKO, UI_WD, UI_PREPOST, UI_TERM,
-	UI_LTINS, UI_LTTERM,
-	UI_CONTRA, UI_CONTRC,
-	UI_AMOUNT,
-	UI_DOC = 64,
-	UI_DR, UI_AGECORR, UI_INFL, UI_TRM_PERCDEF, UI_DR113,
-	UI_EXTRA, 
-	UI_MAX = 128
-};
-
-/*
- * used as index for the variables defined under methodology
- */
-enum {
-	METH_STANDARD, METH_ASSETS, METH_DBO, METH_MAXPUCTUC, METH_EVALDTH,
-	METH_MAXERCONTR, METH_AMOUNT, METH_MAX = 32
-};
-extern const char *const ui_var_names[UI_AMOUNT];
-
-struct user_input {
-	/* --- Data --- */
-	char fname[PATH_MAX];
-	char sheetname[32];
-	char keycell[16];
-	char var[UI_MAX][INTERPRETERTEXT_SIZE]; 
-	gint method[METH_MAX];
-};
-
-/*
  * the following typedef is maybe the most important part of the entire
  * program. Each member of a pension plan has characteristics that need to be
  * given in the excel file that is used to run. All of the data is
@@ -145,10 +92,10 @@ typedef struct {
 	unsigned id; /* Used to print warning/error messages to user */
 
 	//---Variable Declarations---  
-	char *key; // KEY
-	char *regl; // REGLEMENT (plan rule)
-	char *name; // NAME
-	char *contract; // CONTRACT number
+	const char *key; // KEY
+	const char *regl; // REGLEMENT (plan rule)
+	const char *name; // NAME
+	const char *contract; // CONTRACT number
 	unsigned status; /* 0000 0000 0000 0111 means single male active member
 			    and active contract */
 	struct date *DOB; // date of birth
@@ -158,7 +105,7 @@ typedef struct {
 	struct date *DOA; // date of affiliation
 	struct date *DOR; // date of retirement
 	struct date *DOC[MAXPROJ + 1]; // date of calculation
-	char *category; // f.e. blue collar, white collar, management, ...
+	const char *category; // f.e. blue collar, white collar, management, ...
 	double sal[MAXPROJ]; // salary
 	double PG; // pensioengrondslag (I have never needed this)
 	double PT; // part time
@@ -185,15 +132,15 @@ typedef struct {
 	GenMatrix CAPDTH[EREE_AMOUNT]; /* Death lump sum (used for UKMT) */
 	GenMatrix RP[EREE_AMOUNT]; // Risk Premium
 	double CAO; // collectieve arbeidsovereenkomst
-	char *ORU;
-	char *CHOICEDTH; // Choice of death insurance
-	char *CHOICEINVS; // Choice of invalide insurance sickness
-	char *CHOICEINVW; // Choice of invalide insurance work
+	const char *ORU;
+	const char *CHOICEDTH; // Choice of death insurance
+	const char *CHOICEINVS; // Choice of invalide insurance sickness
+	const char *CHOICEINVW; // Choice of invalide insurance work
 	double contrDTH; // Death contributions
 	double percSALKO; // percentage of salary for death lump sum
-	char *indexINV; // indexation for invalidity
-	char *GRDGR;
-	char *plan;
+	const char *indexINV; // indexation for invalidity
+	const char *GRDGR;
+	const char *plan;
 	double baranc; // baremic ancienity
 	unsigned extra; /* 0000 0000 0000 0011 means prepensioner whose salary
 			   we increase at k = -1 */
@@ -269,7 +216,7 @@ typedef struct {
 	XLfile *xl;
 	Hashtable **Data;
 	CurrentMember *cm;
-	struct user_input *UI; 
+	Hashtable *ht_user_input;
 } DataSet;
 
 //---Useful functions for CurrentMembers---
@@ -318,12 +265,12 @@ typedef struct {
 Tariff tff; // Tariff structure
 
 //---Data Functions---
-DataSet *createDS(Validator *, struct user_input *);
+DataSet *createDS(Validator *, Hashtable *);
 void createCM(CurrentMember *, Hashtable *);
 void freeDS(DataSet *ds);
 void freeCM(CurrentMember *cm);
 void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn);
-char *getcmval(CurrentMember *cm, DataColumn, int EREE, int gen);
+const char *getcmval(CurrentMember *cm, DataColumn, int EREE, int gen);
 void validateColumns(void);
 void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
 		const char *input);

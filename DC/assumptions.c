@@ -1,32 +1,32 @@
+#include <assert.h>
 #include <math.h>
 #include "assumptions.h"
 #include "lifetables.h"
 
 static union value parameters[VAR_AMOUNT];
 
-/*
- * This array holds extra variables for example ceilings.
- * The variables are increased with inflation
- */
-double extra_var[EXTRA_AMOUNT][MAXPROJ];
-
-static void set_methodology(struct user_input ui[static 1]);
-static void replant(struct casetree **ct, const struct user_input ui[static 1],
+enum {VAR_INTERPRETER, VAR_FIXED, VAR_COMBO};
+static const char *get_var(unsigned ui, unsigned var_type,
+		Hashtable ht[static 1]);
+static void set_methodology(Hashtable ht[static 1]);
+static void replant(struct casetree **ct, Hashtable ht[static 1],
 		unsigned it);
 
 void setassumptions(void)
 {
 	/* this needs updating when we have a UITY!!! */
-	struct user_input *UITY = get_user_input(USER_INPUT_LY);
-	struct user_input *UILY = get_user_input(USER_INPUT_LY);
+	Hashtable *htTY = get_user_input(USER_INPUT_LY);
+	Hashtable *htLY = get_user_input(USER_INPUT_LY);
 	char temp[BUFSIZ];
 	char *year, *month, *day;
 	year = month = day = 0;
 
 	if (currrun >= runRF) 
-		snprintf(temp, sizeof(temp), "%s", UITY->var[UI_DOC]);
+		snprintf(temp, sizeof(temp), "%s",
+				get_var(UI_DOC, VAR_FIXED, htTY));
 	else 
-		snprintf(temp, sizeof(temp), "%s", UILY->var[UI_DOC]);
+		snprintf(temp, sizeof(temp), "%s", 
+				get_var(UI_DOC, VAR_FIXED, htLY));
 
 	day = strtok(temp, "/");
 	month = strtok(0, "/");
@@ -34,62 +34,98 @@ void setassumptions(void)
 
 	ass.DOC = newDate(0, atoi(year), atoi(month), atoi(day));
 	ass.DR = (currrun >= runNewDR ?
-			atof(UITY->var[UI_DR]) :
-			atof(UILY->var[UI_DR]));
+			atof(get_var(UI_DR, VAR_FIXED, htTY)) :
+			atof(get_var(UI_DR, VAR_FIXED, htLY)));
 	ass.DR113 =
 		(currrun >= runNewDR ?
-		 atof(UITY->var[UI_DR113]) :
-		 atof(UILY->var[UI_DR113]));
+		 atof(get_var(UI_DR113, VAR_FIXED, htTY)) :
+		 atof(get_var(UI_DR113, VAR_FIXED, htLY)));
 	ass.agecorr = (currrun >= runNewMortality ?
-			atoi(UITY->var[UI_AGECORR]) :
-			atoi(UILY->var[UI_AGECORR]));
+			atoi(get_var(UI_AGECORR, VAR_FIXED, htTY)) :
+			atoi(get_var(UI_AGECORR, VAR_FIXED, htLY)));
 	ass.infl = (currrun >= runNewInflation ?
-			atof(UITY->var[UI_INFL]) :
-			atof(UILY->var[UI_INFL]));
+			atof(get_var(UI_INFL, VAR_FIXED, htTY)) :
+			atof(get_var(UI_INFL, VAR_FIXED, htLY)));
 	ass.ct[IA_SS] =
 		(currrun >= runNewSS ?
-		 plantTree(strclean(UITY->var[UI_SS])) :
-		 plantTree(strclean(UILY->var[UI_SS])));
+		 plantTree(strclean(get_var(UI_SS, VAR_INTERPRETER, htTY))) :
+		 plantTree(strclean(get_var(UI_SS, VAR_INTERPRETER, htLY))));
 	ass.ct[IA_NRA] =
 		(currrun >= runNewNRA ?
-		 plantTree(strclean(UITY->var[UI_NRA])) :
-		 plantTree(strclean(UILY->var[UI_NRA])));
+		 plantTree(strclean(get_var(UI_NRA, VAR_INTERPRETER, htTY))) :
+		 plantTree(strclean(get_var(UI_NRA, VAR_INTERPRETER, htLY))));
 	ass.ct[IA_WXDEF] =
 		(currrun >= runNewTurnover ?
-		 plantTree(strclean(UITY->var[UI_TURNOVER])) :
-		 plantTree(strclean(UILY->var[UI_TURNOVER])));
+		 plantTree(strclean(get_var(UI_TURNOVER, VAR_INTERPRETER,
+					 htTY))) :
+		 plantTree(strclean(get_var(UI_TURNOVER, VAR_INTERPRETER,
+					 htLY))));
 	ass.ct[IA_RETX] =
 		(currrun >= runNewNRA ?
-		 plantTree(strclean(UITY->var[UI_RETX])) :
-		 plantTree(strclean(UILY->var[UI_RETX])));
+		 plantTree(strclean(get_var(UI_RETX, VAR_INTERPRETER,
+					 htTY))) :
+		 plantTree(strclean(get_var(UI_RETX, VAR_INTERPRETER,
+					 htLY))));
 	ass.ct[IA_CALCA] = 
 		(currrun >= runNewMethodology ?
-		 plantTree(strclean(UITY->var[UI_CONTRA])) :
-		 plantTree(strclean(UILY->var[UI_CONTRA])));
+		 plantTree(strclean(get_var(UI_CONTRA, VAR_INTERPRETER,
+					 htTY))) :
+		 plantTree(strclean(get_var(UI_CONTRA, VAR_INTERPRETER,
+					 htLY))));
 	ass.ct[IA_CALCC] = 0;
 	ass.ct[IA_CALCDTH] = 0;
 
 	// Assumptions that usually won't change from year to year
 	ass.incrSalk0 = 0; // determine whether sal gets increased at k = 0
 	ass.incrSalk1 = 1; // determine whether sal gets increased at k = 1
-	ass.TRM_PercDef = atof(UITY->var[UI_TRM_PERCDEF]);
+	ass.TRM_PercDef = atof(get_var(UI_TRM_PERCDEF, VAR_FIXED, htTY));
 
 	if (currrun >= runNewMethodology) {
-		set_methodology(UITY);
+		set_methodology(htTY);
 	} else {
-		set_methodology(UILY);
+		set_methodology(htLY);
 	}
 }
 
-static void set_methodology(struct user_input ui[static 1])
+static const char *get_var(unsigned ui, unsigned var_type,
+		Hashtable ht[static 1])
 {
-	if (ui->method[METH_STANDARD]) ass.method += mIAS;
-	if (PAR115 == ui->method[METH_ASSETS]) ass.method += mPAR115;
-	if (RES == ui->method[METH_ASSETS]) ass.method += mRES;
-	if (TUC == ui->method[METH_DBO]) ass.method += mTUC;
-	if (ui->method[METH_MAXPUCTUC]) ass.method += mmaxPUCTUC;
-	if (ui->method[METH_MAXERCONTR]) ass.method += mmaxERContr;
-	if (ui->method[METH_EVALDTH]) ass.method += mDTH;
+	const char *s = 0;
+	switch (var_type) {
+		case VAR_INTERPRETER :
+			assert(ui < UI_AMOUNT);
+			s = ht_get(ui_interpreter_variables[ui].key, ht);	
+			break;
+		case VAR_FIXED :
+			assert(ui < UI_FIXED_AMOUNT);
+			s = ht_get(ui_fixed_variables[ui].key, ht);	
+			break;
+		case VAR_COMBO :
+			assert(ui < COMBO_AMOUNT);
+			s = ht_get(ui_method_variables[ui].key, ht);	
+			break;
+		default :
+			die("should never reach here");
+	}
+
+	assert(!s);
+	return s;
+}
+
+static void set_methodology(Hashtable ht[static 1])
+{
+	if (atoi(get_var(COMBO_STANDARD, VAR_COMBO, ht))) ass.method += mIAS;
+	if (PAR115 == atoi(get_var(COMBO_ASSETS, VAR_COMBO, ht)))
+		ass.method += mPAR115;
+	if (RES == atoi(get_var(COMBO_ASSETS, VAR_COMBO, ht)))
+		ass.method += mRES;
+	if (TUC == atoi(get_var(COMBO_ASSETS, VAR_COMBO, ht)))
+		ass.method += mTUC;
+	if (atoi(get_var(COMBO_MAXPUCTUC, VAR_COMBO, ht)))
+		ass.method += mmaxPUCTUC;
+	if (atoi(get_var(COMBO_MAXERCONTR, VAR_COMBO, ht)))
+		ass.method += mmaxERContr;
+	if (atoi(get_var(COMBO_EVALDTH, VAR_COMBO, ht))) ass.method += mDTH;
 
 	if (ass.method & mIAS)
 		ass.taxes = 0.0886 + 0.044;
@@ -103,30 +139,30 @@ void set_tariffs(const CurrentMember cm[static 1])
 	unsigned ltins = 0;
 	unsigned ltterm = 0;
 	struct casetree *ct = 0;
-	struct user_input *ui = 0;
+	Hashtable *ht = 0;
 	/* this needs updating when we have a UITY!!! */
 	if (currrun >= runNewData)
-		ui = get_user_input(USER_INPUT_LY);
+		ht = get_user_input(USER_INPUT_LY);
 	else
-		ui = get_user_input(USER_INPUT_LY);
+		ht = get_user_input(USER_INPUT_LY);
 
-	replant(&ct, ui, UI_ADMINCOST);
+	replant(&ct, ht, UI_ADMINCOST);
 	tff.admincost = interpret(ct, parameters);
-	replant(&ct, ui, UI_COSTRES);
+	replant(&ct, ht, UI_COSTRES);
 	tff.costRES = interpret(ct, parameters);
-	replant(&ct, ui, UI_COSTKO);
+	replant(&ct, ht, UI_COSTKO);
 	tff.costKO = interpret(ct, parameters);
-	replant(&ct, ui, UI_WD);
+	replant(&ct, ht, UI_WD);
 	tff.WDDTH = interpret(ct, parameters);
 	tff.MIXEDPS = (currrun >= runNewData ? 1 : 1);
-	replant(&ct, ui, UI_PREPOST);
+	replant(&ct, ht, UI_PREPOST);
 	tff.prepost = interpret(ct, parameters);
-	replant(&ct, ui, UI_TERM);
+	replant(&ct, ht, UI_TERM);
 	tff.term = interpret(ct, parameters);
 
-	replant(&ct, ui, UI_LTINS);
+	replant(&ct, ht, UI_LTINS);
 	ltins = interpret(ct, parameters);
-	replant(&ct, ui, UI_LTTERM);
+	replant(&ct, ht, UI_LTTERM);
 	ltterm = interpret(ct, parameters);
 	for (int l = 0; l < EREE_AMOUNT; l++) {
 		for (int j = 0; j < MAXGEN; j++) {
@@ -144,12 +180,13 @@ void set_tariffs(const CurrentMember cm[static 1])
 	chopTree(ct);
 }
 
-static void replant(struct casetree **ct, const struct user_input *ui,
-		unsigned it)
+static void replant(struct casetree **ct, Hashtable *ht, unsigned it)
 {
-	if (it >= UI_AMOUNT) die("Unknown casetree");
+	assert(it < UI_ADMINCOST);
 	chopTree(*ct);
-	*ct = plantTree(strclean(ui->var[it]));
+	*ct = plantTree(strclean(ht_get(ui_interpreter_variables[it].key,
+					ht)));
+	return;
 }
 
 /*
@@ -158,24 +195,13 @@ static void replant(struct casetree **ct, const struct user_input *ui,
 void setparameters(const CurrentMember cm[static 1], int k)
 {
 	/* this needs updating when we have a UITY!!! */
-	struct user_input *UITY = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
 
 	size_t len = MAX_STRING_SIZE;
 	double sex = 1.0;
 	double lt[LT_AMOUNT] = {
 		LXMR, LXFR, LXMK, LXFK, LXFKP, LXNIHIL
 	};
-
-	for (unsigned i = 0; i < EXTRA_AMOUNT; i++) {
-		if (0 == k)
-			extra_var[i][k] = atof(UITY->var[i + UI_EXTRA]);
-		if (0 < k)	
-			extra_var[i][k] = extra_var[i][k-1]
-				* pow((1 + ass.infl),
-						cm->DOC[k]->year 
-						- cm->DOC[k-1]->year 
-						+ (1 == k ? ass.incrSalk1 :0));
-	}
 
 	if (cm->status & MALE)
 		sex = 1.0;
@@ -203,10 +229,6 @@ void setparameters(const CurrentMember cm[static 1], int k)
 	for (unsigned i = VAR_LXMR; i < LT_AMOUNT + VAR_LXMR; i++)
 		parameters[i].d = lt[i - VAR_LXMR];
 
-	/* this needs updating when we have a UITY!!! */
-	for (unsigned i = VAR_CEIL1; i < EXTRA_AMOUNT + VAR_CEIL1; i++)
-		parameters[i].d = extra_var[i - VAR_CEIL1][k];
-	
 	init_var(parameters);
 }
 

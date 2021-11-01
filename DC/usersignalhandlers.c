@@ -1,12 +1,13 @@
+#include <assert.h>
 #include "userinterface.h"
 
 /*
- * This points at the current text that will be set by the open
- * interpreter window once it closes
+ * This equals the current index of the interpreter that will be set by the
+ * open interpreter window once it closes
  */
-static char *current_interpreter;
+static unsigned current_interpreter;
 
-static void set_interpreter_text(char *intprtr, const char *s);
+static void set_interpreter_text(unsigned intprtr);
 
 void on_close_button_press_event(void)
 {
@@ -18,8 +19,7 @@ void on_close_button_press_event(void)
  */
 void on_openDC_activate(GtkMenuItem *m)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
-	FILE *fp = 0;
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	char *filename = 0;
 	gint res = 0;
 	GtkDialog *dialog = 0;
@@ -34,16 +34,8 @@ void on_openDC_activate(GtkMenuItem *m)
 		filename = gtk_file_chooser_get_filename(chooser);
 		printf("selected file [%s] to open\n", filename);
 
-		fp = fopen(filename, "rb");
-		if (0 == fp) die("Unable to open file [%s]", filename);
-
-		if (fread(ui, sizeof(*ui), 1, fp) != 1)
-			die("[%s] not a correct .dc file\n", filename);
-
-		update_user_interface(ui);
-
-		if (fclose(fp) == EOF) 
-			die("unable to close file [%s]", filename);
+		readHashtable(filename, ht);
+		update_user_interface(ht);
 
 		g_free(filename);
 		filename = 0;
@@ -52,7 +44,7 @@ void on_openDC_activate(GtkMenuItem *m)
 	}
 
 	gtk_widget_hide(GTK_WIDGET(dialog));
-	print_user_input(ui);
+	printHashtable(ht);
 }
 
 void on_saveDC_activate(GtkMenuItem *m)
@@ -65,8 +57,7 @@ void on_saveDC_activate(GtkMenuItem *m)
  */
 void on_saveasDC_activate(GtkMenuItem *m)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
-	FILE *fp = 0;
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	char tmp[BUFSIZ];
 	char *filename = 0;
 	char *p = 0;
@@ -74,7 +65,7 @@ void on_saveasDC_activate(GtkMenuItem *m)
 	GtkFileChooser *chooser = 0;
 	gint res = 0;
 
-	set_user_input(ui);
+	set_user_input(ht);
 	dialog = GTK_DIALOG(widgets[SAVEASDCFILE]);
 	gtk_widget_show(GTK_WIDGET(dialog));
 	res = gtk_dialog_run(dialog); 
@@ -95,13 +86,7 @@ void on_saveasDC_activate(GtkMenuItem *m)
 		}
 		printf("selected file [%s] to save\n", tmp);
 
-		fp = fopen(tmp, "wb");
-		if (0 == fp) die("Unable to open file [%s]\n", tmp);
-
-		if (fwrite(ui, sizeof(*ui), 1, fp) != 1)
-			die("unable to write to file [%s]", tmp);
-		if (fclose(fp) == EOF) 
-			die("unable to close file [%s]", filename);
+		writeHashtable(tmp, ht);
 
 		g_free(filename);
 		p = filename = 0;
@@ -117,7 +102,7 @@ void on_saveasDC_activate(GtkMenuItem *m)
  */
 void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("dialog [%s] closed\n", gtk_file_chooser_button_get_title(b));
 
@@ -129,10 +114,10 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
 	filename = gtk_file_chooser_get_filename(chooser);
 
-	snprintf(ui->fname, sizeof(ui->fname), "%s", filename);
-	snprintf(tmp, sizeof(tmp), "File set to run:\n%s", ui->fname);
+	ht_set("fname", filename, ht);
+	snprintf(tmp, sizeof(tmp), "File set to run:\n%s", ht_get("fname", ht));
 
-	printf("Excel to run: [%s]\n", ui->fname);
+	printf("Excel to run: [%s]\n", ht_get("fname", ht));
 	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), tmp); 
 	g_free(filename);
 }
@@ -147,6 +132,7 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
 		gpointer p)
 {
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("GdkEventType [%d]\n", gdk_event_get_event_type(e));
 
@@ -158,9 +144,9 @@ gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
 	gtk_text_buffer_get_iter_at_offset(temp, &end, -1);
 	s = gtk_text_buffer_get_text(temp, &begin, &end, TRUE);
 
-	if (0 == current_interpreter) 
-		die("current_interpreter was not set, this is impossible");
-	snprintf(current_interpreter, INTERPRETERTEXT_SIZE, "%s", s);
+	assert(current_interpreter < UI_AMOUNT) ;
+
+	ht_set(ui_interpreter_variables[current_interpreter].key, s, ht);
 	g_free(s);
 
 	gtk_widget_hide(w);
@@ -173,9 +159,8 @@ gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
  */
 void on_SS_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_SS], ui_var_names[UI_SS]);
+	set_interpreter_text(UI_SS);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -185,9 +170,8 @@ void on_SS_interpreterbutton_clicked(GtkButton *b, gpointer *w)
  */
 void on_turnover_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_TURNOVER], ui_var_names[UI_TURNOVER]);
+	set_interpreter_text(UI_TURNOVER);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -197,9 +181,8 @@ void on_turnover_interpreterbutton_clicked(GtkButton *b, gpointer *w)
  */
 void on_retx_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_RETX], ui_var_names[UI_RETX]);
+	set_interpreter_text(UI_RETX);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -209,90 +192,78 @@ void on_retx_interpreterbutton_clicked(GtkButton *b, gpointer *w)
  */
 void on_NRA_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_NRA], ui_var_names[UI_NRA]);
+	set_interpreter_text(UI_NRA);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_admincost_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_ADMINCOST],
-			ui_var_names[UI_ADMINCOST]);
+	set_interpreter_text(UI_ADMINCOST);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_costRES_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_COSTRES], ui_var_names[UI_COSTRES]);
+	set_interpreter_text(UI_COSTRES);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_costKO_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_COSTKO], ui_var_names[UI_COSTKO]);
+	set_interpreter_text(UI_COSTKO);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_WD_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_WD], ui_var_names[UI_WD]);
+	set_interpreter_text(UI_WD);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_prepost_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_PREPOST], ui_var_names[UI_PREPOST]);
+	set_interpreter_text(UI_PREPOST);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_term_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_TERM], ui_var_names[UI_TERM]);
+	set_interpreter_text(UI_TERM);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_ltINS_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_LTINS], ui_var_names[UI_LTINS]);
+	set_interpreter_text(UI_LTINS);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_ltTERM_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_LTTERM], ui_var_names[UI_LTTERM]);
+	set_interpreter_text(UI_LTTERM);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_contrA_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_CONTRA], ui_var_names[UI_CONTRA]);
+	set_interpreter_text(UI_CONTRA);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_contrC_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
-	struct user_input *ui = get_user_input(USER_INPUT_LY);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(ui->var[UI_CONTRC], ui_var_names[UI_CONTRC]);
+	set_interpreter_text(UI_CONTRC);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -301,11 +272,16 @@ void on_contrC_interpreterbutton_clicked(GtkButton *b, gpointer *w)
  * the interpreter window to s
  * also updates the current_interpreter to intprtr
  */
-static void set_interpreter_text(char *intprtr, const char *s)
+static void set_interpreter_text(unsigned intprtr)
 {
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *s = ui_interpreter_variables[intprtr].key;
+	const char *t = ht_get(s, ht);
 	GtkTextBuffer *temp = gtk_text_view_get_buffer(
 			GTK_TEXT_VIEW(widgets[INTERPRETERTEXT]));
-	gtk_text_buffer_set_text(temp, intprtr, -1);
+
+	if (t) gtk_text_buffer_set_text(temp, t, -1);
 	current_interpreter = intprtr;
+	assert(current_interpreter < UI_AMOUNT);
 	gtk_window_set_title(GTK_WINDOW(widgets[INTERPRETERWINDOW]), s);
 }

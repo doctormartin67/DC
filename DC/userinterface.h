@@ -13,17 +13,52 @@ enum {
 	FILENAME, STARTSTOP, WIDGET_AMOUNT
 }; 
 
+/*
+ * interpreter indexes, meaning the variables that use an interpreter to be
+ * determined
+ */
+enum {
+	UI_SS, UI_TURNOVER, UI_RETX, UI_NRA,
+	UI_ADMINCOST, UI_COSTRES, UI_COSTKO, UI_WD, UI_PREPOST, UI_TERM,
+	UI_LTINS, UI_LTTERM,
+	UI_CONTRA, UI_CONTRC,
+	UI_AMOUNT
+};
+
+/*
+ * indexes used for the variables in the user interface that are fixed
+ */
+enum {
+	UI_SHEETNAME, UI_DOC, UI_DR, UI_AGECORR, UI_INFL, UI_TRM_PERCDEF,
+	UI_DR113, UI_FIXED_AMOUNT
+};
+
+/*
+ * indexes used for user input that use combo boxes to determine which method
+ * is used
+ */
+enum {
+	COMBO_STANDARD, COMBO_ASSETS, COMBO_PUCTUC, COMBO_MAXPUCTUC,
+	COMBO_MAXERCONTR, COMBO_EVALDTH, COMBO_AMOUNT
+};
+
+struct user_input {
+	const char *const key;
+	unsigned widget;
+};
+
+extern const struct user_input ui_interpreter_variables[UI_AMOUNT];
+extern const struct user_input ui_fixed_variables[UI_FIXED_AMOUNT];
+extern const struct user_input ui_method_variables[COMBO_AMOUNT];
+
 extern const char *const widgetname[WIDGET_AMOUNT]; 
 extern GtkWidget *widgets[WIDGET_AMOUNT];
-extern const char *const extra_var_name[EXTRA_AMOUNT]; 
-extern GtkWidget *extra_widgets[EXTRA_AMOUNT];
 
-struct user_input *get_user_input(unsigned ui);
-void set_user_input(struct user_input *);
-void update_user_interface(struct user_input *);
-void print_user_input(struct user_input *);
-void validateUI(Validator *, struct user_input *);
-void validateData(Validator *, struct user_input *);
+Hashtable *get_user_input(unsigned ui);
+void set_user_input(Hashtable *);
+void update_user_interface(Hashtable *);
+void validateUI(Validator *, Hashtable *);
+void validateData(Validator *, Hashtable *);
 /* signal functions */
 void on_startstopbutton_clicked(GtkButton *, GtkWidget *);
 gboolean on_interpreterwindow_delete_event(GtkWidget *, GdkEvent *, gpointer);

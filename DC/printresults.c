@@ -358,7 +358,7 @@ unsigned printresults(const DataSet ds[static 1])
 	char results[BUFSIZ];
 	char *d = ds->xl->dirname;
 	char *key = *ds->keys;
-	char *value = 0;
+	const char *value = 0;
 	unsigned row = 0;
 	unsigned col = 0;  
 	unsigned index = 0;
@@ -412,7 +412,7 @@ unsigned printresults(const DataSet ds[static 1])
 	while (0 != key) {
 		worksheet_write_string(ws, row, col, key, 0);
 		while (row < ds->membercnt) {
-			value = lookup(key, 0, ds->Data[row])->value;
+			value = ht_get(key, ds->Data[row]);
 			worksheet_write_string(ws, row+1, col, value, 0);
 			row++;
 		}
