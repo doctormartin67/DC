@@ -1,6 +1,9 @@
 #ifndef HASHTABLE
 #define HASHTABLE
 
+#define LHEADER "<<<<<"
+#define RHEADER ">>>>>"
+
 struct linked_list {
 	struct linked_list *next;
 	char *key;
@@ -16,12 +19,11 @@ typedef struct {
 	unsigned casesens; 
 } Hashtable;
 
-/* 
- * search the hashtable for the key and return the found linked_list if value == 0.
- * if value is not 0, update the linked_list with the value
- */
-struct linked_list *lookup(const char key[restrict static 1],
-		const char *restrict value, Hashtable *restrict ht);
+void ht_set(const char *t, const char *value, Hashtable *ht);
+const char *ht_get(const char *t, Hashtable *ht);
+void printHashtable(const Hashtable *ht);
+void readHashtable(const char *fname, Hashtable *ht);
+void writeHashtable(const char *fname, const Hashtable *ht);
 Hashtable *newHashtable(size_t n, unsigned casesens);
 void freeHashtable(Hashtable *restrict ht);
 void freeList(struct linked_list *restrict l);

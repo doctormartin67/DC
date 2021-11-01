@@ -8,7 +8,7 @@
 #define strcasecmp stricmp
 #endif
 
-#define GARBAGE " \r\n\t:"
+#define GARBAGE " \n\t:\r"
 
 #define MAX3(X, Y, Z) MAX2(MAX2(X, Y), Z)
 #define MAX2(X, Y) ((X) > (Y) ? (X) : (Y))

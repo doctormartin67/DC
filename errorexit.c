@@ -32,7 +32,7 @@ static void outputError(int useErr, int err, int flushStdout,
 	fflush(stderr);
 }
 
-void die(const char *restrict format, ...)
+_Noreturn void die(const char *restrict format, ...)
 {
 	va_list arglist;
 
@@ -44,7 +44,7 @@ void die(const char *restrict format, ...)
 }
 
 /* same as errExit but used when diagnosing Pthreads */
-void errExitEN(int errnum, const char *restrict format, ...)
+_Noreturn void errExitEN(int errnum, const char *restrict format, ...)
 {
 	va_list arglist;
 
