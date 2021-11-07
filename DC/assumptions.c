@@ -165,10 +165,9 @@ void set_tariffs(const CurrentMember cm[static 1])
 
 static void replant(struct casetree **ct, Hashtable *ht, unsigned it)
 {
-	assert(it < UI_ADMINCOST);
+	assert(it < UI_AMOUNT);
 	chopTree(*ct);
-	*ct = plantTree(get_var(it, UI_INT, ht));
-	return;
+	*ct = plantTree(strclean(get_var(it, UI_INT, ht)));
 }
 
 /*

@@ -202,7 +202,8 @@ int setkey(DataSet ds[static 1])
 	ds->keyrow = getrow(kc);
 
 	snprintf(ds->datasheet, sizeof(ds->datasheet), 
-			"%s", ht_get("sheetname", ds->ht_user_input));
+			"%s", ht_get(get_ui_key(UI_SHEETNAME, UI_FIXED),
+				ds->ht_user_input));
 	for (i = 0; i < xl->sheetcnt; i++)
 		if (!strcmp(xls[i], ds->datasheet))
 			break;

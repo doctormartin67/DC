@@ -186,7 +186,7 @@ void set_user_input(Hashtable ht[static 1])
 		ht_set(key, gtk_entry_get_text(GTK_ENTRY(widgets[wgt])), ht);
 	}
 
-	for (unsigned i = 0; i < METHOD_AMOUNT; i++) {
+	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
 		key = get_ui_key(i, UI_COMBO);
 		wgt = get_ui_widget(i, UI_COMBO);
 		snprintf(tmp, sizeof(tmp), "%d", gtk_combo_box_get_active(
@@ -202,23 +202,30 @@ void update_user_interface(Hashtable ht[static 1])
 	/* --- Data --- */
 	char s[BUFSIZ];
 	const char *key = 0;
+	const char *value = 0;
 	unsigned wgt = 0;
 
 	key = get_ui_key(SPECIAL_FILENAME, UI_SPECIAL);
-	snprintf(s, sizeof(s), "File set to run:\n%s", ht_get(key, ht));
+	value = ht_get(key, ht);
+	if (value)
+		snprintf(s, sizeof(s), "File set to run:\n%s", value);
 	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), s); 
 
 	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
 		key = get_ui_key(i, UI_FIXED);
+		value = ht_get(key, ht);
 		wgt = get_ui_widget(i, UI_FIXED);
-		gtk_entry_set_text(GTK_ENTRY(widgets[wgt]), ht_get(key, ht));
+		if (value)
+			gtk_entry_set_text(GTK_ENTRY(widgets[wgt]), value);
 	}
 
-	for (unsigned i = 0; i < METHOD_AMOUNT; i++) {
+	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
 		key = get_ui_key(i, UI_COMBO);
+		value = ht_get(key, ht);
 		wgt = get_ui_widget(i, UI_COMBO);
-		gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[wgt]),
-				atoi(ht_get(key, ht)));
+		if (value)
+			gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[wgt]),
+				atoi(value));
 	}
 }
 
