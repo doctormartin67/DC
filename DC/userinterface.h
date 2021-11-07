@@ -42,18 +42,25 @@ enum {
 	COMBO_MAXERCONTR, COMBO_EVALDTH, COMBO_AMOUNT
 };
 
+/*
+ * indexes used for user input that have some special maniulation to be done
+ */
+enum {
+	SPECIAL_KEYCELL, SPECIAL_FILENAME, SPECIAL_AMOUNT
+};
+
+enum {UI_INT, UI_FIXED, UI_COMBO, UI_SPECIAL};
+
 struct user_input {
 	const char *const key;
 	unsigned widget;
 };
 
-extern const struct user_input ui_interpreter_variables[UI_AMOUNT];
-extern const struct user_input ui_fixed_variables[UI_FIXED_AMOUNT];
-extern const struct user_input ui_method_variables[COMBO_AMOUNT];
-
 extern const char *const widgetname[WIDGET_AMOUNT]; 
 extern GtkWidget *widgets[WIDGET_AMOUNT];
 
+const char *get_ui_key(unsigned var, unsigned type);
+unsigned get_ui_widget(unsigned var, unsigned type);
 Hashtable *get_user_input(unsigned ui);
 void set_user_input(Hashtable *);
 void update_user_interface(Hashtable *);

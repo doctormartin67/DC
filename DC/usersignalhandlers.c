@@ -107,6 +107,7 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 	printf("dialog [%s] closed\n", gtk_file_chooser_button_get_title(b));
 
 	GtkDialog *dialog = 0;
+	const char *key = 0;
 	char *filename = 0;
 	char tmp[BUFSIZ];
 
@@ -114,10 +115,11 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
 	filename = gtk_file_chooser_get_filename(chooser);
 
-	ht_set("fname", filename, ht);
-	snprintf(tmp, sizeof(tmp), "File set to run:\n%s", ht_get("fname", ht));
+	key = get_ui_key(SPECIAL_FILENAME, UI_SPECIAL);
+	ht_set(key, filename, ht);
+	snprintf(tmp, sizeof(tmp), "File set to run:\n%s", ht_get(key, ht));
 
-	printf("Excel to run: [%s]\n", ht_get("fname", ht));
+	printf("Excel to run: [%s]\n", ht_get(key, ht));
 	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), tmp); 
 	g_free(filename);
 }
@@ -146,7 +148,7 @@ gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
 
 	assert(current_interpreter < UI_AMOUNT) ;
 
-	ht_set(ui_interpreter_variables[current_interpreter].key, s, ht);
+	ht_set(get_ui_key(current_interpreter, UI_INT), s, ht);
 	g_free(s);
 
 	gtk_widget_hide(w);
@@ -275,12 +277,14 @@ void on_contrC_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 static void set_interpreter_text(unsigned intprtr)
 {
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
-	const char *s = ui_interpreter_variables[intprtr].key;
+	const char *s = get_ui_key(intprtr, UI_INT);
 	const char *t = ht_get(s, ht);
 	GtkTextBuffer *temp = gtk_text_view_get_buffer(
 			GTK_TEXT_VIEW(widgets[INTERPRETERTEXT]));
 
 	if (t) gtk_text_buffer_set_text(temp, t, -1);
+	else gtk_text_buffer_set_text(temp, "", -1);
+
 	current_interpreter = intprtr;
 	assert(current_interpreter < UI_AMOUNT);
 	gtk_window_set_title(GTK_WINDOW(widgets[INTERPRETERWINDOW]), s);

@@ -40,7 +40,7 @@ static Validator *val;
 
 DataSet *createDS(Validator v[static 1], Hashtable ht_ui[static 1])
 {
-	const char *s = ht_get("fname", ht_ui);
+	const char *s = ht_get(get_ui_key(SPECIAL_FILENAME, UI_SPECIAL),ht_ui);
 	Hashtable **ht = 0;
 	DataSet *ds = jalloc(1, sizeof(*ds));
 	*ds = (DataSet){0};
@@ -197,7 +197,7 @@ int setkey(DataSet ds[static 1])
 	xmlNodeSetPtr nodes = 0;
 	xmlNodePtr node = 0;
 
-	kc = ht_get("keycell", ds->ht_user_input);
+	kc = ht_get(get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL),ds->ht_user_input);
 	setcol(ds->keycolumn, kc);
 	ds->keyrow = getrow(kc);
 

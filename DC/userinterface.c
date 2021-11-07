@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "userinterface.h"
 #include "libraryheader.h"
 #include "errorexit.h"
@@ -26,7 +27,7 @@ const char *const widgetname[WIDGET_AMOUNT] = {
 	[FILENAME] = "filename", [STARTSTOP] = "startstop"
 };
 
-const struct user_input ui_interpreter_variables[UI_AMOUNT] = {
+static const struct user_input ui_interpreter_variables[UI_AMOUNT] = {
 	[UI_SS] = {"Salary Scale", INTERPRETERTEXT},
 	[UI_TURNOVER] = {"Turnover", INTERPRETERTEXT},
 	[UI_RETX] = {"Retirement Probability", INTERPRETERTEXT},
@@ -43,7 +44,7 @@ const struct user_input ui_interpreter_variables[UI_AMOUNT] = {
 	[UI_CONTRC] = {"Employee Contribution", INTERPRETERTEXT}
 };
 
-const struct user_input ui_fixed_variables[UI_FIXED_AMOUNT] = {
+static struct user_input ui_fixed_variables[UI_FIXED_AMOUNT] = {
 	[UI_SHEETNAME] = {"Sheet name", SHEETNAME},
 	[UI_DOC] = {"DOC", W_DOC_LY},
 	[UI_DR] = {"DR", DR},
@@ -53,13 +54,18 @@ const struct user_input ui_fixed_variables[UI_FIXED_AMOUNT] = {
 	[UI_DR113] = {"DR $113", DR113}
 };
 
-const struct user_input ui_method_variables[COMBO_AMOUNT] = {
+static const struct user_input ui_method_variables[COMBO_AMOUNT] = {
 	[COMBO_STANDARD] = {"Standard IAS/FAS", STANDARD},
 	[COMBO_ASSETS] = {"Assets", W_ASSETS_LY},
 	[COMBO_PUCTUC] = {"PUC/TUC", PUCTUC},
 	[COMBO_MAXPUCTUC] = {"max(PUC, TUC)", MAXPUCTUC},
 	[COMBO_MAXERCONTR] = {"max(NC, ER Contr)", MAXERCONTR},
 	[COMBO_EVALDTH] = {"Evaluate Death", EVALUATEDTH}
+};
+
+static const struct user_input ui_special_variables[SPECIAL_AMOUNT] = {
+	[SPECIAL_KEYCELL] = {"Key Cell", KEYCELL},
+	[SPECIAL_FILENAME] = {"File Name", FILENAME}
 };
 
 GtkWidget *widgets[WIDGET_AMOUNT];
@@ -99,6 +105,57 @@ static GtkWidget *buildWidget(const char w[static 1])
 	return widget;
 }
 
+const char *get_ui_key(unsigned var, unsigned type)
+{
+	const char *s = 0;
+	switch (type) {
+		case UI_INT :
+			assert(var < UI_AMOUNT);
+			s = ui_interpreter_variables[var].key;	
+			break;
+		case UI_FIXED :
+			assert(var < UI_FIXED_AMOUNT);
+			s = ui_fixed_variables[var].key;
+			break;
+		case UI_COMBO :
+			assert(var < COMBO_AMOUNT);
+			s = ui_method_variables[var].key;
+			break;
+		case UI_SPECIAL :
+			assert(var < SPECIAL_AMOUNT);
+			s = ui_special_variables[var].key;
+			break;
+		default :
+			die("should never reach here");
+	}
+
+	assert(s);
+	return s;
+}
+
+unsigned get_ui_widget(unsigned var, unsigned type)
+{
+	unsigned wgt = 0;
+	switch (type) {
+		case UI_INT :
+			assert(var < UI_AMOUNT);
+			wgt = ui_interpreter_variables[var].widget;	
+			break;
+		case UI_FIXED :
+			assert(var < UI_FIXED_AMOUNT);
+			wgt = ui_fixed_variables[var].widget;
+			break;
+		case UI_COMBO :
+			assert(var < COMBO_AMOUNT);
+			wgt = ui_method_variables[var].widget;
+			break;
+		default :
+			die("should never reach here");
+	}
+
+	return wgt;
+}
+
 Hashtable *get_user_input(unsigned ui)
 {
 	if (USER_INPUT_LY == ui) {
@@ -119,19 +176,19 @@ void set_user_input(Hashtable ht[static 1])
 
 	kc = strdup(gtk_entry_get_text(GTK_ENTRY(widgets[KEYCELL])));
 	upper(kc);
-	ht_set("keycell", kc, ht);
+	ht_set(get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL), kc, ht);
 	free(kc);
 	kc = 0;
 	
 	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
-		key = ui_fixed_variables[i].key;
-		wgt = ui_fixed_variables[i].widget;
+		key = get_ui_key(i, UI_FIXED);
+		wgt = get_ui_widget(i, UI_FIXED);
 		ht_set(key, gtk_entry_get_text(GTK_ENTRY(widgets[wgt])), ht);
 	}
 
 	for (unsigned i = 0; i < METHOD_AMOUNT; i++) {
-		key = ui_method_variables[i].key;
-		wgt = ui_method_variables[i].widget;
+		key = get_ui_key(i, UI_COMBO);
+		wgt = get_ui_widget(i, UI_COMBO);
 		snprintf(tmp, sizeof(tmp), "%d", gtk_combo_box_get_active(
 					GTK_COMBO_BOX(widgets[wgt])));
 		ht_set(key, tmp, ht);
@@ -147,18 +204,19 @@ void update_user_interface(Hashtable ht[static 1])
 	const char *key = 0;
 	unsigned wgt = 0;
 
-	snprintf(s, sizeof(s), "File set to run:\n%s", ht_get("fname", ht));
+	key = get_ui_key(SPECIAL_FILENAME, UI_SPECIAL);
+	snprintf(s, sizeof(s), "File set to run:\n%s", ht_get(key, ht));
 	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), s); 
 
 	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
-		key = ui_fixed_variables[i].key;
-		wgt = ui_fixed_variables[i].widget;
+		key = get_ui_key(i, UI_FIXED);
+		wgt = get_ui_widget(i, UI_FIXED);
 		gtk_entry_set_text(GTK_ENTRY(widgets[wgt]), ht_get(key, ht));
 	}
 
 	for (unsigned i = 0; i < METHOD_AMOUNT; i++) {
-		key = ui_method_variables[i].key;
-		wgt = ui_method_variables[i].widget;
+		key = get_ui_key(i, UI_COMBO);
+		wgt = get_ui_widget(i, UI_COMBO);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[wgt]),
 				atoi(ht_get(key, ht)));
 	}
@@ -168,34 +226,35 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 {
 	unsigned err = 0;
 	const char *key = 0;
+	const char *value = 0;
 	for (unsigned i = 0; i < UI_AMOUNT; i++) {
-		key = ui_interpreter_variables[i].key;
+		key = get_ui_key(i, UI_INT);
 		if (!ht_get(key, ht)) {
 			updateValidation(val, ERROR, "%s undefined", key);
 			err++;
 		}
 	}
 	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
-		key = ui_fixed_variables[i].key;
+		key = get_ui_key(i, UI_FIXED);
 		if (!ht_get(key, ht)) {
 			updateValidation(val, ERROR, "%s undefined", key);
 			err++;
 		}
 	}
 	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
-		key = ui_method_variables[i].key;
+		key = get_ui_key(i, UI_COMBO);
 		if (!ht_get(key, ht)) {
 			updateValidation(val, ERROR, "%s undefined", key);
 			err++;
 		}
 	}
 	if (err) return;
-
-	key = ht_get(ui_fixed_variables[UI_DOC].key, ht);
+	
+	key = get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL);
+	value = ht_get(key, ht);
 	size_t len = 0;
 	register unsigned colcnt = 0;
-	char temp[strlen(key) + 1];
-	const char *kc = ht_get("keycell", ht);
+	const char *kc = value;
 	const char *pt = 0;
 	char *day = 0, *month = 0, *year = 0;
 	const char *tc = 0;
@@ -203,7 +262,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 	struct casetree *ct = 0;
 
 	/* ----- Check File -----*/
-	if (!ht_get("fname", ht))
+	if (!ht_get(get_ui_key(SPECIAL_FILENAME, UI_SPECIAL), ht))
 		updateValidation(val, ERROR, "No file selected to run");
 
 	/* ----- Check keycell -----*/
@@ -212,7 +271,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 	if (kc[0] < 'A' || kc[0] > 'Z') {
 		updateValidation(val, ERROR, "KEY cell [%s], "
 				"expected of the form %s", 
-				ht_get("keycell", ht), validMsg[CELLERR]);
+				kc, validMsg[CELLERR]);
 	} else if (len > 1) {
 		pt = kc + 1;
 		colcnt++;
@@ -224,15 +283,13 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 
 		if (colcnt > 3) {
 			updateValidation(val, ERROR, "KEY cell [%s], "
-					"expected of the form %s", 
-					ht_get("keycell", ht),
+					"expected of the form %s", kc,
 					validMsg[CELLERR]);
 		}
 
 		if ('\0' == *pt) {
 			updateValidation(val, ERROR, "KEY cell [%s], "
-					"expected of the form %s", 
-					ht_get("keycell", ht),
+					"expected of the form %s", kc,
 					validMsg[CELLERR]);
 		}
 
@@ -240,19 +297,19 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 
 		if ('\0' != *pt) {
 			updateValidation(val, ERROR, "KEY cell [%s], "
-					"expected of the form %s", 
-					ht_get("keycell", ht),
+					"expected of the form %s", kc,
 					validMsg[CELLERR]);
 		}
 	} else if (1 == len)
 		updateValidation(val, ERROR, "KEY cell [%s], "
-				"expected of the form %s", 
-				ht_get("keycell", ht),
+				"expected of the form %s", kc,
 				validMsg[CELLERR]);
 
 	/* ----- Check DOC -----*/
-
-	snprintf(temp, sizeof(temp), "%s", key);
+	key = get_ui_key(UI_DOC, UI_FIXED);
+	value = ht_get(key, ht);
+	char temp[strlen(value) + 1];
+	snprintf(temp, sizeof(temp), "%s", value);
 
 	day = strtok(temp, "/");
 	month = strtok(0, "/");
@@ -261,71 +318,76 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 	if (0 == day || 0 == month || 0 == year) {
 		updateValidation(val, ERROR, "DOC [%s], "
 				"expected of the form %s",
-				key, validMsg[DATEERR]);
+				value, validMsg[DATEERR]);
 	} else {
 		if (!isint(day) || !isint(month) || !isint(year)) {
 			updateValidation(val, ERROR, "DOC [%s], expected of "
 					"the form %s", 
-					key, validMsg[DATEERR]);
+					value, validMsg[DATEERR]);
 		}
 
 		tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
 		if (0 == tempDate) {
 			updateValidation(val, ERROR, "DOC [%s], "
 					"expected of the form %s", 
-					key, validMsg[DATEERR]);
+					value, validMsg[DATEERR]);
 		}
 		free(tempDate);
 	}
 
 	/* ----- Check DR -----*/
-	key = ht_get(ui_fixed_variables[UI_DR].key, ht);
-	if (!isfloat(key)) {
+	key = get_ui_key(UI_DR, UI_FIXED);
+	value = ht_get(key, ht);
+	if (!isfloat(value)) {
 		updateValidation(val, ERROR, "DR [%s], "
 				"expected of the form %s",
-				key, validMsg[FLOATERR]);
+				value, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check Age Correction -----*/
-	key = ht_get(ui_fixed_variables[UI_AGECORR].key, ht);
-	if (!isint(key)) {
+	key = get_ui_key(UI_AGECORR, UI_FIXED);
+	value = ht_get(key, ht);
+	if (!isint(value)) {
 		updateValidation(val, ERROR, "Age Correction [%s], "
 				"expected of the form %s", 
-				key, validMsg[AGECORRERR]);
+				value, validMsg[AGECORRERR]);
 	}
 
 	/* ----- Check Inflation -----*/
-	key = ht_get(ui_fixed_variables[UI_INFL].key, ht);
-	if (!isfloat(key)) {
+	key = get_ui_key(UI_INFL, UI_FIXED);
+	value = ht_get(key, ht);
+	if (!isfloat(value)) {
 		updateValidation(val, ERROR, "Inflation [%s], "
 				"expected of the form %s", 
-				key, validMsg[FLOATERR]);
+				value, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check Termination percentage -----*/
-	key = ht_get(ui_fixed_variables[UI_TRM_PERCDEF].key, ht);
-	if (!isfloat(key)) {
+	key = get_ui_key(UI_TRM_PERCDEF, UI_FIXED);
+	value = ht_get(key, ht);
+	if (!isfloat(value)) {
 		updateValidation(val, ERROR, "Termination % [%s] (usually 1), "
 				"expected of the form %s", 
-				key, validMsg[FLOATERR]);
+				value, validMsg[FLOATERR]);
 	}
 
 	/* ----- Check DR 113 -----*/
-	key = ht_get(ui_fixed_variables[UI_DR113].key, ht);
-	if (!isfloat(key)) {
+	key = get_ui_key(UI_DR113, UI_FIXED);
+	value = ht_get(key, ht);
+	if (!isfloat(value)) {
 		updateValidation(val, WARNING, "DR $113 [%s], "
 				"expected of the form %s", 
-				key, validMsg[FLOATERR]);
+				value, validMsg[FLOATERR]);
 	}
 
 	init_var(0);
 	/* ----- Check Tree Variables -----*/
 	for (unsigned i = 0; i < UI_AMOUNT; i++) {
-		ct = plantTree(strclean(ht_get(ui_interpreter_variables[i].key,
-						ht)));
+		key = get_ui_key(i, UI_INT);
+		value = ht_get(key, ht);
+		ct = plantTree(strclean(value));
 		if (NOERR != getterrno()) {
-			updateValidation(val, ERROR, "%s: %s",
-					ui_interpreter_variables[i].key,
+			updateValidation(val, ERROR, "%s: %s", key,
 					strterror(getterrno()));
 			setterrno(NOERR);
 		}

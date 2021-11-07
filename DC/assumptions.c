@@ -91,24 +91,7 @@ static const char *get_var(unsigned ui, unsigned var_type,
 		Hashtable ht[static 1])
 {
 	const char *s = 0;
-	switch (var_type) {
-		case VAR_INTERPRETER :
-			assert(ui < UI_AMOUNT);
-			s = ht_get(ui_interpreter_variables[ui].key, ht);	
-			break;
-		case VAR_FIXED :
-			assert(ui < UI_FIXED_AMOUNT);
-			s = ht_get(ui_fixed_variables[ui].key, ht);	
-			break;
-		case VAR_COMBO :
-			assert(ui < COMBO_AMOUNT);
-			s = ht_get(ui_method_variables[ui].key, ht);	
-			break;
-		default :
-			die("should never reach here");
-	}
-
-	assert(!s);
+	s = ht_get(get_ui_key(ui, var_type), ht);	
 	return s;
 }
 
@@ -184,8 +167,7 @@ static void replant(struct casetree **ct, Hashtable *ht, unsigned it)
 {
 	assert(it < UI_ADMINCOST);
 	chopTree(*ct);
-	*ct = plantTree(strclean(ht_get(ui_interpreter_variables[it].key,
-					ht)));
+	*ct = plantTree(get_var(it, UI_INT, ht));
 	return;
 }
 

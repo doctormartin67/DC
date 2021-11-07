@@ -1,36 +1,32 @@
 <<<<<AGE CORRECTION>>>>>
-
-<<<<<ADMINISTRATION COST>>>>>
-x = 0
+-3
 <<<<<SHEET NAME>>>>>
 Data
-<<<<<IMMEDIATE OR DUE PAYMENTS>>>>>
-x = 0
 <<<<<PUC/TUC>>>>>
 0
-<<<<<KEYCELL>>>>>
-B11
-<<<<<COST ON RESERVES>>>>>
-x = 0
 <<<<<RETIREMENT PROBABILITY>>>>>
-x = 1
+xyzvalue = 0.011
 <<<<<TURNOVER>>>>>
-x = 0
+xyzvalue = 0.011
 <<<<<INFLATION>>>>>
-
+0.018
+<<<<<FILE NAME>>>>>
+/home/doctormartin67/Documents/calcExamples/2019-01-01 Standard DC UKMS-UKZT.xlsm
 <<<<<ASSETS>>>>>
 1
 <<<<<TERMINATION PERCENTAGE>>>>>
 1
 <<<<<SALARY SCALE>>>>>
-x = 100
+xyzvalue = 0.011
 <<<<<DR $113>>>>>
 0
 <<<<<NORMAL RETIREMENT AGE>>>>>
-x = 0
+xyzvalue = 0.011
 <<<<<DR>>>>>
-
+0.0125
 <<<<<STANDARD IAS/FAS>>>>>
 1
+<<<<<KEY CELL>>>>>
+B11
 <<<<<DOC>>>>>
-
+1/12/2016
