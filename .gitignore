@@ -6,3 +6,5 @@
 *.o
 #tags for vi
 *tags
+#bin files
+a.out
