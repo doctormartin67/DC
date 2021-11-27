@@ -25,6 +25,7 @@ typedef struct {
  * convention: single underscores are for public use, double underscores are
  * for private internal use
  */
+#define BUF(x) x
 #define buf__hdr(b) ((BufHdr *)((char *)b - offsetof(BufHdr, buf)))
 #define buf__fits(b, n) (buf_len(b) + (n) <= buf_cap(b))
 #define buf__fit(b, n) (buf__fits((b), (n)) ? 0 : \
@@ -49,6 +50,7 @@ const char *str_intern(const char *str);
 
 void scan_char(void);
 void next_token(void);
+
 
 void fatal(const char *fmt, ...) {
 	va_list args;
@@ -160,6 +162,28 @@ typedef enum {
 	TOKEN_FLOAT, 
 	TOKEN_STR,
 	TOKEN_NAME,
+	TOKEN_LSHIFT,
+	TOKEN_RSHIFT,
+	TOKEN_EQ,
+	TOKEN_NOTEQ,
+	TOKEN_LTEQ,
+	TOKEN_GTEQ,
+	TOKEN_AND,
+	TOKEN_OR,
+	TOKEN_INC,
+	TOKEN_DEC,
+	TOKEN_ASSIGN_COLON,
+	TOKEN_ASSIGN_ADD,
+	TOKEN_ASSIGN_SUB,
+	TOKEN_ASSIGN_AND,
+	TOKEN_ASSIGN_OR,
+	TOKEN_ASSIGN_XOR,
+	TOKEN_ASSIGN_LSHIFT,
+	TOKEN_ASSIGN_RSHIFT,
+	TOKEN_ASSIGN_MUL,
+	TOKEN_ASSIGN_DIV,
+	TOKEN_ASSIGN_MOD,
+
 } TokenKind;
 
 typedef enum {
@@ -176,25 +200,15 @@ typedef struct {
 	const char *start;
 	const char *end;
 	union {
-		uint64_t int_val;
-		double float_val;
-		const char *str_val;
+		uint64_t val_int;
+		double val_float;
+		const char *val_str;
 		const char *name;
 	};
 } Token;
 
 static Token token;
 static const char *stream;
-
-const char *keyword_if;
-const char *keyword_for;
-const char *keyword_while;
-
-void init_keywords() {
-	keyword_if = str_intern("if");
-	keyword_for = str_intern("for");
-	keyword_while = str_intern("while");
-}
 
 size_t copy_token_kind_str(char *dest, size_t dest_size, TokenKind kind);
 size_t copy_token_kind_str(char *dest, size_t dest_size, TokenKind kind)
@@ -254,16 +268,18 @@ void scan_int(void) {
 		stream++;
 		if (tolower(*stream) == 'x') {
 			stream++;
+			token.mod = TOKENMOD_HEX;
 			base = 16;
 		} else if (tolower(*stream) == 'b') {
 			stream++;
+			token.mod = TOKENMOD_BIN;
 			base = 2;
 		} else if (isdigit(*stream)) {
 			base = 8;
-		} else {
-			syntax_error("Invalid integer literal "
-					"suffix '%c'",
-					*stream++);
+			token.mod = TOKENMOD_OCT;
+		} else if (' ' != *stream) {
+			syntax_error("Expected hex, bin, oct, received '%c'",
+					*stream);
 		}
 	}
 	while(1) {
@@ -292,7 +308,7 @@ void scan_int(void) {
 	}
 
 	token.kind = TOKEN_INT;
-	token.int_val = val;
+	token.val_int = val;
 }
 
 void scan_float(void)
@@ -300,10 +316,10 @@ void scan_float(void)
 	double val = 0.0;
 	const char *start = stream;
 	while (isdigit(*stream)) stream++;
-	
+
 	if ('.' == *stream) stream++;
 	while (isdigit(*stream)) stream++;
-	
+
 	if (tolower(*stream) == 'e') {
 		stream++;
 		if ('+' == *stream || '-' == *stream)
@@ -318,7 +334,7 @@ void scan_float(void)
 		syntax_error("Float literal overflow");
 
 	token.kind = TOKEN_FLOAT;
-	token.float_val = val;
+	token.val_float = val;
 }
 
 char escape_to_char[256] = {
@@ -362,7 +378,7 @@ void scan_char(void)
 		stream++;
 	}
 	token.kind = TOKEN_INT;
-	token.int_val = val;
+	token.val_int = val;
 	token.mod = TOKENMOD_CHAR;
 }
 
@@ -396,8 +412,29 @@ void scan_str(void)
 	}
 	buf_push(str, '\0');
 	token.kind = TOKEN_STR;
-	token.str_val = str;
+	token.val_str = str;
 }
+
+#define CASE1(c, c1, k1) \
+	case c: \
+	token.kind = *stream++; \
+	if (c1 == *stream) { \
+		token.kind = k1; \
+		stream++; \
+	} \
+	break;
+
+#define CASE2(c, c1, k1, c2, k2) \
+	case c: \
+	token.kind = *stream++; \
+	if (c1 == *stream) { \
+		token.kind = k1; \
+		stream++; \
+	} else if (c2 == *stream) { \
+		token.kind = k2; \
+		stream++; \
+	} \
+	break;
 
 void next_token()
 {
@@ -446,12 +483,54 @@ void next_token()
 			token.kind = TOKEN_NAME;
 			token.name = str_intern_range(token.start, stream);
 			break;
-		default:
+		case '<':
 			token.kind = *stream++;
+			if ('<' == *stream) {
+				token.kind = TOKEN_LSHIFT;
+				stream++;
+				if ('=' == *stream) {
+					token.kind = TOKEN_ASSIGN_LSHIFT;
+					stream++;
+				}
+			} else if ('=' == *stream) {
+				token.kind = TOKEN_LTEQ;
+				stream++;
+			}
 			break;
+		case '>':
+			token.kind = *stream++;
+			if ('>' == *stream) {
+				token.kind = TOKEN_RSHIFT;
+				stream++;
+				if ('=' == *stream) {
+					token.kind = TOKEN_ASSIGN_RSHIFT;
+					stream++;
+				}
+			} else if ('=' == *stream) {
+				token.kind = TOKEN_GTEQ;
+				stream++;
+			}
+			break;
+
+			CASE1(':', '=', TOKEN_ASSIGN_COLON)
+				CASE1('*', '=', TOKEN_ASSIGN_MUL)
+				CASE1('/', '=', TOKEN_ASSIGN_DIV)
+				CASE1('%', '=', TOKEN_ASSIGN_MOD)
+				CASE1('^', '=', TOKEN_ASSIGN_XOR)
+				CASE2('+', '+', TOKEN_INC, '=', TOKEN_ASSIGN_ADD)
+				CASE2('-', '-', TOKEN_DEC, '=', TOKEN_ASSIGN_SUB)
+				CASE2('&', '&', TOKEN_AND, '=', TOKEN_ASSIGN_AND)
+				CASE2('|', '|', TOKEN_OR, '=', TOKEN_ASSIGN_OR)
+
+		default:
+				token.kind = *stream++;
+				break;
 	}
 	token.end = stream;
 }
+
+#undef CASE1
+#undef CASE2
 
 void init_stream(const char *str)
 {
@@ -463,10 +542,10 @@ void print_token(Token token)
 {
 	switch (token.kind) {
 		case TOKEN_INT:
-			printf("TOKEN INT: %ld\n", token.int_val);
+			printf("TOKEN INT: %ld\n", token.val_int);
 			break;
 		case TOKEN_FLOAT:
-			printf("TOKEN FLOAT: %f\n", token.float_val);
+			printf("TOKEN FLOAT: %f\n", token.val_float);
 			break;
 		case TOKEN_NAME:
 			printf("TOKEN NAME: %s\n", token.name);
@@ -515,21 +594,25 @@ static inline unsigned expect_token(TokenKind kind)
 #define assert_token(x) assert(match_token(x))
 #define assert_token_name(x) assert(token.name == str_intern(x) \
 		&& match_token(TOKEN_NAME))
-#define assert_token_int(x) assert(token.int_val == (x) \
+#define assert_token_int(x) assert(token.val_int == (x) \
 		&& match_token(TOKEN_INT))
-#define assert_token_float(x) assert(token.float_val == (x) \
+#define assert_token_float(x) assert(token.val_float == (x) \
 		&& match_token(TOKEN_FLOAT))
-#define assert_token_str(x) assert(strcmp(token.str_val, (x)) == 0 \
+#define assert_token_str(x) assert(strcmp(token.val_str, (x)) == 0 \
 		&& match_token(TOKEN_STR))
 #define assert_token_eof() assert(is_token(TOKEN_EOF))
 
 void test_lex(void)
 {
 	/* Integer tests */
-	init_stream("18446744073709551615 0xffffffffffffffff 042 0b1111");
+	init_stream("0 18446744073709551615 0xffffffffffffffff 042 0b1111");
+	assert_token_int(0);
 	assert_token_int(18446744073709551615ull);
+	assert(TOKENMOD_HEX == token.mod);
 	assert_token_int(0xffffffffffffffffull);
+	assert(TOKENMOD_OCT == token.mod);
 	assert_token_int(042);
+	assert(TOKENMOD_BIN == token.mod);
 	assert_token_int(0xf);
 	assert_token_eof();
 	init_stream("18446744073709551615 0XFFFFFFFFFFFFFFFF 042 0B1111");
@@ -559,6 +642,20 @@ void test_lex(void)
 	assert_token_str("foo");
 	assert_token_str("a\nb");
 	assert_token_eof();
+
+	/* Operator tests */
+	init_stream(": := + += ++ < <= << <<=");
+	assert_token(':');
+	assert_token(TOKEN_ASSIGN_COLON);
+	assert_token('+');
+	assert_token(TOKEN_ASSIGN_ADD);
+	assert_token(TOKEN_INC);
+	assert_token('<');
+	assert_token(TOKEN_LTEQ);
+	assert_token(TOKEN_LSHIFT);
+	assert_token(TOKEN_ASSIGN_LSHIFT);
+	assert_token_eof();
+
 	/* Misc tests */
 	init_stream("XY+(XY)_HELLO1,234+994");
 	assert_token_name("XY");
@@ -581,7 +678,7 @@ void test_lex(void)
 
 
 /*
- * PARSER SECTION
+ * PARSER SECTION (TO DELETE)
  */
 
 /*
@@ -603,7 +700,7 @@ int parse_expr3(void);
 int parse_expr3(void) {
 	int val = 0;
 	if (is_token(TOKEN_INT)) {
-		val = token.int_val;
+		val = token.val_int;
 		next_token();
 		return val;
 	} else if (match_token('(')) {
@@ -685,12 +782,448 @@ void test_parse(void) {
 }
 #undef TEST_EXPR
 
+/*
+ * AST SECTION
+ */
+typedef struct Expr Expr;
+typedef struct Stmt Stmt;
+typedef struct Decl Decl;
+typedef struct Typespec Typespec;
+
+typedef enum {
+	TYPESPEC_NONE,
+	TYPESPEC_NAME,
+	TYPESPEC_FUNC,
+	TYPESPEC_ARRAY,
+	TYPESPEC_POINTER,
+} TypespecKind;
+
+
+typedef struct {
+	BUF(Typespec **args);
+	Typespec *ret;
+} FuncTypespec;
+
+struct Typespec {
+	TypespecKind kind;
+	struct {
+		const char *name;
+		FuncTypespec func;
+		/* pointer/array types */
+		struct {
+			Typespec *base;
+			Expr *size;
+		};
+	};
+};
+
+typedef enum {
+	DECL_NONE,
+	DECL_ENUM,
+	DECL_STRUCT,
+	DECL_UNION,
+	DECL_VAR,
+	DECL_CONST,
+	DECL_TYPEDEF,
+	DECL_FUNC,
+} DeclKind;
+
+typedef struct {
+	const char *name;
+	Typespec *type;
+} EnumItem;
+
+typedef struct {
+	BUF(const char **names);
+	Typespec *type;
+} AggregateItem;
+
+typedef struct {
+	const char *name;
+	Typespec *type;
+} FuncParam;
+
+typedef struct {
+	BUF(FuncParam *params);
+	Typespec *ret_type;
+} DeclFunc;
+
+struct Decl {
+	DeclKind kind;
+	const char *name;
+	union {
+		BUF(EnumItem *enum_items);
+		BUF(AggregateItem *aggregate_items);
+		struct {
+			Typespec *type;
+			Expr *expr;
+		};
+		DeclFunc decl_func;
+	};
+};
+
+typedef enum {
+	EXPR_NONE,
+	EXPR_INT,
+	EXPR_FLOAT,
+	EXPR_STR,
+	EXPR_NAME,
+	EXPR_CAST,
+	EXPR_CALL,
+	EXPR_INDEX,
+	EXPR_FIELD,
+	EXPR_COMPOUND,
+	EXPR_UNARY,
+	EXPR_BINARY,
+	EXPR_TERNARY,
+} ExprKind;
+
+struct Expr {
+	ExprKind kind;
+	TokenKind op;
+	union {
+		/* Literals/names */
+		uint64_t val_int;
+		double val_float;
+		const char *val_str;
+		const char *name;
+		/* Compound Literals */
+		struct {
+			Typespec *type_compound;
+			BUF(Expr **compound_args);
+		};
+		/* Casts */
+		struct {
+			Typespec *type_cast;
+			BUF(Expr **expr_cast);
+
+		};
+		struct {
+			/* Unary */
+			Expr *operand;
+			union {
+				BUF(Expr **args);
+				Expr *index;
+				const char *field;
+			};
+		};
+		struct {
+			/* Binary */
+			Expr *left;
+			Expr *right;
+		};
+		struct {
+			/* Ternary */
+			Expr *cond;
+			Expr *expr_then;
+			Expr *expr_else;
+		};
+	};
+};
+
+Expr *expr_alloc(ExprKind kind)
+{
+	Expr *expr = calloc(1, sizeof(*expr));
+	expr->kind = kind;
+	return expr;
+}
+
+Expr *expr_int(uint64_t val_int)
+{
+	Expr *expr = expr_alloc(EXPR_INT);
+	expr->val_int = val_int;
+	return expr;
+}
+
+Expr *expr_float(double val_float)
+{
+	Expr *expr = expr_alloc(EXPR_FLOAT);
+	expr->val_float = val_float;
+	return expr;
+}
+
+Expr *expr_str(const char *str)
+{
+	Expr *expr = expr_alloc(EXPR_STR);
+	expr->val_str = str;
+	return expr;
+}
+
+Expr *expr_name(const char *name)
+{
+	Expr *expr = expr_alloc(EXPR_NAME);
+	expr->name = name;
+	return expr;
+}
+
+Expr *expr_cast(Typespec *type, Expr *expr)
+{
+	Expr *new_expr = expr_alloc(EXPR_CAST);
+	new_expr->type_cast = type;
+	/* NEEDS FIXING BELOW, INCONPATIBLE TYPES */
+	printf("line %d needs fixing\n", __LINE__ + 1);
+	new_expr->expr_cast = expr;
+	return new_expr;
+}
+
+Expr *expr_call(Expr *operand, Expr **args)
+{
+	Expr *expr = expr_alloc(EXPR_CALL);
+	expr->operand = operand;
+	expr->args = args;
+	return expr;
+}
+
+Expr *expr_index(Expr *operand, Expr *index)
+{
+	Expr *expr = expr_alloc(EXPR_INDEX);
+	expr->operand = operand;
+	expr->index = index;
+	return expr;
+}
+
+Expr *expr_field(Expr *operand, const char *field)
+{
+	Expr *expr = expr_alloc(EXPR_FIELD);
+	expr->operand = operand;
+	expr->field = field;
+	return expr;
+}
+
+Expr *expr_unary(TokenKind op, Expr *operand)
+{
+	Expr *new_expr = expr_alloc(EXPR_UNARY);
+	new_expr->op = op;
+	new_expr->operand = operand;
+	return new_expr;
+}
+
+Expr *expr_binary(TokenKind op, Expr *left, Expr *right)
+{
+	Expr *expr = expr_alloc(EXPR_BINARY);
+	expr->op = op;
+	expr->left = left;
+	expr->right = right;
+	return expr;
+}
+
+Expr *expr_ternary(Expr *cond, Expr *expr_then, Expr *expr_else)
+{
+	Expr *expr = expr_alloc(EXPR_TERNARY);
+	expr->cond = cond;
+	expr->expr_then = expr_then;
+	expr->expr_else = expr_else;
+	return expr;
+}
+
+void expr_print(Expr *expr);
+void print_type(Typespec *type)
+{
+	FuncTypespec func = (FuncTypespec){0};
+	switch(type->kind) {
+		case TYPESPEC_NONE:
+			break;
+		case TYPESPEC_NAME:
+			printf("%s", type->name);
+			break;
+		case TYPESPEC_FUNC:
+			func = type->func;
+			printf("(func ");
+			for (Typespec **it = func.args;
+					it != buf_end(func.args); it++) {
+				printf(" ");
+				print_type(*it);
+			}
+			printf(") ");
+			print_type(func.ret);
+			printf(")");
+			break;
+		case TYPESPEC_ARRAY:
+			printf("(array ");
+			print_type(type->base);
+			printf(" ");
+			expr_print(type->size);
+			printf(")");
+			break;
+		case TYPESPEC_POINTER:
+			printf("(pointer ");
+			print_type(type->base);
+			printf(")");
+			break;
+		default: 
+			assert(0);
+	}
+}
+
+void expr_print(Expr *expr)
+{
+	switch (expr->kind) {
+		case EXPR_NONE:
+			break;
+		case EXPR_INT:
+			printf("%lu", expr->val_int);
+			break;
+		case EXPR_FLOAT:
+			printf("%f", expr->val_float);
+			break;
+		case EXPR_STR:
+			printf("\"%s\"", expr->val_str);
+			break;
+		case EXPR_NAME:
+			printf("%s", expr->name);
+			break;
+		case EXPR_CAST:
+			printf("(cast ");
+			print_type(expr->type_cast);
+			printf(" ");
+			expr_print(expr->expr_cast);
+			printf(")");
+			break;
+		case EXPR_CALL:
+			printf("(");
+			expr_print(expr->operand);
+			for (Expr **it = expr->args;
+					it != buf_end(expr->args); it++) {
+				printf(" ");
+				expr_print(*it);
+			}
+			printf(")");
+			break;
+		case EXPR_INDEX:
+			printf("(index ");
+			expr_print(expr->operand);
+			printf(" ");
+			expr_print(expr->index);
+			printf(")");
+			break;
+		case EXPR_FIELD:
+			printf("(field ");
+			expr_print(expr->operand);
+			printf(" %s)", expr->field);
+			break;
+		case EXPR_COMPOUND:
+			printf("(compound ...)");
+			break;
+		case EXPR_UNARY:
+			printf("(%c ", expr->op);
+			expr_print(expr->operand);
+			printf(")");
+			break;
+		case EXPR_BINARY:
+			printf("(%c ", expr->op);
+			expr_print(expr->left);
+			printf(" ");
+			expr_print(expr->right);
+			printf(")");
+			break;
+		case EXPR_TERNARY:
+			printf("(ternary ");
+			expr_print(expr->cond);
+			printf(" ");
+			expr_print(expr->expr_then);
+			printf(" ");
+			expr_print(expr->expr_else);
+			printf(")");
+			break;
+		default:
+			assert(0);
+	}
+}
+
+typedef enum {
+	STMT_NONE,
+	STMT_RETURN,
+	STMT_BREAK,
+	STMT_CONTINUE,
+	STMT_BLOCK,
+	STMT_IF,
+	STMT_WHILE,
+	STMT_FOR,
+	STMT_DO,
+	STMT_SWITCH,
+	STMT_ASSIGN,
+	STMT_AUTO_ASSIGN,
+	STMT_EXPR,
+
+} StmtKind;
+
+typedef struct {
+	BUF(Stmt **stmts);
+} StmtBlock;
+
+typedef struct {
+	Expr *cond;
+	StmtBlock block;
+} ElseIf;
+
+typedef struct {
+	BUF(Expr **exprs);
+	StmtBlock block;
+} Case;
+
+struct Stmt {
+	StmtKind kind;
+	Expr *expr;
+	StmtBlock block;
+	union {
+		/* if */
+		struct {
+			BUF(ElseIf *elseifs);
+			StmtBlock block_else;
+		};
+		/* for */
+		struct {
+			StmtBlock for_init;
+			StmtBlock for_next;
+		};
+		/* switch */
+		struct {
+			BUF(Case *cases);
+		};
+		/* Auto-assign */
+		struct {
+			const char *name;
+		};
+		/* Assignment operators */
+		struct {
+			Expr *rhs;
+		};
+	};
+};
+
+void expr_println(Expr *expr)
+{
+	expr_print(expr);
+	printf("\n");
+}
+
+void test_expr(void)
+{
+	Expr *exprs[] = {
+		expr_unary('-', expr_float(3.14)),
+		expr_binary('+', expr_int(1), expr_int(2)),
+		expr_ternary(expr_name("flag"), expr_str("true"),
+				expr_str("false")),
+		expr_field(expr_name("person"), "name"),
+
+	};
+	for (Expr **it = exprs; it != exprs + sizeof(exprs)/sizeof(exprs[0]);
+			it++)
+		expr_println(*it);
+}
+
+void test_ast(void)
+{
+	test_expr();
+}
+
 void run_tests(void)
 {
 	test_buf();	
 	test_lex();
 	test_str_intern();
 	test_parse();
+	test_ast();
 }
 
 int main(void)
