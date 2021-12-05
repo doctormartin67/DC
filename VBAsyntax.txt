@@ -1,0 +1,102 @@
+Tokens:
+
+Grouping tokens:
+
+/* might use '[' and ']' for accessing column in data sheet (as is done in
+ * Access to access a database column
+ * the only thing I can think of that '{' and '}' are used for is declaring
+ * and defining arrays at once, as in
+ * Dim arr() as String = {"This", "is", "an", "array", "of", "strings"}.
+ * However
+ * Dim arr() as String
+ * arr = {"This", "is", "an", "array", "of", "strings"}
+ * is illegal.
+ */
+( ) [ ] { }
+
+Unary/binary operators
+
+/* '!' operator will be used for something like
+ * rst![column name]
+ */
++ - !
+
+Arithmatic operators
++ -
+* / % ^
+
+Comparison operators
+EQ =
+NOTEQ <>
+>
+<
+GTEQ >=
+LTEQ <=
+
+Logical operators:
+AND
+OR
+NOT()
+XOR
+Like
+
+Concatenation operators
++ &
+
+Names/literals:
+
+NAME = [a-zA-Z_][a-zA-Z0-9_]*
+INT = 0 | [1-9][0-9]*
+FLOAT = [0-9]*[.]?[0-9]*
+STR = '"' [^"]* '"'
+
+EBNF grammar:
+
+Declarations:
+
+decl = 'Dim' NAME 'As' type
+
+Statements:
+
+assign_op = '='
+
+expr_list = expr (',' expr)*
+select_case = (Case expr_list | Case Else) stmt*
+select_case_block = select_case* End Select
+
+newline = '\r'?'\n'
+stmt_block = stmt (newline stmt)*
+stmt = ('return' expr
+     | 'Exit' ('Do' | 'For')
+     | 'If' expr 'Then' stmt
+     | 'If' expr 'Then' newline stmt_block ('ElseIf' expr 'Then' newline stmt_block)*
+     ('Else' stmt_block)? 'End' 'If'
+     | 'While' expr newline stmt_block 'Wend'
+     | 'for' '(' stmt_list ';' expr ';' stmt_list ')' stmt_block
+     | 'Do' 'While' expr newline stmt_block 'Loop'
+     | 'Do' 'Until' expr newline stmt_block 'Loop'
+     | 'Do' newline stmt_block 'Loop' 'While' expr
+     | 'Do' newline stmt_block 'Loop' 'Until' expr
+     | Select Case NAME select_case_block
+     | NAME assign_op expr) newline
+
+operand_expr = INT
+             | FLOAT
+             | STR
+             | NAME
+             | '(' expr ')'
+base_expr = operand_expr ('(' expr_list ')' | '[' NAME ']')*
+unary_expr = [+-!] unary_expr
+           | base_expr
+mul_op = [*/%^]
+mul_expr = unary_expr (mul_op unary_expr)*
+add_op = [+-]
+add_expr = mul_expr (add_op mul_expr)*
+cmp_op = [<>] | EQ | NOTEQ | LTEQ | GTEQ
+concat_op = [+&]
+concat_expr = add_expr (concat_op add_expr)*
+cmp_expr = concat_expr (cmp_op concat_expr)*
+and_expr = cmp_expr (AND cmp_expr)*
+xor_expr = and_expr (XOR and_expr)*
+or_expr = xor_expr (OR xor_expr)*
+expr = or_expr
