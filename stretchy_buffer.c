@@ -384,16 +384,12 @@ typedef enum TokenKind {
 	TOKEN_COLON,
 	TOKEN_LPAREN,
 	TOKEN_RPAREN,
-	TOKEN_LBRACE,
-	TOKEN_RBRACE,
 	TOKEN_LBRACKET,
 	TOKEN_RBRACKET,
 	TOKEN_COMMA,
 	TOKEN_DOT,
-	TOKEN_AT,
 	TOKEN_POUND,
 	TOKEN_QUESTION,
-	TOKEN_SEMICOLON,
 	TOKEN_KEYWORD,
 	TOKEN_INT,
 	TOKEN_FLOAT,
@@ -412,20 +408,16 @@ typedef enum TokenKind {
 	TOKEN_FIRST_ADD,
 	TOKEN_ADD = TOKEN_FIRST_ADD,
 	TOKEN_SUB,
-	TOKEN_XOR,
-	TOKEN_OR,
-	TOKEN_LAST_ADD = TOKEN_OR,
+	TOKEN_EXP,
+	TOKEN_LAST_ADD = TOKEN_EXP,
 	// Comparative precedence
 	TOKEN_FIRST_CMP,
-	TOKEN_EQ = TOKEN_FIRST_CMP,
-	TOKEN_NOTEQ,
+	TOKEN_NOTEQ = TOKEN_FIRST_CMP,
 	TOKEN_LT,
 	TOKEN_GT,
 	TOKEN_LTEQ,
 	TOKEN_GTEQ,
 	TOKEN_LAST_CMP = TOKEN_GTEQ,
-	TOKEN_AND_AND,
-	TOKEN_OR_OR,
 	// Assignment operators
 	TOKEN_FIRST_ASSIGN,
 	TOKEN_ASSIGN = TOKEN_FIRST_ASSIGN,
@@ -438,16 +430,12 @@ const char *const token_kind_names[] = {
 	[TOKEN_COLON] = ":",
 	[TOKEN_LPAREN] = "(",
 	[TOKEN_RPAREN] = ")",
-	[TOKEN_LBRACE] = "{",
-	[TOKEN_RBRACE] = "}",
 	[TOKEN_LBRACKET] = "[",
 	[TOKEN_RBRACKET] = "]",
 	[TOKEN_COMMA] = ",",
 	[TOKEN_DOT] = ".",
-	[TOKEN_AT] = "@",
 	[TOKEN_POUND] = "#",
 	[TOKEN_QUESTION] = "?",
-	[TOKEN_SEMICOLON] = ";",
 	[TOKEN_KEYWORD] = "keyword",
 	[TOKEN_INT] = "int",
 	[TOKEN_FLOAT] = "float",
@@ -461,16 +449,12 @@ const char *const token_kind_names[] = {
 	[TOKEN_AND] = "&",
 	[TOKEN_ADD] = "+",
 	[TOKEN_SUB] = "-",
-	[TOKEN_OR] = "|",
-	[TOKEN_XOR] = "^",
-	[TOKEN_EQ] = "==",
-	[TOKEN_NOTEQ] = "!=",
+	[TOKEN_EXP] = "^",
+	[TOKEN_NOTEQ] = "<>",
 	[TOKEN_LT] = "<",
 	[TOKEN_GT] = ">",
 	[TOKEN_LTEQ] = "<=",
 	[TOKEN_GTEQ] = ">=",
-	[TOKEN_AND_AND] = "&&",
-	[TOKEN_OR_OR] = "||",
 	[TOKEN_ASSIGN] = "=",
 };
 
@@ -732,20 +716,16 @@ repeat:
 			CASE1('\0', TOKEN_EOF);
 			CASE1('(', TOKEN_LPAREN);
 			CASE1(')', TOKEN_RPAREN);
-			CASE1('{', TOKEN_LBRACE);
-			CASE1('}', TOKEN_RBRACE);
 			CASE1('[', TOKEN_LBRACKET);
 			CASE1(']', TOKEN_RBRACKET);
 			CASE1(',', TOKEN_COMMA);
-			CASE1('@', TOKEN_AT);
 			CASE1('#', TOKEN_POUND);
 			CASE1('?', TOKEN_QUESTION);
-			CASE1(';', TOKEN_SEMICOLON);
 			CASE1('~', TOKEN_NEG);
 			CASE1('!', TOKEN_NOT);
 			CASE1(':', TOKEN_COLON);
 			CASE1('=', TOKEN_ASSIGN);
-			CASE1('^', TOKEN_XOR);
+			CASE1('^', TOKEN_EXP);
 			CASE1('*', TOKEN_MUL);
 			CASE1('/', TOKEN_DIV);
 			CASE1('%', TOKEN_MOD);
@@ -898,6 +878,429 @@ void test_lex(void)
 #undef assert_token_str
 #undef assert_token_eof
 
+/* ast (before parsing) */
+
+typedef struct Expr Expr;
+typedef struct Stmt Stmt;
+typedef struct Decl Decl;
+typedef struct Typespec Typespec;
+
+typedef struct StmtList {
+	SrcPos pos;
+	Stmt **stmts;
+	size_t num_stmts;
+} StmtList;
+
+typedef enum TypespecKind {
+	TYPESPEC_NONE,
+	TYPESPEC_NAME,
+	TYPESPEC_FUNC,
+} TypespecKind;
+
+struct Typespec {
+	TypespecKind kind;
+	SrcPos pos;
+	Typespec *base;
+	union {
+		struct {
+			const char **names;
+			size_t num_names;
+		};
+		struct {
+			Typespec **args;
+			size_t num_args;
+			TODO(bool has_varargs);
+			TODO(Typespec *ret);
+		} func;
+		Expr *num_elems;
+	};
+};
+
+typedef struct FuncParam {
+	SrcPos pos;
+	const char *name;
+	Typespec *type;
+} FuncParam;
+
+typedef enum DeclKind {
+	DECL_NONE,
+	DECL_VAR,
+	DECL_NOTE,
+	DECL_IMPORT,
+} DeclKind;
+
+struct Decl {
+	DeclKind kind;
+	SrcPos pos;
+	const char *name;
+	TODO(Notes notes);
+	TODO(bool is_incomplete);
+	union {
+		TODO(Note note);
+		struct {
+			Typespec *type;
+			Expr *expr;
+		} var;
+		struct {
+			TODO(bool is_relative);
+			TODO(const char **names);
+			TODO(size_t num_names);
+			TODO(bool import_all);
+			TODO(ImportItem *items);
+			TODO(size_t num_items);
+		} import;
+	};
+};
+
+typedef struct Decls {
+	Decl **decls;
+	size_t num_decls;
+} Decls;
+
+typedef enum ExprKind {
+	EXPR_NONE,
+	EXPR_PAREN,
+	EXPR_INT,
+	EXPR_FLOAT,
+	EXPR_STR,
+	EXPR_NAME,
+	EXPR_CALL,
+	EXPR_INDEX,
+	EXPR_UNARY,
+	EXPR_BINARY,
+	EXPR_MODIFY,
+	EXPR_NEW,
+} ExprKind;
+
+struct Expr {
+	ExprKind kind;
+	SrcPos pos;
+	union {
+		struct {
+			Expr *expr;
+		} paren;
+		struct {
+			unsigned long long val;
+			TODO(TokenSuffix suffix);
+		} int_lit;
+		struct {
+			const char *start;
+			const char *end;
+			double val;
+			TODO(TokenSuffix suffix);
+		} float_lit;
+		struct {
+			const char *val;
+		} str_lit;
+		const char *name;
+		struct {
+			TODO(TokenKind op);
+			TODO(bool post);
+			TODO(Expr *expr);
+		} modify;
+		struct {
+			TokenKind op;
+			Expr *expr;
+		} unary;
+		struct {
+			TokenKind op;
+			Expr *left;
+			Expr *right;
+		} binary;
+		struct {
+			Expr *expr;
+			Expr **args;
+			size_t num_args;            
+		} call;
+		struct {
+			Expr *expr;
+			Expr *index;
+		} index;
+		struct {
+			TODO(Expr *alloc);
+			TODO(Expr *len);
+			TODO(Expr *arg);
+		} new_expr;
+	};
+};
+
+typedef struct ElseIf {
+	Expr *cond;
+	StmtList block;
+} ElseIf;
+
+typedef struct SelectCasePattern {
+	Expr *start;
+	Expr *end;
+} SelectCasePattern;
+
+typedef struct SelectCase {
+	SelectCasePattern *patterns;
+	size_t num_patterns;
+	unsigned is_default;
+	StmtList block;
+} SelectCase;
+
+typedef enum StmtKind {
+	STMT_NONE,
+	STMT_DECL,
+	STMT_BLOCK,
+	STMT_IF,
+	STMT_WHILE,
+	STMT_DO_WHILE,
+	STMT_DO_UNTIL,
+	STMT_FOR,
+	STMT_SELECT_CASE,
+	STMT_ASSIGN,
+	STMT_INIT,
+	STMT_EXPR,
+	STMT_NOTE,
+	STMT_LABEL,
+} StmtKind;
+
+struct Stmt {
+	StmtKind kind;
+	TODO(Notes notes);
+	SrcPos pos;
+	union {
+		TODO(Note note);
+		Expr *expr;
+		Decl *decl;
+		struct {
+			Stmt *init;
+			Expr *cond;
+			StmtList then_block;
+			ElseIf *elseifs;
+			size_t num_elseifs;
+			StmtList else_block;            
+		} if_stmt;
+		struct {
+			Expr *cond;
+			StmtList block;
+		} while_stmt;
+		struct {
+			Stmt *init;
+			Expr *cond;
+			Stmt *next;
+			StmtList block;
+		} for_stmt;
+		struct {
+			Expr *expr;
+			SelectCase *cases;
+			size_t num_cases;            
+		} select_case_stmt;
+		StmtList block;
+		struct {
+			TokenKind op;
+			Expr *left;
+			Expr *right;
+		} assign;
+		struct {
+			const char *name;
+			Typespec *type;
+			Expr *expr;
+			unsigned is_undef;
+		} init;
+		const char *label;
+	};
+};
+
+static Arena ast_arena;
+
+static size_t ast_memory_usage;
+
+void *ast_alloc(size_t size)
+{
+	assert(0 != size);
+	void *ptr = arena_alloc(&ast_arena, size);
+	memset(ptr, 0, size);
+	ast_memory_usage += size;
+	return ptr;
+}
+
+void *ast_dup(const void *src, size_t size)
+{
+	if (0 == size) {
+		return 0;
+	}
+	void *ptr = arena_alloc(&ast_arena, size);
+	memcpy(ptr, src, size);
+	return ptr;
+}
+
+#define AST_DUP(x) ast_dup(x, num_##x * sizeof(*x))
+
+Expr *new_expr(ExprKind kind, SrcPos pos)
+{
+	Expr *e = ast_alloc(sizeof(*e));
+	e->kind = kind;
+	e->pos = pos;
+	return e;
+}
+
+Expr *new_expr_paren(SrcPos pos, Expr *expr)
+{
+	Expr *e = new_expr(EXPR_PAREN, pos);
+	e->paren.expr = expr;
+	return e;
+}
+
+Expr *new_expr_int(SrcPos pos, unsigned long long val)
+{
+	Expr *e = new_expr(EXPR_INT, pos);
+	e->int_lit.val = val;
+	TODO(e->int_lit.suffix = suffix);
+	return e;
+}
+
+Expr *new_expr_float(SrcPos pos, const char *start, const char *end,
+		double val)
+{
+	Expr *e = new_expr(EXPR_FLOAT, pos);
+	e->float_lit.start = start;
+	e->float_lit.end = end;
+	e->float_lit.val = val;
+	TODO(e->float_lit.suffix = suffix);
+	return e;
+}
+
+Expr *new_expr_str(SrcPos pos, const char *val)
+{
+	Expr *e = new_expr(EXPR_STR, pos);
+	e->str_lit.val = val;
+	return e;
+}
+
+Expr *new_expr_name(SrcPos pos, const char *name)
+{
+	Expr *e = new_expr(EXPR_NAME, pos);
+	e->name = name;
+	return e;
+}
+
+Expr *new_expr_call(SrcPos pos, Expr *expr, Expr **args, size_t num_args)
+{
+	Expr *e = new_expr(EXPR_CALL, pos);
+	e->call.expr = expr;
+	e->call.args = AST_DUP(args);
+	e->call.num_args = num_args;
+	return e;
+}
+
+Expr *new_expr_index(SrcPos pos, Expr *expr, Expr *index)
+{
+	Expr *e = new_expr(EXPR_INDEX, pos);
+	e->index.expr = expr;
+	e->index.index = index;
+	return e;
+}
+
+Expr *new_expr_unary(SrcPos pos, TokenKind op, Expr *expr)
+{
+	Expr *e = new_expr(EXPR_UNARY, pos);
+	e->unary.op = op;
+	e->unary.expr = expr;
+	return e;
+}
+
+Expr *new_expr_binary(SrcPos pos, TokenKind op, Expr *left, Expr *right)
+{
+	Expr *e = new_expr(EXPR_BINARY, pos);
+	e->binary.op = op;
+	e->binary.left = left;
+	e->binary.right = right;
+	return e;
+}
+
+void print_expr(Expr *e)
+{
+	switch (e->kind) {
+		case EXPR_NONE:
+			assert(0);
+			break;
+		case EXPR_PAREN:
+			printf("(");
+			print_expr(e->paren.expr);
+			printf(")");
+			break;
+		case EXPR_INT:
+			printf("%lld", e->int_lit.val);
+			break;
+		case EXPR_FLOAT:
+			printf("%f", e->float_lit.val);
+			break;
+		case EXPR_STR:
+			printf("\"%s\"", e->str_lit.val);
+			break;
+		case EXPR_NAME:
+			printf("%s", e->name);
+			break;
+		case EXPR_CALL:
+			printf("(call ");
+			print_expr(e->call.expr);
+			printf("(");
+			for (size_t i = 0; i < e->call.num_args; i++) {
+				print_expr(e->call.args[i]);	
+				if (i != e->call.num_args - 1)
+					printf(",");
+			}
+			printf("))");
+			break;
+		case EXPR_INDEX:
+			printf("(index ");
+			print_expr(e->index.expr);
+			printf(" ");
+			print_expr(e->index.index);
+			printf(")");
+			break;
+		case EXPR_UNARY:
+			printf("(%c ", e->unary.op);
+			print_expr(e->unary.expr);
+			printf(")");
+			break;
+		case EXPR_BINARY:
+			printf("(%c ", e->binary.op);
+			print_expr(e->binary.left);
+			printf(" ");
+			print_expr(e->binary.right);
+			printf(")");
+			break;
+		case EXPR_MODIFY:
+			printf("TODO");
+			break;
+		case EXPR_NEW:
+			printf("TODO");
+			break;
+	}
+}
+
+void print_exprln(Expr *e)
+{
+	print_expr(e);
+	printf("\n");
+}
+
+void test_expr(void)
+{
+	SrcPos pos = (SrcPos){0};
+	Expr *e = new_expr(EXPR_INT, pos);
+	assert(EXPR_INT == e->kind);
+	Expr *ep = new_expr_paren(pos, e);
+	assert(ep->paren.expr == e && EXPR_PAREN == ep->kind);
+	Expr *e_int = new_expr_int(pos, 5);
+	assert(5 == e_int->int_lit.val);
+
+	Expr *es[] = {
+		new_expr_binary(pos, '+', new_expr_int(pos, 5),
+				new_expr_int(pos, 3)),
+		new_expr_unary(pos, '-', new_expr_int(pos, 3)),
+		new_expr_call(pos, new_expr_name(pos, "func_name"), es, 2),
+	};
+
+	for (Expr **it = es; it != es + sizeof(es)/sizeof(*es); it++)
+		print_exprln(*it);
+}
+
 int main(void)
 {
 	test_buf();
@@ -905,5 +1308,6 @@ int main(void)
 	test_lex();
 	test_map();
 	test_str_intern();
+	test_expr();
 	return 0;
 }

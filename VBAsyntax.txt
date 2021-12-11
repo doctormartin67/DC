@@ -54,6 +54,7 @@ EBNF grammar:
 
 Declarations:
 
+type = NAME
 decl = 'Dim' NAME 'As' type
 
 Statements:
@@ -66,7 +67,7 @@ select_case_block = select_case* End Select
 
 newline = '\r'?'\n'
 stmt_block = stmt (newline stmt)*
-stmt = ('return' expr
+stmt = ('formula' assign_op expr
      | 'Exit' ('Do' | 'For')
      | 'If' expr 'Then' stmt
      | 'If' expr 'Then' newline stmt_block ('ElseIf' expr 'Then' newline stmt_block)*
@@ -83,6 +84,7 @@ stmt = ('return' expr
 operand_expr = INT
              | FLOAT
              | STR
+	     | BOOLEAN
              | NAME
              | '(' expr ')'
 base_expr = operand_expr ('(' expr_list ')' | '[' NAME ']')*
