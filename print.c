@@ -56,7 +56,7 @@ void print_expr(Expr *e)
 			for (size_t i = 0; i < e->call.num_args; i++) {
 				print_expr(e->call.args[i]);	
 				if (i != e->call.num_args - 1)
-					printf(",");
+					printf(", ");
 			}
 			printf("))");
 			break;
@@ -68,12 +68,12 @@ void print_expr(Expr *e)
 			printf(")");
 			break;
 		case EXPR_UNARY:
-			printf("(%c ", e->unary.op);
+			printf("(%s ", token_kind_names[e->unary.op]);
 			print_expr(e->unary.expr);
 			printf(")");
 			break;
 		case EXPR_BINARY:
-			printf("(%c ", e->binary.op);
+			printf("(%s ", token_kind_names[e->binary.op]);
 			print_expr(e->binary.left);
 			printf(" ");
 			print_expr(e->binary.right);
@@ -126,7 +126,7 @@ void print_stmt(Stmt *stmt)
 			printf("(If ");
 			print_expr(s->if_stmt.cond);
 			indent++;
-			printf("Then");
+			printf(" Then");
 			print_newline();
 			print_stmt_block(s->if_stmt.then_block);
 			for (ElseIf *it = s->if_stmt.elseifs;
@@ -135,7 +135,7 @@ void print_stmt(Stmt *stmt)
 				print_newline();
 				printf("ElseIf ");
 				print_expr(it->cond);
-				printf("Then");
+				printf(" Then");
 				print_newline();
 				print_stmt_block(it->block);
 			}
@@ -146,6 +146,7 @@ void print_stmt(Stmt *stmt)
 				print_stmt_block(s->if_stmt.else_block);
 			}
 			indent--;
+			print_newline();
 			printf("End If)");
 			break;
 		case STMT_WHILE:
@@ -155,29 +156,52 @@ void print_stmt(Stmt *stmt)
 			print_newline();
 			print_stmt_block(s->while_stmt.block);
 			indent--;
+			print_newline();
 			printf("Wend)");
 			break;
 		case STMT_DO_WHILE:
+			printf("(Do ");
+			indent++;
+			print_newline();
+			print_stmt_block(s->while_stmt.block);
+			indent--;
+			print_newline();
+			printf("Loop While ");
+			print_expr(s->while_stmt.cond);
+			break;
+		case STMT_DO_UNTIL:
+			printf("(Do ");
+			indent++;
+			print_newline();
+			print_stmt_block(s->until_stmt.block);
+			indent--;
+			print_newline();
+			printf("Loop Until ");
+			print_expr(s->until_stmt.cond);
+			break;
+		case STMT_DO_WHILE_LOOP:
 			printf("(Do While ");
 			print_expr(s->while_stmt.cond);
 			indent++;
 			print_newline();
 			print_stmt_block(s->while_stmt.block);
 			indent--;
+			print_newline();
 			printf("Loop)");
 			break;
-		case STMT_DO_UNTIL:
+		case STMT_DO_UNTIL_LOOP:
 			printf("(Do Until ");
-			print_expr(s->while_stmt.cond);
+			print_expr(s->until_stmt.cond);
 			indent++;
 			print_newline();
-			print_stmt_block(s->while_stmt.block);
+			print_stmt_block(s->until_stmt.block);
 			indent--;
+			print_newline();
 			printf("Loop)");
 			break;
 		case STMT_FOR:
 			printf("(For ");
-			print_stmt(s->for_stmt.init);
+			print_stmt(s->for_stmt.dim);
 			print_expr(s->for_stmt.cond);
 			print_stmt(s->for_stmt.next);
 			indent++;
@@ -198,6 +222,15 @@ void print_stmt(Stmt *stmt)
 			}
 			printf(")");
 			break;
+		case STMT_DIM:
+			printf("(Dim %s As ", s->dim.name);
+			if (s->dim.type) {
+				print_typespec(s->dim.type);
+			} else {
+				printf("nil");
+			}
+			printf(")");
+			break;
 		case STMT_EXPR:
 			print_expr(s->expr);
 			break;
@@ -211,40 +244,21 @@ void print_decl(Decl *decl)
 {
 	Decl *d = decl;
 	switch (d->kind) {
-		case DECL_VAR:
-			printf("(Dim %s As", d->name);
-			if (d->var.type) {
-				print_typespec(d->var.type);
+		case DECL_DIM:
+			printf("(Dim %s As ", d->name);
+			if (d->dim.type) {
+				print_typespec(d->dim.type);
 			} else {
 				printf("nil");
 			}
-			printf(" ");
-			if (d->var.expr) {
-				print_expr(d->var.expr);
-			} else {
-				printf("nil");
+			if (d->dim.expr) {
+				printf(" ");
+				print_expr(d->dim.expr);
 			}
 			printf(")");
 			break;
 		default:
 			assert(0);
 			break;
-	}
-}
-
-
-void test_print(void)
-{
-	// Expressions
-	SrcPos pos = (SrcPos){0};
-	Expr *es[] = {
-		new_expr_binary(pos, '+', new_expr_int(pos, 1),
-				new_expr_int(pos, 2)),
-		new_expr_call(pos, new_expr_name(pos, "func"),
-				(Expr*[]){new_expr_int(pos, 42)}, 1),
-	};
-	for (Expr **it = es; it != es + sizeof(es)/sizeof(*es); it++) {
-		print_expr(*it);
-		printf("\n");
 	}
 }

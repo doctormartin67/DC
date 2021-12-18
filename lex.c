@@ -22,6 +22,7 @@ void init_keywords(void)
 	KEYWORD(elseif);
 	KEYWORD(end);
 	KEYWORD(while);
+	KEYWORD(until);
 	KEYWORD(wend);
 	KEYWORD(do);
 	KEYWORD(loop);

@@ -180,12 +180,53 @@ void test_expr(void)
 
 void test_parse(void)
 {
-	const char *decls[] = {
-		"dim x as Integer",
+	const char *ds[] = {
+		"dim x as integer",
+		"x = 4",
+		"func(x)",
+		"x = 4 + 3",
+		"xyz = 2 + 4.3*1",
+		"xyz = (2 + 4.3)*1",
+		"func(x, xyz, 1+3)",
+		"y = 1 / func(x, xyz, 1+3)",
+		"if x = 1 then\n"
+		"	x = 2\n"
+		"	xyx = 2 + 3\n"
+		"end if",
+		"if y = 1*6 then\n"
+		"	x = 2\n"
+		"elseif (6 = 6) then\n"
+		"	xyx = 2 + 3\n"
+		"end if",
+		"if y = 1*6 then\n"
+		"	x = 2\n"
+		"elseif (6 = 6) then\n"
+		"	xyx = 2 + 3\n"
+		"else\n"
+		"	y = func(1, 2, 3*2)\n"
+		"end if",
+		"while x = y\n"
+		"	xyz = xyz -1\n"
+		"wend",
+		"do while x = 1+2\n"
+		"	x = y\n"
+		"	xyz = 3 + 4/2*7\n"
+		"loop",
+		"do until x = 1+2\n"
+		"	x = y\n"
+		"	xyz = 3 + 4/2*7\n"
+		"loop",
+		"do\n"
+		"	z = x + 1 - y + func(2,3, 0, x+y)\n"
+		"loop while z = 1",
+		"do\n"
+		"	z = x + 1 - y + func(2,3, 0, x+y)\n"
+		"loop until z = 1",
 	};
-	for (const char **it = decls; it != decls + sizeof(decls)/sizeof(*decls); it++) {
+	for (const char **it = ds; it != ds + sizeof(ds)/sizeof(*ds); it++) {
 		init_stream(0, *it);
-		Decl *decl = parse_decl();
+		Stmt *stmt = parse_stmt();
+		print_stmt(stmt);
 		printf("\n");
 	}
 
@@ -199,7 +240,6 @@ int main(void)
 	test_map();
 	test_str_intern();
 	test_expr();
-	test_print();
 	test_parse();
 	return 0;
 }

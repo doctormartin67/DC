@@ -6,6 +6,7 @@ const char *else_keyword;
 const char *elseif_keyword;
 const char *end_keyword;
 const char *while_keyword;
+const char *until_keyword;
 const char *wend_keyword;
 const char *do_keyword;
 const char *loop_keyword;

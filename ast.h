@@ -40,7 +40,7 @@ typedef struct FuncParam {
 
 typedef enum DeclKind {
 	DECL_NONE,
-	DECL_VAR,
+	DECL_DIM,
 	DECL_NOTE,
 	DECL_IMPORT,
 } DeclKind;
@@ -53,7 +53,7 @@ struct Decl {
 		struct {
 			Typespec *type;
 			Expr *expr;
-		} var;
+		} dim;
 	};
 };
 
@@ -142,12 +142,14 @@ typedef enum StmtKind {
 	STMT_WHILE,
 	STMT_DO_WHILE,
 	STMT_DO_UNTIL,
+	STMT_DO_WHILE_LOOP,
+	STMT_DO_UNTIL_LOOP,
 	STMT_FOR,
 	STMT_SELECT_CASE,
 	STMT_ASSIGN,
+	STMT_DIM,
 	STMT_EXPR,
 	STMT_NOTE,
-	STMT_LABEL,
 } StmtKind;
 
 struct Stmt {
@@ -157,7 +159,7 @@ struct Stmt {
 		Expr *expr;
 		Decl *decl;
 		struct {
-			Stmt *init;
+			Stmt *dim;
 			Expr *cond;
 			StmtList then_block;
 			ElseIf *elseifs;
@@ -169,7 +171,11 @@ struct Stmt {
 			StmtList block;
 		} while_stmt;
 		struct {
-			Stmt *init;
+			Expr *cond;
+			StmtList block;
+		} until_stmt;
+		struct {
+			Stmt *dim;
 			Expr *cond;
 			Stmt *next;
 			StmtList block;
@@ -185,6 +191,9 @@ struct Stmt {
 			Expr *left;
 			Expr *right;
 		} assign;
-		const char *label;
+		struct {
+			const char *name;
+			Typespec *type;
+		} dim;
 	};
 };

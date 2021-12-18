@@ -77,6 +77,7 @@ Expr *parse_expr_base(void)
 	Expr *expr = parse_expr_operand();
 	while (is_token(TOKEN_LPAREN)) {
 		SrcPos pos = token.pos;
+		expect_token(TOKEN_LPAREN);
 		Expr **args = 0;
 		if (!is_token(TOKEN_RPAREN)) {
 			buf_push(args, parse_expr());
@@ -143,7 +144,8 @@ Expr *parse_expr_add(void)
 
 unsigned is_cmp_op(void)
 {
-	return TOKEN_FIRST_CMP <= token.kind && token.kind <= TOKEN_LAST_CMP;
+	return (TOKEN_FIRST_CMP <= token.kind && token.kind <= TOKEN_LAST_CMP)
+		|| TOKEN_ASSIGN == token.kind;
 }
 
 Expr *parse_expr_cmp(void)
@@ -185,12 +187,13 @@ Expr *parse_expr(void)
 
 unsigned is_end_of_block(void)
 {
-	return match_keyword(else_keyword)
-	|| match_keyword(elseif_keyword)
-	|| match_keyword(end_keyword)
-	|| match_keyword(wend_keyword)
-	|| match_keyword(next_keyword)	
-	|| match_keyword(case_keyword);
+	return is_keyword(else_keyword)
+		|| is_keyword(elseif_keyword)
+		|| is_keyword(end_keyword)
+		|| is_keyword(wend_keyword)
+		|| is_keyword(next_keyword)	
+		|| is_keyword(case_keyword)
+		|| is_keyword(loop_keyword);
 }
 
 StmtList parse_stmt_block(void)
@@ -206,21 +209,20 @@ StmtList parse_stmt_block(void)
 Stmt *parse_stmt_if(SrcPos pos)
 {
 	Expr *cond = parse_expr();
-	StmtList then_block = parse_stmt_block();
 	expect_keyword(then_keyword);
+	StmtList then_block = parse_stmt_block();
 	StmtList else_block = {0};
 	ElseIf *elseifs = 0;
-	while (!match_keyword(end_keyword)) {
-		if (match_keyword(else_keyword)) {
-			else_block = parse_stmt_block();
-			break;
-		}
-		expect_keyword(elseif_keyword);
+	while (match_keyword(elseif_keyword)) {
 		Expr *elseif_cond = parse_expr();
 		expect_keyword(then_keyword);
 		StmtList elseif_block = parse_stmt_block();
 		buf_push(elseifs, (ElseIf){elseif_cond, elseif_block});
 	}
+	if (match_keyword(else_keyword)) {
+		else_block = parse_stmt_block();
+	}
+	expect_keyword(end_keyword);
 	expect_keyword(if_keyword);
 	return new_stmt_if(pos, cond, then_block, elseifs,
 			buf_len(elseifs), else_block);
@@ -234,15 +236,51 @@ Stmt *parse_stmt_while(SrcPos pos)
 	return stmt;
 }
 
-Stmt *parse_stmt_do_while(SrcPos pos)
+Stmt *parse_stmt_do_while_loop(SrcPos pos)
 {
+	Expr *cond = parse_expr();
 	StmtList block = parse_stmt_block();
-	if (!match_keyword(while_keyword)) {
-		fatal_error_here("Expected 'while' after 'do' block");
+	if (!match_keyword(loop_keyword)) {
+		fatal_error_here("Expected 'loop' after 'do while' block");
 		return 0;
 	}
-	Stmt *stmt = new_stmt_do_while(pos, parse_expr(), block);
-	expect_keyword(loop_keyword);
+	Stmt *stmt = new_stmt_do_while_loop(pos, cond, block);
+	return stmt;
+}
+
+Stmt *parse_stmt_do_until_loop(SrcPos pos)
+{
+	Expr *cond = parse_expr();
+	StmtList block = parse_stmt_block();
+	if (!match_keyword(loop_keyword)) {
+		fatal_error_here("Expected 'loop' after 'do until' block");
+		return 0;
+	}
+	Stmt *stmt = new_stmt_do_until_loop(pos, cond, block);
+	return stmt;
+}
+
+Stmt *parse_stmt_do(SrcPos pos)
+{
+	Stmt *stmt = 0;
+	StmtList block = (StmtList){0};
+	if (match_keyword(until_keyword)) {
+		stmt = parse_stmt_do_until_loop(pos);
+	} else if (match_keyword(while_keyword)) {
+		stmt = parse_stmt_do_while_loop(pos);
+	} else {
+		block = parse_stmt_block();
+		expect_keyword(loop_keyword);
+		if (match_keyword(while_keyword)) {
+			stmt = new_stmt_do_while(pos, parse_expr(), block);
+		} else if(match_keyword(until_keyword)) {
+			stmt = new_stmt_do_until(pos, parse_expr(), block);
+		} else {
+			fatal_error_here("Expected 'loop' then 'while'"
+					"or 'until after 'do' block");
+			return 0;
+		}
+	}
 	return stmt;
 }
 
@@ -252,92 +290,112 @@ unsigned is_assign_op(void)
 		&& token.kind <= TOKEN_LAST_ASSIGN;
 }
 
-/* TODO
- * probably remove function below
- */
+Stmt *parse_stmt_dim(void)
+{
+	Stmt *stmt = 0;
+	Expr *expr = parse_expr();
+	assert(EXPR_NAME == expr->kind);
+	expect_keyword(as_keyword);
+	Typespec *type = parse_type();
+	stmt = new_stmt_dim(expr->pos, expr->name, type);
+	assert(STMT_DIM == stmt->kind);
+	return stmt;
+}
+
 Stmt *parse_simple_stmt(void)
 {
-	return 0;
+	SrcPos pos = token.pos;
+	Stmt *stmt = 0;
+	Expr *expr = 0;
+	expr = parse_expr();
+	if (is_assign_op()) {
+		TokenKind op = token.kind;
+		next_token();
+		stmt = new_stmt_assign(pos, op, expr, parse_expr());
+	} else {
+		stmt = new_stmt_expr(pos, expr);
+	}
+	return stmt;
 }
 
 /* TODO
-Stmt *parse_stmt_for(SrcPos pos) {
-	Stmt *init = NULL;
-	Expr *cond = NULL;
-	Stmt *next = NULL;
-	if (!is_token(TOKEN_LBRACE)) {
-		expect_token(TOKEN_LPAREN);
-		if (!is_token(TOKEN_SEMICOLON)) {
-			init = parse_simple_stmt();
-		}
-		if (match_token(TOKEN_SEMICOLON)) {
-			if (!is_token(TOKEN_SEMICOLON)) {
-				cond = parse_expr();
-			}
-			if (match_token(TOKEN_SEMICOLON)) {
-				if (!is_token(TOKEN_RPAREN)) {
-					next = parse_simple_stmt();
-					if (next->kind == STMT_INIT) {
-						error_here("Init statements not allowed in for-statement's next clause");
-					}
-				}
-			}
-		}
-		expect_token(TOKEN_RPAREN);
-	}
-	return new_stmt_for(pos, init, cond, next, parse_stmt_block());
+   Stmt *parse_stmt_for(SrcPos pos) {
+   Stmt *dim = NULL;
+   Expr *cond = NULL;
+   Stmt *next = NULL;
+   if (!is_token(TOKEN_LBRACE)) {
+   expect_token(TOKEN_LPAREN);
+   if (!is_token(TOKEN_SEMICOLON)) {
+   dim = parse_simple_stmt();
+   }
+   if (match_token(TOKEN_SEMICOLON)) {
+   if (!is_token(TOKEN_SEMICOLON)) {
+   cond = parse_expr();
+   }
+   if (match_token(TOKEN_SEMICOLON)) {
+   if (!is_token(TOKEN_RPAREN)) {
+   next = parse_simple_stmt();
+   if (next->kind == STMT_DIM) {
+   error_here("Init statements not allowed in for-statement's next clause");
+   }
+   }
+   }
+   }
+   expect_token(TOKEN_RPAREN);
+   }
+   return new_stmt_for(pos, dim, cond, next, parse_stmt_block());
+   }
+
+
+   SelectCasePattern parse_select_case_pattern(void)
+   {
+   Expr *start = parse_expr();
+   Expr *end = 0;
+   return (SwitchCasePattern){start, end};
+   }
+
+   SelectCase parse_stmt_select_case(void)
+   {
+   SelectCasePattern *patterns = 0;
+   unsigned is_default = 0;
+   unsigned is_first_case = 1;
+   while (is_keyword(case_keyword) || is_keyword(default_keyword)) {
+   if (match_keyword(case_keyword)) {
+   if (!is_first_case) {
+   warning_here("Use comma-separated expressions to match multiple values with one case label");
+   is_first_case = 0;
+   }
+   buf_push(patterns, parse_switch_case_pattern());
+   while (match_token(TOKEN_COMMA)) {
+   buf_push(patterns, parse_switch_case_pattern());
+   }
+   } else {
+   assert(is_keyword(default_keyword));
+   next_token();
+   if (is_default) {
+   error_here("Duplicate default labels in same switch clause");
+   }
+   is_default = true;
+   }
+   expect_token(TOKEN_COLON);
+   }
+   SrcPos pos = token.pos;
+   Stmt **stmts = NULL;
+   while (!is_token_eof() && !is_token(TOKEN_RBRACE) && !is_keyword(case_keyword) && !is_keyword(default_keyword)) {
+   buf_push(stmts, parse_stmt());
+   }
+   return (SwitchCase){patterns, buf_len(patterns), is_default, new_stmt_list(pos, stmts, buf_len(stmts))};
+   }
+
+   Stmt *parse_stmt_switch(SrcPos pos) {
+   Expr *expr = parse_paren_expr();
+SwitchCase *cases = NULL;
+expect_token(TOKEN_LBRACE);
+while (!is_token_eof() && !is_token(TOKEN_RBRACE)) {
+	buf_push(cases, parse_stmt_switch_case());
 }
-
-
-SelectCasePattern parse_select_case_pattern(void)
-{
-	Expr *start = parse_expr();
-	Expr *end = 0;
-	return (SwitchCasePattern){start, end};
-}
-
-SelectCase parse_stmt_select_case(void)
-{
-	SelectCasePattern *patterns = 0;
-	unsigned is_default = 0;
-	unsigned is_first_case = 1;
-	while (is_keyword(case_keyword) || is_keyword(default_keyword)) {
-		if (match_keyword(case_keyword)) {
-			if (!is_first_case) {
-				warning_here("Use comma-separated expressions to match multiple values with one case label");
-				is_first_case = 0;
-			}
-			buf_push(patterns, parse_switch_case_pattern());
-			while (match_token(TOKEN_COMMA)) {
-				buf_push(patterns, parse_switch_case_pattern());
-			}
-		} else {
-			assert(is_keyword(default_keyword));
-			next_token();
-			if (is_default) {
-				error_here("Duplicate default labels in same switch clause");
-			}
-			is_default = true;
-		}
-		expect_token(TOKEN_COLON);
-	}
-	SrcPos pos = token.pos;
-	Stmt **stmts = NULL;
-	while (!is_token_eof() && !is_token(TOKEN_RBRACE) && !is_keyword(case_keyword) && !is_keyword(default_keyword)) {
-		buf_push(stmts, parse_stmt());
-	}
-	return (SwitchCase){patterns, buf_len(patterns), is_default, new_stmt_list(pos, stmts, buf_len(stmts))};
-}
-
-Stmt *parse_stmt_switch(SrcPos pos) {
-	Expr *expr = parse_paren_expr();
-	SwitchCase *cases = NULL;
-	expect_token(TOKEN_LBRACE);
-	while (!is_token_eof() && !is_token(TOKEN_RBRACE)) {
-		buf_push(cases, parse_stmt_switch_case());
-	}
-	expect_token(TOKEN_RBRACE);
-	return new_stmt_switch(pos, expr, cases, buf_len(cases));
+expect_token(TOKEN_RBRACE);
+return new_stmt_switch(pos, expr, cases, buf_len(cases));
 }
 
 */
@@ -351,13 +409,13 @@ Stmt *parse_stmt(void)
 	} else if (match_keyword(while_keyword)) {
 		stmt = parse_stmt_while(pos);
 	} else if (match_keyword(do_keyword)) {
-		stmt = parse_stmt_do_while(pos);
+		stmt = parse_stmt_do(pos);
 	} else if (match_keyword(for_keyword)) {
 		TODO(stmt = parse_stmt_for(pos));
 	} else if (match_keyword(select_keyword)) {
 		TODO(stmt = parse_stmt_select_case(pos));
-	} else if (match_token(TOKEN_COLON)) {
-		stmt = new_stmt_label(pos, parse_name());
+	} else if (match_keyword(dim_keyword)) {
+		stmt = parse_stmt_dim();
 	} else {
 		stmt = parse_simple_stmt();
 	}
@@ -375,13 +433,8 @@ Decl *parse_decl_dim(SrcPos pos)
 {
 	const char *name = parse_name();
 	expect_keyword(as_keyword);
-	if (match_token(TOKEN_ASSIGN)) {
-		Expr *expr = parse_expr();
-		return new_decl_var(pos, name, 0, expr);
-	} else {
-		fatal_error_here("Expected : or = after var, got %s", token_info());
-		return 0;
-	}
+	Typespec *type = parse_type();
+	return new_decl_dim(pos, name, type, 0);
 }
 
 Decl *parse_decl_opt(void)

@@ -47,17 +47,6 @@ Typespec *new_typespec_name(SrcPos pos, const char **names, size_t num_names)
 
 }
 
-Typespec *new_typespec_func(SrcPos pos, Typespec **args, size_t num_args,
-		Typespec *ret, unsigned has_varargs)
-{
-	Typespec *t = new_typespec(TYPESPEC_FUNC, pos);
-	t->func.args = AST_DUP(args);
-	t->func.num_args = num_args;
-	TODO(t->func.ret = ret);
-	TODO(t->func.has_varargs = has_varargs);
-	return t;
-}
-
 Decls *new_decls(Decl **decls, size_t num_decls)
 {
 	Decls *d = ast_alloc(sizeof(*d));
@@ -75,11 +64,11 @@ Decl *new_decl(DeclKind kind, SrcPos pos, const char *name)
 	return d;
 }
 
-Decl *new_decl_var(SrcPos pos, const char *name, Typespec *type, Expr *expr)
+Decl *new_decl_dim(SrcPos pos, const char *name, Typespec *type, Expr *expr)
 {
-	Decl *d = new_decl(DECL_VAR, pos, name);
-	d->var.type = type;
-	d->var.expr = expr;
+	Decl *d = new_decl(DECL_DIM, pos, name);
+	d->dim.type = type;
+	d->dim.expr = expr;
 	return d;
 }
 
@@ -173,20 +162,6 @@ Stmt *new_stmt(StmtKind kind, SrcPos pos)
 	return s;
 }
 
-Stmt *new_stmt_label(SrcPos pos, const char *label)
-{
-	Stmt *s = new_stmt(STMT_LABEL, pos);
-	s->label = label;
-	return s;
-}
-
-Stmt *new_stmt_decl(SrcPos pos, Decl *decl)
-{
-	Stmt *s = new_stmt(STMT_DECL, pos);
-	s->decl = decl;
-	return s;
-}
-
 Stmt *new_stmt_block(SrcPos pos, StmtList block) {
 	Stmt *s = new_stmt(STMT_BLOCK, pos);
 	s->block = block;
@@ -224,16 +199,32 @@ Stmt *new_stmt_do_while(SrcPos pos, Expr *cond, StmtList block)
 Stmt *new_stmt_do_until(SrcPos pos, Expr *cond, StmtList block)
 {
 	Stmt *s = new_stmt(STMT_DO_UNTIL, pos);
+	s->until_stmt.cond = cond;
+	s->until_stmt.block = block;
+	return s;
+}
+
+Stmt *new_stmt_do_while_loop(SrcPos pos, Expr *cond, StmtList block)
+{
+	Stmt *s = new_stmt(STMT_DO_WHILE_LOOP, pos);
 	s->while_stmt.cond = cond;
 	s->while_stmt.block = block;
 	return s;
 }
 
-Stmt *new_stmt_for(SrcPos pos, Stmt *init, Expr *cond, Stmt *next,
+Stmt *new_stmt_do_until_loop(SrcPos pos, Expr *cond, StmtList block)
+{
+	Stmt *s = new_stmt(STMT_DO_UNTIL_LOOP, pos);
+	s->until_stmt.cond = cond;
+	s->until_stmt.block = block;
+	return s;
+}
+
+Stmt *new_stmt_for(SrcPos pos, Stmt *dim, Expr *cond, Stmt *next,
 		StmtList block)
 {
 	Stmt *s = new_stmt(STMT_FOR, pos);
-	s->for_stmt.init = init;
+	s->for_stmt.dim = dim;
 	s->for_stmt.cond = cond;
 	s->for_stmt.next = next;
 	s->for_stmt.block = block;
@@ -256,6 +247,14 @@ Stmt *new_stmt_assign(SrcPos pos, TokenKind op, Expr *left, Expr *right)
 	s->assign.op = op;
 	s->assign.left = left;
 	s->assign.right = right;
+	return s;
+}
+
+Stmt *new_stmt_dim(SrcPos pos, const char *name, Typespec *type)
+{
+	Stmt *s = new_stmt(STMT_DIM, pos);
+	s->dim.name = name;
+	s->dim.type = type;
 	return s;
 }
 
