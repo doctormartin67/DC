@@ -16,6 +16,7 @@ const char *step_keyword;
 const char *next_keyword;
 const char *select_keyword;
 const char *case_keyword;
+const char *is_keyword;
 
 const char *first_keyword;
 const char *last_keyword;

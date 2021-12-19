@@ -112,6 +112,48 @@ void print_stmt_block(const StmtList block)
 	printf(")");
 }
 
+void print_select_case_pattern(const SelectCasePattern scp)
+{
+	switch (scp.kind) {
+		case PATTERN_NONE:
+			assert(0);
+			break;
+		case PATTERN_LIT:
+			print_expr(scp.expr);	
+			break;
+		case PATTERN_TO:
+			print_expr(scp.to_pattern.start);	
+			printf(" To ");
+			print_expr(scp.to_pattern.end);
+			break;
+		case PATTERN_IS:
+			printf("Is ");
+			printf("%s ", token_kind_names[scp.is_pattern.op]);
+			print_expr(scp.is_pattern.expr);
+			break;
+	}
+}
+
+void print_select_case(const SelectCase sc)
+{
+	print_newline();
+	if (sc.is_default)
+		printf("(Case Else ");
+	else
+		printf("(Case ");
+	for (size_t i = 0; i < sc.num_patterns; i++) {
+		print_select_case_pattern(sc.patterns[i]);
+		if (i != sc.num_patterns - 1)
+			printf(", ");
+		break;
+	}
+	indent++;
+	print_newline();
+	print_stmt_block(sc.block);
+	indent--;
+	printf(")");
+}
+
 void print_stmt(const Stmt *stmt)
 {
 	assert(stmt);
@@ -213,7 +255,17 @@ void print_stmt(const Stmt *stmt)
 			printf("Next %s)", s->for_stmt.dim->assign.left->name);
 			break;
 		case STMT_SELECT_CASE:
-			printf("TODO");
+			printf("(Select Case ");
+			print_expr(s->select_case_stmt.expr);
+			indent++;
+			for (size_t i = 0; i < s->select_case_stmt.num_cases;
+					i++) {
+				print_select_case(
+						s->select_case_stmt.cases[i]);
+			}
+			indent--;
+			print_newline();
+			printf("End Select)");
 			break;
 		case STMT_ASSIGN:
 			printf("(%s ", token_kind_names[s->assign.op]);

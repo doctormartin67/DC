@@ -32,9 +32,10 @@ void init_keywords(void)
 	KEYWORD(next);
 	KEYWORD(select);
 	KEYWORD(case);
+	KEYWORD(is);
 	assert(intern_arena.end == arena_end);
 	first_keyword = dim_keyword;
-	last_keyword = case_keyword;
+	last_keyword = is_keyword;
 
 	inited = 0;
 }
@@ -367,14 +368,14 @@ unsigned is_token_name(const char *name)
 	return token.kind == TOKEN_NAME && token.name == name;
 }
 
-unsigned is_keyword(const char *name)
+unsigned is_a_keyword(const char *name)
 {
 	return is_token(TOKEN_KEYWORD) && token.name == name;
 }
 
 unsigned match_keyword(const char *name)
 {
-	if (is_keyword(name)) {
+	if (is_a_keyword(name)) {
 		next_token();
 		return 1;
 	} else {
@@ -384,7 +385,7 @@ unsigned match_keyword(const char *name)
 
 unsigned expect_keyword(const char *name)
 {
-	if (is_keyword(name)) {
+	if (is_a_keyword(name)) {
 		next_token();
 		return 1;
 	} else {

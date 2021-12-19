@@ -122,9 +122,26 @@ typedef struct ElseIf {
 	StmtList block;
 } ElseIf;
 
+typedef enum PatternKind {
+	PATTERN_NONE,
+	PATTERN_LIT,
+	PATTERN_TO,
+	PATTERN_IS,
+} PatternKind;
+
 typedef struct SelectCasePattern {
-	Expr *start;
-	Expr *end;
+	PatternKind kind;
+	union {
+		Expr *expr;
+		struct {
+			Expr *start;
+			Expr *end;
+		} to_pattern;
+		struct {
+			TokenKind op;
+			Expr *expr;
+		} is_pattern;
+	};
 } SelectCasePattern;
 
 typedef struct SelectCase {

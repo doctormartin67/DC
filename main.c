@@ -243,6 +243,46 @@ void test_parse(void)
 		"for i = 1 to 10 step 2\n"
 			"x = x + i\n"
 		"next j",
+		"select case x\n"
+			"case \"hello\"\n"
+				"y = 3+3\n"
+				"x = 5*7\n"
+		"end select",
+		"select case x\n"
+			"case \"hello\", \"world\"\n"
+				"y = 3+3\n"
+				"x = 5*7\n"
+		"end select",
+		"select case x\n"
+			"case \"hello\", \"world\"\n"
+				"y = 3+3\n"
+				"x = 5*7\n"
+			"case \"!\", \"I am joseph\"\n"
+				"y = 3+3\n"
+				"x = 5*7\n"
+		"end select",
+		"select case x\n"
+			"case \"hello\", \"world\"\n"
+				"y = 3+3\n"
+				"x = 5*7\n"
+			"case \"!\", \"I am joseph\"\n"
+				"y = 3+3\n"
+				"x = 5*7\n"
+			"case else\n"
+				"x = 2+3*7/2*func(3-2)\n"
+		"end select",
+		"select case x\n"
+			"case 1:	y = 2 + 3\n"
+			"case 2, 3,4:	y = 4 + 3\n"
+		"end select",
+		"select case x\n"
+			"case 1 to 3:	y = 2 + 3\n"
+			"case 2, 3,4:	y = 4 + 3\n"
+		"end select",
+		"select case x\n"
+			"case is < 4:	y = xyz + 1\n"
+			"case is>=4:	y = abc - 3*4\n"
+		"end select",
 	};
 	for (const char **it = ds; it != ds + sizeof(ds)/sizeof(*ds); it++) {
 		init_stream(0, *it);
@@ -251,7 +291,6 @@ void test_parse(void)
 		print_stmt(stmt);
 		printf("\n");
 	}
-
 }
 
 int main(void)

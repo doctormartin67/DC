@@ -187,13 +187,13 @@ Expr *parse_expr(void)
 
 unsigned is_end_of_block(void)
 {
-	return is_keyword(else_keyword)
-		|| is_keyword(elseif_keyword)
-		|| is_keyword(end_keyword)
-		|| is_keyword(wend_keyword)
-		|| is_keyword(next_keyword)	
-		|| is_keyword(case_keyword)
-		|| is_keyword(loop_keyword);
+	return is_a_keyword(else_keyword)
+		|| is_a_keyword(elseif_keyword)
+		|| is_a_keyword(end_keyword)
+		|| is_a_keyword(wend_keyword)
+		|| is_a_keyword(next_keyword)	
+		|| is_a_keyword(case_keyword)
+		|| is_a_keyword(loop_keyword);
 }
 
 StmtList parse_stmt_block(void)
@@ -392,60 +392,83 @@ Stmt *parse_stmt_for(SrcPos pos) {
 	return stmt;
 }
 
-/* TODO
+SelectCasePattern parse_select_case_pattern(void) {
+	SelectCasePattern scp = (SelectCasePattern){0};
+	Expr *start = 0;
+	Expr *end = 0;
+	if (match_keyword(is_keyword)) {
+		assert(is_cmp_op());	
+		scp.kind = PATTERN_IS;
+		scp.is_pattern.op = token.kind;
+		next_token();
+		scp.is_pattern.expr = parse_expr();
+	} else {
+		start = parse_expr();
+		if (match_keyword(to_keyword)) {
+			scp.kind = PATTERN_TO;
+			end = parse_expr();
+			scp.to_pattern.start = start;
+			scp.to_pattern.end = end;
+		} else {
+			scp.kind = PATTERN_LIT;
+			scp.expr = start;
+		}
+	}
+	return scp;
+}
 
-   SelectCasePattern parse_select_case_pattern(void)
-   {
-   Expr *start = parse_expr();
-   Expr *end = 0;
-   return (SwitchCasePattern){start, end};
-   }
+SelectCase parse_stmt_select_case(void)
+{
+	SelectCasePattern *patterns = 0;
+	unsigned is_default = 0;
+	unsigned is_first_case = 1;
+	while (match_keyword(case_keyword)) {
+		if (match_keyword(else_keyword)) {
+			if (is_default) {
+				error_here("Duplicate default labels in same"
+						"switch clause");
+			}
+			is_default = 1;
+		} else {
+			if (!is_first_case) {
+				warning_here("Use comma-separated expressions"
+						"to match multiple values with"
+						"one case label");
+				is_first_case = 0;
+			}
+			buf_push(patterns, parse_select_case_pattern());
+			while (match_token(TOKEN_COMMA)) {
+				buf_push(patterns,
+						parse_select_case_pattern());
+			}
+			if (is_token(TOKEN_COLON)) next_token();
+		}
+	}
+	SrcPos pos = token.pos;
+	Stmt **stmts = 0;
+	while (!is_token_eof()
+			&& !is_a_keyword(case_keyword)
+			&& !is_a_keyword(end_keyword)) {
+		buf_push(stmts, parse_stmt());
+	}
+	return (SelectCase){patterns, buf_len(patterns), is_default,
+		new_stmt_list(pos, stmts, buf_len(stmts))};
+}
 
-   SelectCase parse_stmt_select_case(void)
-   {
-   SelectCasePattern *patterns = 0;
-   unsigned is_default = 0;
-   unsigned is_first_case = 1;
-   while (is_keyword(case_keyword) || is_keyword(default_keyword)) {
-   if (match_keyword(case_keyword)) {
-   if (!is_first_case) {
-   warning_here("Use comma-separated expressions to match multiple values with one case label");
-   is_first_case = 0;
-   }
-   buf_push(patterns, parse_switch_case_pattern());
-   while (match_token(TOKEN_COMMA)) {
-   buf_push(patterns, parse_switch_case_pattern());
-   }
-   } else {
-   assert(is_keyword(default_keyword));
-   next_token();
-   if (is_default) {
-   error_here("Duplicate default labels in same switch clause");
-   }
-   is_default = true;
-   }
-   expect_token(TOKEN_COLON);
-   }
-   SrcPos pos = token.pos;
-   Stmt **stmts = NULL;
-   while (!is_token_eof() && !is_token(TOKEN_RBRACE) && !is_keyword(case_keyword) && !is_keyword(default_keyword)) {
-   buf_push(stmts, parse_stmt());
-   }
-   return (SwitchCase){patterns, buf_len(patterns), is_default, new_stmt_list(pos, stmts, buf_len(stmts))};
-   }
+Stmt *parse_stmt_select(SrcPos pos)
+{
+	expect_keyword(case_keyword);
+	Expr *expr = parse_expr();
+	assert(EXPR_NAME == expr->kind);
+	SelectCase *cases = 0;
+	while (!is_token_eof() && !is_a_keyword(end_keyword)) {
+		buf_push(cases, parse_stmt_select_case());
+	}
+	expect_keyword(end_keyword);
+	expect_keyword(select_keyword);
+	return new_stmt_select_case(pos, expr, cases, buf_len(cases));
+}
 
-   Stmt *parse_stmt_switch(SrcPos pos) {
-   Expr *expr = parse_paren_expr();
-   SwitchCase *cases = NULL;
-   expect_token(TOKEN_LBRACE);
-   while (!is_token_eof() && !is_token(TOKEN_RBRACE)) {
-   buf_push(cases, parse_stmt_switch_case());
-   }
-   expect_token(TOKEN_RBRACE);
-   return new_stmt_switch(pos, expr, cases, buf_len(cases));
-   }
-
- */
 
 Stmt *parse_stmt(void)
 {
@@ -460,8 +483,7 @@ Stmt *parse_stmt(void)
 	} else if (match_keyword(for_keyword)) {
 		stmt = parse_stmt_for(pos);
 	} else if (match_keyword(select_keyword)) {
-		TODO(stmt = parse_stmt_select_case(pos));
-		printf("remove TODO\n");
+		stmt = parse_stmt_select(pos);
 	} else if (match_keyword(dim_keyword)) {
 		stmt = parse_stmt_dim();
 	} else {
