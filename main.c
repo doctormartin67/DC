@@ -222,10 +222,32 @@ void test_parse(void)
 		"do\n"
 		"	z = x + 1 - y + func(2,3, 0, x+y)\n"
 		"loop until z = 1",
+		"for i = 1 to 10\n"
+			"x = x + i\n"
+		"next",
+		"for i = -1 to 10\n"
+			"x = x + i\n"
+		"next",
+		"for i = -1 to -10 step -1\n"
+			"x = x + i\n"
+		"next",
+		"for i = 1 to 10 step 2\n"
+			"x = x + i\n"
+		"next",
+		"for i = 1 to 10 step 2\n"
+			"x = x + i\n"
+			"for j = 2 to 5\n"
+				"x = 2*3\n"
+			"next j\n"
+		"next i",
+		"for i = 1 to 10 step 2\n"
+			"x = x + i\n"
+		"next j",
 	};
 	for (const char **it = ds; it != ds + sizeof(ds)/sizeof(*ds); it++) {
 		init_stream(0, *it);
 		Stmt *stmt = parse_stmt();
+		assert(stmt);
 		print_stmt(stmt);
 		printf("\n");
 	}

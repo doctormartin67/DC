@@ -27,6 +27,8 @@ void init_keywords(void)
 	KEYWORD(do);
 	KEYWORD(loop);
 	KEYWORD(for);
+	KEYWORD(to);
+	KEYWORD(step);
 	KEYWORD(next);
 	KEYWORD(select);
 	KEYWORD(case);

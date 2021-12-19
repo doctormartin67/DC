@@ -1,11 +1,11 @@
 static int indent;
-void print_expr(Expr *expr);
-void print_stmt(Stmt *stmt);
-void print_decl(Decl *decl);
+void print_expr(const Expr *expr);
+void print_stmt(const Stmt *stmt);
+void print_decl(const Decl *decl);
 
-void print_typespec(Typespec *type)
+void print_typespec(const Typespec *type)
 {
-	Typespec *t = type;
+	const Typespec *t = type;
 	switch (t->kind) {
 		case TYPESPEC_NAME:
 			printf("%s", t->names[0]);
@@ -26,7 +26,7 @@ void print_typespec(Typespec *type)
 	}
 }
 
-void print_expr(Expr *e)
+void print_expr(const Expr *e)
 {
 	switch (e->kind) {
 		case EXPR_NONE:
@@ -68,7 +68,7 @@ void print_expr(Expr *e)
 			printf(")");
 			break;
 		case EXPR_UNARY:
-			printf("(%s ", token_kind_names[e->unary.op]);
+			printf("(%s", token_kind_names[e->unary.op]);
 			print_expr(e->unary.expr);
 			printf(")");
 			break;
@@ -88,7 +88,7 @@ void print_expr(Expr *e)
 	}
 }
 
-void print_exprln(Expr *e)
+void print_exprln(const Expr *e)
 {
 	print_expr(e);
 	printf("\n");
@@ -99,7 +99,7 @@ void print_newline(void)
 	printf("\n%.*s", 2*indent, "                                                                      ");
 }
 
-void print_stmt_block(StmtList block)
+void print_stmt_block(const StmtList block)
 {
 	printf("(block");
 	indent++;
@@ -112,9 +112,10 @@ void print_stmt_block(StmtList block)
 	printf(")");
 }
 
-void print_stmt(Stmt *stmt)
+void print_stmt(const Stmt *stmt)
 {
-	Stmt *s = stmt;
+	assert(stmt);
+	const Stmt *s = stmt;
 	switch (s->kind) {
 		case STMT_DECL:
 			print_decl(s->decl);
@@ -208,7 +209,8 @@ void print_stmt(Stmt *stmt)
 			print_newline();
 			print_stmt_block(s->for_stmt.block);
 			indent--;
-			printf("Next)");
+			print_newline();
+			printf("Next %s)", s->for_stmt.dim->assign.left->name);
 			break;
 		case STMT_SELECT_CASE:
 			printf("TODO");
@@ -240,9 +242,9 @@ void print_stmt(Stmt *stmt)
 	}
 }
 
-void print_decl(Decl *decl)
+void print_decl(const Decl *decl)
 {
-	Decl *d = decl;
+	const Decl *d = decl;
 	switch (d->kind) {
 		case DECL_DIM:
 			printf("(Dim %s As ", d->name);

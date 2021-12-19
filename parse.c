@@ -307,45 +307,92 @@ Stmt *parse_simple_stmt(void)
 	SrcPos pos = token.pos;
 	Stmt *stmt = 0;
 	Expr *expr = 0;
-	expr = parse_expr();
+	expr = parse_expr_unary();
 	if (is_assign_op()) {
 		TokenKind op = token.kind;
+		assert(TOKEN_ASSIGN == op);
 		next_token();
 		stmt = new_stmt_assign(pos, op, expr, parse_expr());
 	} else {
 		stmt = new_stmt_expr(pos, expr);
+		assert(EXPR_CALL == expr->kind);
+	}
+	return stmt;
+}
+
+#define SET_LIT(i, lit) \
+	if (EXPR_UNARY == i->kind) { \
+		if (TOKEN_SUB == i->unary.op) \
+			lit = -i->unary.expr->int_lit.val; \
+		else \
+			lit = i->unary.expr->int_lit.val; \
+	} else { \
+		if (EXPR_INT == i->kind) { \
+			lit = i->int_lit.val; \
+		} else { \
+			assert(EXPR_FLOAT == i->kind); \
+			lit = i->float_lit.val; \
+		} \
+	}
+	
+Expr *parse_expr_for_cond(SrcPos pos, Stmt *init, Expr *end)
+{
+	Expr *it = init->assign.left;
+	Expr *start = init->assign.right;
+	Expr *cond = 0;
+	long long lit_start = 0;
+	long long lit_end = 0;
+
+	SET_LIT(start, lit_start);
+	SET_LIT(end, lit_end);
+
+	if (lit_start <= lit_end)
+		cond = new_expr_binary(pos, TOKEN_GTEQ, it, end);
+	else
+		cond = new_expr_binary(pos, TOKEN_LTEQ, it, end);
+	return cond;
+}
+#undef SET_LIT
+
+Stmt *parse_stmt_for(SrcPos pos) {
+	Stmt *stmt = 0;
+	Stmt *init = 0;
+	Expr *it = 0;
+	Expr *cond = 0;
+	Expr *inc = 0;
+	Stmt *next = 0;
+	init = parse_simple_stmt();
+	assert(STMT_ASSIGN == init->kind);
+	expect_keyword(to_keyword);
+	it = init->assign.left;
+	assert(EXPR_NAME == it->kind);
+	cond = parse_expr_for_cond(pos, init, parse_expr_unary());
+	if (TOKEN_LTEQ == cond->binary.op) {
+		expect_keyword(step_keyword);
+		inc = parse_expr_unary();
+	} else {
+		if (match_keyword(step_keyword))
+			inc = parse_expr_unary();
+		else
+			inc = new_expr_int(pos, 1);
+	}
+	next = new_stmt_assign(pos, TOKEN_ASSIGN, it,
+			new_expr_binary(pos, TOKEN_ADD, it, inc));
+	stmt = new_stmt_for(pos, init, cond, next, parse_stmt_block());
+	expect_keyword(next_keyword);
+	if (is_token(TOKEN_NAME)) {
+		if (it->name == token.name) {
+			next_token();
+		} else {
+			error_here("Expected %s after 'next', found %s",
+					it->name, token.name);
+			next_token();
+		}
 	}
 	return stmt;
 }
 
 /* TODO
-   Stmt *parse_stmt_for(SrcPos pos) {
-   Stmt *dim = NULL;
-   Expr *cond = NULL;
-   Stmt *next = NULL;
-   if (!is_token(TOKEN_LBRACE)) {
-   expect_token(TOKEN_LPAREN);
-   if (!is_token(TOKEN_SEMICOLON)) {
-   dim = parse_simple_stmt();
-   }
-   if (match_token(TOKEN_SEMICOLON)) {
-   if (!is_token(TOKEN_SEMICOLON)) {
-   cond = parse_expr();
-   }
-   if (match_token(TOKEN_SEMICOLON)) {
-   if (!is_token(TOKEN_RPAREN)) {
-   next = parse_simple_stmt();
-   if (next->kind == STMT_DIM) {
-   error_here("Init statements not allowed in for-statement's next clause");
-   }
-   }
-   }
-   }
-   expect_token(TOKEN_RPAREN);
-   }
-   return new_stmt_for(pos, dim, cond, next, parse_stmt_block());
-   }
-
 
    SelectCasePattern parse_select_case_pattern(void)
    {
@@ -389,16 +436,16 @@ Stmt *parse_simple_stmt(void)
 
    Stmt *parse_stmt_switch(SrcPos pos) {
    Expr *expr = parse_paren_expr();
-SwitchCase *cases = NULL;
-expect_token(TOKEN_LBRACE);
-while (!is_token_eof() && !is_token(TOKEN_RBRACE)) {
-	buf_push(cases, parse_stmt_switch_case());
-}
-expect_token(TOKEN_RBRACE);
-return new_stmt_switch(pos, expr, cases, buf_len(cases));
-}
+   SwitchCase *cases = NULL;
+   expect_token(TOKEN_LBRACE);
+   while (!is_token_eof() && !is_token(TOKEN_RBRACE)) {
+   buf_push(cases, parse_stmt_switch_case());
+   }
+   expect_token(TOKEN_RBRACE);
+   return new_stmt_switch(pos, expr, cases, buf_len(cases));
+   }
 
-*/
+ */
 
 Stmt *parse_stmt(void)
 {
@@ -411,9 +458,10 @@ Stmt *parse_stmt(void)
 	} else if (match_keyword(do_keyword)) {
 		stmt = parse_stmt_do(pos);
 	} else if (match_keyword(for_keyword)) {
-		TODO(stmt = parse_stmt_for(pos));
+		stmt = parse_stmt_for(pos);
 	} else if (match_keyword(select_keyword)) {
 		TODO(stmt = parse_stmt_select_case(pos));
+		printf("remove TODO\n");
 	} else if (match_keyword(dim_keyword)) {
 		stmt = parse_stmt_dim();
 	} else {

@@ -11,6 +11,8 @@ const char *wend_keyword;
 const char *do_keyword;
 const char *loop_keyword;
 const char *for_keyword;
+const char *to_keyword;
+const char *step_keyword;
 const char *next_keyword;
 const char *select_keyword;
 const char *case_keyword;

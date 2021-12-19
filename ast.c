@@ -91,7 +91,6 @@ Expr *new_expr_int(SrcPos pos, unsigned long long val)
 {
 	Expr *e = new_expr(EXPR_INT, pos);
 	e->int_lit.val = val;
-	TODO(e->int_lit.suffix = suffix);
 	return e;
 }
 
@@ -102,7 +101,6 @@ Expr *new_expr_float(SrcPos pos, const char *start, const char *end,
 	e->float_lit.start = start;
 	e->float_lit.end = end;
 	e->float_lit.val = val;
-	TODO(e->float_lit.suffix = suffix);
 	return e;
 }
 
