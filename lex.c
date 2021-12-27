@@ -21,6 +21,12 @@ void init_keywords(void)
 	KEYWORD(else);
 	KEYWORD(elseif);
 	KEYWORD(end);
+
+	KEYWORD(mod);
+	KEYWORD(and);
+	KEYWORD(or);
+	KEYWORD(xor);
+
 	KEYWORD(while);
 	KEYWORD(until);
 	KEYWORD(wend);
@@ -37,6 +43,9 @@ void init_keywords(void)
 	first_keyword = dim_keyword;
 	last_keyword = is_keyword;
 
+	first_op_keyword = mod_keyword;
+	last_op_keyword = xor_keyword;
+
 	inited = 0;
 }
 
@@ -45,6 +54,11 @@ void init_keywords(void)
 unsigned is_keyword_name(const char *name)
 {
 	return first_keyword <= name && name <= last_keyword;
+}
+
+unsigned is_op_keyword_name(const char *name)
+{
+	return first_op_keyword <= name && name <= last_op_keyword;
 }
 
 static const char *const token_kind_names[] = {
@@ -67,7 +81,7 @@ static const char *const token_kind_names[] = {
 	[TOKEN_NOT] = "!",
 	[TOKEN_MUL] = "*",
 	[TOKEN_DIV] = "/",
-	[TOKEN_MOD] = "%",
+	[TOKEN_MOD] = "Mod",
 	[TOKEN_AND] = "&",
 	[TOKEN_ADD] = "+",
 	[TOKEN_SUB] = "-",
@@ -79,6 +93,7 @@ static const char *const token_kind_names[] = {
 	[TOKEN_GTEQ] = ">=",
 	[TOKEN_AND_AND] = "And",
 	[TOKEN_OR_OR] = "Or",
+	[TOKEN_XOR_XOR] = "Xor",
 	[TOKEN_ASSIGN] = "=",
 };
 
@@ -331,7 +346,7 @@ repeat:
 			CASE1('-', TOKEN_SUB);
 			CASE1('&', TOKEN_AND);
 			CASE2('>', TOKEN_GT, '=', TOKEN_GTEQ);
-			CASE2('<', TOKEN_LT, '=', TOKEN_LTEQ);
+			CASE3('<', TOKEN_LT, '=', TOKEN_LTEQ, '>', TOKEN_NOTEQ);
 		default:
 			error_here("Invalid '%c' token, skipping", *stream);
 			stream++;

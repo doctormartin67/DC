@@ -8,7 +8,7 @@ void print_typespec(const Typespec *type)
 	const Typespec *t = type;
 	switch (t->kind) {
 		case TYPESPEC_NAME:
-			printf("%s", t->names[0]);
+			printf("%s", t->name);
 			break;
 		case TYPESPEC_FUNC:
 			printf("(func (");
@@ -130,6 +130,9 @@ void print_select_case_pattern(const SelectCasePattern scp)
 			printf("Is ");
 			printf("%s ", token_kind_names[scp.is_pattern.op]);
 			print_expr(scp.is_pattern.expr);
+			break;
+		default:
+			assert(0);
 			break;
 	}
 }

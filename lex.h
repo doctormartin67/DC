@@ -5,6 +5,10 @@ const char *then_keyword;
 const char *else_keyword;
 const char *elseif_keyword;
 const char *end_keyword;
+const char *mod_keyword;
+const char *and_keyword;
+const char *or_keyword;
+const char *xor_keyword;
 const char *while_keyword;
 const char *until_keyword;
 const char *wend_keyword;
@@ -20,6 +24,10 @@ const char *is_keyword;
 
 const char *first_keyword;
 const char *last_keyword;
+
+const char *first_op_keyword;
+const char *last_op_keyword;
+
 const char **keywords;
 
 typedef enum TokenKind {
@@ -63,6 +71,7 @@ typedef enum TokenKind {
 	TOKEN_LAST_CMP = TOKEN_GTEQ,
 	TOKEN_AND_AND,
 	TOKEN_OR_OR,
+	TOKEN_XOR_XOR,
 	// Assignment operators
 	TOKEN_FIRST_ASSIGN,
 	TOKEN_ASSIGN = TOKEN_FIRST_ASSIGN,

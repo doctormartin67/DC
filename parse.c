@@ -9,17 +9,8 @@ Typespec *parse_type_base(void)
 {
 	if (is_token(TOKEN_NAME)) {
 		SrcPos pos = token.pos;
-		const char **names = 0;
-		buf_push(names, token.name);
 		next_token();
-		while (match_token(TOKEN_DOT)) {
-			/*
-			 * I think what he means here is all the items
-			 * of a struct/union. might remove this later
-			 */
-			TODO(buf_push(names, parse_name()));
-		}
-		return new_typespec_name(pos, names, buf_len(names));
+		return new_typespec_name(pos, token.name);
 	} else if (match_token(TOKEN_LPAREN)) {
 		Typespec *type = parse_type();
 		expect_token(TOKEN_RPAREN);
@@ -110,7 +101,8 @@ Expr *parse_expr_unary(void)
 
 unsigned is_mul_op(void)
 {
-	return TOKEN_FIRST_MUL <= token.kind && token.kind <= TOKEN_LAST_MUL;
+	return (TOKEN_FIRST_MUL <= token.kind && token.kind <= TOKEN_LAST_MUL)
+		|| is_a_keyword(mod_keyword);
 }
 
 Expr *parse_expr_mul(void)
@@ -119,6 +111,8 @@ Expr *parse_expr_mul(void)
 	while (is_mul_op()) {
 		SrcPos pos = token.pos;
 		TokenKind op = token.kind;
+		if (TOKEN_KEYWORD == op && is_a_keyword(mod_keyword))
+			op = TOKEN_MOD;
 		next_token();
 		expr = new_expr_binary(pos, op, expr, parse_expr_unary());
 	}
@@ -163,19 +157,29 @@ Expr *parse_expr_cmp(void)
 Expr *parse_expr_and(void)
 {
 	Expr *expr = parse_expr_cmp();
-	while (match_token(TOKEN_AND_AND)) {
+	while (match_keyword(and_keyword)) {
 		SrcPos pos = token.pos;
 		expr = new_expr_binary(pos, TOKEN_AND_AND, expr, parse_expr_cmp());
 	}
 	return expr;
 }
 
-Expr *parse_expr_or(void)
+Expr *parse_expr_xor(void)
 {
 	Expr *expr = parse_expr_and();
-	while (match_token(TOKEN_OR_OR)) {
+	while (match_keyword(xor_keyword)) {
 		SrcPos pos = token.pos;
-		expr = new_expr_binary(pos, TOKEN_OR_OR, expr, parse_expr_and());
+		expr = new_expr_binary(pos, TOKEN_XOR_XOR, expr, parse_expr_and());
+	}
+	return expr;
+}
+
+Expr *parse_expr_or(void)
+{
+	Expr *expr = parse_expr_xor();
+	while (match_keyword(or_keyword)) {
+		SrcPos pos = token.pos;
+		expr = new_expr_binary(pos, TOKEN_OR_OR, expr, parse_expr_xor());
 	}
 	return expr;
 }
@@ -323,9 +327,9 @@ Stmt *parse_simple_stmt(void)
 #define SET_LIT(i, lit) \
 	if (EXPR_UNARY == i->kind) { \
 		if (TOKEN_SUB == i->unary.op) \
-			lit = -i->unary.expr->int_lit.val; \
+		lit = -i->unary.expr->int_lit.val; \
 		else \
-			lit = i->unary.expr->int_lit.val; \
+		lit = i->unary.expr->int_lit.val; \
 	} else { \
 		if (EXPR_INT == i->kind) { \
 			lit = i->int_lit.val; \
@@ -334,7 +338,7 @@ Stmt *parse_simple_stmt(void)
 			lit = i->float_lit.val; \
 		} \
 	}
-	
+
 Expr *parse_expr_for_cond(SrcPos pos, Stmt *init, Expr *end)
 {
 	Expr *it = init->assign.left;

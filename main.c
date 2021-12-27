@@ -11,9 +11,13 @@
 
 #include "common.c"
 #include "lex.c"
+#include "type.c"
 #include "ast.c"
 #include "print.c"
 #include "parse.c"
+#include "resolve.c"
+
+#define PRINT_TEST_PARSE 0
 
 void test_buf(void)
 {
@@ -87,13 +91,13 @@ void test_str_intern(void)
 
 void test_keywords(void)
 {
-    init_keywords();
-    assert(is_keyword_name(first_keyword));
-    assert(is_keyword_name(last_keyword));
-    for (const char **it = keywords; it != buf_end(keywords); it++) {
-        assert(is_keyword_name(*it));
-    }
-    assert(!is_keyword_name(str_intern("foo")));
+	init_keywords();
+	assert(is_keyword_name(first_keyword));
+	assert(is_keyword_name(last_keyword));
+	for (const char **it = keywords; it != buf_end(keywords); it++) {
+		assert(is_keyword_name(*it));
+	}
+	assert(!is_keyword_name(str_intern("foo")));
 }
 
 #define assert_token(x) assert(match_token(x))
@@ -190,107 +194,118 @@ void test_parse(void)
 		"func(x, xyz, 1+3)",
 		"y = 1 / func(x, xyz, 1+3)",
 		"if x = 1 then\n"
-		"	x = 2\n"
-		"	xyx = 2 + 3\n"
-		"end if",
+			"	x = 2\n"
+			"	xyx = 2 + 3\n"
+			"end if",
 		"if y = 1*6 then\n"
-		"	x = 2\n"
-		"elseif (6 = 6) then\n"
-		"	xyx = 2 + 3\n"
-		"end if",
+			"	x = 2\n"
+			"elseif (6 = 6) then\n"
+			"	xyx = 2 + 3\n"
+			"end if",
 		"if y = 1*6 then\n"
-		"	x = 2\n"
-		"elseif (6 = 6) then\n"
-		"	xyx = 2 + 3\n"
-		"else\n"
-		"	y = func(1, 2, 3*2)\n"
-		"end if",
+			"	x = 2\n"
+			"elseif (6 = 6) then\n"
+			"	xyx = 2 + 3\n"
+			"else\n"
+			"	y = func(1, 2, 3*2)\n"
+			"end if",
 		"while x = y\n"
-		"	xyz = xyz -1\n"
-		"wend",
+			"	xyz = xyz -1\n"
+			"wend",
 		"do while x = 1+2\n"
-		"	x = y\n"
-		"	xyz = 3 + 4/2*7\n"
-		"loop",
+			"	x = y\n"
+			"	xyz = 3 + 4/2*7\n"
+			"loop",
 		"do until x = 1+2\n"
-		"	x = y\n"
-		"	xyz = 3 + 4/2*7\n"
-		"loop",
+			"	x = y\n"
+			"	xyz = 3 + 4/2*7\n"
+			"loop",
 		"do\n"
-		"	z = x + 1 - y + func(2,3, 0, x+y)\n"
-		"loop while z = 1",
+			"	z = x + 1 - y + func(2,3, 0, x+y)\n"
+			"loop while z = 1",
 		"do\n"
-		"	z = x + 1 - y + func(2,3, 0, x+y)\n"
-		"loop until z = 1",
+			"	z = x + 1 - y + func(2,3, 0, x+y)\n"
+			"loop until z = 1",
 		"for i = 1 to 10\n"
 			"x = x + i\n"
-		"next",
+			"next",
 		"for i = -1 to 10\n"
 			"x = x + i\n"
-		"next",
+			"next",
 		"for i = -1 to -10 step -1\n"
 			"x = x + i\n"
-		"next",
+			"next",
 		"for i = 1 to 10 step 2\n"
 			"x = x + i\n"
-		"next",
+			"next",
 		"for i = 1 to 10 step 2\n"
 			"x = x + i\n"
 			"for j = 2 to 5\n"
-				"x = 2*3\n"
+			"x = 2*3\n"
 			"next j\n"
-		"next i",
+			"next i",
 		"for i = 1 to 10 step 2\n"
 			"x = x + i\n"
-		"next j",
+			"next i",
 		"select case x\n"
 			"case \"hello\"\n"
-				"y = 3+3\n"
-				"x = 5*7\n"
-		"end select",
+			"y = 3+3\n"
+			"x = 5*7\n"
+			"end select",
 		"select case x\n"
 			"case \"hello\", \"world\"\n"
-				"y = 3+3\n"
-				"x = 5*7\n"
-		"end select",
+			"y = 3+3\n"
+			"x = 5*7\n"
+			"end select",
 		"select case x\n"
 			"case \"hello\", \"world\"\n"
-				"y = 3+3\n"
-				"x = 5*7\n"
+			"y = 3+3\n"
+			"x = 5*7\n"
 			"case \"!\", \"I am joseph\"\n"
-				"y = 3+3\n"
-				"x = 5*7\n"
-		"end select",
+			"y = 3+3\n"
+			"x = 5*7\n"
+			"end select",
 		"select case x\n"
 			"case \"hello\", \"world\"\n"
-				"y = 3+3\n"
-				"x = 5*7\n"
+			"y = 3+3\n"
+			"x = 5*7\n"
 			"case \"!\", \"I am joseph\"\n"
-				"y = 3+3\n"
-				"x = 5*7\n"
+			"y = 3+3\n"
+			"x = 5*7\n"
 			"case else\n"
-				"x = 2+3*7/2*func(3-2)\n"
-		"end select",
+			"x = 2+3*7/2*func(3-2)\n"
+			"end select",
 		"select case x\n"
 			"case 1:	y = 2 + 3\n"
 			"case 2, 3,4:	y = 4 + 3\n"
-		"end select",
+			"end select",
 		"select case x\n"
 			"case 1 to 3:	y = 2 + 3\n"
 			"case 2, 3,4:	y = 4 + 3\n"
-		"end select",
+			"end select",
 		"select case x\n"
 			"case is < 4:	y = xyz + 1\n"
 			"case is>=4:	y = abc - 3*4\n"
-		"end select",
+			"end select",
+		"if (x = 1 and y = 2 or z = 3 xor 7 = 7) then\n"
+			"	x = 2^3+3^y*2\n"
+			"	xyx = 2 + 3\n"
+			"	xyx = 4 mod 3\n"
+			"end if",
 	};
 	for (const char **it = ds; it != ds + sizeof(ds)/sizeof(*ds); it++) {
 		init_stream(0, *it);
 		Stmt *stmt = parse_stmt();
 		assert(stmt);
+#if PRINT_TEST_PARSE
 		print_stmt(stmt);
 		printf("\n");
+#endif
 	}
+}
+
+void test_resolve(void)
+{
 }
 
 int main(void)
@@ -302,5 +317,6 @@ int main(void)
 	test_str_intern();
 	test_expr();
 	test_parse();
+	test_resolve();
 	return 0;
 }

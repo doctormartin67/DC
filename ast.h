@@ -20,15 +20,11 @@ struct Typespec {
 	SrcPos pos;
 	Typespec *base;
 	union {
-		struct {
-			const char **names;
-			size_t num_names;
-		};
+		const char *name;
 		struct {
 			Typespec **args;
 			size_t num_args;
 		} func;
-		Expr *num_elems;
 	};
 };
 
@@ -41,8 +37,6 @@ typedef struct FuncParam {
 typedef enum DeclKind {
 	DECL_NONE,
 	DECL_DIM,
-	DECL_NOTE,
-	DECL_IMPORT,
 } DeclKind;
 
 struct Decl {

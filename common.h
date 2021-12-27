@@ -39,6 +39,11 @@
 #define ARENA_ALIGNMENT 8
 #define ARENA_BLOCK_SIZE (1024 * 1024)
 
+typedef enum boolean {
+	FALSE,
+	TRUE,
+} boolean;
+
 typedef struct BufHdr {
 	size_t len;
 	size_t cap;
@@ -63,6 +68,12 @@ typedef struct Intern {
 	struct Intern *next;
 	char str[0];
 } Intern;
+
+typedef union Val {
+	boolean b;
+	int i;
+	double d;
+} Val;
 
 void *buf__grow(const void *buf, size_t new_len, size_t elem_size);
 char *buf__printf(char *buf, const char *fmt, ...);
