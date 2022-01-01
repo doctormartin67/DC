@@ -18,6 +18,7 @@
 #include "resolve.c"
 
 #define PRINT_TEST_PARSE 0
+#define PRINT_TEST_RESOLVE 1
 
 void test_buf(void)
 {
@@ -185,7 +186,7 @@ void test_expr(void)
 void test_parse(void)
 {
 	const char *ds[] = {
-		"dim x as integer",
+		"dim x as integer, y as double",
 		"x = 4",
 		"func(x)",
 		"x = 4 + 3",
@@ -306,6 +307,33 @@ void test_parse(void)
 
 void test_resolve(void)
 {
+	const char *code = 
+		"dim x as integer\n"
+		"dim y as integer\n"
+		"dim a as double, b as double\n"
+		"dim z as boolean\n"
+		"x = 6\n"
+		"y = 6\n"
+		"a = 0.01\n"
+		"b = -a\n"
+		"x = -3\n"
+		"x = +3\n"
+		"x = 1+3\n"
+		"b = 1.0+3.0\n"
+		;
+	init_stream(0, code);
+	init_builtin_types();
+	Stmt **stmts = 0;
+	stmts = parse_stmts();
+	resolve_stmts(stmts);
+	for (size_t i = 0; i < buf_len(stmts); i++) {
+		assert(stmts[i]);
+#if PRINT_TEST_RESOLVE
+		print_stmt(stmts[i]);
+		printf("\n");
+#endif
+	}
+	print_syms();
 }
 
 int main(void)

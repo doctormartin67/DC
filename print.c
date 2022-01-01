@@ -79,11 +79,8 @@ void print_expr(const Expr *e)
 			print_expr(e->binary.right);
 			printf(")");
 			break;
-		case EXPR_MODIFY:
-			printf("TODO");
-			break;
-		case EXPR_NEW:
-			printf("TODO");
+		default:
+			assert(0);
 			break;
 	}
 }
@@ -99,7 +96,7 @@ void print_newline(void)
 	printf("\n%.*s", 2*indent, "                                                                      ");
 }
 
-void print_stmt_block(const StmtList block)
+void print_stmt_block(const StmtBlock block)
 {
 	printf("(block");
 	indent++;
@@ -280,11 +277,17 @@ void print_stmt(const Stmt *stmt)
 			printf(")");
 			break;
 		case STMT_DIM:
-			printf("(Dim %s As ", s->dim.name);
-			if (s->dim.type) {
-				print_typespec(s->dim.type);
-			} else {
-				printf("nil");
+			printf("(Dim ");
+			for (size_t i = 0; i < s->dim_stmt.num_dims; i++) {
+				printf("(%s As ", s->dim_stmt.dims[i].name);
+				if (s->dim_stmt.dims[i].type) {
+					print_typespec(s->dim_stmt.dims[i].type);
+				} else {
+					printf("nil");
+				}
+				printf(")");
+				if (i != s->dim_stmt.num_dims - 1)
+					printf(", ");
 			}
 			printf(")");
 			break;

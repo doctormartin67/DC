@@ -9,8 +9,9 @@ Typespec *parse_type_base(void)
 {
 	if (is_token(TOKEN_NAME)) {
 		SrcPos pos = token.pos;
+		const char *name = token.name;
 		next_token();
-		return new_typespec_name(pos, token.name);
+		return new_typespec_name(pos, name);
 	} else if (match_token(TOKEN_LPAREN)) {
 		Typespec *type = parse_type();
 		expect_token(TOKEN_RPAREN);
@@ -200,27 +201,27 @@ unsigned is_end_of_block(void)
 		|| is_a_keyword(loop_keyword);
 }
 
-StmtList parse_stmt_block(void)
+StmtBlock parse_stmt_block(void)
 {
 	SrcPos pos = token.pos;
 	Stmt **stmts = 0;
 	while (!is_token_eof() && !is_end_of_block()) {
 		buf_push(stmts, parse_stmt());
 	}
-	return new_stmt_list(pos, stmts, buf_len(stmts));
+	return new_StmtBlock(pos, stmts, buf_len(stmts));
 }
 
 Stmt *parse_stmt_if(SrcPos pos)
 {
 	Expr *cond = parse_expr();
 	expect_keyword(then_keyword);
-	StmtList then_block = parse_stmt_block();
-	StmtList else_block = {0};
+	StmtBlock then_block = parse_stmt_block();
+	StmtBlock else_block = {0};
 	ElseIf *elseifs = 0;
 	while (match_keyword(elseif_keyword)) {
 		Expr *elseif_cond = parse_expr();
 		expect_keyword(then_keyword);
-		StmtList elseif_block = parse_stmt_block();
+		StmtBlock elseif_block = parse_stmt_block();
 		buf_push(elseifs, (ElseIf){elseif_cond, elseif_block});
 	}
 	if (match_keyword(else_keyword)) {
@@ -243,7 +244,7 @@ Stmt *parse_stmt_while(SrcPos pos)
 Stmt *parse_stmt_do_while_loop(SrcPos pos)
 {
 	Expr *cond = parse_expr();
-	StmtList block = parse_stmt_block();
+	StmtBlock block = parse_stmt_block();
 	if (!match_keyword(loop_keyword)) {
 		fatal_error_here("Expected 'loop' after 'do while' block");
 		return 0;
@@ -255,7 +256,7 @@ Stmt *parse_stmt_do_while_loop(SrcPos pos)
 Stmt *parse_stmt_do_until_loop(SrcPos pos)
 {
 	Expr *cond = parse_expr();
-	StmtList block = parse_stmt_block();
+	StmtBlock block = parse_stmt_block();
 	if (!match_keyword(loop_keyword)) {
 		fatal_error_here("Expected 'loop' after 'do until' block");
 		return 0;
@@ -267,7 +268,7 @@ Stmt *parse_stmt_do_until_loop(SrcPos pos)
 Stmt *parse_stmt_do(SrcPos pos)
 {
 	Stmt *stmt = 0;
-	StmtList block = (StmtList){0};
+	StmtBlock block = (StmtBlock){0};
 	if (match_keyword(until_keyword)) {
 		stmt = parse_stmt_do_until_loop(pos);
 	} else if (match_keyword(while_keyword)) {
@@ -297,11 +298,22 @@ unsigned is_assign_op(void)
 Stmt *parse_stmt_dim(void)
 {
 	Stmt *stmt = 0;
+	Dim *dims = 0;
+	size_t num_dims = 1;
 	Expr *expr = parse_expr();
 	assert(EXPR_NAME == expr->kind);
 	expect_keyword(as_keyword);
 	Typespec *type = parse_type();
-	stmt = new_stmt_dim(expr->pos, expr->name, type);
+	buf_push(dims, (Dim){expr->name, type});
+	while (match_token(TOKEN_COMMA)) {
+		num_dims++;
+		expr = parse_expr();
+		assert(EXPR_NAME == expr->kind);
+		expect_keyword(as_keyword);	
+		type = parse_type();
+		buf_push(dims, (Dim){expr->name, type});
+	}
+	stmt = new_stmt_dim(expr->pos, dims, num_dims);
 	assert(STMT_DIM == stmt->kind);
 	return stmt;
 }
@@ -456,7 +468,7 @@ SelectCase parse_stmt_select_case(void)
 		buf_push(stmts, parse_stmt());
 	}
 	return (SelectCase){patterns, buf_len(patterns), is_default,
-		new_stmt_list(pos, stmts, buf_len(stmts))};
+		new_StmtBlock(pos, stmts, buf_len(stmts))};
 }
 
 Stmt *parse_stmt_select(SrcPos pos)
@@ -494,6 +506,15 @@ Stmt *parse_stmt(void)
 		stmt = parse_simple_stmt();
 	}
 	return stmt;
+}
+
+Stmt **parse_stmts(void)
+{
+	Stmt **stmts = 0;
+	while (!is_token(TOKEN_EOF)) {
+		buf_push(stmts, parse_stmt());
+	}
+	return stmts;
 }
 
 const char *parse_name(void)

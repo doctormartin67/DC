@@ -3,11 +3,11 @@ typedef struct Stmt Stmt;
 typedef struct Decl Decl;
 typedef struct Typespec Typespec;
 
-typedef struct StmtList {
+typedef struct StmtBlock {
 	SrcPos pos;
 	Stmt **stmts;
 	size_t num_stmts;
-} StmtList;
+} StmtBlock;
 
 typedef enum TypespecKind {
 	TYPESPEC_NONE,
@@ -28,11 +28,13 @@ struct Typespec {
 	};
 };
 
+/* TODO remove
 typedef struct FuncParam {
 	SrcPos pos;
 	const char *name;
 	Typespec *type;
 } FuncParam;
+*/
 
 typedef enum DeclKind {
 	DECL_NONE,
@@ -67,8 +69,6 @@ typedef enum ExprKind {
 	EXPR_INDEX,
 	EXPR_UNARY,
 	EXPR_BINARY,
-	EXPR_MODIFY,
-	EXPR_NEW,
 } ExprKind;
 
 struct Expr {
@@ -113,7 +113,7 @@ struct Expr {
 
 typedef struct ElseIf {
 	Expr *cond;
-	StmtList block;
+	StmtBlock block;
 } ElseIf;
 
 typedef enum PatternKind {
@@ -142,8 +142,13 @@ typedef struct SelectCase {
 	SelectCasePattern *patterns;
 	size_t num_patterns;
 	unsigned is_default;
-	StmtList block;
+	StmtBlock block;
 } SelectCase;
+
+typedef struct Dim {
+	const char *name;
+	Typespec *type;
+} Dim;
 
 typedef enum StmtKind {
 	STMT_NONE,
@@ -160,7 +165,6 @@ typedef enum StmtKind {
 	STMT_ASSIGN,
 	STMT_DIM,
 	STMT_EXPR,
-	STMT_NOTE,
 } StmtKind;
 
 struct Stmt {
@@ -172,39 +176,39 @@ struct Stmt {
 		struct {
 			Stmt *dim;
 			Expr *cond;
-			StmtList then_block;
+			StmtBlock then_block;
 			ElseIf *elseifs;
 			size_t num_elseifs;
-			StmtList else_block;            
+			StmtBlock else_block;            
 		} if_stmt;
 		struct {
 			Expr *cond;
-			StmtList block;
+			StmtBlock block;
 		} while_stmt;
 		struct {
 			Expr *cond;
-			StmtList block;
+			StmtBlock block;
 		} until_stmt;
 		struct {
 			Stmt *dim;
 			Expr *cond;
 			Stmt *next;
-			StmtList block;
+			StmtBlock block;
 		} for_stmt;
 		struct {
 			Expr *expr;
 			SelectCase *cases;
 			size_t num_cases;            
 		} select_case_stmt;
-		StmtList block;
+		StmtBlock block;
 		struct {
 			TokenKind op;
 			Expr *left;
 			Expr *right;
 		} assign;
 		struct {
-			const char *name;
-			Typespec *type;
-		} dim;
+			Dim *dims;
+			size_t num_dims;
+		} dim_stmt;
 	};
 };
