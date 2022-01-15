@@ -23,6 +23,8 @@ void init_keywords(void)
 	KEYWORD(end);
 
 	KEYWORD(mod);
+	KEYWORD(true);
+	KEYWORD(false);
 	KEYWORD(and);
 	KEYWORD(or);
 	KEYWORD(xor);

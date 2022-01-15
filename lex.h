@@ -6,6 +6,8 @@ const char *else_keyword;
 const char *elseif_keyword;
 const char *end_keyword;
 const char *mod_keyword;
+const char *true_keyword;
+const char *false_keyword;
 const char *and_keyword;
 const char *or_keyword;
 const char *xor_keyword;

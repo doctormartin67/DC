@@ -79,6 +79,9 @@ struct Expr {
 			Expr *expr;
 		} paren;
 		struct {
+			boolean val;
+		} boolean_lit;
+		struct {
 			unsigned long long val;
 		} int_lit;
 		struct {

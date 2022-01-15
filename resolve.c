@@ -27,13 +27,16 @@ void print_sym_dim(Sym *sym)
 	assert(SYM_DIM == sym->kind);
 	switch (sym->type->kind) {
 		case TYPE_BOOLEAN:
-			printf("%s: TODO\n", sym->name);
+			if (sym->val.b)
+				printf("%s: True\n", sym->name);
+			else
+				printf("%s: False\n", sym->name);
 			break;
 		case TYPE_INT:
 			printf("%s: %d\n", sym->name, sym->val.i);
 			break;
 		case TYPE_DOUBLE:
-			printf("%s: TODO\n", sym->name);
+			printf("%s: %f\n", sym->name, sym->val.d);
 			break;
 		default:
 			assert(0);
@@ -160,23 +163,91 @@ Operand operand_const(Type *type, Val val)
 	};
 }
 
-/* TODO */
+#define CASE(k, t) \
+	case k: \
+	switch (type->kind) { \
+		case TYPE_BOOLEAN: \
+				   if (operand->val.t) { \
+					   operand->val.b = TRUE; \
+				   } else { \
+					   operand->val.b = FALSE; \
+				   } \
+		break; \
+		case TYPE_INT: \
+			       operand->val.i = operand->val.t; \
+		break; \
+		case TYPE_DOUBLE: \
+				  operand->val.d = operand->val.t; \
+		break; \
+		default: \
+			 assert(0); \
+		break; \
+	} \
+	break;
+
+
+unsigned is_convertible(Operand *operand, Type *dest)
+{
+	Type *src = operand->type;
+	if (dest == src) {
+		return 1;
+	} else if (is_arithmetic_type(dest) && is_arithmetic_type(src)) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+unsigned is_castable(Operand *operand, Type *dest)
+{
+	if (is_convertible(operand, dest)) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 unsigned cast_operand(Operand *operand, Type *type)
 {
+	if (operand->type != type) {
+		if (!is_castable(operand, type)) {
+			return 0;
+		}
+		switch (operand->type->kind) {
+			CASE(TYPE_BOOLEAN, b);
+			CASE(TYPE_INT, i);
+			CASE(TYPE_DOUBLE, d);
+			default:
+			assert(0);
+		}
+	}
+	operand->type = type;
 	return 1;
 }
 
+unsigned convert_operand(Operand *operand, Type *type)
+{
+	if (is_convertible(operand, type)) {
+		cast_operand(operand, type);
+		operand->is_lvalue = 0;
+		return 1;
+	}
+	return 0;
+}
+
+#undef CASE
+
 void unify_arithmetic_operands(Operand *left, Operand *right)
 {
-    if (left->type == type_double) {
-        cast_operand(right, type_double);
-    } else if (right->type == type_double) {
-        cast_operand(left, type_double);
-    } else {
-        assert(is_integer_type(left->type));
-        assert(is_integer_type(right->type));
-    }
-    assert(left->type == right->type);
+	if (left->type == type_double) {
+		cast_operand(right, type_double);
+	} else if (right->type == type_double) {
+		cast_operand(left, type_double);
+	} else {
+		assert(is_integer_type(left->type));
+		assert(is_integer_type(right->type));
+	}
+	assert(left->type == right->type);
 }
 
 Sym *resolve_name(const char *name)
@@ -203,78 +274,123 @@ Type *resolve_typespec(Typespec *typespec)
 
 long long eval_binary_op_i(TokenKind op, long long left, long long right)
 {
-    switch (op) {
-    case TOKEN_MUL:
-        return left * right;
-    case TOKEN_DIV:
-        return right != 0 ? left / right : 0;
-    case TOKEN_MOD:
-        return right != 0 ? left % right : 0;
-    case TOKEN_AND:
-        return left & right;
-    case TOKEN_ADD:
-        return left + right;
-    case TOKEN_SUB:
-        return left - right;
-    case TOKEN_ASSIGN:
-        return left == right;
-    case TOKEN_NOTEQ:
-        return left != right;
-    case TOKEN_LT:
-        return left < right;
-    case TOKEN_LTEQ:
-        return left <= right;
-    case TOKEN_GT:
-        return left > right;
-    case TOKEN_GTEQ:
-        return left >= right;
-    default:
-        assert(0);
-        break;
-    }
-    return 0;
-}
-
-Val eval_unary_op(TokenKind op, Type *type, Val val)
-{
-    if (is_integer_type(type)) {
-        Operand operand = operand_const(type, val);
 	switch (op) {
+		case TOKEN_MUL:
+			return left * right;
+		case TOKEN_DIV:
+			return right != 0 ? left / right : 0;
+		case TOKEN_MOD:
+			return right != 0 ? left % right : 0;
+		case TOKEN_AND:
+			assert(0);
+			break;
 		case TOKEN_ADD:
-			operand.val.i = +operand.val.i;
-			break;
+			return left + right;
 		case TOKEN_SUB:
-			operand.val.i = -operand.val.i;
-			break;
+			return left - right;
+		case TOKEN_ASSIGN:
+			return left == right;
+		case TOKEN_NOTEQ:
+			return left != right;
+		case TOKEN_LT:
+			return left < right;
+		case TOKEN_LTEQ:
+			return left <= right;
+		case TOKEN_GT:
+			return left > right;
+		case TOKEN_GTEQ:
+			return left >= right;
 		default:
 			assert(0);
 			break;
 	}
-	return operand.val;
-    } else {
-	    return (Val){0};
-    }
+	return 0;
 }
 
-Val eval_binary_op(TokenKind op, Type *type, Val left, Val right)
+double eval_binary_op_d(TokenKind op, double left, double right)
+{
+	switch (op) {
+		case TOKEN_MUL:
+			return left * right;
+		case TOKEN_DIV:
+			return right != 0 ? left / right : 0;
+		case TOKEN_MOD:
+			assert(0);
+			break;
+		case TOKEN_AND:
+			assert(0);
+			break;
+		case TOKEN_ADD:
+			return left + right;
+		case TOKEN_SUB:
+			return left - right;
+		case TOKEN_ASSIGN:
+			return left == right;
+		case TOKEN_NOTEQ:
+			return left != right;
+		case TOKEN_LT:
+			return left < right;
+		case TOKEN_LTEQ:
+			return left <= right;
+		case TOKEN_GT:
+			return left > right;
+		case TOKEN_GTEQ:
+			return left >= right;
+		default:
+			assert(0);
+			break;
+	}
+	return 0;
+}
+
+Val eval_unary_op(TokenKind op, Type *type, Val val)
 {
 	if (is_integer_type(type)) {
-		Operand left_operand = operand_const(type, left);
-		Operand right_operand = operand_const(type, right);
-		Operand result_operand;
-		result_operand = operand_const(type_int, (Val){.i = eval_binary_op_i(op, left_operand.val.i, right_operand.val.i)});
-		return result_operand.val;
+		Operand operand = operand_const(type, val);
+		switch (op) {
+			case TOKEN_ADD:
+				operand.val.i = +operand.val.i;
+				break;
+			case TOKEN_SUB:
+				operand.val.i = -operand.val.i;
+				break;
+			default:
+				assert(0);
+				break;
+		}
+		return operand.val;
 	} else {
+		assert(0);
 		return (Val){0};
 	}
 }
+
+#define RETURN_RESULT(T, t) \
+	Operand left_operand = operand_const(type, left); \
+	Operand right_operand = operand_const(type, right); \
+	Operand result_operand; \
+	result_operand = operand_const(T, \
+			(Val){.t = eval_binary_op_##t(op, left_operand.val.t, \
+					right_operand.val.t)}); \
+					return result_operand.val;
+Val eval_binary_op(TokenKind op, Type *type, Val left, Val right)
+{
+	if (is_integer_type(type)) {
+		RETURN_RESULT(type_int, i);
+	} else if (is_floating_type(type)) {
+		RETURN_RESULT(type_double, d);
+	} else {
+		assert(0);
+		return (Val){0};
+	}
+}
+#undef RETURN_RESULT
 
 Operand resolve_expected_expr(Expr *expr, Type *expected_type);
 Operand resolve_expr(Expr *expr)
 {
 	return resolve_expected_expr(expr, 0);
 }
-
 
 Operand resolve_name_operand(SrcPos pos, const char *name)
 {
@@ -284,6 +400,7 @@ Operand resolve_name_operand(SrcPos pos, const char *name)
 	}
 	if (sym->kind == SYM_DIM) {
 		Operand operand = operand_lvalue(sym->type);
+		operand.val = sym->val;
 		return operand;
 	} else {
 		fatal_error(pos, "%s must be a declared variable", name);
@@ -330,102 +447,98 @@ Operand resolve_expr_unary(Expr *expr)
 
 Operand resolve_binary_op(TokenKind op, Operand left, Operand right)
 {
-	if (left.is_const && right.is_const) {
-		return operand_const(left.type, eval_binary_op(op, left.type, left.val, right.val));
-	} else {
-		return operand_rvalue(left.type);
-	}
+	return operand_const(left.type, eval_binary_op(op, left.type, left.val,
+				right.val));
 }
 
 Operand resolve_binary_arithmetic_op(TokenKind op, Operand left, Operand right)
 {
+	if (TOKEN_DIV == op)
+		cast_operand(&left, type_double);
 	unify_arithmetic_operands(&left, &right);
 	return resolve_binary_op(op, left, right);
 }
 
-Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos, Operand left, Operand right, Expr *left_expr, Expr *right_expr)
+#define FATAL_ERROR(O, T) fatal_error(pos, O" operand of %s must have " \
+		T" type", op_name);
+Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
+		Operand left, Operand right, Expr *left_expr, Expr *right_expr)
 {
 	switch (op) {
 		case TOKEN_MUL:
 		case TOKEN_DIV:
+		case TOKEN_ADD:
+		case TOKEN_SUB:
 			if (!is_arithmetic_type(left.type)) {
-				fatal_error(pos, "Left operand of %s must have arithmetic type", op_name);
+				FATAL_ERROR("Left", "arithmetic");
 			}
 			if (!is_arithmetic_type(right.type)) {
-				fatal_error(pos, "Right operand of %s must have arithmetic type", op_name);
+				FATAL_ERROR("Right", "arithmetic");
 			}
 			return resolve_binary_arithmetic_op(op, left, right);
 		case TOKEN_MOD:
 			if (!is_integer_type(left.type)) {
-				fatal_error(pos, "Left operand of %% must have integer type");
+				FATAL_ERROR("Left", "integer");
 			}
 			if (!is_integer_type(right.type)) {
-				fatal_error(pos, "Right operand of %% must have integer type");
+				FATAL_ERROR("Reft", "integer");
 			}
 			return resolve_binary_arithmetic_op(op, left, right);
-		case TOKEN_ADD:
-			if (is_arithmetic_type(left.type) && is_arithmetic_type(right.type)) {
-				return resolve_binary_arithmetic_op(op, left, right);
-			} else {
-				fatal_error(pos, "Operands of + must both have arithmetic type, or pointer and integer type");
-			}
-			break;
-		case TOKEN_SUB:
-			if (is_arithmetic_type(left.type) && is_arithmetic_type(right.type)) {
-				return resolve_binary_arithmetic_op(op, left, right);
-			} else {
-				fatal_error(pos, "Operands of - must both have arithmetic type, pointer and integer type, or compatible pointer types");
-			}
-			break;
 		case TOKEN_ASSIGN:
 		case TOKEN_NOTEQ:
-			if (is_arithmetic_type(left.type) && is_arithmetic_type(right.type)) {
-				Operand result = resolve_binary_arithmetic_op(op, left, right);
-				cast_operand(&result, type_int);
+			if (is_arithmetic_type(left.type)
+					&& is_arithmetic_type(right.type)) {
+				Operand result = resolve_binary_arithmetic_op(
+						op, left, right);
+				cast_operand(&result, type_boolean);
 				return result;
 			} else {
-				fatal_error(pos, "Operands of %s must be arithmetic types or compatible pointer types", op_name);
+				fatal_error(pos, "Operands of %s must be "
+						"arithmetic types", op_name);
 			}
 			break;
 		case TOKEN_LT:
 		case TOKEN_LTEQ:
 		case TOKEN_GT:
 		case TOKEN_GTEQ:
-			if (is_arithmetic_type(left.type) && is_arithmetic_type(right.type)) {
-				Operand result = resolve_binary_arithmetic_op(op, left, right);
-				cast_operand(&result, type_int);
-				return result;
+			if (is_scalar_type(left.type)
+					&& is_scalar_type(right.type)) {
+				Operand result = resolve_binary_arithmetic_op(
+						op, left, right);
+				cast_operand(&result, type_boolean);
 			} else {
-				fatal_error(pos, "Operands of %s must be arithmetic types or compatible pointer types", op_name);
+				fatal_error(pos, "Operands of %s must have"
+						"scalar types", op_name);
 			}
 			break;
 		case TOKEN_AND_AND:
 		case TOKEN_OR_OR:
-			if (is_scalar_type(left.type) && is_scalar_type(right.type)) {
-				if (left.is_const && right.is_const) {
-					cast_operand(&left, type_boolean);
-					cast_operand(&right, type_boolean);
-					int i;
-					if (op == TOKEN_AND_AND) {
-						i = left.val.b && right.val.b;
-					} else {
-						assert(op == TOKEN_OR_OR);
-						i = left.val.b || right.val.b;
-					}
-					return operand_const(type_int, (Val){.i = i});
+			if (is_boolean_type(left.type)
+					&& is_boolean_type(right.type)) {
+				cast_operand(&left, type_boolean);
+				cast_operand(&right, type_boolean);
+				boolean b = FALSE;
+				if (op == TOKEN_AND_AND) {
+					b = left.val.b && right.val.b;
 				} else {
-					return operand_rvalue(type_int);
+					assert(op == TOKEN_OR_OR);
+					b = left.val.b || right.val.b;
 				}
+				return operand_const(type_boolean,
+						(Val){.b = b});
 			} else {
-				fatal_error(pos, "Operands of %s must have scalar types", op_name);
+				fatal_error(pos, "Operands of %s must have"
+						"scalar types", op_name);
 			}
 			break;
 		default:
 			assert(0);
 			break;
 	}
+	assert(0);
 	return (Operand){0};
 }
+#undef FATAL_ERROR
 
 Operand resolve_expr_binary(Expr *expr)
 {
@@ -434,29 +547,40 @@ Operand resolve_expr_binary(Expr *expr)
 	Operand right = resolve_expr(expr->binary.right);
 	TokenKind op = expr->binary.op;
 	const char *op_name = token_kind_name(op);
-	return resolve_expr_binary_op(op, op_name, expr->pos, left, right, expr->binary.left, expr->binary.right);
+	return resolve_expr_binary_op(op, op_name, expr->pos, left, right,
+			expr->binary.left, expr->binary.right);
 }
 
 Operand resolve_expr_int(Expr *expr)
 {
 	assert(expr->kind == EXPR_INT);
-	unsigned long long int_max = type_metrics[TYPE_INT].max;
 	unsigned long long val = expr->int_lit.val;
 	Operand operand = operand_const(type_int, (Val){.i = val});
-	unsigned overflow = val > int_max;
+	unsigned overflow = val > INT_MAX;
 	if (overflow) {
 		fatal_error(expr->pos, "Integer literal overflow");
 	}
 	return operand;
 }
 
+Operand resolve_expr_float(Expr *expr)
+{
+	assert(expr->kind == EXPR_FLOAT);
+	double val = expr->float_lit.val;
+	Operand operand = operand_const(type_double, (Val){.d = val});
+	return operand;
+}
+
 Operand resolve_expected_expr(Expr *expr, Type *expected_type)
 {
 	switch (expr->kind) {
+		case EXPR_PAREN:
+			return resolve_expected_expr(expr->paren.expr,
+					expected_type);
 		case EXPR_INT:
 			return resolve_expr_int(expr);
 		case EXPR_FLOAT:
-			return operand_const(type_double, (Val){0});
+			return resolve_expr_float(expr);
 #if 0
 		case EXPR_STR:
 			return resolved_rvalue(type_ptr(type_char));
@@ -499,13 +623,14 @@ void resolve_stmt_assign(Stmt *stmt)
 	}
 	Expr *right_expr = stmt->assign.right;
 	Operand right = resolve_expected_expr(right_expr, left.type);
-	if (right.type != left.type) {
+	if (!convert_operand(&right, left.type)) {
 		fatal_error(stmt->pos, "Invalid type in assignment. "
 				"Expected %s, got %s",
 				type_names[left.type->kind],
 				type_names[right.type->kind]);
 
 	}
+	sym_get(left_expr->name)->val = right.val;
 }
 
 void resolve_stmt_dim(Stmt *stmt)

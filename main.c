@@ -312,14 +312,13 @@ void test_resolve(void)
 		"dim y as integer\n"
 		"dim a as double, b as double\n"
 		"dim z as boolean\n"
-		"x = 6\n"
-		"y = 6\n"
-		"a = 0.01\n"
-		"b = -a\n"
-		"x = -3\n"
-		"x = +3\n"
-		"x = 1+3\n"
-		"b = 1.0+3.0\n"
+		"x = 1+5+6+7.5/2\n"
+		"y = x+4.5\n"
+		"a = 3.2+0.7+1/2\n"
+		"b = x/2\n"
+		"a = a * 2\n"
+		"x = x*2\n"
+//		"z = true\n"
 		;
 	init_stream(0, code);
 	init_builtin_types();
