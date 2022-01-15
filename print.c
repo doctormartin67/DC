@@ -37,6 +37,13 @@ void print_expr(const Expr *e)
 			print_expr(e->paren.expr);
 			printf(")");
 			break;
+		case EXPR_BOOLEAN:
+			if (e->boolean_lit.val) {
+				printf("True");
+			} else {
+				printf("False");
+			}
+			break;
 		case EXPR_INT:
 			printf("%lld", e->int_lit.val);
 			break;

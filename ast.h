@@ -61,6 +61,7 @@ typedef struct Decls {
 typedef enum ExprKind {
 	EXPR_NONE,
 	EXPR_PAREN,
+	EXPR_BOOLEAN,
 	EXPR_INT,
 	EXPR_FLOAT,
 	EXPR_STR,

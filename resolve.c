@@ -237,6 +237,16 @@ unsigned convert_operand(Operand *operand, Type *type)
 
 #undef CASE
 
+void promote_operand(Operand *operand)
+{
+	switch (operand->type->kind) {
+		case TYPE_BOOLEAN:
+			cast_operand(operand, type_int);
+			break;
+		default:
+			break;
+	}
+}
 void unify_arithmetic_operands(Operand *left, Operand *right)
 {
 	if (left->type == type_double) {
@@ -244,6 +254,8 @@ void unify_arithmetic_operands(Operand *left, Operand *right)
 	} else if (right->type == type_double) {
 		cast_operand(left, type_double);
 	} else {
+		promote_operand(left);
+		promote_operand(right);
 		assert(is_integer_type(left->type));
 		assert(is_integer_type(right->type));
 	}
@@ -459,7 +471,7 @@ Operand resolve_binary_arithmetic_op(TokenKind op, Operand left, Operand right)
 	return resolve_binary_op(op, left, right);
 }
 
-#define FATAL_ERROR(O, T) fatal_error(pos, O" operand of %s must have " \
+#define FATAL_ERROR(O, T) fatal_error(pos, O" operand of '%s' must have " \
 		T" type", op_name);
 Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
 		Operand left, Operand right, Expr *left_expr, Expr *right_expr)
@@ -493,7 +505,7 @@ Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
 				cast_operand(&result, type_boolean);
 				return result;
 			} else {
-				fatal_error(pos, "Operands of %s must be "
+				fatal_error(pos, "Operands of '%s' must be "
 						"arithmetic types", op_name);
 			}
 			break;
@@ -507,7 +519,7 @@ Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
 						op, left, right);
 				cast_operand(&result, type_boolean);
 			} else {
-				fatal_error(pos, "Operands of %s must have"
+				fatal_error(pos, "Operands of '%s' must have "
 						"scalar types", op_name);
 			}
 			break;
@@ -527,8 +539,8 @@ Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
 				return operand_const(type_boolean,
 						(Val){.b = b});
 			} else {
-				fatal_error(pos, "Operands of %s must have"
-						"scalar types", op_name);
+				fatal_error(pos, "Operands of '%s' must have "
+						"boolean types", op_name);
 			}
 			break;
 		default:
@@ -549,6 +561,14 @@ Operand resolve_expr_binary(Expr *expr)
 	const char *op_name = token_kind_name(op);
 	return resolve_expr_binary_op(op, op_name, expr->pos, left, right,
 			expr->binary.left, expr->binary.right);
+}
+
+Operand resolve_expr_boolean(Expr *expr)
+{
+	assert(expr->kind == EXPR_BOOLEAN);
+	boolean val = expr->boolean_lit.val;
+	Operand operand = operand_const(type_boolean, (Val){.b = val});
+	return operand;
 }
 
 Operand resolve_expr_int(Expr *expr)
@@ -577,6 +597,8 @@ Operand resolve_expected_expr(Expr *expr, Type *expected_type)
 		case EXPR_PAREN:
 			return resolve_expected_expr(expr->paren.expr,
 					expected_type);
+		case EXPR_BOOLEAN:
+			return resolve_expr_boolean(expr);
 		case EXPR_INT:
 			return resolve_expr_int(expr);
 		case EXPR_FLOAT:

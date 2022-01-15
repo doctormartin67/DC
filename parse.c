@@ -40,6 +40,12 @@ Expr *parse_expr_operand(void)
 		unsigned long long val = token.int_val;
 		next_token();
 		return new_expr_int(pos, val);
+	} else if (match_keyword(true_keyword)) {
+		boolean val = TRUE;
+		return new_expr_boolean(pos, val);
+	} else if (match_keyword(false_keyword)) {
+		boolean val = FALSE;
+		return new_expr_boolean(pos, val);
 	} else if (is_token(TOKEN_FLOAT)) {
 		const char *start = token.start;
 		const char *end = token.end;
@@ -331,6 +337,9 @@ Stmt *parse_simple_stmt(void)
 		stmt = new_stmt_assign(pos, op, expr, parse_expr());
 	} else {
 		stmt = new_stmt_expr(pos, expr);
+		if (EXPR_NAME == expr->kind) {
+			fatal_error_here("Unknown name '%s'", expr->name);
+		}
 		assert(EXPR_CALL == expr->kind);
 	}
 	return stmt;
