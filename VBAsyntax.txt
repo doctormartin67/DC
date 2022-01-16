@@ -1,3 +1,8 @@
+notable differences with VBA:
+	- true has a value of -1 in VBA, whereas here it will be 1
+	- implicit casting from double to int seems to round in VBA (???!!!)
+	  whereas here it will truncate because we're not morons
+
 Tokens:
 
 Grouping tokens:

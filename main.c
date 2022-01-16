@@ -308,10 +308,17 @@ void test_parse(void)
 void test_resolve(void)
 {
 	const char *code = 
+		"dim str as string\n"
+		"dim str2 as string\n"
 		"dim x as integer\n"
 		"dim y as integer\n"
 		"dim a as double, b as double\n"
 		"dim z as boolean, zz as boolean\n"
+		"str = \"hello\" & \" test\"\n"
+		"str = \"joseph\" & 1\n"
+		"str = 1 & 2\n"
+		"str2 = str + \"hell\""
+		"str2 = 5 + 3.4\n"
 		"x = 1+5+6+7.5/2\n"
 		"y = x+4.5\n"
 		"zz = true and false\n"
@@ -323,6 +330,9 @@ void test_resolve(void)
 		"x = x*2\n"
 		"z = true\n"
 		"x = z * x\n"
+		"z = false\n"
+		"a = z * a\n"
+		"str2 = \"hello\" + \" \" & \"Joseph\" + \" \" & 27\n"
 		;
 	init_stream(0, code);
 	init_builtin_types();

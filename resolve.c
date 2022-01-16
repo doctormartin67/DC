@@ -38,6 +38,9 @@ void print_sym_dim(Sym *sym)
 		case TYPE_DOUBLE:
 			printf("%s: %f\n", sym->name, sym->val.d);
 			break;
+		case TYPE_STRING:
+			printf("%s: %s\n", sym->name, sym->val.s);
+			break;
 		default:
 			assert(0);
 			break;
@@ -128,6 +131,9 @@ unsigned sym_push_dim(const char *name, Type *type)
 			.kind = SYM_DIM,
 			.type = type,
 	};
+	if (type_string == type) {
+		buf_printf(syms_end[-1].val.s, "");
+	}
 	return 1;
 }
 
@@ -163,7 +169,7 @@ Operand operand_const(Type *type, Val val)
 	};
 }
 
-#define CASE(k, t) \
+#define CASE(k, t, f) \
 	case k: \
 	switch (type->kind) { \
 		case TYPE_BOOLEAN: \
@@ -179,6 +185,10 @@ Operand operand_const(Type *type, Val val)
 		case TYPE_DOUBLE: \
 				  operand->val.d = operand->val.t; \
 		break; \
+		case TYPE_STRING: \
+				  buf_printf(val, "%"f, operand->val.t); \
+		operand->val.s = val; \
+		break; \
 		default: \
 			 assert(0); \
 		break; \
@@ -192,6 +202,8 @@ unsigned is_convertible(Operand *operand, Type *dest)
 	if (dest == src) {
 		return 1;
 	} else if (is_arithmetic_type(dest) && is_arithmetic_type(src)) {
+		return 1;
+	} else if (is_string_type(dest) && is_concatable(src)) {
 		return 1;
 	} else {
 		return 0;
@@ -213,12 +225,18 @@ unsigned cast_operand(Operand *operand, Type *type)
 		if (!is_castable(operand, type)) {
 			return 0;
 		}
+		char *val = 0;
 		switch (operand->type->kind) {
-			CASE(TYPE_BOOLEAN, b);
-			CASE(TYPE_INT, i);
-			CASE(TYPE_DOUBLE, d);
+			CASE(TYPE_BOOLEAN, b, "d");
+			CASE(TYPE_INT, i, "d");
+			CASE(TYPE_DOUBLE, d, "f");
 			default:
 			assert(0);
+		}
+		if (type_string == type) {
+			assert(val);
+		} else {
+			assert(!val);
 		}
 	}
 	operand->type = type;
@@ -254,6 +272,8 @@ void unify_arithmetic_operands(Operand *left, Operand *right)
 	} else if (right->type == type_double) {
 		cast_operand(left, type_double);
 	} else {
+		assert(is_arithmetic_type(left->type));
+		assert(is_arithmetic_type(right->type));
 		promote_operand(left);
 		promote_operand(right);
 		assert(is_integer_type(left->type));
@@ -443,9 +463,9 @@ Operand resolve_expr_unary(Expr *expr)
 	switch (expr->unary.op) {
 		case TOKEN_ADD:
 		case TOKEN_SUB:
-			if (!is_arithmetic_type(type)) {
-				fatal_error(expr->pos, "Can only use unary %s"
-						"with arithmetic types",
+			if (!is_scalar_type(type)) {
+				fatal_error(expr->pos, "Can only use unary "
+						"'%s' with scalar types",
 						token_kind_name(
 							expr->unary.op));
 			}
@@ -471,15 +491,63 @@ Operand resolve_binary_arithmetic_op(TokenKind op, Operand left, Operand right)
 	return resolve_binary_op(op, left, right);
 }
 
+#define CASE(k, t1, t2) \
+	case k: \
+	switch (right.type->kind) { \
+		case TYPE_INT: \
+			       buf_printf(val, "%"t1"%d", left.val.t2, \
+					       right.val.i); \
+		break; \
+		case TYPE_DOUBLE: \
+				  buf_printf(val, "%"t1"%f", left.val.t2, \
+						  right.val.d); \
+		break; \
+		case TYPE_STRING: \
+				  buf_printf(val, "%"t1"%s", left.val.t2, \
+						  right.val.s); \
+		break; \
+		default: \
+			 assert(0); \
+		break; \
+	} \
+	break;
+
+Operand concat_operands(Operand left, Operand right)
+{
+	char *val = 0;
+	switch (left.type->kind) {
+		CASE(TYPE_INT, "d", i);
+		CASE(TYPE_DOUBLE, "f", d);
+		CASE(TYPE_STRING, "s", s);
+		default:
+		assert(0);
+		break;
+	}
+	Operand operand = operand_const(type_string, (Val){.s = val});
+	return operand;
+}
+
+#undef CASE
+
 #define FATAL_ERROR(O, T) fatal_error(pos, O" operand of '%s' must have " \
 		T" type", op_name);
 Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
 		Operand left, Operand right, Expr *left_expr, Expr *right_expr)
 {
 	switch (op) {
+		case TOKEN_ADD:
+			if (is_string_type(left.type)
+					|| is_string_type(right.type)) {
+				return concat_operands(left, right);
+			} else {
+				assert(is_arithmetic_type(left.type));
+				assert(is_arithmetic_type(right.type));
+				return resolve_binary_arithmetic_op(op, left,
+						right);
+			}
+			break;
 		case TOKEN_MUL:
 		case TOKEN_DIV:
-		case TOKEN_ADD:
 		case TOKEN_SUB:
 			if (!is_arithmetic_type(left.type)) {
 				FATAL_ERROR("Left", "arithmetic");
@@ -543,6 +611,15 @@ Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
 						"boolean types", op_name);
 			}
 			break;
+		case TOKEN_AND:
+			if (is_concatable(left.type)
+					&& is_concatable(right.type)) {
+				return concat_operands(left, right);
+			} else {
+				fatal_error(pos, "Operands of '%s' must have "
+						"string or scalar types",
+						op_name);
+			}
 		default:
 			assert(0);
 			break;
@@ -591,6 +668,15 @@ Operand resolve_expr_float(Expr *expr)
 	return operand;
 }
 
+Operand resolve_expr_string(Expr *expr)
+{
+	assert(expr->kind == EXPR_STR);
+	char *val = 0;
+	buf_printf(val, expr->str_lit.val);
+	Operand operand = operand_const(type_string, (Val){.s = val});
+	return operand;
+}
+
 Operand resolve_expected_expr(Expr *expr, Type *expected_type)
 {
 	switch (expr->kind) {
@@ -603,10 +689,8 @@ Operand resolve_expected_expr(Expr *expr, Type *expected_type)
 			return resolve_expr_int(expr);
 		case EXPR_FLOAT:
 			return resolve_expr_float(expr);
-#if 0
 		case EXPR_STR:
-			return resolved_rvalue(type_ptr(type_char));
-#endif
+			return resolve_expr_string(expr);
 		case EXPR_NAME:
 			return resolve_expr_name(expr);
 #if 0
@@ -634,11 +718,23 @@ Val resolve_const_expr(Expr *expr)
 	return result.val;
 }
 
+unsigned resolve_stmt(Stmt *stmt, Type *ret_type);
+
+unsigned resolve_stmt_block(StmtBlock block, Type *ret_type)
+{
+	unsigned returns = 0;
+	for (size_t i = 0; i < block.num_stmts; i++) {
+		returns = resolve_stmt(block.stmts[i], ret_type) || returns;
+	}
+	return returns;
+}
+
 void resolve_stmt_assign(Stmt *stmt)
 {
 	assert(stmt->kind == STMT_ASSIGN);
 	assert(TOKEN_ASSIGN == stmt->assign.op);
 	Expr *left_expr = stmt->assign.left;
+	Sym *sym = sym_get(left_expr->name);
 	Operand left = resolve_expr(left_expr);
 	if (!left.is_lvalue) {
 		fatal_error(stmt->pos, "Cannot assign to non-lvalue");
@@ -652,7 +748,10 @@ void resolve_stmt_assign(Stmt *stmt)
 				type_names[right.type->kind]);
 
 	}
-	sym_get(left_expr->name)->val = right.val;
+	if (TYPE_STRING == sym->type->kind) {
+		buf_free(sym->val.s);
+	}
+	sym->val = right.val;
 }
 
 void resolve_stmt_dim(Stmt *stmt)
@@ -672,9 +771,9 @@ void resolve_stmt_dim(Stmt *stmt)
 unsigned resolve_stmt(Stmt *stmt, Type *ret_type)
 {
 	switch (stmt->kind) {
-#if 0
 		case STMT_BLOCK:
-			return resolve_stmt_block(stmt->block, ret_type, ctx);
+			return resolve_stmt_block(stmt->block, ret_type);
+#if 0
 		case STMT_IF: {
 				      Sym *scope = sym_enter();
 				      if (stmt->if_stmt.init) {
