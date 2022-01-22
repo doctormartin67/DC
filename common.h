@@ -47,7 +47,7 @@ typedef enum boolean {
 typedef struct BufHdr {
 	size_t len;
 	size_t cap;
-	char buf[0];
+	char buf[];
 } BufHdr;
 
 typedef struct Arena {
@@ -66,7 +66,7 @@ typedef struct Map {
 typedef struct Intern {
 	size_t len;
 	struct Intern *next;
-	char str[0];
+	char str[];
 } Intern;
 
 typedef union Val {

@@ -118,7 +118,7 @@ unsigned sym_push_type(const char *name, Type *type)
 	return 1;
 }
 
-unsigned sym_push_dim(const char *name, Type *type)
+unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 {
 	if (sym_get(name)) {
 		return 0;
@@ -126,13 +126,15 @@ unsigned sym_push_dim(const char *name, Type *type)
 	if (syms_end == syms + MAX_SYMS) {
 		fatal("Too many symbols");
 	}
-	*syms_end++ = (Sym){
-		.name = str_intern(name),
-			.kind = SYM_DIM,
-			.type = type,
-	};
-	if (type_string == type) {
-		buf_printf(syms_end[-1].val.s, "");
+	if (eval_stmt) {
+		*syms_end++ = (Sym){
+			.name = str_intern(name),
+				.kind = SYM_DIM,
+				.type = type,
+		};
+		if (type_string == type) {
+			buf_printf(syms_end[-1].val.s, "");
+		}
 	}
 	return 1;
 }
@@ -586,6 +588,7 @@ Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
 				Operand result = resolve_binary_arithmetic_op(
 						op, left, right);
 				cast_operand(&result, type_boolean);
+				return result;
 			} else {
 				fatal_error(pos, "Operands of '%s' must have "
 						"scalar types", op_name);
@@ -718,18 +721,39 @@ Val resolve_const_expr(Expr *expr)
 	return result.val;
 }
 
-unsigned resolve_stmt(Stmt *stmt, Type *ret_type);
+void resolve_stmt(Stmt *stmt, unsigned eval_stmt);
 
-unsigned resolve_stmt_block(StmtBlock block, Type *ret_type)
+unsigned is_cond_operand(Operand operand)
 {
-	unsigned returns = 0;
-	for (size_t i = 0; i < block.num_stmts; i++) {
-		returns = resolve_stmt(block.stmts[i], ret_type) || returns;
-	}
-	return returns;
+	return is_arithmetic_type(operand.type);
 }
 
-void resolve_stmt_assign(Stmt *stmt)
+Operand resolve_cond_expr(Expr *expr)
+{
+	Operand cond = resolve_expr(expr);
+	if (!is_cond_operand(cond)) {
+		fatal_error(expr->pos, "Conditional expression must have "
+				"arithmetic type");
+	}
+	if (!cast_operand(&cond, type_boolean)) {
+		fatal_error(expr->pos, "Invalid type in condition. "
+				"Expected '%s', got '%s'",
+				type_names[TYPE_BOOLEAN],
+				type_names[cond.type->kind]);
+
+	}
+	assert(TYPE_BOOLEAN == cond.type->kind);
+	return cond;
+}
+
+void resolve_stmt_block(StmtBlock block, unsigned eval_stmt)
+{
+	for (size_t i = 0; i < block.num_stmts; i++) {
+		resolve_stmt(block.stmts[i], eval_stmt);
+	}
+}
+
+void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 {
 	assert(stmt->kind == STMT_ASSIGN);
 	assert(TOKEN_ASSIGN == stmt->assign.op);
@@ -743,85 +767,134 @@ void resolve_stmt_assign(Stmt *stmt)
 	Operand right = resolve_expected_expr(right_expr, left.type);
 	if (!convert_operand(&right, left.type)) {
 		fatal_error(stmt->pos, "Invalid type in assignment. "
-				"Expected %s, got %s",
+				"Expected '%s', got '%s'",
 				type_names[left.type->kind],
 				type_names[right.type->kind]);
 
 	}
-	if (TYPE_STRING == sym->type->kind) {
-		buf_free(sym->val.s);
+	if (eval_stmt) {
+		if (TYPE_STRING == sym->type->kind) {
+			buf_free(sym->val.s);
+		}
+		sym->val = right.val;
 	}
-	sym->val = right.val;
 }
 
-void resolve_stmt_dim(Stmt *stmt)
+void resolve_stmt_dim(Stmt *stmt, unsigned eval_stmt)
 {
 	assert(STMT_DIM == stmt->kind);
 	Type *type = 0;
 	for (size_t i = 0; i < stmt->dim_stmt.num_dims; i++) {
 		type = resolve_typespec(stmt->dim_stmt.dims[i].type);
 		assert(type);
-		if (!sym_push_dim(stmt->dim_stmt.dims[i].name, type)) {
-			fatal_error(stmt->pos, "Variable %s declared multiple"
-					" times", stmt->dim_stmt.dims[i].name);
+		if (!sym_push_dim(stmt->dim_stmt.dims[i].name, type,
+					eval_stmt)) {
+			fatal_error(stmt->pos, "Variable '%s' declared "
+					"multiple times",
+					stmt->dim_stmt.dims[i].name);
 		}
 	}
 }
-
-unsigned resolve_stmt(Stmt *stmt, Type *ret_type)
+void resolve_stmt_for(Stmt *stmt, unsigned eval_stmt)
 {
+	Operand cond = (Operand){0};
+	Operand step = (Operand){0};
+	assert(stmt->for_stmt.dim);
+	resolve_stmt(stmt->for_stmt.dim, eval_stmt);
+	assert(stmt->for_stmt.cond);
+	assert(stmt->for_stmt.next);
+	resolve_stmt(stmt->for_stmt.next, FALSE);
+	step = resolve_expr(stmt->for_stmt.step);
+	convert_operand(&step, type_double);
+	if (step.val.d < 0.0) {
+		stmt->for_stmt.cond->binary.op = TOKEN_GTEQ;
+	}
+	cond = resolve_cond_expr(stmt->for_stmt.cond);
+	resolve_stmt_block(stmt->for_stmt.block, FALSE);
+	while (cond.val.b) {
+		resolve_stmt_block(stmt->for_stmt.block,
+				eval_stmt);
+		resolve_stmt(stmt->for_stmt.next, eval_stmt);
+		cond = resolve_cond_expr(stmt->for_stmt.cond);
+	}
+}
+
+void resolve_stmt_if(Stmt *stmt)
+{
+	Operand cond = (Operand){0};
+	boolean b = FALSE;
+	if (stmt->if_stmt.cond) {
+		cond = resolve_cond_expr(stmt->if_stmt.cond);
+		b = cond.val.b;
+	} else {
+		assert(0);
+	}
+	resolve_stmt_block(stmt->if_stmt.then_block, b);
+	for (size_t i = 0; i < stmt->if_stmt.num_elseifs; i++){
+		ElseIf elseif = stmt->if_stmt.elseifs[i];
+		cond = resolve_cond_expr(elseif.cond);
+		if (!b) {
+			b = cond.val.b;
+			resolve_stmt_block(elseif.block, b);
+		} else {
+			resolve_stmt_block(elseif.block,FALSE);
+		}
+	}
+	if (stmt->if_stmt.else_block.stmts) {
+		if (!b) {
+			resolve_stmt_block(stmt->if_stmt.
+					else_block, TRUE);
+		} else {
+			resolve_stmt_block(stmt->if_stmt.
+					else_block, FALSE);
+		}
+	}
+
+}
+
+#define LOOP(loop, b) \
+	cond = resolve_cond_expr(stmt->loop##_stmt.cond); \
+	resolve_stmt_block(stmt->loop##_stmt.block, FALSE); \
+	while (b) { \
+		resolve_stmt_block(stmt->loop##_stmt.block, TRUE); \
+		cond = resolve_cond_expr(stmt->loop##_stmt.cond); \
+	}
+#define DO_LOOP(loop, b) \
+	cond = resolve_cond_expr(stmt->loop##_stmt.cond); \
+	resolve_stmt_block(stmt->loop##_stmt.block, FALSE); \
+	do { \
+		resolve_stmt_block(stmt->loop##_stmt.block, TRUE); \
+		cond = resolve_cond_expr(stmt->loop##_stmt.cond); \
+	} while (b);
+
+void resolve_stmt(Stmt *stmt, unsigned eval_stmt)
+{
+	Operand cond = (Operand){0};
 	switch (stmt->kind) {
 		case STMT_BLOCK:
-			return resolve_stmt_block(stmt->block, ret_type);
-#if 0
-		case STMT_IF: {
-				      Sym *scope = sym_enter();
-				      if (stmt->if_stmt.init) {
-					      resolve_stmt_init(stmt->if_stmt.init);
-				      }
-				      if (stmt->if_stmt.cond) {
-					      resolve_cond_expr(stmt->if_stmt.cond);
-				      } else if (!is_cond_operand(resolve_name_operand(stmt->pos, stmt->if_stmt.init->init.name))) {
-					      fatal_error(stmt->pos, "Conditional expression must have scalar type");
-				      }
-				      bool returns = resolve_stmt_block(stmt->if_stmt.then_block, ret_type, ctx);
-				      for (size_t i = 0; i < stmt->if_stmt.num_elseifs; i++) {
-					      ElseIf elseif = stmt->if_stmt.elseifs[i];
-					      resolve_cond_expr(elseif.cond);
-					      returns = resolve_stmt_block(elseif.block, ret_type, ctx) && returns;
-				      }
-				      if (stmt->if_stmt.else_block.stmts) {
-					      returns = resolve_stmt_block(stmt->if_stmt.else_block, ret_type, ctx) && returns;
-				      } else {
-					      returns = false;
-				      }
-				      sym_leave(scope);
-				      return returns;
-			      }
+			resolve_stmt_block(stmt->block, eval_stmt);
+			break;
+		case STMT_IF:
+			resolve_stmt_if(stmt);
+			break;
 		case STMT_WHILE:
+		case STMT_DO_WHILE_LOOP:
+			LOOP(while, cond.val.b);
+			break;
 		case STMT_DO_WHILE:
-			      resolve_cond_expr(stmt->while_stmt.cond);
-			      ctx.is_break_legal = true;
-			      ctx.is_continue_legal = true;
-			      resolve_stmt_block(stmt->while_stmt.block, ret_type, ctx);
-			      return false;
-		case STMT_FOR: {
-				       Sym *scope = sym_enter();
-				       if (stmt->for_stmt.init) {
-					       resolve_stmt(stmt->for_stmt.init, ret_type, ctx);
-				       }
-				       if (stmt->for_stmt.cond) {
-					       resolve_cond_expr(stmt->for_stmt.cond);
-				       }
-				       if (stmt->for_stmt.next) {
-					       resolve_stmt(stmt->for_stmt.next, ret_type, ctx);
-				       }
-				       ctx.is_break_legal = true;
-				       ctx.is_continue_legal = true;
-				       resolve_stmt_block(stmt->for_stmt.block, ret_type, ctx);
-				       sym_leave(scope);
-				       return false;
-			       }
+			DO_LOOP(while, cond.val.b);
+			break;
+		case STMT_DO_UNTIL:
+			DO_LOOP(until, !cond.val.b);
+			break;
+		case STMT_DO_UNTIL_LOOP:
+			LOOP(until, !cond.val.b);
+			break;
+		case STMT_FOR:
+			resolve_stmt_for(stmt, eval_stmt);
+			break;
+
+#if 0
 		case STMT_SELECT_CASE: {
 					       Operand operand = resolve_expr_rvalue(stmt->switch_stmt.expr);
 					       if (!is_integer_type(operand.type)) {
@@ -869,28 +942,32 @@ unsigned resolve_stmt(Stmt *stmt, Type *ret_type)
 								       warning(last_stmt->pos, "Case blocks already end with an implicit break");
 							       }
 						       }
-						       returns = resolve_stmt_block(switch_case.block, ret_type, ctx) && returns;
+						       returns = resolve_stmt_block(switch_case.block, eval_stmt, ctx) && returns;
 					       }
 					       return returns && has_default;
 				       }
 #endif
 		case STMT_ASSIGN:
-				       resolve_stmt_assign(stmt);
-				       return 0;
+				       resolve_stmt_assign(stmt, eval_stmt);
+				       break;
 		case STMT_DIM:
-				       resolve_stmt_dim(stmt);
-				       return 0;
+				       resolve_stmt_dim(stmt, eval_stmt);
+				       break;
 		case STMT_EXPR:
 				       resolve_expr(stmt->expr);
-				       return 0;
+				       break;
 		default:
 				       assert(0);
+				       break;
 	}
 }
+
+#undef LOOP
+#undef DO_LOOP
 
 void resolve_stmts(Stmt **stmts)
 {
 	for (size_t i = 0; i < buf_len(stmts); i++) {
-		resolve_stmt(stmts[i], 0);
+		resolve_stmt(stmts[i], 1);
 	}
 }

@@ -244,6 +244,7 @@ Stmt *parse_stmt_while(SrcPos pos)
 	Expr *cond = parse_expr();
 	Stmt *stmt = new_stmt_while(pos, cond, parse_stmt_block());
 	expect_keyword(wend_keyword);
+	assert(STMT_WHILE == stmt->kind);
 	return stmt;
 }
 
@@ -256,6 +257,7 @@ Stmt *parse_stmt_do_while_loop(SrcPos pos)
 		return 0;
 	}
 	Stmt *stmt = new_stmt_do_while_loop(pos, cond, block);
+	assert(STMT_DO_WHILE_LOOP == stmt->kind);
 	return stmt;
 }
 
@@ -268,6 +270,7 @@ Stmt *parse_stmt_do_until_loop(SrcPos pos)
 		return 0;
 	}
 	Stmt *stmt = new_stmt_do_until_loop(pos, cond, block);
+	assert(STMT_DO_UNTIL_LOOP == stmt->kind);
 	return stmt;
 }
 
@@ -277,15 +280,19 @@ Stmt *parse_stmt_do(SrcPos pos)
 	StmtBlock block = (StmtBlock){0};
 	if (match_keyword(until_keyword)) {
 		stmt = parse_stmt_do_until_loop(pos);
+		assert(STMT_DO_UNTIL_LOOP == stmt->kind);
 	} else if (match_keyword(while_keyword)) {
 		stmt = parse_stmt_do_while_loop(pos);
+		assert(STMT_DO_WHILE_LOOP == stmt->kind);
 	} else {
 		block = parse_stmt_block();
 		expect_keyword(loop_keyword);
 		if (match_keyword(while_keyword)) {
 			stmt = new_stmt_do_while(pos, parse_expr(), block);
+			assert(STMT_DO_WHILE == stmt->kind);
 		} else if(match_keyword(until_keyword)) {
 			stmt = new_stmt_do_until(pos, parse_expr(), block);
+			assert(STMT_DO_UNTIL == stmt->kind);
 		} else {
 			fatal_error_here("Expected 'loop' then 'while'"
 					"or 'until after 'do' block");
@@ -345,40 +352,12 @@ Stmt *parse_simple_stmt(void)
 	return stmt;
 }
 
-#define SET_LIT(i, lit) \
-	if (EXPR_UNARY == i->kind) { \
-		if (TOKEN_SUB == i->unary.op) \
-		lit = -i->unary.expr->int_lit.val; \
-		else \
-		lit = i->unary.expr->int_lit.val; \
-	} else { \
-		if (EXPR_INT == i->kind) { \
-			lit = i->int_lit.val; \
-		} else { \
-			assert(EXPR_FLOAT == i->kind); \
-			lit = i->float_lit.val; \
-		} \
-	}
-
-Expr *parse_expr_for_cond(SrcPos pos, Stmt *init, Expr *end)
-{
-	Expr *it = init->assign.left;
-	Expr *start = init->assign.right;
-	Expr *cond = 0;
-	long long lit_start = 0;
-	long long lit_end = 0;
-
-	SET_LIT(start, lit_start);
-	SET_LIT(end, lit_end);
-
-	if (lit_start <= lit_end)
-		cond = new_expr_binary(pos, TOKEN_GTEQ, it, end);
-	else
-		cond = new_expr_binary(pos, TOKEN_LTEQ, it, end);
-	return cond;
-}
-#undef SET_LIT
-
+#if 0
+	in a for loop the iterator has to be declared beforehand
+	if the start value is bigger than the end value (without the use of
+		step -1 for example) then the condition is false and the for
+		loop exits
+#endif
 Stmt *parse_stmt_for(SrcPos pos) {
 	Stmt *stmt = 0;
 	Stmt *init = 0;
@@ -391,15 +370,11 @@ Stmt *parse_stmt_for(SrcPos pos) {
 	expect_keyword(to_keyword);
 	it = init->assign.left;
 	assert(EXPR_NAME == it->kind);
-	cond = parse_expr_for_cond(pos, init, parse_expr_unary());
-	if (TOKEN_LTEQ == cond->binary.op) {
-		expect_keyword(step_keyword);
+	cond = new_expr_binary(pos, TOKEN_LTEQ, it, parse_expr_unary());
+	if (match_keyword(step_keyword)) {
 		inc = parse_expr_unary();
 	} else {
-		if (match_keyword(step_keyword))
-			inc = parse_expr_unary();
-		else
-			inc = new_expr_int(pos, 1);
+		inc = new_expr_int(pos, 1);
 	}
 	next = new_stmt_assign(pos, TOKEN_ASSIGN, it,
 			new_expr_binary(pos, TOKEN_ADD, it, inc));

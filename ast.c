@@ -231,6 +231,7 @@ Stmt *new_stmt_for(SrcPos pos, Stmt *dim, Expr *cond, Stmt *next,
 	s->for_stmt.dim = dim;
 	s->for_stmt.cond = cond;
 	s->for_stmt.next = next;
+	s->for_stmt.step = next->assign.right->binary.right;
 	s->for_stmt.block = block;
 	return s;
 }

@@ -333,6 +333,42 @@ void test_resolve(void)
 		"z = false\n"
 		"a = z * a\n"
 		"str2 = \"hello\" + \" \" & \"Joseph\" + \" \" & 27\n"
+		"if false then\n"
+		"	x = 0\n"
+		"elseif 5 > 4 or z and zz then\n"
+		"	x = 1\n"
+		"	x = 3\n"
+		"else\n"
+		"	x = 2\n"
+		"	x = 5\n"
+		"end if\n"
+#if 1
+		"while x\n"
+			"x = x - 1\n"
+			"y = y - 1\n"
+		"wend\n"
+		"do while x < 5\n"
+			"x = x + 1\n"
+			"y = y + 1\n"
+		"loop\n"
+		"do until x = 0\n"
+			"x = x - 1\n"
+			"y = y + 1\n"
+		"loop\n"
+		"do\n"
+			"x = x + 1\n"
+			"y = y + 1\n"
+		"loop while x < 5\n"
+		"do\n"
+			"x = x - 1\n"
+			"y = y + 1\n"
+		"loop until x = 1\n"
+		"y = 8\n"
+		"dim i as integer\n"
+		"for x = 10 to y step -2\n"
+			"i = i + 1\n"
+		"next\n"
+#endif
 		;
 	init_stream(0, code);
 	init_builtin_types();
@@ -346,7 +382,9 @@ void test_resolve(void)
 		printf("\n");
 #endif
 	}
+#if PRINT_TEST_RESOLVE
 	print_syms();
+#endif
 }
 
 int main(void)

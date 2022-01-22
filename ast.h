@@ -178,7 +178,6 @@ struct Stmt {
 		Expr *expr;
 		Decl *decl;
 		struct {
-			Stmt *dim;
 			Expr *cond;
 			StmtBlock then_block;
 			ElseIf *elseifs;
@@ -197,6 +196,7 @@ struct Stmt {
 			Stmt *dim;
 			Expr *cond;
 			Stmt *next;
+			Expr *step;
 			StmtBlock block;
 		} for_stmt;
 		struct {

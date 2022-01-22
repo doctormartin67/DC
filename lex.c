@@ -406,7 +406,7 @@ unsigned expect_keyword(const char *name)
 		next_token();
 		return 1;
 	} else {
-		fatal_error_here("Expected keyword %s, got %s",
+		fatal_error_here("Expected keyword '%s', got '%s'",
 				name, token.name);
 		return 0;
 	}
