@@ -150,9 +150,9 @@ void print_select_case(const SelectCase sc)
 		printf("(Case ");
 	for (size_t i = 0; i < sc.num_patterns; i++) {
 		print_select_case_pattern(sc.patterns[i]);
-		if (i != sc.num_patterns - 1)
+		if (i != sc.num_patterns - 1) {
 			printf(", ");
-		break;
+		}
 	}
 	indent++;
 	print_newline();

@@ -3,6 +3,7 @@
 static SrcPos pos_builtin = {.name = "<builtin>"};
 static Token token;
 static const char *stream;
+static const char *line_start;
 
 #define KEYWORD(name) name##_keyword = str_intern(#name); \
 				       buf_push(keywords, name##_keyword)
@@ -275,8 +276,8 @@ repeat:
 		case ' ': case '\n': case '\r': case '\t': case '\v':
 			while (isspace(*stream)) {
 				if (*stream++ == '\n') {
-					TODO(line_start = stream);
-					TODO(token.pos.line++);
+					line_start = stream;
+					token.pos.line++;
 				}
 			}
 			goto repeat;
@@ -364,9 +365,9 @@ repeat:
 void init_stream(const char *name, const char *buf)
 {
 	stream = buf;
-	TODO(line_start = stream);
-	TODO(token.pos.name = name ? name : "<string>");
-	TODO(token.pos.line = 1);
+	line_start = stream;
+	token.pos.name = name ? name : "<editor>";
+	token.pos.line = 1;
 	next_token();
 }
 
@@ -406,8 +407,13 @@ unsigned expect_keyword(const char *name)
 		next_token();
 		return 1;
 	} else {
-		fatal_error_here("Expected keyword '%s', got '%s'",
-				name, token.name);
+		if (TOKEN_EOF == token.kind) {
+			fatal_error_here("Expected keyword '%s', but reached "
+					"end of file", name);
+		} else {
+			fatal_error_here("Expected keyword '%s', got '%s'",
+					name, token.name);
+		}
 		return 0;
 	}
 }

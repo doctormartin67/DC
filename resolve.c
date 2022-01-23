@@ -49,7 +49,7 @@ void print_sym_dim(Sym *sym)
 
 void print_syms(void)
 {
-	printf("all symbols:\n");
+	printf("\nall symbols:\n");
 	printf("-------\n");
 	for (Sym *sym = syms; sym < syms_end; sym++) {
 		switch (sym->kind) {
@@ -534,7 +534,7 @@ Operand concat_operands(Operand left, Operand right)
 #define FATAL_ERROR(O, T) fatal_error(pos, O" operand of '%s' must have " \
 		T" type", op_name);
 Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
-		Operand left, Operand right, Expr *left_expr, Expr *right_expr)
+		Operand left, Operand right)
 {
 	switch (op) {
 		case TOKEN_ADD:
@@ -639,8 +639,7 @@ Operand resolve_expr_binary(Expr *expr)
 	Operand right = resolve_expr(expr->binary.right);
 	TokenKind op = expr->binary.op;
 	const char *op_name = token_kind_name(op);
-	return resolve_expr_binary_op(op, op_name, expr->pos, left, right,
-			expr->binary.left, expr->binary.right);
+	return resolve_expr_binary_op(op, op_name, expr->pos, left, right);
 }
 
 Operand resolve_expr_boolean(Expr *expr)
@@ -823,12 +822,9 @@ void resolve_stmt_if(Stmt *stmt)
 {
 	Operand cond = (Operand){0};
 	boolean b = FALSE;
-	if (stmt->if_stmt.cond) {
-		cond = resolve_cond_expr(stmt->if_stmt.cond);
-		b = cond.val.b;
-	} else {
-		assert(0);
-	}
+	assert(stmt->if_stmt.cond);
+	cond = resolve_cond_expr(stmt->if_stmt.cond);
+	b = cond.val.b;
 	resolve_stmt_block(stmt->if_stmt.then_block, b);
 	for (size_t i = 0; i < stmt->if_stmt.num_elseifs; i++){
 		ElseIf elseif = stmt->if_stmt.elseifs[i];
@@ -850,6 +846,108 @@ void resolve_stmt_if(Stmt *stmt)
 		}
 	}
 
+}
+
+#define PATTERN(i, op, expr) \
+	TokenKind op##i = op; \
+	const char *op_name##i = token_kind_name(op##i); \
+	Operand operand##i = resolve_expr(expr); \
+	Operand result##i = (Operand){0}; \
+	result##i = resolve_expr_binary_op(op##i, op_name##i, start->pos, \
+			operand, operand##i); \
+			assert(TYPE_BOOLEAN == result##i.type->kind);
+
+
+boolean resolve_to_pattern(Operand operand, SelectCasePattern pattern)
+{
+	assert(PATTERN_TO == pattern.kind);
+	Expr *start = pattern.to_pattern.start;
+	Expr *end = pattern.to_pattern.end;
+	PATTERN(1, TOKEN_GTEQ, start);
+	PATTERN(2, TOKEN_LTEQ, end);
+
+	return result1.val.b && result2.val.b;
+}
+
+#undef PATTERN
+
+#define PATTERN(e, o) \
+	expr = e; \
+	pat = resolve_expr(expr); \
+	op = o; \
+	op_name = token_kind_name(op); \
+	result = resolve_expr_binary_op(op, op_name, expr->pos, operand, pat); \
+	assert(TYPE_BOOLEAN == result.type->kind); \
+	b = result.val.b;
+
+boolean resolve_select_case_pattern(Operand operand,
+		SelectCasePattern pattern)
+{
+	Expr *expr = 0;
+	Operand pat = (Operand){0};
+	Operand result = (Operand){0};
+	TokenKind op = TOKEN_EOF;
+	boolean b = FALSE;
+	const char *op_name = 0;
+	switch (pattern.kind) {
+		case PATTERN_LIT:
+			PATTERN(pattern.expr, TOKEN_ASSIGN);
+			break;
+		case PATTERN_TO:
+			b = resolve_to_pattern(operand, pattern);
+			break;
+		case PATTERN_IS:
+			PATTERN(pattern.is_pattern.expr,pattern.is_pattern.op);
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	if (PATTERN_TO != pattern.kind) {
+		assert(expr);
+	}
+	return b;
+}
+
+#undef PATTERN
+
+boolean resolve_select_case(Operand operand, SelectCase sc)
+{
+	resolve_stmt_block(sc.block, FALSE);
+	boolean b = FALSE;
+	if (sc.is_default) {
+		b = TRUE;
+	} else {
+		for (size_t i = 0; i < sc.num_patterns; i++) {
+			b = b || resolve_select_case_pattern(operand,
+					sc.patterns[i]);	
+		}
+	}
+	return b;
+}
+
+void resolve_stmt_select_case(Stmt *stmt, unsigned eval_stmt)
+{
+	assert(STMT_SELECT_CASE == stmt->kind);
+	assert(stmt->select_case_stmt.expr);
+	Operand operand = resolve_expr(stmt->select_case_stmt.expr);	
+	boolean b = FALSE;
+	size_t sc = 0;
+	for (size_t i = 0; i < stmt->select_case_stmt.num_cases; i++) {
+		if (!b) {
+			b = resolve_select_case(operand,
+					stmt->select_case_stmt.cases[i]);
+			sc = i;
+		} else {
+			resolve_select_case(operand,
+					stmt->select_case_stmt.cases[i]);
+		}
+	}
+
+	if (b) {
+		resolve_stmt_block(stmt->select_case_stmt.cases[sc].block,
+				eval_stmt);
+	}
 }
 
 #define LOOP(loop, b) \
@@ -893,72 +991,21 @@ void resolve_stmt(Stmt *stmt, unsigned eval_stmt)
 		case STMT_FOR:
 			resolve_stmt_for(stmt, eval_stmt);
 			break;
-
-#if 0
-		case STMT_SELECT_CASE: {
-					       Operand operand = resolve_expr_rvalue(stmt->switch_stmt.expr);
-					       if (!is_integer_type(operand.type)) {
-						       fatal_error(stmt->pos, "Switch expression must have integer type");
-					       }
-					       ctx.is_break_legal = true;
-					       bool returns = true;
-					       bool has_default = false;
-					       for (size_t i = 0; i < stmt->switch_stmt.num_cases; i++) {
-						       SwitchCase switch_case = stmt->switch_stmt.cases[i];
-						       for (size_t j = 0; j < switch_case.num_patterns; j++) {
-							       SwitchCasePattern pattern = switch_case.patterns[j];
-							       Expr *start_expr = pattern.start;
-							       Operand start_operand = resolve_const_expr(start_expr);
-							       if (!convert_operand(&start_operand, operand.type)) {
-								       fatal_error(start_expr->pos, "Invalid type in switch case expression. Expected %s, got %s", get_type_name(operand.type), get_type_name(start_operand.type));
-							       }
-							       Expr *end_expr = pattern.end;
-							       if (end_expr) {
-								       Operand end_operand = resolve_const_expr(end_expr);
-								       if (!convert_operand(&end_operand, operand.type)) {
-									       fatal_error(end_expr->pos, "Invalid type in switch case expression. Expected %s, got %s", get_type_name(operand.type), get_type_name(end_operand.type));
-								       }
-								       convert_operand(&start_operand, type_llong);
-								       set_resolved_val(start_expr, start_operand.val);
-								       convert_operand(&end_operand, type_llong);
-								       set_resolved_val(end_expr, end_operand.val);
-								       if (end_operand.val.ll < start_operand.val.ll) {
-									       fatal_error(start_expr->pos, "Case range end value cannot be less thn start value");
-								       }
-								       if (end_operand.val.ll - start_operand.val.ll >= 256) {
-									       fatal_error(start_expr->pos, "Case range cannot span more than 256 values");
-								       }
-							       }
-						       }
-						       if (switch_case.is_default) {
-							       if (has_default) {
-								       fatal_error(stmt->pos, "Switch statement has multiple default clauses");
-							       }
-							       has_default = true;
-						       }
-						       if (switch_case.block.num_stmts > 1) {
-							       Stmt *last_stmt = switch_case.block.stmts[switch_case.block.num_stmts - 1];
-							       if (last_stmt->kind == STMT_BREAK) {
-								       warning(last_stmt->pos, "Case blocks already end with an implicit break");
-							       }
-						       }
-						       returns = resolve_stmt_block(switch_case.block, eval_stmt, ctx) && returns;
-					       }
-					       return returns && has_default;
-				       }
-#endif
+		case STMT_SELECT_CASE:
+			resolve_stmt_select_case(stmt, eval_stmt);
+			break;
 		case STMT_ASSIGN:
-				       resolve_stmt_assign(stmt, eval_stmt);
-				       break;
+			resolve_stmt_assign(stmt, eval_stmt);
+			break;
 		case STMT_DIM:
-				       resolve_stmt_dim(stmt, eval_stmt);
-				       break;
+			resolve_stmt_dim(stmt, eval_stmt);
+			break;
 		case STMT_EXPR:
-				       resolve_expr(stmt->expr);
-				       break;
+			resolve_expr(stmt->expr);
+			break;
 		default:
-				       assert(0);
-				       break;
+			assert(0);
+			break;
 	}
 }
 
