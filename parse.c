@@ -41,10 +41,10 @@ Expr *parse_expr_operand(void)
 		next_token();
 		return new_expr_int(pos, val);
 	} else if (match_keyword(true_keyword)) {
-		boolean val = TRUE;
+		bool val = true;
 		return new_expr_boolean(pos, val);
 	} else if (match_keyword(false_keyword)) {
-		boolean val = FALSE;
+		bool val = false;
 		return new_expr_boolean(pos, val);
 	} else if (is_token(TOKEN_FLOAT)) {
 		const char *start = token.start;

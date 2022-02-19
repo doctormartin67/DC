@@ -309,18 +309,24 @@ void test_resolve(void)
 {
 	const char *code = 
 		"dim str as string\n"
+		"dim str2 as string\n"
+		"dim i as integer\n"
 		"dim x as double\n"
-		"str = \"hello\"\n"
-		"select case str\n"
-			"case \"hell\"\n"
-				"x = 1\n"	
-			"case \"hello\"\n"
-				"x = 2\n"	
-			"case else\n"
-				"x = 3\n"
-		"end select"
-
+		"dim bool as boolean\n"
+		"bool = true or false or 2.2 and -2.3\n"
+		"str = \"hello\""
+		"if bool then\n"
+			"x = -1.1 - 3/2\n"
+		"elseif true then\n"
+			"x = 1.2\n"
+		"end if\n"
+#if 0
+		"if 5 = str*2 then\n"
+			"x = 1^2\n"
+		"end if"
+#endif
 		;
+	//TODO: resolve_binary_string_op!!!
 	init_stream(0, code);
 	init_builtin_types();
 	Stmt **stmts = 0;

@@ -86,7 +86,7 @@ Expr *new_expr_paren(SrcPos pos, Expr *expr)
 	return e;
 }
 
-Expr *new_expr_boolean(SrcPos pos, boolean val)
+Expr *new_expr_boolean(SrcPos pos, bool val)
 {
 	Expr *e = new_expr(EXPR_BOOLEAN, pos);
 	e->boolean_lit.val = val;

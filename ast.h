@@ -80,7 +80,7 @@ struct Expr {
 			Expr *expr;
 		} paren;
 		struct {
-			boolean val;
+			bool val;
 		} boolean_lit;
 		struct {
 			unsigned long long val;
