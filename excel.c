@@ -9,7 +9,22 @@
 #include "common.h"
 #include "libraryheader.h"
 
+typedef enum TypeKind {
+	TYPE_DOUBLE,
+	TYPE_STRING,
+} TypeKind;
+
+typedef struct Content {
+	TypeKind kind;
+	union {
+		long long i;
+		double d;
+		const char *s;	
+	} val;
+} Content;
+
 typedef struct Sheet {
+	const char *excel_name;
 	const char *name;
 	const char *sheetId;
 	Map *cells;
@@ -217,13 +232,26 @@ void print_xmlDoc(xmlDocPtr doc)
 	indent = 0;
 }
 
+void print_content(Content content)
+{
+	switch (content.kind) {
+		case TYPE_DOUBLE:
+			printf("%f", content.val.d);
+			break;
+		default:
+			assert(TYPE_STRING == content.kind);
+			printf("%s", content.val.s);
+			break;
+	}
+}
+
 const char *str_cast(const xmlChar *xml_str)
 {
 	const xmlChar *orig = xml_str;
 	const char *str = (const char *)orig;
 	while (*xml_str) {
 		if (*xml_str++ > 127) {
-			die("Unable to cast '%s' to char *", orig);
+			printf("Warning cast '%s' to char *", orig);
 		}
 	}
 
@@ -236,16 +264,17 @@ const xmlChar *xml_cast(const char *str)
 	const xmlChar *xml_str = (const xmlChar *)orig;
 	while (*str) {
 		if (*str++ < 0) {
-			die("Unable to cast '%s' to xmlChar *", orig);
+			printf("Warning cast '%s' to xmlChar *", orig);
 		}
 	}
 
 	return xml_str;
 }
 
-Sheet *new_sheet(const char *name, const char *sheetId)
+Sheet *new_sheet(const char *file_name, const char *name, const char *sheetId)
 {
 	Sheet *s = jalloc(1, sizeof(*s));
+	s->excel_name = file_name;
 	s->name = name;
 	s->sheetId = sheetId;
 	s->cells = jalloc(1, sizeof(*s->cells));
@@ -276,7 +305,24 @@ const char *parse_attr(xmlAttrPtr attr, const char *attr_name)
 	return content;
 }
 
-xmlNodePtr find_node(xmlNodePtr node, const char *name)
+enum fatality {
+	BENIGN,
+	FATAL,
+};
+
+xmlAttrPtr find_attr(xmlAttrPtr attr, const char *name)
+{
+	int len = strlen(name);
+	while (attr &&
+			(xmlStrlen(attr->name) != len
+			 || xmlStrncmp(attr->name, xml_cast(name), len)))
+	{
+		attr = attr->next;
+	}
+	return attr;
+}
+
+xmlNodePtr find_node(xmlNodePtr node, const char *name, enum fatality fat)
 {
 	int len = strlen(name);
 	while (node &&
@@ -285,8 +331,152 @@ xmlNodePtr find_node(xmlNodePtr node, const char *name)
 	{
 		node = node->next;
 	}
+	if (fat && !node) {
+		die("FATAL: unable to find node '%s'", name);
+	}
 	return node;
 }
+
+#define PARSE(n, n_name) \
+	assert(sheet); \
+	int len = strlen(n_name); \
+	for (xmlNodePtr n = node; n; n = n->next) { \
+		assert(!xmlStrncmp(n->name, xml_cast(n_name), len)); \
+		parse_##n(sheet, n); \
+	}
+
+char *parse_shared_strings_concat(xmlNodePtr it)
+{
+	xmlNodePtr node = find_node(it->children, "r", FATAL);
+	char *buf = 0;
+	for (xmlNodePtr it = node; it; it = it->next) {
+		xmlNodePtr tmp = find_node(it->children, "t", FATAL);
+		assert(tmp->children);
+		assert(tmp->children->name);
+		assert(!xmlStrcmp(tmp->children->name, xml_cast("text")));
+		assert(tmp->children->content);
+		buf_printf(buf, "%s", str_cast(tmp->children->content));
+	}
+	assert(buf);
+	return buf;
+}
+
+char *parse_shared_strings_value(xmlNodePtr it)
+{
+	char *buf = 0;
+	xmlNodePtr node = find_node(it->children, "t", BENIGN);
+	if (!node) {
+		buf = parse_shared_strings_concat(it);
+	} else {
+		node = find_node(node->children, "text", FATAL);
+		assert(node->content);
+		buf_printf(buf, "%s", str_cast(node->content));
+	}
+	assert(buf);
+	return buf;
+}
+
+char *parse_shared_strings(unsigned long index, Sheet *sheet)
+{
+	xmlDocPtr sharedStrings = open_xml_from_excel(
+			sheet->excel_name, "sharedStrings");
+	char *buf = 0;
+	unsigned long i = 0;
+	for (xmlNodePtr it = sharedStrings->children->children; it;
+			it = it->next)
+	{
+		assert(!xmlStrcmp(it->name, xml_cast("si")));
+		if (i++ == index) {
+			buf = parse_shared_strings_value(it);
+			break;
+		}
+	}
+	assert(buf);
+	return buf;
+}
+
+Content parse_value(Sheet *sheet, xmlNodePtr node)
+{
+	assert(sheet);
+	assert(node);
+	xmlAttrPtr attr = find_attr(node->properties, "t");
+	if (!attr) {
+		assert(!find_node(node->children, "v", BENIGN));
+		return (Content){.kind = TYPE_STRING, .val.s = ""};
+	}
+
+	xmlNodePtr test = find_node(attr->children, "text", FATAL);
+	xmlNodePtr value = find_node(node->children, "v", FATAL);
+	assert(value->children);
+	value = find_node(value->children, "text", FATAL);
+	assert(value->content);
+
+	Content content = (Content){0};
+	const char *value_str = str_cast(value->content);
+	char *buf = 0;
+
+	if (!xmlStrcmp(test->content, xml_cast("s"))) {
+		content.kind = TYPE_STRING;
+		char *end = 0;
+		long index = strtol(value_str, &end, 0);
+		assert('\0' == *end);
+		assert(!(index < 0));
+		buf = parse_shared_strings(index, sheet);
+		assert(buf);
+		content.val.s = buf;
+	} else if (!xmlStrcmp(test->content, xml_cast("str"))
+			|| !xmlStrcmp(test->content, xml_cast("e"))) {
+		content.kind = TYPE_STRING;
+		buf_printf(buf, "%s", value_str);
+		assert(buf);
+		content.val.s = buf;
+	} else {
+		assert(!xmlStrcmp(test->content, xml_cast("n")));
+		content.kind = TYPE_DOUBLE;
+		char *end = 0;
+		content.val.d = strtod(value_str, &end);
+		assert('\0' == *end);
+	}
+	return content;
+}
+
+void parse_col(Sheet *sheet, xmlNodePtr node)
+{
+	assert(sheet);
+	assert(node);
+	xmlAttrPtr attr = find_attr(node->properties, "r");
+	assert(attr);
+	xmlNodePtr cell_name = find_node(attr->children, "text", FATAL);
+	const char *key = str_cast(cell_name->content);
+	Content content = parse_value(sheet, node);
+	printf("%s ", sheet->name);
+	printf("(%s, ", key);
+	print_content(content);
+	printf(")\n");
+}
+
+void parse_cols(Sheet *sheet, xmlNodePtr node)
+{
+	PARSE(col, "c");
+}
+
+void parse_row(Sheet *sheet, xmlNodePtr node)
+{
+	assert(sheet);
+	assert(node);
+	parse_cols(sheet, node->children);	
+}
+
+void parse_rows(Sheet *sheet, xmlNodePtr node)
+{
+	if (!node) {
+		printf("Warning: sheet '%s' is empty.\n", sheet->name);
+		return;
+	}
+	PARSE(row, "row");
+}
+
+#undef PARSE
 
 void parse_cells(const char *file_name, Sheet *sheet)
 {
@@ -295,12 +485,8 @@ void parse_cells(const char *file_name, Sheet *sheet)
 			"worksheets/sheet", sheet->sheetId);
 	xmlDocPtr xml_sheet = open_xml_from_excel(file_name, sheet_name);
 	xmlNodePtr node = xml_sheet->children->children;
-	node = find_node(node, "sheetData");
-	if (!node) {
-		die("FATAL: unable to find sheetData in sheet '%s'",
-				sheet->name);
-	}
-	print_xmlNode(node);
+	node = find_node(node, "sheetData", FATAL);
+	parse_rows(sheet, node->children);
 }
 
 Sheet *parse_sheet(const char *file_name, xmlNodePtr node)
@@ -309,7 +495,7 @@ Sheet *parse_sheet(const char *file_name, xmlNodePtr node)
 	const char *name = parse_attr(node->properties, "name");	
 	const char *sheetId = parse_attr(node->properties, "sheetId");
 
-	Sheet *sheet = new_sheet(name, sheetId);
+	Sheet *sheet = new_sheet(file_name, name, sheetId);
 	parse_cells(file_name, sheet);
 	return sheet;
 }
@@ -321,11 +507,7 @@ Sheet **parse_sheets(const char *file_name)
 	Sheet **sheets = 0;
 	xmlNodePtr node = workbook->children->children;
 	assert(node);
-	node = find_node(node, "sheets");
-	if (!node) {
-		die("FATAL: No sheets in workbook");
-	}
-
+	node = find_node(node, "sheets", FATAL);
 	for (xmlNodePtr it = node->children; it; it = it->next) {
 		buf_push(sheets, parse_sheet(file_name, it));
 	}
