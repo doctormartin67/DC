@@ -204,6 +204,20 @@ void map_put_from_uint64(Map *map, uint64_t key, void *val)
 	map_put_uint64_from_uint64(map, key, (uint64_t)(uintptr_t)val);
 }
 
+void *map_get_str(Map *map, const char *str)
+{
+	uint64_t hash = hash_bytes(str, strlen(str));
+	uint64_t key = hash ? hash : 1;
+	return (void *)(uintptr_t)map_get_uint64_from_uint64(map, key);
+}
+
+void map_put_str(Map *map, const char *str, void *val)
+{
+	uint64_t hash = hash_bytes(str, strlen(str));
+	uint64_t key = hash ? hash : 1;
+	map_put_uint64_from_uint64(map, key, (uint64_t)(uintptr_t)val);
+}
+
 static Arena intern_arena;
 static Map interns;
 static size_t intern_memory_usage;

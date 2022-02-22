@@ -81,3 +81,5 @@ void *arena_alloc(Arena *arena, size_t size);
 void arena_free(Arena *arena);
 const char *str_intern_range(const char *start, const char *end);
 const char *str_intern(const char *str);
+void *map_get_str(Map *map, const char *str);
+void map_put_str(Map *map, const char *str, void *val);

@@ -232,15 +232,19 @@ void print_xmlDoc(xmlDocPtr doc)
 	indent = 0;
 }
 
-void print_content(Content content)
+void print_content(Content *content)
 {
-	switch (content.kind) {
+	if (!content) {
+		printf("(Empty cell)\n");	
+		return;
+	}
+	switch (content->kind) {
 		case TYPE_DOUBLE:
-			printf("%f", content.val.d);
+			printf("%f\n", content->val.d);
 			break;
 		default:
-			assert(TYPE_STRING == content.kind);
-			printf("%s", content.val.s);
+			assert(TYPE_STRING == content->kind);
+			printf("%s\n", content->val.s);
 			break;
 	}
 }
@@ -251,7 +255,7 @@ const char *str_cast(const xmlChar *xml_str)
 	const char *str = (const char *)orig;
 	while (*xml_str) {
 		if (*xml_str++ > 127) {
-			printf("Warning cast '%s' to char *", orig);
+			printf("Warning cast '%s' to char *\n", orig);
 		}
 	}
 
@@ -264,7 +268,7 @@ const xmlChar *xml_cast(const char *str)
 	const xmlChar *xml_str = (const xmlChar *)orig;
 	while (*str) {
 		if (*str++ < 0) {
-			printf("Warning cast '%s' to xmlChar *", orig);
+			printf("Warning cast '%s' to xmlChar *\n", orig);
 		}
 	}
 
@@ -425,7 +429,10 @@ Content parse_value(Sheet *sheet, xmlNodePtr node)
 		assert(buf);
 		content.val.s = buf;
 	} else if (!xmlStrcmp(test->content, xml_cast("str"))
-			|| !xmlStrcmp(test->content, xml_cast("e"))) {
+			|| !xmlStrcmp(test->content, xml_cast("e"))
+			|| !xmlStrcmp(test->content, xml_cast("n"))) {
+		/* TODO: "n" should be treated as double (so removed from
+		   above */
 		content.kind = TYPE_STRING;
 		buf_printf(buf, "%s", value_str);
 		assert(buf);
@@ -448,11 +455,9 @@ void parse_col(Sheet *sheet, xmlNodePtr node)
 	assert(attr);
 	xmlNodePtr cell_name = find_node(attr->children, "text", FATAL);
 	const char *key = str_cast(cell_name->content);
-	Content content = parse_value(sheet, node);
-	printf("%s ", sheet->name);
-	printf("(%s, ", key);
-	print_content(content);
-	printf(")\n");
+	Content *content = jalloc(1, sizeof(content));
+	*content = parse_value(sheet, node);
+	map_put_str(sheet->cells, key, content);
 }
 
 void parse_cols(Sheet *sheet, xmlNodePtr node)
@@ -500,7 +505,7 @@ Sheet *parse_sheet(const char *file_name, xmlNodePtr node)
 	return sheet;
 }
 
-Sheet **parse_sheets(const char *file_name)
+Sheet **parse_sheets(const char *file_name, const char *sheet_name)
 {
 	xmlDocPtr workbook = open_xml_from_excel(file_name, "workbook");
 	assert(workbook);
@@ -508,19 +513,27 @@ Sheet **parse_sheets(const char *file_name)
 	xmlNodePtr node = workbook->children->children;
 	assert(node);
 	node = find_node(node, "sheets", FATAL);
+	const char *curr_sheet_name = 0;
 	for (xmlNodePtr it = node->children; it; it = it->next) {
-		buf_push(sheets, parse_sheet(file_name, it));
+		curr_sheet_name = parse_attr(it->properties, "name");
+		if (!sheet_name || !strcmp(sheet_name, curr_sheet_name)) {
+			buf_push(sheets, parse_sheet(file_name, it));
+		}
 	}
 	return sheets;
 }
 
-Excel *open_excel(const char *file_name)
+Excel *open_excel(const char *file_name, const char *sheet_name)
 {
 	assert(file_name);
 	extract_excel(file_name);
 	Excel *file = jalloc(1, sizeof(*file));
 	file->name = strdup(file_name);
-	file->sheets = parse_sheets(file->name);
+	file->sheets = parse_sheets(file->name, sheet_name);
+	if (!file->sheets) {
+		assert(sheet_name);
+		die("No sheet '%s' found in file '%s'", sheet_name, file_name);
+	}
 	return file;
 }
 
@@ -539,6 +552,33 @@ void print_excel(Excel *e)
 	}
 }
 
+Content *cell_content(Excel *excel, const char *sheet_name, const char *cell)
+{
+	if (!excel || !cell) {
+		die("excel file and cell must have a value");
+	}
+
+	if (!sheet_name) {
+		if (1 != buf_len(excel->sheets)) {
+			die("Multiple sheets in open excel file\n"
+					"Choose sheet in which the cell lies");
+		} else {
+			assert(excel->sheets[0]);
+			return map_get_str(excel->sheets[0]->cells, cell);
+		}
+	} else {
+		for (size_t i = 0; i < buf_len(excel->sheets); i++) {
+			if (!strcmp(sheet_name, excel->sheets[i]->name)) {
+				assert(excel->sheets[i]);
+				return map_get_str(excel->sheets[i]->cells,
+						cell);
+			}
+		}
+	}
+	die("No sheet '%s' found in file '%s'", sheet_name, excel->name);
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	if (2 != argc) {
@@ -547,7 +587,20 @@ int main(int argc, char *argv[])
 	}
 
 	const char *file_name = argv[1];
-	Excel *file = open_excel(file_name);
-
+	Excel *file = open_excel(file_name, 0);
+	print_excel(file);
+	const char *test_cells[] = {
+		"C11",		
+		"L13",		
+		"AA329",		
+		"D330",		
+		"LV316",
+		"A10000",	
+	};
+	for (size_t i = 0; i < sizeof(test_cells)/sizeof(test_cells[0]); i++)
+	{
+		Content *content = cell_content(file, "Calcul", test_cells[i]);
+		print_content(content);
+	}
 	return 0;
 }
