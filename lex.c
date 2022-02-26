@@ -1,4 +1,12 @@
+#include <stdio.h>
+#include <assert.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <limits.h> // defines ULLONG
+#include <math.h> // defines HUGE_VAL
+#include <ctype.h>
 #include "lex.h"
+#include "common.h"
 
 static SrcPos pos_builtin = {.name = "<builtin>"};
 static Token token;
@@ -15,7 +23,7 @@ void init_keywords(void)
 		return;
 	}
 	KEYWORD(dim);
-	char *arena_end = intern_arena.end;
+	const char *arena_end = intern_arena_end();
 	KEYWORD(as);
 	KEYWORD(if);
 	KEYWORD(then);
@@ -42,7 +50,7 @@ void init_keywords(void)
 	KEYWORD(select);
 	KEYWORD(case);
 	KEYWORD(is);
-	assert(intern_arena.end == arena_end);
+	assert(intern_arena_end() == arena_end);
 	first_keyword = dim_keyword;
 	last_keyword = is_keyword;
 
@@ -57,11 +65,6 @@ void init_keywords(void)
 unsigned is_keyword_name(const char *name)
 {
 	return first_keyword <= name && name <= last_keyword;
-}
-
-unsigned is_op_keyword_name(const char *name)
-{
-	return first_op_keyword <= name && name <= last_op_keyword;
 }
 
 static const char *const token_kind_names[] = {
@@ -135,11 +138,6 @@ void error(SrcPos pos, const char *fmt, ...)
 	va_end(args);
 }
 
-#define fatal_error(...) (error(__VA_ARGS__), exit(1))
-#define error_here(...) (error(token.pos, __VA_ARGS__))
-#define warning_here(...) (error(token.pos, __VA_ARGS__))
-#define fatal_error_here(...) (error_here(__VA_ARGS__), exit(1)) // should be abort()
-
 const char *token_info(void)
 {
 	if (token.kind == TOKEN_NAME || token.kind == TOKEN_KEYWORD) {
@@ -197,7 +195,7 @@ static void scan_int(void)
 	token.int_val = val;
 }
 
-void scan_float(void) {
+static void scan_float(void) {
 	const char *start = stream;
 	double val = 0.0;
 
@@ -213,7 +211,7 @@ void scan_float(void) {
 	token.float_val = val;
 }
 
-void scan_str(void) {
+static void scan_str(void) {
 	assert('"' == *stream);
 	stream++;
 	char *str = 0;
@@ -381,11 +379,6 @@ unsigned is_token_eof(void)
 	return token.kind == TOKEN_EOF;
 }
 
-unsigned is_token_name(const char *name)
-{
-	return token.kind == TOKEN_NAME && token.name == name;
-}
-
 unsigned is_a_keyword(const char *name)
 {
 	return is_token(TOKEN_KEYWORD) && token.name == name;
@@ -438,4 +431,44 @@ unsigned expect_token(TokenKind kind)
 				token_kind_name(kind), token_info());
 		return 0;
 	}
+}
+
+SrcPos token_pos(void)
+{
+	return token.pos;
+}
+
+const char *token_name(void)
+{
+	return token.name;
+}
+
+TokenKind token_kind(void)
+{
+	return token.kind;
+}
+
+unsigned long long token_int_val(void)
+{
+	return token.int_val;
+}
+
+const char *token_start(void)
+{
+	return token.start;
+}
+
+const char *token_end(void)
+{
+	return token.end;
+}
+
+double token_float_val(void)
+{
+	return token.float_val;
+}
+
+const char *token_str_val(void)
+{
+	return token.str_val;
 }

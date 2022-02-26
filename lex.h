@@ -1,3 +1,6 @@
+#ifndef LEX_H_
+#define LEX_H_
+
 const char *dim_keyword;
 const char *as_keyword;
 const char *if_keyword;
@@ -99,6 +102,35 @@ typedef struct Token {
 	};
 } Token;
 
+void init_keywords(void);
+unsigned is_keyword_name(const char *name);
 const char *token_kind_name(TokenKind kind);
 void warning(SrcPos pos, const char *fmt, ...);
 void error(SrcPos pos, const char *fmt, ...);
+void next_token(void);
+void init_stream(const char *name, const char *buf);
+unsigned is_token(TokenKind kind);
+unsigned is_token_eof(void);
+unsigned is_a_keyword(const char *name);
+unsigned match_keyword(const char *name);
+unsigned expect_keyword(const char *name);
+unsigned match_token(TokenKind kind);
+unsigned expect_token(TokenKind kind);
+SrcPos token_pos(void);
+const char *token_name(void);
+TokenKind token_kind(void);
+unsigned long long token_int_val(void);
+double token_float_val(void);
+const char *token_str_val(void);
+const char *token_start(void);
+const char *token_end(void);
+const char *token_info(void);
+
+void warning(SrcPos pos, const char *fmt, ...);
+void error(SrcPos pos, const char *fmt, ...);
+#define fatal_error(...) (error(__VA_ARGS__), exit(1))
+#define error_here(...) (error(token_pos(), __VA_ARGS__))
+#define warning_here(...) (error(token_pos(), __VA_ARGS__))
+#define fatal_error_here(...) (error_here(__VA_ARGS__), exit(1))
+
+#endif

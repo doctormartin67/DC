@@ -9,8 +9,8 @@
 #include <limits.h>
 #include <math.h> /*defines HUGE_VAL */
 
-#include "common.c"
-#include "lex.c"
+#include "common.h"
+#include "lex.h"
 #include "type.c"
 #include "ast.c"
 #include "print.c"
@@ -102,13 +102,13 @@ void test_keywords(void)
 }
 
 #define assert_token(x) assert(match_token(x))
-#define assert_token_name(x) assert(token.name == str_intern(x) \
+#define assert_token_name(x) assert(token_name() == str_intern(x) \
 		&& match_token(TOKEN_NAME))
-#define assert_token_int(x) assert(token.int_val == (x) \
+#define assert_token_int(x) assert(token_int_val() == (x) \
 		&& match_token(TOKEN_INT))
-#define assert_token_float(x) assert(token.float_val == (x) \
+#define assert_token_float(x) assert(token_float_val() == (x) \
 		&& match_token(TOKEN_FLOAT))
-#define assert_token_str(x) assert(strcmp(token.str_val, (x)) == 0 \
+#define assert_token_str(x) assert(strcmp(token_str_val(), (x)) == 0 \
 		&& match_token(TOKEN_STR))
 #define assert_token_eof() assert(is_token(0))
 

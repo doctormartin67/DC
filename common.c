@@ -85,19 +85,19 @@ void arena_free(Arena *arena)
 	buf_free(arena->blocks);
 }
 
-uint64_t hash_uint64(uint64_t x)
+static uint64_t hash_uint64(uint64_t x)
 {
 	x *= 0xff51afd7ed558ccd;
 	x ^= x >> 32;
 	return x;
 }
 
-uint64_t hash_ptr(const void *ptr)
+static uint64_t hash_ptr(const void *ptr)
 {
 	return hash_uint64((uintptr_t)ptr);
 }
 
-uint64_t hash_mix(uint64_t x, uint64_t y)
+static uint64_t hash_mix(uint64_t x, uint64_t y)
 {
 	x ^= y;
 	x *= 0xff51afd7ed558ccd;
@@ -105,7 +105,7 @@ uint64_t hash_mix(uint64_t x, uint64_t y)
 	return x;
 }
 
-uint64_t hash_bytes(const void *ptr, size_t len)
+static uint64_t hash_bytes(const void *ptr, size_t len)
 {
 	uint64_t x = 0xcbf29ce484222325;
 	const char *buf = (const char *)ptr;
@@ -149,7 +149,8 @@ static void map_grow(Map *map, size_t new_cap)
 	};
 	for (size_t i = 0; i < map->cap; i++) {
 		if (map->keys[i]) {
-			map_put_uint64_from_uint64(&new_map, map->keys[i], map->vals[i]);
+			map_put_uint64_from_uint64(&new_map, map->keys[i],
+					map->vals[i]);
 		}
 	}
 	free(map->keys);
@@ -184,22 +185,24 @@ static void map_put_uint64_from_uint64(Map *map, uint64_t key, uint64_t val)
 	}
 }
 
-static void *map_get(Map *map, const void *key)
+void *map_get(Map *map, const void *key)
 {
-	return (void *)(uintptr_t)map_get_uint64_from_uint64(map, (uint64_t)(uintptr_t)key);
+	return (void *)(uintptr_t)map_get_uint64_from_uint64(map,
+			(uint64_t)(uintptr_t)key);
 }
 
-static void map_put(Map *map, const void *key, void *val)
+void map_put(Map *map, const void *key, void *val)
 {
-	map_put_uint64_from_uint64(map, (uint64_t)(uintptr_t)key, (uint64_t)(uintptr_t)val);
+	map_put_uint64_from_uint64(map, (uint64_t)(uintptr_t)key,
+			(uint64_t)(uintptr_t)val);
 }
 
-void *map_get_from_uint64(Map *map, uint64_t key)
+static void *map_get_from_uint64(Map *map, uint64_t key)
 {
 	return (void *)(uintptr_t)map_get_uint64_from_uint64(map, key);
 }
 
-void map_put_from_uint64(Map *map, uint64_t key, void *val)
+static void map_put_from_uint64(Map *map, uint64_t key, void *val)
 {
 	map_put_uint64_from_uint64(map, key, (uint64_t)(uintptr_t)val);
 }
@@ -222,6 +225,11 @@ static Arena intern_arena;
 static Map interns;
 static size_t intern_memory_usage;
 
+const char *intern_arena_end(void)
+{
+	return intern_arena.end;
+}
+
 const char *str_intern_range(const char *start, const char *end)
 {
 	size_t len = end - start;
@@ -233,13 +241,15 @@ const char *str_intern_range(const char *start, const char *end)
 			return it->str;
 		}
 	}
-	Intern *new_intern = arena_alloc(&intern_arena, offsetof(Intern, str) + len + 1);
+	Intern *new_intern = arena_alloc(&intern_arena,
+			offsetof(Intern, str) + len + 1);
 	new_intern->len = len;
 	new_intern->next = intern;
 	memcpy(new_intern->str, start, len);
 	new_intern->str[len] = '\0';
 	map_put_from_uint64(&interns, key, new_intern);
-	intern_memory_usage += sizeof(Intern) + len + 1 + 16; /* 16 is estimate of hash table cost */
+	/* 16 is estimate of hash table cost */
+	intern_memory_usage += sizeof(Intern) + len + 1 + 16;
 	return new_intern->str;
 }
 

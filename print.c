@@ -75,12 +75,12 @@ void print_expr(const Expr *e)
 			printf(")");
 			break;
 		case EXPR_UNARY:
-			printf("(%s", token_kind_names[e->unary.op]);
+			printf("(%s", token_kind_name(e->unary.op));
 			print_expr(e->unary.expr);
 			printf(")");
 			break;
 		case EXPR_BINARY:
-			printf("(%s ", token_kind_names[e->binary.op]);
+			printf("(%s ", token_kind_name(e->binary.op));
 			print_expr(e->binary.left);
 			printf(" ");
 			print_expr(e->binary.right);
@@ -132,7 +132,7 @@ void print_select_case_pattern(const SelectCasePattern scp)
 			break;
 		case PATTERN_IS:
 			printf("Is ");
-			printf("%s ", token_kind_names[scp.is_pattern.op]);
+			printf("%s ", token_kind_name(scp.is_pattern.op));
 			print_expr(scp.is_pattern.expr);
 			break;
 		default:
@@ -275,7 +275,7 @@ void print_stmt(const Stmt *stmt)
 			printf("End Select)");
 			break;
 		case STMT_ASSIGN:
-			printf("(%s ", token_kind_names[s->assign.op]);
+			printf("(%s ", token_kind_name(s->assign.op));
 			print_expr(s->assign.left);
 			if (s->assign.right) {
 				printf(" ");

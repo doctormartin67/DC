@@ -1,3 +1,6 @@
+#ifndef COMMON_H_
+#define COMMON_H_
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -74,6 +77,7 @@ typedef union Val {
 	const char *s;
 } Val;
 
+void fatal(const char *fmt, ...);
 void *buf__grow(const void *buf, size_t new_len, size_t elem_size);
 char *buf__printf(char *buf, const char *fmt, ...);
 void arena_grow(Arena *arena, size_t min_size);
@@ -81,5 +85,10 @@ void *arena_alloc(Arena *arena, size_t size);
 void arena_free(Arena *arena);
 const char *str_intern_range(const char *start, const char *end);
 const char *str_intern(const char *str);
+void *map_get(Map *map, const void *key);
+void map_put(Map *map, const void *key, void *val);
 void *map_get_str(Map *map, const char *str);
 void map_put_str(Map *map, const char *str, void *val);
+const char *intern_arena_end(void);
+
+#endif

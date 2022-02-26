@@ -8,8 +8,8 @@ const char *parse_name(void);
 Typespec *parse_type_base(void)
 {
 	if (is_token(TOKEN_NAME)) {
-		SrcPos pos = token.pos;
-		const char *name = token.name;
+		SrcPos pos = token_pos();
+		const char *name = token_name();
 		next_token();
 		return new_typespec_name(pos, name);
 	} else if (match_token(TOKEN_LPAREN)) {
@@ -35,9 +35,9 @@ Expr *parse_expr_unary(void);
 
 Expr *parse_expr_operand(void)
 {
-	SrcPos pos = token.pos;
+	SrcPos pos = token_pos();
 	if (is_token(TOKEN_INT)) {
-		unsigned long long val = token.int_val;
+		unsigned long long val = token_int_val();
 		next_token();
 		return new_expr_int(pos, val);
 	} else if (match_keyword(true_keyword)) {
@@ -47,17 +47,17 @@ Expr *parse_expr_operand(void)
 		bool val = false;
 		return new_expr_boolean(pos, val);
 	} else if (is_token(TOKEN_FLOAT)) {
-		const char *start = token.start;
-		const char *end = token.end;
-		double val = token.float_val;
+		const char *start = token_start();
+		const char *end = token_end();
+		double val = token_float_val();
 		next_token();
 		return new_expr_float(pos, start, end, val);
 	} else if (is_token(TOKEN_STR)) {
-		const char *val = token.str_val;
+		const char *val = token_str_val();
 		next_token();
 		return new_expr_str(pos, val);
 	} else if (is_token(TOKEN_NAME)) {
-		const char *name = token.name;
+		const char *name = token_name();
 		next_token();
 		return new_expr_name(pos, name);
 	} else if (match_token(TOKEN_LPAREN)) {
@@ -74,7 +74,7 @@ Expr *parse_expr_base(void)
 {
 	Expr *expr = parse_expr_operand();
 	while (is_token(TOKEN_LPAREN)) {
-		SrcPos pos = token.pos;
+		SrcPos pos = token_pos();
 		expect_token(TOKEN_LPAREN);
 		Expr **args = 0;
 		if (!is_token(TOKEN_RPAREN)) {
@@ -97,8 +97,8 @@ unsigned is_unary_op(void)
 Expr *parse_expr_unary(void)
 {
 	if (is_unary_op()) {
-		SrcPos pos = token.pos;
-		TokenKind op = token.kind;
+		SrcPos pos = token_pos();
+		TokenKind op = token_kind();
 		next_token();
 		return new_expr_unary(pos, op, parse_expr_unary());
 	} else {
@@ -108,7 +108,7 @@ Expr *parse_expr_unary(void)
 
 unsigned is_mul_op(void)
 {
-	return (TOKEN_FIRST_MUL <= token.kind && token.kind <= TOKEN_LAST_MUL)
+	return (TOKEN_FIRST_MUL <= token_kind() && token_kind() <= TOKEN_LAST_MUL)
 		|| is_a_keyword(mod_keyword);
 }
 
@@ -116,8 +116,8 @@ Expr *parse_expr_mul(void)
 {
 	Expr *expr = parse_expr_unary();
 	while (is_mul_op()) {
-		SrcPos pos = token.pos;
-		TokenKind op = token.kind;
+		SrcPos pos = token_pos();
+		TokenKind op = token_kind();
 		if (TOKEN_KEYWORD == op && is_a_keyword(mod_keyword))
 			op = TOKEN_MOD;
 		next_token();
@@ -128,15 +128,16 @@ Expr *parse_expr_mul(void)
 
 unsigned is_add_op(void)
 {
-	return TOKEN_FIRST_ADD <= token.kind && token.kind <= TOKEN_LAST_ADD;
+	return TOKEN_FIRST_ADD <= token_kind()
+		&& token_kind() <= TOKEN_LAST_ADD;
 }
 
 Expr *parse_expr_add(void)
 {
 	Expr *expr = parse_expr_mul();
 	while (is_add_op()) {
-		SrcPos pos = token.pos;
-		TokenKind op = token.kind;
+		SrcPos pos = token_pos();
+		TokenKind op = token_kind();
 		next_token();
 		expr = new_expr_binary(pos, op, expr, parse_expr_mul());
 	}
@@ -145,16 +146,16 @@ Expr *parse_expr_add(void)
 
 unsigned is_cmp_op(void)
 {
-	return (TOKEN_FIRST_CMP <= token.kind && token.kind <= TOKEN_LAST_CMP)
-		|| TOKEN_ASSIGN == token.kind;
+	return (TOKEN_FIRST_CMP <= token_kind() && token_kind() <= TOKEN_LAST_CMP)
+		|| TOKEN_ASSIGN == token_kind();
 }
 
 Expr *parse_expr_cmp(void)
 {
 	Expr *expr = parse_expr_add();
 	while (is_cmp_op()) {
-		SrcPos pos = token.pos;
-		TokenKind op = token.kind;
+		SrcPos pos = token_pos();
+		TokenKind op = token_kind();
 		next_token();
 		expr = new_expr_binary(pos, op, expr, parse_expr_add());
 	}
@@ -165,7 +166,7 @@ Expr *parse_expr_and(void)
 {
 	Expr *expr = parse_expr_cmp();
 	while (match_keyword(and_keyword)) {
-		SrcPos pos = token.pos;
+		SrcPos pos = token_pos();
 		expr = new_expr_binary(pos, TOKEN_AND_AND, expr, parse_expr_cmp());
 	}
 	return expr;
@@ -175,7 +176,7 @@ Expr *parse_expr_xor(void)
 {
 	Expr *expr = parse_expr_and();
 	while (match_keyword(xor_keyword)) {
-		SrcPos pos = token.pos;
+		SrcPos pos = token_pos();
 		expr = new_expr_binary(pos, TOKEN_XOR_XOR, expr, parse_expr_and());
 	}
 	return expr;
@@ -185,7 +186,7 @@ Expr *parse_expr_or(void)
 {
 	Expr *expr = parse_expr_xor();
 	while (match_keyword(or_keyword)) {
-		SrcPos pos = token.pos;
+		SrcPos pos = token_pos();
 		expr = new_expr_binary(pos, TOKEN_OR_OR, expr, parse_expr_xor());
 	}
 	return expr;
@@ -209,7 +210,7 @@ unsigned is_end_of_block(void)
 
 StmtBlock parse_stmt_block(void)
 {
-	SrcPos pos = token.pos;
+	SrcPos pos = token_pos();
 	Stmt **stmts = 0;
 	while (!is_token_eof() && !is_end_of_block()) {
 		buf_push(stmts, parse_stmt());
@@ -304,8 +305,8 @@ Stmt *parse_stmt_do(SrcPos pos)
 
 unsigned is_assign_op(void)
 {
-	return TOKEN_FIRST_ASSIGN <= token.kind
-		&& token.kind <= TOKEN_LAST_ASSIGN;
+	return TOKEN_FIRST_ASSIGN <= token_kind()
+		&& token_kind() <= TOKEN_LAST_ASSIGN;
 }
 
 Stmt *parse_stmt_dim(void)
@@ -333,12 +334,12 @@ Stmt *parse_stmt_dim(void)
 
 Stmt *parse_simple_stmt(void)
 {
-	SrcPos pos = token.pos;
+	SrcPos pos = token_pos();
 	Stmt *stmt = 0;
 	Expr *expr = 0;
 	expr = parse_expr_unary();
 	if (is_assign_op()) {
-		TokenKind op = token.kind;
+		TokenKind op = token_kind();
 		assert(TOKEN_ASSIGN == op);
 		next_token();
 		stmt = new_stmt_assign(pos, op, expr, parse_expr());
@@ -381,11 +382,11 @@ Stmt *parse_stmt_for(SrcPos pos) {
 	stmt = new_stmt_for(pos, init, cond, next, parse_stmt_block());
 	expect_keyword(next_keyword);
 	if (is_token(TOKEN_NAME)) {
-		if (it->name == token.name) {
+		if (it->name == token_name()) {
 			next_token();
 		} else {
 			error_here("Expected %s after 'next', found %s",
-					it->name, token.name);
+					it->name, token_name());
 			next_token();
 		}
 	}
@@ -399,7 +400,7 @@ SelectCasePattern parse_select_case_pattern(void) {
 	if (match_keyword(is_keyword)) {
 		assert(is_cmp_op());	
 		scp.kind = PATTERN_IS;
-		scp.is_pattern.op = token.kind;
+		scp.is_pattern.op = token_kind();
 		next_token();
 		scp.is_pattern.expr = parse_expr();
 	} else {
@@ -444,7 +445,7 @@ SelectCase parse_stmt_select_case(void)
 			if (is_token(TOKEN_COLON)) next_token();
 		}
 	}
-	SrcPos pos = token.pos;
+	SrcPos pos = token_pos();
 	Stmt **stmts = 0;
 	while (!is_token_eof()
 			&& !is_a_keyword(case_keyword)
@@ -472,7 +473,7 @@ Stmt *parse_stmt_select(SrcPos pos)
 
 Stmt *parse_stmt(void)
 {
-	SrcPos pos = token.pos;
+	SrcPos pos = token_pos();
 	Stmt *stmt = 0;
 	if (match_keyword(if_keyword)) {
 		stmt = parse_stmt_if(pos);
@@ -503,7 +504,7 @@ Stmt **parse_stmts(void)
 
 const char *parse_name(void)
 {
-	const char *name = token.name;
+	const char *name = token_name();
 	expect_token(TOKEN_NAME);
 	return name;
 }
@@ -518,7 +519,7 @@ Decl *parse_decl_dim(SrcPos pos)
 
 Decl *parse_decl_opt(void)
 {
-	SrcPos pos = token.pos;
+	SrcPos pos = token_pos();
 	if (match_keyword(dim_keyword)) {
 		return parse_decl_dim(pos);
 	} else {
