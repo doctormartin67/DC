@@ -6,7 +6,6 @@
 
 typedef struct Expr Expr;
 typedef struct Stmt Stmt;
-typedef struct Decl Decl;
 typedef struct Typespec Typespec;
 
 typedef struct StmtBlock {
@@ -33,28 +32,6 @@ struct Typespec {
 		} func;
 	};
 };
-
-typedef enum DeclKind {
-	DECL_NONE,
-	DECL_DIM,
-} DeclKind;
-
-struct Decl {
-	DeclKind kind;
-	SrcPos pos;
-	const char *name;
-	union {
-		struct {
-			Typespec *type;
-			Expr *expr;
-		} dim;
-	};
-};
-
-typedef struct Decls {
-	Decl **decls;
-	size_t num_decls;
-} Decls;
 
 typedef enum ExprKind {
 	EXPR_NONE,
@@ -174,7 +151,6 @@ struct Stmt {
 	SrcPos pos;
 	union {
 		Expr *expr;
-		Decl *decl;
 		struct {
 			Expr *cond;
 			StmtBlock then_block;

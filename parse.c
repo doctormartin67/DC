@@ -1,7 +1,5 @@
 #include "ast.h"
 
-Decl *parse_decl_opt(void);
-Decl *parse_decl(void);
 Typespec *parse_type(void);
 Stmt *parse_stmt(void);
 Expr *parse_expr(void);
@@ -509,40 +507,4 @@ const char *parse_name(void)
 	const char *name = token_name();
 	expect_token(TOKEN_NAME);
 	return name;
-}
-
-Decl *parse_decl_dim(SrcPos pos)
-{
-	const char *name = parse_name();
-	expect_keyword(as_keyword);
-	Typespec *type = parse_type();
-	return new_decl_dim(pos, name, type, 0);
-}
-
-Decl *parse_decl_opt(void)
-{
-	SrcPos pos = token_pos();
-	if (match_keyword(dim_keyword)) {
-		return parse_decl_dim(pos);
-	} else {
-		return 0;
-	}
-}
-
-Decl *parse_decl(void)
-{
-	Decl *decl = parse_decl_opt();
-	if (!decl) {
-		fatal_error_here("Expected declaration keyword, got %s", token_info());
-	}
-	return decl;
-}
-
-Decls *parse_decls(void)
-{
-	Decl **decls = 0;
-	while (!is_token(TOKEN_EOF)) {
-		buf_push(decls, parse_decl());
-	}
-	return new_decls(decls, buf_len(decls));
 }

@@ -18,7 +18,6 @@ typedef enum SymKind {
 typedef struct Sym {
 	const char *name;
 	SymKind kind;
-	Decl *decl;
 	struct {
 		Type *type;
 		Val val;
@@ -75,30 +74,6 @@ void print_syms(void)
 		}
 	}
 	printf("-------\n");
-}
-
-Sym *sym_new(SymKind kind, const char *name, Decl *decl)
-{
-	Sym *sym = calloc(1, sizeof(*sym));
-	sym->kind = kind;
-	sym->name = name;
-	sym->decl = decl;
-	return sym;
-}
-
-Sym *sym_decl(Decl *decl)
-{
-	SymKind kind = SYM_NONE;
-	switch (decl->kind) {
-		case DECL_DIM:
-			kind = SYM_DIM;
-			break;
-		default:
-			assert(0);
-			break;
-	}
-	Sym *sym = sym_new(kind, decl->name, decl);
-	return sym;
 }
 
 Sym *sym_get(const char *name)

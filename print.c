@@ -1,7 +1,6 @@
 static int indent;
 void print_expr(const Expr *expr);
 void print_stmt(const Stmt *stmt);
-void print_decl(const Decl *decl);
 
 void print_typespec(const Typespec *type)
 {
@@ -166,9 +165,6 @@ void print_stmt(const Stmt *stmt)
 	assert(stmt);
 	const Stmt *s = stmt;
 	switch (s->kind) {
-		case STMT_DECL:
-			print_decl(s->decl);
-			break;
 		case STMT_BLOCK:
 			print_stmt_block(s->block);
 			break;
@@ -300,29 +296,6 @@ void print_stmt(const Stmt *stmt)
 			break;
 		case STMT_EXPR:
 			print_expr(s->expr);
-			break;
-		default:
-			assert(0);
-			break;
-	}
-}
-
-void print_decl(const Decl *decl)
-{
-	const Decl *d = decl;
-	switch (d->kind) {
-		case DECL_DIM:
-			printf("(Dim %s As ", d->name);
-			if (d->dim.type) {
-				print_typespec(d->dim.type);
-			} else {
-				printf("nil");
-			}
-			if (d->dim.expr) {
-				printf(" ");
-				print_expr(d->dim.expr);
-			}
-			printf(")");
 			break;
 		default:
 			assert(0);

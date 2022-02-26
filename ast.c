@@ -50,31 +50,6 @@ Typespec *new_typespec_name(SrcPos pos, const char *name)
 
 }
 
-Decls *new_decls(Decl **decls, size_t num_decls)
-{
-	Decls *d = ast_alloc(sizeof(*d));
-	d->decls = AST_DUP(decls);
-	d->num_decls = num_decls;
-	return d;
-}
-
-Decl *new_decl(DeclKind kind, SrcPos pos, const char *name)
-{
-	Decl *d = ast_alloc(sizeof(*d));
-	d->kind = kind;
-	d->pos = pos;
-	d->name = name;
-	return d;
-}
-
-Decl *new_decl_dim(SrcPos pos, const char *name, Typespec *type, Expr *expr)
-{
-	Decl *d = new_decl(DECL_DIM, pos, name);
-	d->dim.type = type;
-	d->dim.expr = expr;
-	return d;
-}
-
 Expr *new_expr(ExprKind kind, SrcPos pos)
 {
 	Expr *e = ast_alloc(sizeof(*e));
