@@ -1,3 +1,13 @@
+#include "type.h"
+
+/*
+ * defined in type.c
+ */
+extern Type *type_boolean;
+extern Type *type_int;
+extern Type *type_double;
+extern Type *type_string;
+
 typedef enum SymKind {
 	SYM_NONE,
 	SYM_DIM,
@@ -520,8 +530,8 @@ Operand concat_operands(Operand left, Operand right)
 #define CONVERT(operand) \
 	if (!convert_operand(&operand, type_string)) { \
 		fatal_error(pos, "Type mismatch, expected '%s', got '%s'", \
-				type_names[TYPE_STRING], \
-				type_names[operand.type->kind]); \
+				type_name(TYPE_STRING), \
+				type_name(operand.type->kind)); \
 	}
 
 Operand resolve_binary_string_op(SrcPos pos, TokenKind op, Operand left,
@@ -722,8 +732,8 @@ Operand resolve_cond_expr(Expr *expr)
 	if (!cast_operand(&cond, type_boolean)) {
 		fatal_error(expr->pos, "Invalid type in condition. "
 				"Expected '%s', got '%s'",
-				type_names[TYPE_BOOLEAN],
-				type_names[cond.type->kind]);
+				type_name(TYPE_BOOLEAN),
+				type_name(cond.type->kind));
 
 	}
 	assert(TYPE_BOOLEAN == cond.type->kind);
@@ -752,8 +762,8 @@ void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 	if (!convert_operand(&right, left.type)) {
 		fatal_error(stmt->pos, "Invalid type in assignment. "
 				"Expected '%s', got '%s'",
-				type_names[left.type->kind],
-				type_names[right.type->kind]);
+				type_name(left.type->kind),
+				type_name(right.type->kind));
 
 	}
 	if (eval_stmt) {

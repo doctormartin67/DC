@@ -1,3 +1,9 @@
+#ifndef AST_H_
+#define AST_H_
+
+#include <stddef.h>
+#include "lex.h"
+
 typedef struct Expr Expr;
 typedef struct Stmt Stmt;
 typedef struct Decl Decl;
@@ -27,14 +33,6 @@ struct Typespec {
 		} func;
 	};
 };
-
-/* TODO remove
-typedef struct FuncParam {
-	SrcPos pos;
-	const char *name;
-	Typespec *type;
-} FuncParam;
-*/
 
 typedef enum DeclKind {
 	DECL_NONE,
@@ -216,3 +214,34 @@ struct Stmt {
 		} dim_stmt;
 	};
 };
+
+StmtBlock new_StmtBlock(SrcPos pos, Stmt **stmts, size_t num_stmts);
+Typespec *new_typespec_name(SrcPos pos, const char *name);
+Expr *new_expr(ExprKind kind, SrcPos pos);
+Expr *new_expr_paren(SrcPos pos, Expr *expr);
+Expr *new_expr_boolean(SrcPos pos, bool val);
+Expr *new_expr_int(SrcPos pos, unsigned long long val);
+Expr *new_expr_float(SrcPos pos, const char *start, const char *end,
+		double val);
+Expr *new_expr_str(SrcPos pos, const char *val);
+Expr *new_expr_name(SrcPos pos, const char *name);
+Expr *new_expr_call(SrcPos pos, Expr *expr, Expr **args, size_t num_args);
+Expr *new_expr_unary(SrcPos pos, TokenKind op, Expr *expr);
+Expr *new_expr_binary(SrcPos pos, TokenKind op, Expr *left, Expr *right);
+
+Stmt *new_stmt_if(SrcPos pos, Expr *cond, StmtBlock then_block,
+		ElseIf *elseifs, size_t num_elseifs, StmtBlock else_block);
+Stmt *new_stmt_while(SrcPos pos, Expr *cond, StmtBlock block);
+Stmt *new_stmt_do_while(SrcPos pos, Expr *cond, StmtBlock block);
+Stmt *new_stmt_do_until(SrcPos pos, Expr *cond, StmtBlock block);
+Stmt *new_stmt_do_while_loop(SrcPos pos, Expr *cond, StmtBlock block);
+Stmt *new_stmt_do_until_loop(SrcPos pos, Expr *cond, StmtBlock block);
+Stmt *new_stmt_for(SrcPos pos, Stmt *dim, Expr *cond, Stmt *next,
+		StmtBlock block);
+Stmt *new_stmt_select_case(SrcPos pos, Expr *expr, SelectCase *cases,
+		size_t num_cases);
+Stmt *new_stmt_assign(SrcPos pos, TokenKind op, Expr *left, Expr *right);
+Stmt *new_stmt_dim(SrcPos pos, Dim *dims, size_t num_dims);
+Stmt *new_stmt_expr(SrcPos pos, Expr *expr);
+
+#endif

@@ -1,3 +1,5 @@
+#include "ast.h"
+
 Decl *parse_decl_opt(void);
 Decl *parse_decl(void);
 Typespec *parse_type(void);

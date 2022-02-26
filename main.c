@@ -11,8 +11,8 @@
 
 #include "common.h"
 #include "lex.h"
-#include "type.c"
-#include "ast.c"
+#include "type.h"
+#include "ast.h"
 #include "print.c"
 #include "parse.c"
 #include "resolve.c"

@@ -1,4 +1,8 @@
+#include <string.h>
+#include <assert.h>
+#include "stdbool.h"
 #include "ast.h"
+#include "common.h" // for Arena
 
 static Arena ast_arena;
 
@@ -30,7 +34,7 @@ StmtBlock new_StmtBlock(SrcPos pos, Stmt **stmts, size_t num_stmts)
 	return (StmtBlock){pos, AST_DUP(stmts), num_stmts};
 }
 
-Typespec *new_typespec(TypespecKind kind, SrcPos pos)
+static Typespec *new_typespec(TypespecKind kind, SrcPos pos)
 {
 	Typespec *t = ast_alloc(sizeof(*t));
 	t->kind = kind;
@@ -158,7 +162,7 @@ Expr *new_expr_binary(SrcPos pos, TokenKind op, Expr *left, Expr *right)
 	return e;
 }
 
-Stmt *new_stmt(StmtKind kind, SrcPos pos)
+static Stmt *new_stmt(StmtKind kind, SrcPos pos)
 {
 	Stmt *s = ast_alloc(sizeof(*s));
 	s->kind = kind;
@@ -166,7 +170,7 @@ Stmt *new_stmt(StmtKind kind, SrcPos pos)
 	return s;
 }
 
-Stmt *new_stmt_block(SrcPos pos, StmtBlock block) {
+static Stmt *new_stmt_block(SrcPos pos, StmtBlock block) {
 	Stmt *s = new_stmt(STMT_BLOCK, pos);
 	s->block = block;
 	return s;
