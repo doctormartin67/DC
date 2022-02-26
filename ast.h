@@ -1,6 +1,7 @@
 #ifndef AST_H_
 #define AST_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 #include "lex.h"
 

@@ -8,7 +8,7 @@ static Arena ast_arena;
 
 static size_t ast_memory_usage;
 
-void *ast_alloc(size_t size)
+static void *ast_alloc(size_t size)
 {
 	assert(0 != size);
 	void *ptr = arena_alloc(&ast_arena, size);
@@ -17,7 +17,7 @@ void *ast_alloc(size_t size)
 	return ptr;
 }
 
-void *ast_dup(const void *src, size_t size)
+static void *ast_dup(const void *src, size_t size)
 {
 	if (0 == size) {
 		return 0;
@@ -112,6 +112,9 @@ Expr *new_expr_call(SrcPos pos, Expr *expr, Expr **args, size_t num_args)
 	return e;
 }
 
+/*
+ * TODO: this function is not used anywhere yet
+ */
 Expr *new_expr_index(SrcPos pos, Expr *expr, Expr *index)
 {
 	Expr *e = new_expr(EXPR_INDEX, pos);

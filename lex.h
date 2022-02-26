@@ -1,6 +1,8 @@
 #ifndef LEX_H_
 #define LEX_H_
 
+#include <stdlib.h>
+
 const char *dim_keyword;
 const char *as_keyword;
 const char *if_keyword;

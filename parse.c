@@ -1,11 +1,10 @@
+#include <assert.h>
+#include "parse.h"
 #include "ast.h"
+#include "lex.h"
+#include "common.h"
 
-Typespec *parse_type(void);
-Stmt *parse_stmt(void);
-Expr *parse_expr(void);
-const char *parse_name(void);
-
-Typespec *parse_type_base(void)
+static Typespec *parse_type_base(void)
 {
 	if (is_token(TOKEN_NAME)) {
 		SrcPos pos = token_pos();
@@ -22,18 +21,15 @@ Typespec *parse_type_base(void)
 	}
 }
 
-/*
- * TODO can probably remove this function and call parse_type_base directly
- */
 Typespec *parse_type(void)
 {
 	Typespec *type = parse_type_base();
 	return type;
 }
 
-Expr *parse_expr_unary(void);
+static Expr *parse_expr_unary(void);
 
-Expr *parse_expr_operand(void)
+static Expr *parse_expr_operand(void)
 {
 	SrcPos pos = token_pos();
 	if (is_token(TOKEN_INT)) {
@@ -70,7 +66,7 @@ Expr *parse_expr_operand(void)
 	}
 }
 
-Expr *parse_expr_base(void)
+static Expr *parse_expr_base(void)
 {
 	Expr *expr = parse_expr_operand();
 	while (is_token(TOKEN_LPAREN)) {
@@ -89,12 +85,12 @@ Expr *parse_expr_base(void)
 	return expr;
 }
 
-unsigned is_unary_op(void)
+static unsigned is_unary_op(void)
 {
 	return is_token(TOKEN_ADD) || is_token(TOKEN_SUB);
 }
 
-Expr *parse_expr_unary(void)
+static Expr *parse_expr_unary(void)
 {
 	if (is_unary_op()) {
 		SrcPos pos = token_pos();
@@ -106,13 +102,13 @@ Expr *parse_expr_unary(void)
 	}
 }
 
-unsigned is_mul_op(void)
+static unsigned is_mul_op(void)
 {
 	return (TOKEN_FIRST_MUL <= token_kind() && token_kind() <= TOKEN_LAST_MUL)
 		|| is_a_keyword(mod_keyword);
 }
 
-Expr *parse_expr_mul(void)
+static Expr *parse_expr_mul(void)
 {
 	Expr *expr = parse_expr_unary();
 	while (is_mul_op()) {
@@ -126,13 +122,13 @@ Expr *parse_expr_mul(void)
 	return expr;
 }
 
-unsigned is_add_op(void)
+static unsigned is_add_op(void)
 {
 	return TOKEN_FIRST_ADD <= token_kind()
 		&& token_kind() <= TOKEN_LAST_ADD;
 }
 
-Expr *parse_expr_add(void)
+static Expr *parse_expr_add(void)
 {
 	Expr *expr = parse_expr_mul();
 	while (is_add_op()) {
@@ -144,13 +140,13 @@ Expr *parse_expr_add(void)
 	return expr;
 }
 
-unsigned is_cmp_op(void)
+static unsigned is_cmp_op(void)
 {
 	return (TOKEN_FIRST_CMP <= token_kind() && token_kind() <= TOKEN_LAST_CMP)
 		|| TOKEN_ASSIGN == token_kind();
 }
 
-Expr *parse_expr_cmp(void)
+static Expr *parse_expr_cmp(void)
 {
 	Expr *expr = parse_expr_add();
 	while (is_cmp_op()) {
@@ -162,7 +158,7 @@ Expr *parse_expr_cmp(void)
 	return expr;
 }
 
-Expr *parse_expr_and(void)
+static Expr *parse_expr_and(void)
 {
 	Expr *expr = parse_expr_cmp();
 	while (match_keyword(and_keyword)) {
@@ -172,7 +168,7 @@ Expr *parse_expr_and(void)
 	return expr;
 }
 
-Expr *parse_expr_xor(void)
+static Expr *parse_expr_xor(void)
 {
 	Expr *expr = parse_expr_and();
 	while (match_keyword(xor_keyword)) {
@@ -182,7 +178,7 @@ Expr *parse_expr_xor(void)
 	return expr;
 }
 
-Expr *parse_expr_or(void)
+static Expr *parse_expr_or(void)
 {
 	Expr *expr = parse_expr_xor();
 	while (match_keyword(or_keyword)) {
@@ -197,7 +193,7 @@ Expr *parse_expr(void)
 	return parse_expr_or();
 }
 
-unsigned is_end_of_block(void)
+static unsigned is_end_of_block(void)
 {
 	return is_a_keyword(else_keyword)
 		|| is_a_keyword(elseif_keyword)
@@ -208,7 +204,7 @@ unsigned is_end_of_block(void)
 		|| is_a_keyword(loop_keyword);
 }
 
-StmtBlock parse_stmt_block(void)
+static StmtBlock parse_stmt_block(void)
 {
 	SrcPos pos = token_pos();
 	Stmt **stmts = 0;
@@ -218,7 +214,7 @@ StmtBlock parse_stmt_block(void)
 	return new_StmtBlock(pos, stmts, buf_len(stmts));
 }
 
-Stmt *parse_stmt_if(SrcPos pos)
+static Stmt *parse_stmt_if(SrcPos pos)
 {
 	Expr *cond = parse_expr();
 	expect_keyword(then_keyword);
@@ -240,7 +236,7 @@ Stmt *parse_stmt_if(SrcPos pos)
 			buf_len(elseifs), else_block);
 }
 
-Stmt *parse_stmt_while(SrcPos pos)
+static Stmt *parse_stmt_while(SrcPos pos)
 {
 	Expr *cond = parse_expr();
 	Stmt *stmt = new_stmt_while(pos, cond, parse_stmt_block());
@@ -249,7 +245,7 @@ Stmt *parse_stmt_while(SrcPos pos)
 	return stmt;
 }
 
-Stmt *parse_stmt_do_while_loop(SrcPos pos)
+static Stmt *parse_stmt_do_while_loop(SrcPos pos)
 {
 	Expr *cond = parse_expr();
 	StmtBlock block = parse_stmt_block();
@@ -262,7 +258,7 @@ Stmt *parse_stmt_do_while_loop(SrcPos pos)
 	return stmt;
 }
 
-Stmt *parse_stmt_do_until_loop(SrcPos pos)
+static Stmt *parse_stmt_do_until_loop(SrcPos pos)
 {
 	Expr *cond = parse_expr();
 	StmtBlock block = parse_stmt_block();
@@ -275,7 +271,7 @@ Stmt *parse_stmt_do_until_loop(SrcPos pos)
 	return stmt;
 }
 
-Stmt *parse_stmt_do(SrcPos pos)
+static Stmt *parse_stmt_do(SrcPos pos)
 {
 	Stmt *stmt = 0;
 	StmtBlock block = (StmtBlock){0};
@@ -303,13 +299,13 @@ Stmt *parse_stmt_do(SrcPos pos)
 	return stmt;
 }
 
-unsigned is_assign_op(void)
+static unsigned is_assign_op(void)
 {
 	return TOKEN_FIRST_ASSIGN <= token_kind()
 		&& token_kind() <= TOKEN_LAST_ASSIGN;
 }
 
-Stmt *parse_stmt_dim(void)
+static Stmt *parse_stmt_dim(void)
 {
 	Stmt *stmt = 0;
 	Dim *dims = 0;
@@ -332,7 +328,7 @@ Stmt *parse_stmt_dim(void)
 	return stmt;
 }
 
-Stmt *parse_simple_stmt(void)
+static Stmt *parse_simple_stmt(void)
 {
 	SrcPos pos = token_pos();
 	Stmt *stmt = 0;
@@ -353,13 +349,13 @@ Stmt *parse_simple_stmt(void)
 	return stmt;
 }
 
-#if 0
-	in a for loop the iterator has to be declared beforehand
-	if the start value is bigger than the end value (without the use of
-		step -1 for example) then the condition is false and the for
-		loop exits
-#endif
-Stmt *parse_stmt_for(SrcPos pos) {
+/*
+ * in a for loop the iterator has to be declared beforehand
+ * if the start value is bigger than the end value (without the use of
+ * step -1 for example) then the condition is false and the for
+ * loop exits
+ */
+static Stmt *parse_stmt_for(SrcPos pos) {
 	Stmt *stmt = 0;
 	Stmt *init = 0;
 	Expr *it = 0;
@@ -393,7 +389,7 @@ Stmt *parse_stmt_for(SrcPos pos) {
 	return stmt;
 }
 
-SelectCasePattern parse_select_case_pattern(void) {
+static SelectCasePattern parse_select_case_pattern(void) {
 	SelectCasePattern scp = (SelectCasePattern){0};
 	Expr *start = 0;
 	Expr *end = 0;
@@ -418,7 +414,7 @@ SelectCasePattern parse_select_case_pattern(void) {
 	return scp;
 }
 
-SelectCase parse_stmt_select_case(void)
+static SelectCase parse_stmt_select_case(void)
 {
 	SelectCasePattern *patterns = 0;
 	unsigned is_default = 0;
@@ -456,7 +452,7 @@ SelectCase parse_stmt_select_case(void)
 		new_StmtBlock(pos, stmts, buf_len(stmts))};
 }
 
-Stmt *parse_stmt_select(SrcPos pos)
+static Stmt *parse_stmt_select(SrcPos pos)
 {
 	expect_keyword(case_keyword);
 	Expr *expr = parse_expr();

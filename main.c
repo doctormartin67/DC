@@ -13,8 +13,8 @@
 #include "lex.h"
 #include "type.h"
 #include "ast.h"
-#include "print.c"
-#include "parse.c"
+#include "print_ast.h"
+#include "parse.h"
 #include "resolve.c"
 
 #define PRINT_TEST_PARSE 0

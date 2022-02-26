@@ -1,6 +1,8 @@
+#include <stdio.h>
+#include <assert.h>
+#include "print_ast.h"
+
 static int indent;
-void print_expr(const Expr *expr);
-void print_stmt(const Stmt *stmt);
 
 void print_typespec(const Typespec *type)
 {
