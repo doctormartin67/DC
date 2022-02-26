@@ -1,3 +1,0 @@
-xyzvalue = a
-tests:
-a,ead,BC=b
