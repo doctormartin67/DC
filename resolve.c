@@ -1,37 +1,13 @@
-#include "type.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <limits.h>
+#include "resolve.h"
 
-/*
- * defined in type.c
- */
-extern Type *type_boolean;
-extern Type *type_int;
-extern Type *type_double;
-extern Type *type_string;
+static Sym syms[MAX_SYMS];
+static Sym *syms_end = syms;
 
-typedef enum SymKind {
-	SYM_NONE,
-	SYM_DIM,
-	SYM_FUNC,
-	SYM_TYPE,
-} SymKind;
-
-typedef struct Sym {
-	const char *name;
-	SymKind kind;
-	struct {
-		Type *type;
-		Val val;
-	};
-} Sym;
-
-enum {
-	MAX_SYMS = 1024
-};
-
-Sym syms[MAX_SYMS];
-Sym *syms_end = syms;
-
-void print_sym_dim(Sym *sym)
+static void print_sym_dim(Sym *sym)
 {
 	assert(SYM_DIM == sym->kind);
 	switch (sym->type->kind) {
@@ -76,7 +52,7 @@ void print_syms(void)
 	printf("-------\n");
 }
 
-Sym *sym_get(const char *name)
+static Sym *sym_get(const char *name)
 {
 	for (Sym *it = syms_end; it != syms; it--) {
 		Sym *sym = it - 1;
@@ -103,7 +79,7 @@ unsigned sym_push_type(const char *name, Type *type)
 	return 1;
 }
 
-unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
+static unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 {
 	if (sym_get(name)) {
 		return 0;
@@ -124,30 +100,24 @@ unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 	return 1;
 }
 
-typedef struct Operand {
-	Type *type;
-	unsigned is_lvalue;
-	unsigned is_const;
-	Val val;
-} Operand;
-
 Operand operand_null;
 
-Operand operand_rvalue(Type *type)
+static Operand operand_rvalue(Type *type)
 {
 	return (Operand){
 		.type = type,
 	};
 }
 
-Operand operand_lvalue(Type *type)
+static Operand operand_lvalue(Type *type)
 {
 	return (Operand){
 		.type = type,
 			.is_lvalue = 1,
 	};
 }
-Operand operand_const(Type *type, Val val)
+
+static Operand operand_const(Type *type, Val val)
 {
 	return (Operand){
 		.type = type,
@@ -183,7 +153,7 @@ Operand operand_const(Type *type, Val val)
 	break;
 
 
-unsigned is_convertible(Operand *operand, Type *dest)
+static unsigned is_convertible(Operand *operand, Type *dest)
 {
 	Type *src = operand->type;
 	if (dest == src) {
@@ -197,7 +167,7 @@ unsigned is_convertible(Operand *operand, Type *dest)
 	}
 }
 
-unsigned is_castable(Operand *operand, Type *dest)
+static unsigned is_castable(Operand *operand, Type *dest)
 {
 	if (is_convertible(operand, dest)) {
 		return 1;
@@ -206,7 +176,7 @@ unsigned is_castable(Operand *operand, Type *dest)
 	}
 }
 
-unsigned cast_operand(Operand *operand, Type *type)
+static unsigned cast_operand(Operand *operand, Type *type)
 {
 	if (operand->type != type) {
 		if (!is_castable(operand, type)) {
@@ -231,7 +201,7 @@ unsigned cast_operand(Operand *operand, Type *type)
 	return 1;
 }
 
-unsigned convert_operand(Operand *operand, Type *type)
+static unsigned convert_operand(Operand *operand, Type *type)
 {
 	if (is_convertible(operand, type)) {
 		cast_operand(operand, type);
@@ -243,7 +213,7 @@ unsigned convert_operand(Operand *operand, Type *type)
 
 #undef CASE
 
-void promote_operand(Operand *operand)
+static void promote_operand(Operand *operand)
 {
 	switch (operand->type->kind) {
 		case TYPE_BOOLEAN:
@@ -253,7 +223,8 @@ void promote_operand(Operand *operand)
 			break;
 	}
 }
-void unify_operands(Operand *left, Operand *right)
+
+static void unify_operands(Operand *left, Operand *right)
 {
 	if (left->type == type_string) {
 		cast_operand(right, type_string);
@@ -274,7 +245,7 @@ void unify_operands(Operand *left, Operand *right)
 	assert(left->type == right->type);
 }
 
-Sym *resolve_name(const char *name)
+static Sym *resolve_name(const char *name)
 {
 	Sym *sym = sym_get(name);
 	if (!sym) {
@@ -284,7 +255,7 @@ Sym *resolve_name(const char *name)
 	return sym;
 }
 
-Type *resolve_typespec(Typespec *typespec)
+static Type *resolve_typespec(Typespec *typespec)
 {
 	assert(typespec);
 	assert(TYPESPEC_NAME == typespec->kind);
@@ -296,7 +267,7 @@ Type *resolve_typespec(Typespec *typespec)
 	return sym->type;
 }
 
-long long eval_binary_op_i(TokenKind op, long long left, long long right)
+static long long eval_binary_op_i(TokenKind op, long long left, long long right)
 {
 	switch (op) {
 		case TOKEN_MUL:
@@ -331,7 +302,7 @@ long long eval_binary_op_i(TokenKind op, long long left, long long right)
 	return 0;
 }
 
-double eval_binary_op_d(TokenKind op, double left, double right)
+static double eval_binary_op_d(TokenKind op, double left, double right)
 {
 	switch (op) {
 		case TOKEN_MUL:
@@ -381,7 +352,7 @@ double eval_binary_op_d(TokenKind op, double left, double right)
 	} \
 	return operand.val;
 
-Val eval_unary_op(TokenKind op, Type *type, Val val)
+static Val eval_unary_op(TokenKind op, Type *type, Val val)
 {
 	Operand operand = operand_const(type, val);
 	if (is_integer_type(type)) {
@@ -404,7 +375,7 @@ Val eval_unary_op(TokenKind op, Type *type, Val val)
 			(Val){.t = eval_binary_op_##t(op, left_operand.val.t, \
 					right_operand.val.t)}); \
 					return result_operand.val;
-Val eval_binary_op(TokenKind op, Type *type, Val left, Val right)
+static Val eval_binary_op(TokenKind op, Type *type, Val left, Val right)
 {
 	if (is_integer_type(type)) {
 		RETURN_RESULT(type_int, i);
@@ -417,13 +388,13 @@ Val eval_binary_op(TokenKind op, Type *type, Val left, Val right)
 }
 #undef RETURN_RESULT
 
-Operand resolve_expected_expr(Expr *expr, Type *expected_type);
-Operand resolve_expr(Expr *expr)
+static Operand resolve_expected_expr(Expr *expr, Type *expected_type);
+static Operand resolve_expr(Expr *expr)
 {
 	return resolve_expected_expr(expr, 0);
 }
 
-Operand resolve_name_operand(SrcPos pos, const char *name)
+static Operand resolve_name_operand(SrcPos pos, const char *name)
 {
 	Sym *sym = sym_get(name);
 	if (!sym) {
@@ -439,13 +410,13 @@ Operand resolve_name_operand(SrcPos pos, const char *name)
 	}
 }
 
-Operand resolve_expr_name(Expr *expr)
+static Operand resolve_expr_name(Expr *expr)
 {
 	assert(expr->kind == EXPR_NAME);
 	return resolve_name_operand(expr->pos, expr->name);
 }
 
-Operand resolve_unary_op(TokenKind op, Operand operand)
+static Operand resolve_unary_op(TokenKind op, Operand operand)
 {
 	if (operand.is_const) {
 		return operand_const(operand.type,
@@ -455,7 +426,7 @@ Operand resolve_unary_op(TokenKind op, Operand operand)
 	}
 }
 
-Operand resolve_expr_unary(Expr *expr)
+static Operand resolve_expr_unary(Expr *expr)
 {
 	Operand operand = resolve_expr(expr->unary.expr);
 	Type *type = operand.type;
@@ -476,13 +447,14 @@ Operand resolve_expr_unary(Expr *expr)
 	return (Operand){0};
 }
 
-Operand resolve_binary_op(TokenKind op, Operand left, Operand right)
+static Operand resolve_binary_op(TokenKind op, Operand left, Operand right)
 {
 	return operand_const(left.type, eval_binary_op(op, left.type, left.val,
 				right.val));
 }
 
-Operand resolve_binary_arithmetic_op(TokenKind op, Operand left, Operand right)
+static Operand resolve_binary_arithmetic_op(TokenKind op, Operand left,
+		Operand right)
 {
 	if (TOKEN_DIV == op)
 		cast_operand(&left, type_double);
@@ -490,7 +462,7 @@ Operand resolve_binary_arithmetic_op(TokenKind op, Operand left, Operand right)
 	return resolve_binary_op(op, left, right);
 }
 
-Operand concat_operands(Operand left, Operand right)
+static Operand concat_operands(Operand left, Operand right)
 {
 	assert(type_string == left.type);
 	assert(type_string == right.type);
@@ -509,7 +481,7 @@ Operand concat_operands(Operand left, Operand right)
 				type_name(operand.type->kind)); \
 	}
 
-Operand resolve_binary_string_op(SrcPos pos, TokenKind op, Operand left,
+static Operand resolve_binary_string_op(SrcPos pos, TokenKind op, Operand left,
 		Operand right)
 {
 	if (!(is_concatable(left.type) && is_concatable(right.type))) {
@@ -551,8 +523,8 @@ Operand resolve_binary_string_op(SrcPos pos, TokenKind op, Operand left,
 
 #undef CONVERT
 
-Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
-		Operand left, Operand right)
+static Operand resolve_expr_binary_op(TokenKind op, const char *op_name,
+		SrcPos pos, Operand left, Operand right)
 {
 	if (is_string_type(left.type) || is_string_type(right.type)) {
 		return resolve_binary_string_op(pos, op, left, right);
@@ -600,7 +572,7 @@ Operand resolve_expr_binary_op(TokenKind op, const char *op_name, SrcPos pos,
 }
 #undef FATAL_ERROR
 
-Operand resolve_expr_binary(Expr *expr)
+static Operand resolve_expr_binary(Expr *expr)
 {
 	assert(expr->kind == EXPR_BINARY);
 	Operand left = resolve_expr(expr->binary.left);
@@ -610,7 +582,7 @@ Operand resolve_expr_binary(Expr *expr)
 	return resolve_expr_binary_op(op, op_name, expr->pos, left, right);
 }
 
-Operand resolve_expr_boolean(Expr *expr)
+static Operand resolve_expr_boolean(Expr *expr)
 {
 	assert(expr->kind == EXPR_BOOLEAN);
 	bool val = expr->boolean_lit.val;
@@ -618,7 +590,7 @@ Operand resolve_expr_boolean(Expr *expr)
 	return operand;
 }
 
-Operand resolve_expr_int(Expr *expr)
+static Operand resolve_expr_int(Expr *expr)
 {
 	assert(expr->kind == EXPR_INT);
 	unsigned long long val = expr->int_lit.val;
@@ -630,7 +602,7 @@ Operand resolve_expr_int(Expr *expr)
 	return operand;
 }
 
-Operand resolve_expr_float(Expr *expr)
+static Operand resolve_expr_float(Expr *expr)
 {
 	assert(expr->kind == EXPR_FLOAT);
 	double val = expr->float_lit.val;
@@ -638,7 +610,7 @@ Operand resolve_expr_float(Expr *expr)
 	return operand;
 }
 
-Operand resolve_expr_string(Expr *expr)
+static Operand resolve_expr_string(Expr *expr)
 {
 	assert(expr->kind == EXPR_STR);
 	char *val = 0;
@@ -649,7 +621,7 @@ Operand resolve_expr_string(Expr *expr)
 	return operand;
 }
 
-Operand resolve_expected_expr(Expr *expr, Type *expected_type)
+static Operand resolve_expected_expr(Expr *expr, Type *expected_type)
 {
 	switch (expr->kind) {
 		case EXPR_PAREN:
@@ -681,7 +653,7 @@ Operand resolve_expected_expr(Expr *expr, Type *expected_type)
 	}
 }
 
-Val resolve_const_expr(Expr *expr)
+static Val resolve_const_expr(Expr *expr)
 {
 	Operand result = resolve_expr(expr);
 	if (!result.is_const) {
@@ -690,14 +662,14 @@ Val resolve_const_expr(Expr *expr)
 	return result.val;
 }
 
-void resolve_stmt(Stmt *stmt, unsigned eval_stmt);
+static void resolve_stmt(Stmt *stmt, unsigned eval_stmt);
 
-unsigned is_cond_operand(Operand operand)
+static unsigned is_cond_operand(Operand operand)
 {
 	return is_arithmetic_type(operand.type);
 }
 
-Operand resolve_cond_expr(Expr *expr)
+static Operand resolve_cond_expr(Expr *expr)
 {
 	Operand cond = resolve_expr(expr);
 	if (!is_cond_operand(cond)) {
@@ -715,14 +687,14 @@ Operand resolve_cond_expr(Expr *expr)
 	return cond;
 }
 
-void resolve_stmt_block(StmtBlock block, unsigned eval_stmt)
+static void resolve_stmt_block(StmtBlock block, unsigned eval_stmt)
 {
 	for (size_t i = 0; i < block.num_stmts; i++) {
 		resolve_stmt(block.stmts[i], eval_stmt);
 	}
 }
 
-void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
+static void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 {
 	assert(stmt->kind == STMT_ASSIGN);
 	assert(TOKEN_ASSIGN == stmt->assign.op);
@@ -746,7 +718,7 @@ void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 	}
 }
 
-void resolve_stmt_dim(Stmt *stmt, unsigned eval_stmt)
+static void resolve_stmt_dim(Stmt *stmt, unsigned eval_stmt)
 {
 	assert(STMT_DIM == stmt->kind);
 	Type *type = 0;
@@ -761,7 +733,8 @@ void resolve_stmt_dim(Stmt *stmt, unsigned eval_stmt)
 		}
 	}
 }
-void resolve_stmt_for(Stmt *stmt, unsigned eval_stmt)
+
+static void resolve_stmt_for(Stmt *stmt, unsigned eval_stmt)
 {
 	Operand cond = (Operand){0};
 	Operand step = (Operand){0};
@@ -788,7 +761,7 @@ void resolve_stmt_for(Stmt *stmt, unsigned eval_stmt)
 	}
 }
 
-void resolve_stmt_if(Stmt *stmt)
+static void resolve_stmt_if(Stmt *stmt)
 {
 	Operand cond = (Operand){0};
 	bool b = false;
@@ -828,7 +801,7 @@ void resolve_stmt_if(Stmt *stmt)
 			assert(TYPE_BOOLEAN == result##i.type->kind);
 
 
-bool resolve_to_pattern(Operand operand, SelectCasePattern pattern)
+static bool resolve_to_pattern(Operand operand, SelectCasePattern pattern)
 {
 	assert(PATTERN_TO == pattern.kind);
 	Expr *start = pattern.to_pattern.start;
@@ -850,7 +823,7 @@ bool resolve_to_pattern(Operand operand, SelectCasePattern pattern)
 	assert(TYPE_BOOLEAN == result.type->kind); \
 	b = result.val.b;
 
-bool resolve_select_case_pattern(Operand operand,
+static bool resolve_select_case_pattern(Operand operand,
 		SelectCasePattern pattern)
 {
 	Expr *expr = 0;
@@ -881,7 +854,7 @@ bool resolve_select_case_pattern(Operand operand,
 
 #undef PATTERN
 
-bool resolve_select_case(Operand operand, SelectCase sc)
+static bool resolve_select_case(Operand operand, SelectCase sc)
 {
 	resolve_stmt_block(sc.block, false);
 	bool b = false;
@@ -896,7 +869,7 @@ bool resolve_select_case(Operand operand, SelectCase sc)
 	return b;
 }
 
-void resolve_stmt_select_case(Stmt *stmt, unsigned eval_stmt)
+static void resolve_stmt_select_case(Stmt *stmt, unsigned eval_stmt)
 {
 	assert(STMT_SELECT_CASE == stmt->kind);
 	assert(stmt->select_case_stmt.expr);
@@ -935,7 +908,7 @@ void resolve_stmt_select_case(Stmt *stmt, unsigned eval_stmt)
 		cond = resolve_cond_expr(stmt->loop##_stmt.cond); \
 	} while (b);
 
-void resolve_stmt(Stmt *stmt, unsigned eval_stmt)
+static void resolve_stmt(Stmt *stmt, unsigned eval_stmt)
 {
 	Operand cond = (Operand){0};
 	switch (stmt->kind) {

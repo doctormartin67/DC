@@ -15,7 +15,7 @@
 #include "ast.h"
 #include "print_ast.h"
 #include "parse.h"
-#include "resolve.c"
+#include "resolve.h"
 
 #define PRINT_TEST_PARSE 0
 #define PRINT_TEST_RESOLVE 1
