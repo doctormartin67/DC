@@ -1,0 +1,21 @@
+				elect case age
+					case is <40: xyzvalue=0.01
+					case 40 to 60: xyzvalue = 0.03
+					case else: xyzvalue = 0.02
+				end select
+tests:
+39,123,BC=0.01
+41,123,BC=0.03
+12,123,WC=0.01
+62,123,WC=0.02
+24.99,123,bla=0.01
+25,123,bla=0.01
+34.99,123,bla=0.01
+35,123,bla=0.01
+44.99,123,bla=0.03
+45,123,bla=0.03
+54.99,123,bla=0.03
+55,123,bla=0.03
+65,123,bla=0.02
+52,23,bla=0.03
+52,12,bla=0.03

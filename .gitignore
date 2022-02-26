@@ -6,6 +6,14 @@
 *.o
 #tags for vi
 *tags
-#bin files
-a.out
+#core file for debugging with gdb
+core
+#gprof output
+gmon.out
+#TODO file
+TODO*
+#binaries
 main
+interpret
+calculator
+dependencies

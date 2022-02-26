@@ -1,0 +1,155 @@
+<<<<<AGE CORRECTION>>>>>
+-3
+<<<<<LIFE TABLES AFTER TERMINATION>>>>>
+select case combination
+	case "UKMS"
+		xyzvalue = lxnihil
+	case else
+		select case status
+			case "DEF"
+				select case sex
+					case is 1
+						xyzvalue = lxmr
+					case else
+						xyzvalue = lxfr
+				end select
+			case "ACT"
+				select case sex
+					case is 1
+						xyzvalue = lxmr
+					case else
+						xyzvalue = lxfr
+				end select
+		end select
+end select
+<<<<<ADMINISTRATION COST>>>>>
+xyzvalue = 0.05
+<<<<<SHEET NAME>>>>>
+Data
+<<<<<PROFIT SHARING FOR MORTALITY>>>>>
+xyzvalue = 0.3
+<<<<<IMMEDIATE OR DUE PAYMENTS>>>>>
+xyzvalue = 1
+<<<<<MAX(NC, ER CONTR)>>>>>
+0
+<<<<<PUC/TUC>>>>>
+0
+<<<<<COST ON RESERVES>>>>>
+xyzvalue = 0.001
+<<<<<RETIREMENT PROBABILITY>>>>>
+select case age
+	case is < 65
+		xyzvalue = 0
+	case is >= 65
+		xyzvalue = 1
+end select
+<<<<<PAYMENT FREQUENCY>>>>>
+xyzvalue = 12
+<<<<<EMPLOYEE CONTRIBUTION>>>>>
+select case reg
+	case "7229"
+		xyzvalue = 0.015 *sal * 13.92* pt
+	case "14455"
+		xyzvalue = 0.015 * min(sal * 13.92, ceil2)* pt
+	case "7204", "7228"
+		select case ndoe
+			case is < 10
+				xyzvalue = 0.01 * sal * 13.92 * pt
+			case is < 20
+				xyzvalue = 0.015 * sal * 13.92 * pt
+			case else
+				xyzvalue = 0.02 * sal * 13.92 * pt
+		end select
+	case "7203"
+		xyzvalue = (0.01 * min(sal * 13.8975, ceil1) + 0.04 * max(sal * 13.8975 - ceil1, 0)) * pt
+	case "14286"
+		xyzvalue = (0.015* min(sal * 13.92, ceil1) + 0.015 * max(sal * 13.92 - ceil1, 0)) * pt
+end select
+<<<<<TURNOVER>>>>>
+select case age
+	case is < 60
+		xyzvalue = 0.01
+	case else
+		xyzvalue = 0
+end select
+<<<<<COST ON LUMP SUM LIFE>>>>>
+xyzvalue = 0.0008
+<<<<<FILE NAME>>>>>
+/home/doctormartin67/Documents/calcExamples/2019-01-01 Standard DC UKMS-UKZT.xlsm
+<<<<<INFLATION>>>>>
+0.018
+<<<<<TERMINATION PERCENTAGE>>>>>
+1
+<<<<<ASSETS>>>>>
+0
+<<<<<SALARY SCALE>>>>>
+xyzvalue = 0.011
+<<<<<DR $113>>>>>
+0
+<<<<<LIFE TABLES INSURER>>>>>
+select case combination
+	case "UKMS"
+		xyzvalue = lxnihil
+	case else
+		select case status
+			case "DEF"
+				select case sex
+					case is 1
+						xyzvalue = lxmr
+					case else
+						xyzvalue = lxfr
+				end select
+			case "ACT"
+				select case sex
+					case is 1
+						xyzvalue = lxmk
+					case else
+						xyzvalue = lxfkp
+				end select
+		end select
+end select
+				
+<<<<<MAX(PUC, TUC)>>>>>
+0
+<<<<<NORMAL RETIREMENT AGE>>>>>
+xyzvalue = 65
+<<<<<EMPLOYER CONTRIBUTION>>>>>
+select case reg
+	case "7229"
+		select case ndoe
+			case is < 5
+				xyzvalue = (0.02 * min(sal * 13.92, ceil1) + 0.05 * max(sal * 13.92 - ceil1, 0)) * pt
+			case is < 10
+				xyzvalue = (0.03 * min(sal * 13.92, ceil1) + 0.075 * max(sal * 13.92 - ceil1, 0)) * pt
+			case else
+				xyzvalue = (0.04 * min(sal * 13.92, ceil1) + 0.1 * max(sal * 13.92 - ceil1, 0)) * pt
+		end select
+	case "14455"
+		xyzvalue = (0.05 * min(sal * 13.92, ceil1, ceil2) + 0.11 * max(min(sal * 13.92, ceil2) - ceil1, 0)) * pt
+	case "7204", "7228"
+		select case ndoe
+			case is < 10
+				xyzvalue = 0.02 * sal * 13.92 * pt
+			case is < 20
+				xyzvalue = 0.03 * sal * 13.92 * pt
+			case else
+				xyzvalue = 0.04 * sal * 13.92 * pt
+		end select
+	case "7203"
+		xyzvalue = (0.02 * min(sal * 13.8975, ceil1) + 0.08 * max(sal * 13.8975 - ceil1, 0)) * pt
+	case "14286"
+		xyzvalue = (0.03* min(sal * 13.92, ceil1) + 0.09 * max(sal * 13.92 - ceil1, 0)) * pt
+	case "7161"
+		xyzvalue = 444 * pt
+end select
+	
+<<<<<DR>>>>>
+0.0125
+<<<<<EVALUATE DEATH>>>>>
+1
+<<<<<STANDARD IAS/FAS>>>>>
+0
+<<<<<KEY CELL>>>>>
+B11
+<<<<<DOC>>>>>
+1/12/2016
