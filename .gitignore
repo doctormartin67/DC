@@ -4,16 +4,18 @@
 *~
 #C object files
 *.o
+#C dependency files
+*.d
+#C archive files
+*.a
+#dc file created by program
+*.dc
 #tags for vi
 *tags
 #core file for debugging with gdb
 core
 #gprof output
 gmon.out
-#TODO file
-TODO*
 #binaries
 main
-interpret
-calculator
-dependencies
+test
