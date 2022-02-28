@@ -2,8 +2,8 @@
  * defines exit functions with option to include error message using printf
  * format
  */
-#ifndef ERROREXIT
-#define ERROREXIT
+#ifndef ERROREXIT_H_
+#define ERROREXIT_H_
 
 /*
  * Stringification kicks in before argument replacement, below is a simple

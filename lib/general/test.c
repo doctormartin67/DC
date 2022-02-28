@@ -10,6 +10,8 @@
 #include <math.h> /*defines HUGE_VAL */
 
 #include "common.h"
+#include "errorexit.h"
+#include "helperfunctions.h"
 
 void test_buf(void)
 {
@@ -81,11 +83,47 @@ void test_str_intern(void)
 	assert(str_intern(z) != str_intern(a));
 }
 
+void test_replace(void)
+{
+	char str[128] = "hello i am op joseph op. how op are op you op";
+	char *rep = replace(str, "op", "something");
+	assert(!strcmp(rep, "hello i am something joseph something. "
+				"how something are something you something"));
+	free(rep);
+}
+
+void test_DIRexists(void)
+{
+	assert(1 == DIRexists("."));
+	assert(0 == DIRexists("skjfhsdkjfbd"));
+}
+
+void test_strinside(void)
+{
+	char str[128] = "hello123iam";
+	assert(strinside(str, "hello", "iam") == &str[5]);
+}
+
+void test_sum(void)
+{
+	double arr[3] = {1, 2, 3};
+	assert(sum(3, arr) > 5.999 && sum(3, arr) < 6.001);
+}
+
+void test_helperfunctions(void)
+{
+	test_replace();
+	test_DIRexists();
+	test_strinside();
+	test_sum();
+}
+
 int main(void)
 {
 	test_buf();
 	test_arena();
 	test_map();
 	test_str_intern();
+	test_helperfunctions();
 	return 0;
 }

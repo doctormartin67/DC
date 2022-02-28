@@ -10,7 +10,7 @@ INCLUDES = -I $(INCLUDE)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
-OBJS = common.o
+OBJS = common.o errorexit.o helperfunctions.o
 .DELETE_ON_ERROR: $(OBJS)
 
 # ---vpath---
@@ -18,7 +18,7 @@ vpath %.c $(SRC)
 vpath %.h $(INCLUDE)
 
 # ---commands---
-RM = rm
+RM = rm -rf
 CP = cp
 
 # ---targets---
@@ -37,7 +37,7 @@ include $(subst .o,.d,$(OBJS))
 %.d: %.c
 	$(CC) -M $(INCLUDES) $(CPPFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-	$(RM) -f $@.$$$$
+	$(RM) $@.$$$$
 
 .PHONY: clean
 clean:

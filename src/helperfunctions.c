@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <dirent.h>
-#include "libraryheader.h"
+#include "helperfunctions.h"
 #include "errorexit.h"
 
 /*

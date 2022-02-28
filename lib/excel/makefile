@@ -3,18 +3,19 @@ INCLUDE = ../../include
 SRC = ../../src
 LIB = ../../lib
 EXE = test
+PACKAGE = libxml2-dev
 
 # ---Rule Structure---
 CC = gcc
 CFLAGS = -g -Wall -Wextra -Werror -pedantic
-INCLUDES = -I $(INCLUDE)
+INCLUDES = -I $(INCLUDE) `pkg-config --cflags libxml-2.0`
 LIBS = -lgeneral
-LDLIBS = $(LIBS)
+LDLIBS = $(LIBS) `xml2-config --libs`
 LDFLAGS = -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
-OBJS = lex.o type.o ast.o print_ast.o parse.o resolve.o
+OBJS = excel.o
 .DELETE_ON_ERROR: $(OBJS)
 
 # ---vpath---
@@ -26,11 +27,28 @@ RM = rm -rf
 CP = cp
 
 # ---targets---
-all: $(EXE)
+all: $(PACKAGE) $(EXE)
 
-$(EXE): $(EXE).o libvba.a
+$(PACKAGE):
+	@echo "#####"
+	@echo "Cheking if package '$(PACKAGE)' is installed"
+	@echo "#####"
+	@dpkg -s $(PACKAGE); \
+	if [ $$? ]; then \
+	    echo "#####"; \
+	    echo "package '$(PACKAGE)' found"; \
+	    echo "#####"; \
+	else \
+	    echo "package '$(PACKAGE)' not installed"; \
+	    read -p "install? (y/n)" confirm; \
+	    if [ $$confirm = y ]; then \
+		sudo apt install $(PACKAGE); \
+	    fi \
+	fi
+	
+$(EXE): $(EXE).o libexcel.a
 
-libvba.a: $(OBJS)
+libexcel.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 	$(CP) $@ ..
 

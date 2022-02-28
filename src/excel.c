@@ -5,37 +5,12 @@
 #include <libxml/parser.h>
 #include <assert.h>
 
+#include "excel.h"
 #include "errorexit.h"
 #include "common.h"
-#include "libraryheader.h"
+#include "helperfunctions.h"
 
-typedef enum TypeKind {
-	TYPE_DOUBLE,
-	TYPE_STRING,
-} TypeKind;
-
-typedef struct Content {
-	TypeKind kind;
-	union {
-		long long i;
-		double d;
-		const char *s;	
-	} val;
-} Content;
-
-typedef struct Sheet {
-	const char *excel_name;
-	const char *name;
-	const char *sheetId;
-	Map *cells;
-} Sheet;
-
-typedef struct Excel {
-	const char *name;
-	Sheet **sheets;
-} Excel;
-
-void remove_dir(const char *dir_name)
+static void remove_dir(const char *dir_name)
 {
 	assert(dir_name);
 	char cmd[BUFSIZ];
@@ -44,7 +19,7 @@ void remove_dir(const char *dir_name)
 		die("system command [%s] failed, are you on windows?", cmd);
 }
 
-void unzip_zip(const char *zip_name, const char *dir_name)
+static void unzip_zip(const char *zip_name, const char *dir_name)
 {
 	assert(zip_name && dir_name);
 	char cmd[BUFSIZ];
@@ -64,7 +39,7 @@ void unzip_zip(const char *zip_name, const char *dir_name)
 		die("system command [%s] failed, are you on windows?", cmd);
 }
 
-void create_zip(const char *zip_name, const char *file_name)
+static void create_zip(const char *zip_name, const char *file_name)
 {
 	assert(zip_name && file_name);
 	char cmd[BUFSIZ];
@@ -83,7 +58,7 @@ void create_zip(const char *zip_name, const char *file_name)
 
 }
 
-void extract_excel(const char *file_name)
+static void extract_excel(const char *file_name)
 {
 	assert(file_name);
 	size_t len = strlen(file_name) + 1;
@@ -107,7 +82,8 @@ void extract_excel(const char *file_name)
 	unzip_zip(zip_name, dir_name);
 }
 
-xmlDocPtr open_xml_from_excel(const char *file_name, const char *xml_name)
+static xmlDocPtr open_xml_from_excel(const char *file_name,
+		const char *xml_name)
 {
 	assert(file_name && xml_name);
 	char tmp[BUFSIZ];
@@ -151,16 +127,16 @@ xmlDocPtr open_xml_from_excel(const char *file_name, const char *xml_name)
 
 static int indent;
 
-void print_indent(void)
+static void print_indent(void)
 {
 	for (int i = indent; i > 0; i--) {
 		printf("   ");
 	}
 }
 
-void print_xmlNode(xmlNodePtr node);
+static void print_xmlNode(xmlNodePtr node);
 
-void print_xmlAttr(xmlAttrPtr attr)
+static void print_xmlAttr(xmlAttrPtr attr)
 {
 	if (attr) {
 		print_indent();
@@ -180,21 +156,21 @@ void print_xmlAttr(xmlAttrPtr attr)
 	indent--;
 }
 
-void print_xmlAttrs(xmlAttrPtr attr)
+static void print_xmlAttrs(xmlAttrPtr attr)
 {
 	for (xmlAttrPtr it = attr; it; it = it->next) {
 		print_xmlAttr(it);
 	}
 }
 
-void print_xmlChildNode(xmlNodePtr child)
+static void print_xmlChildNode(xmlNodePtr child)
 {
 	for (xmlNodePtr node = child; node; node = node->next) {
 		print_xmlNode(node);
 	}
 }
 
-void print_xmlNode(xmlNodePtr node)
+static void print_xmlNode(xmlNodePtr node)
 {
 	if (node) {
 		print_indent();
@@ -217,7 +193,8 @@ void print_xmlNode(xmlNodePtr node)
 	indent--;
 }
 
-void print_xmlDoc(xmlDocPtr doc)
+#if 0
+static void print_xmlDoc(xmlDocPtr doc)
 {
 	printf("doc:\n");
 	indent++;
@@ -231,6 +208,7 @@ void print_xmlDoc(xmlDocPtr doc)
 	}
 	indent = 0;
 }
+#endif
 
 void print_content(Content *content)
 {
@@ -249,7 +227,7 @@ void print_content(Content *content)
 	}
 }
 
-const char *str_cast(const xmlChar *xml_str)
+static const char *str_cast(const xmlChar *xml_str)
 {
 	const xmlChar *orig = xml_str;
 	const char *str = (const char *)orig;
@@ -262,7 +240,7 @@ const char *str_cast(const xmlChar *xml_str)
 	return str;
 }
 
-const xmlChar *xml_cast(const char *str)
+static const xmlChar *xml_cast(const char *str)
 {
 	const char *orig = str;
 	const xmlChar *xml_str = (const xmlChar *)orig;
@@ -275,7 +253,7 @@ const xmlChar *xml_cast(const char *str)
 	return xml_str;
 }
 
-Sheet *new_sheet(const char *file_name, const char *name, const char *sheetId)
+static Sheet *new_sheet(const char *file_name, const char *name, const char *sheetId)
 {
 	Sheet *s = jalloc(1, sizeof(*s));
 	s->excel_name = file_name;
@@ -285,7 +263,7 @@ Sheet *new_sheet(const char *file_name, const char *name, const char *sheetId)
 	return s;
 }
 
-const char *parse_attr(xmlAttrPtr attr, const char *attr_name)
+static const char *parse_attr(xmlAttrPtr attr, const char *attr_name)
 {
 	assert(attr);
 	const char *content = 0;
@@ -314,7 +292,7 @@ enum fatality {
 	FATAL,
 };
 
-xmlAttrPtr find_attr(xmlAttrPtr attr, const char *name)
+static xmlAttrPtr find_attr(xmlAttrPtr attr, const char *name)
 {
 	int len = strlen(name);
 	while (attr &&
@@ -326,7 +304,8 @@ xmlAttrPtr find_attr(xmlAttrPtr attr, const char *name)
 	return attr;
 }
 
-xmlNodePtr find_node(xmlNodePtr node, const char *name, enum fatality fat)
+static xmlNodePtr find_node(xmlNodePtr node, const char *name,
+		enum fatality fat)
 {
 	int len = strlen(name);
 	while (node &&
@@ -349,7 +328,7 @@ xmlNodePtr find_node(xmlNodePtr node, const char *name, enum fatality fat)
 		parse_##n(sheet, n); \
 	}
 
-char *parse_shared_strings_concat(xmlNodePtr it)
+static char *parse_shared_strings_concat(xmlNodePtr it)
 {
 	xmlNodePtr node = find_node(it->children, "r", FATAL);
 	char *buf = 0;
@@ -365,7 +344,7 @@ char *parse_shared_strings_concat(xmlNodePtr it)
 	return buf;
 }
 
-char *parse_shared_strings_value(xmlNodePtr it)
+static char *parse_shared_strings_value(xmlNodePtr it)
 {
 	char *buf = 0;
 	xmlNodePtr node = find_node(it->children, "t", BENIGN);
@@ -380,7 +359,7 @@ char *parse_shared_strings_value(xmlNodePtr it)
 	return buf;
 }
 
-char *parse_shared_strings(unsigned long index, Sheet *sheet)
+static char *parse_shared_strings(unsigned long index, Sheet *sheet)
 {
 	xmlDocPtr sharedStrings = open_xml_from_excel(
 			sheet->excel_name, "sharedStrings");
@@ -399,7 +378,7 @@ char *parse_shared_strings(unsigned long index, Sheet *sheet)
 	return buf;
 }
 
-Content parse_value(Sheet *sheet, xmlNodePtr node)
+static Content parse_value(Sheet *sheet, xmlNodePtr node)
 {
 	assert(sheet);
 	assert(node);
@@ -447,7 +426,7 @@ Content parse_value(Sheet *sheet, xmlNodePtr node)
 	return content;
 }
 
-void parse_col(Sheet *sheet, xmlNodePtr node)
+static void parse_col(Sheet *sheet, xmlNodePtr node)
 {
 	assert(sheet);
 	assert(node);
@@ -460,19 +439,19 @@ void parse_col(Sheet *sheet, xmlNodePtr node)
 	map_put_str(sheet->cells, key, content);
 }
 
-void parse_cols(Sheet *sheet, xmlNodePtr node)
+static void parse_cols(Sheet *sheet, xmlNodePtr node)
 {
 	PARSE(col, "c");
 }
 
-void parse_row(Sheet *sheet, xmlNodePtr node)
+static void parse_row(Sheet *sheet, xmlNodePtr node)
 {
 	assert(sheet);
 	assert(node);
 	parse_cols(sheet, node->children);	
 }
 
-void parse_rows(Sheet *sheet, xmlNodePtr node)
+static void parse_rows(Sheet *sheet, xmlNodePtr node)
 {
 	if (!node) {
 		printf("Warning: sheet '%s' is empty.\n", sheet->name);
@@ -483,7 +462,7 @@ void parse_rows(Sheet *sheet, xmlNodePtr node)
 
 #undef PARSE
 
-void parse_cells(const char *file_name, Sheet *sheet)
+static void parse_cells(const char *file_name, Sheet *sheet)
 {
 	char sheet_name[BUFSIZ];
 	snprintf(sheet_name, sizeof(sheet_name), "%s%s",
@@ -494,7 +473,7 @@ void parse_cells(const char *file_name, Sheet *sheet)
 	parse_rows(sheet, node->children);
 }
 
-Sheet *parse_sheet(const char *file_name, xmlNodePtr node)
+static Sheet *parse_sheet(const char *file_name, xmlNodePtr node)
 {
 	assert(node);
 	const char *name = parse_attr(node->properties, "name");	
@@ -505,7 +484,7 @@ Sheet *parse_sheet(const char *file_name, xmlNodePtr node)
 	return sheet;
 }
 
-Sheet **parse_sheets(const char *file_name, const char *sheet_name)
+static Sheet **parse_sheets(const char *file_name, const char *sheet_name)
 {
 	xmlDocPtr workbook = open_xml_from_excel(file_name, "workbook");
 	assert(workbook);
@@ -537,7 +516,7 @@ Excel *open_excel(const char *file_name, const char *sheet_name)
 	return file;
 }
 
-void print_sheet(Sheet *s)
+static void print_sheet(Sheet *s)
 {
 	printf("sheet name: %s\n", s->name);
 	printf("sheet Id: %s\n", s->sheetId);
@@ -549,6 +528,15 @@ void print_excel(Excel *e)
 	printf("sheets:\n");
 	for (size_t i = 0; i < buf_len(e->sheets); i++) {
 		print_sheet(e->sheets[i]);
+	}
+}
+
+Val cell_val(Content *content)
+{
+	if (content) {
+		return content->val;
+	} else {
+		return (Val){.s = "0"};
 	}
 }
 
@@ -564,43 +552,19 @@ Content *cell_content(Excel *excel, const char *sheet_name, const char *cell)
 					"Choose sheet in which the cell lies");
 		} else {
 			assert(excel->sheets[0]);
+			assert(excel->sheets[0]->cells);
 			return map_get_str(excel->sheets[0]->cells, cell);
 		}
 	} else {
 		for (size_t i = 0; i < buf_len(excel->sheets); i++) {
 			if (!strcmp(sheet_name, excel->sheets[i]->name)) {
 				assert(excel->sheets[i]);
+				assert(excel->sheets[i]->cells);
 				return map_get_str(excel->sheets[i]->cells,
 						cell);
 			}
 		}
 	}
 	die("No sheet '%s' found in file '%s'", sheet_name, excel->name);
-	return 0;
-}
-
-int main(int argc, char *argv[])
-{
-	if (2 != argc) {
-		printf("./a.out 'excel file'\n");
-		return 1;
-	}
-
-	const char *file_name = argv[1];
-	Excel *file = open_excel(file_name, 0);
-	print_excel(file);
-	const char *test_cells[] = {
-		"C11",		
-		"L13",		
-		"AA329",		
-		"D330",		
-		"LV316",
-		"A10000",	
-	};
-	for (size_t i = 0; i < sizeof(test_cells)/sizeof(test_cells[0]); i++)
-	{
-		Content *content = cell_content(file, "Calcul", test_cells[i]);
-		print_content(content);
-	}
 	return 0;
 }
