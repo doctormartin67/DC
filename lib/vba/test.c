@@ -19,7 +19,7 @@
 #include "interpret.h"
 
 #define PRINT_TEST_PARSE 0
-#define PRINT_TEST_RESOLVE 0
+#define PRINT_TEST_RESOLVE 1
 
 void test_keywords(void)
 {
@@ -30,6 +30,8 @@ void test_keywords(void)
 		assert(is_keyword_name(*it));
 	}
 	assert(!is_keyword_name(str_intern("foo")));
+	assert(str_intern("for") == for_keyword);
+	buf_free(keywords);
 }
 
 #define assert_token(x) assert(match_token(x))
@@ -46,7 +48,7 @@ void test_keywords(void)
 void test_lex(void)
 {
 	test_keywords();
-	assert(str_intern("for") == for_keyword);
+	init_keywords();
 
 	// Integer literal tests
 	init_stream(0, "0 2147483647 042 1111");
@@ -55,6 +57,7 @@ void test_lex(void)
 	assert_token_int(42);
 	assert_token_int(1111);
 	assert_token_eof();
+	clear_stream();
 
 	// Float literal tests
 	init_stream(0, "3.14 .123 42.");
@@ -62,12 +65,14 @@ void test_lex(void)
 	assert_token_float(.123);
 	assert_token_float(42.);
 	assert_token_eof();
+	clear_stream();
 
 	// String literal tests
 	init_stream(0, "\"foo\" \"a\\nb\"");
 	assert_token_str("foo");
 	assert_token_str("a\\nb");
 	assert_token_eof();
+	clear_stream();
 
 	// Operator tests
 	init_stream(0, ": + < <= > >= - *");
@@ -80,6 +85,7 @@ void test_lex(void)
 	assert_token(TOKEN_SUB);
 	assert_token(TOKEN_MUL);
 	assert_token_eof();
+	clear_stream();
 
 	// Misc tests
 	init_stream(0, "XY+(XY)_HELLO1,234+994");
@@ -94,6 +100,7 @@ void test_lex(void)
 	assert_token(TOKEN_ADD);
 	assert_token_int(994);
 	assert_token_eof();
+	clear_stream();
 }
 
 #undef assert_token
@@ -233,6 +240,7 @@ void test_parse(void)
 		print_stmt(stmt);
 		printf("\n");
 #endif
+		clear_stream();
 	}
 }
 
@@ -251,11 +259,9 @@ void test_resolve(void)
 		"elseif true then\n"
 			"x = 1.2\n"
 		"end if\n"
-#if 0
-		"if 5 = str*2 then\n"
-			"x = 1^2\n"
-		"end if"
-#endif
+		"str2 = \"hel\" + \"lo\"\n"
+		"bool = false\n"
+		"bool = str = str2\n"
 		;
 	init_stream(0, code);
 	init_builtin_types();
@@ -272,12 +278,15 @@ void test_resolve(void)
 #if PRINT_TEST_RESOLVE
 	print_syms();
 #endif
+	buf_free(stmts);
+	clear_stream();
 	syms_reset();
 
-	enum {N = 1024};
+	enum {N = 1024 * 1024};
 	for (int i = 0; i < N; i++) {
 		interpret(code);
 	}
+	intern_free();
 }
 
 int main(void)

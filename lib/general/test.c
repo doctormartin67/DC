@@ -33,6 +33,7 @@ void test_buf(void)
 	assert(strcmp(str, "One: 1\n") == 0);
 	buf_printf(str, "Hex: 0x%x\n", 0x12345678);
 	assert(strcmp(str, "One: 1\nHex: 0x12345678\n") == 0);
+	buf_free(str);
 }
 
 static Arena arena;
@@ -68,6 +69,7 @@ void test_map(void) {
 		void *val = map_get(&map, (void *)i);
 		assert(val == (void *)(i+1));
 	}
+	map_free(&map);
 }
 
 void test_str_intern(void)
@@ -81,6 +83,7 @@ void test_str_intern(void)
 	assert(str_intern(x) != str_intern(z));
 	assert(str_intern(y) != str_intern(a));
 	assert(str_intern(z) != str_intern(a));
+	intern_free();
 }
 
 void test_replace(void)

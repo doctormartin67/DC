@@ -11,6 +11,7 @@ static size_t ast_memory_usage;
 void ast_free(void)
 {
 	arena_free(&ast_arena);
+	ast_memory_usage = 0;
 }
 
 static void *ast_alloc(size_t size)

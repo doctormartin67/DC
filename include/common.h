@@ -89,6 +89,8 @@ void *map_get(Map *map, const void *key);
 void map_put(Map *map, const void *key, void *val);
 void *map_get_str(Map *map, const char *str);
 void map_put_str(Map *map, const char *str, void *val);
+void map_free(Map *map);
 const char *intern_arena_end(void);
+void intern_free(void);
 
 #endif

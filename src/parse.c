@@ -81,6 +81,7 @@ static Expr *parse_expr_base(void)
 		}
 		expect_token(TOKEN_RPAREN);
 		expr = new_expr_call(pos, expr, args, buf_len(args));
+		buf_free(args);
 	}
 	return expr;
 }
@@ -208,10 +209,13 @@ static StmtBlock parse_stmt_block(void)
 {
 	SrcPos pos = token_pos();
 	Stmt **stmts = 0;
+	StmtBlock block = (StmtBlock) {0};
 	while (!is_token_eof() && !is_end_of_block()) {
 		buf_push(stmts, parse_stmt());
 	}
-	return new_StmtBlock(pos, stmts, buf_len(stmts));
+	block = new_StmtBlock(pos, stmts, buf_len(stmts));
+	buf_free(stmts);
+	return block;
 }
 
 static Stmt *parse_stmt_if(SrcPos pos)
@@ -221,6 +225,7 @@ static Stmt *parse_stmt_if(SrcPos pos)
 	StmtBlock then_block = parse_stmt_block();
 	StmtBlock else_block = {0};
 	ElseIf *elseifs = 0;
+	Stmt *stmt = 0;
 	while (match_keyword(elseif_keyword)) {
 		Expr *elseif_cond = parse_expr();
 		expect_keyword(then_keyword);
@@ -232,8 +237,11 @@ static Stmt *parse_stmt_if(SrcPos pos)
 	}
 	expect_keyword(end_keyword);
 	expect_keyword(if_keyword);
-	return new_stmt_if(pos, cond, then_block, elseifs,
+	stmt = new_stmt_if(pos, cond, then_block, elseifs,
 			buf_len(elseifs), else_block);
+	assert(stmt);
+	buf_free(elseifs);
+	return stmt;
 }
 
 static Stmt *parse_stmt_while(SrcPos pos)
@@ -324,6 +332,7 @@ static Stmt *parse_stmt_dim(void)
 		buf_push(dims, (Dim){expr->name, type});
 	}
 	stmt = new_stmt_dim(expr->pos, dims, num_dims);
+	buf_free(dims);
 	assert(STMT_DIM == stmt->kind);
 	return stmt;
 }
@@ -417,6 +426,7 @@ static SelectCasePattern parse_select_case_pattern(void) {
 static SelectCase parse_stmt_select_case(void)
 {
 	SelectCasePattern *patterns = 0;
+	SelectCase sc = (SelectCase){0};
 	unsigned is_default = 0;
 	unsigned is_first_case = 1;
 	while (match_keyword(case_keyword)) {
@@ -448,8 +458,10 @@ static SelectCase parse_stmt_select_case(void)
 			&& !is_a_keyword(end_keyword)) {
 		buf_push(stmts, parse_stmt());
 	}
-	return (SelectCase){patterns, buf_len(patterns), is_default,
+	sc = (SelectCase){patterns, buf_len(patterns), is_default,
 		new_StmtBlock(pos, stmts, buf_len(stmts))};
+	buf_free(stmts);
+	return sc;
 }
 
 static Stmt *parse_stmt_select(SrcPos pos)
@@ -458,12 +470,20 @@ static Stmt *parse_stmt_select(SrcPos pos)
 	Expr *expr = parse_expr();
 	assert(EXPR_NAME == expr->kind);
 	SelectCase *cases = 0;
+	Stmt *stmt = 0;
 	while (!is_token_eof() && !is_a_keyword(end_keyword)) {
 		buf_push(cases, parse_stmt_select_case());
 	}
 	expect_keyword(end_keyword);
 	expect_keyword(select_keyword);
-	return new_stmt_select_case(pos, expr, cases, buf_len(cases));
+	stmt = new_stmt_select_case(pos, expr, cases, buf_len(cases));
+	assert(stmt);
+
+	for (size_t i = 0; i < buf_len(cases); i++) {
+		buf_free(cases[i].patterns);
+	}
+	buf_free(cases);
+	return stmt;
 }
 
 

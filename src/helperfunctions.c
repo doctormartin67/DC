@@ -61,8 +61,8 @@ int DIRexists(const char dname[restrict static 1])
 	DIR* dir = opendir(dname);
 	if (dir) {
 		/* Directory FILEexists. */
-		return 1;
 		closedir(dir);
+		return 1;
 	} else if (ENOENT == errno) {
 		/* Directory does not exist. */
 		return 0;

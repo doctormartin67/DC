@@ -20,11 +20,13 @@ static Sym *parse_interpreter(const char *name)
 	for (size_t i = 0; i < buf_len(stmts); i++) {
 		assert(stmts[i]);
 	}
+	buf_free(stmts);
 	return sym_get(name);
 }
 
-static void clean_interpreter(void)
+static void clear_interpreter(void)
 {
+	clear_stream();
 	syms_reset();
 	ast_free();
 }
@@ -33,5 +35,5 @@ void interpret(const char *vba_code)
 {
 	init_interpreter(vba_code);
 	(void)parse_interpreter("x");
-	clean_interpreter();
+	clear_interpreter();
 }

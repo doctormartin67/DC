@@ -111,6 +111,7 @@ void warning(SrcPos pos, const char *fmt, ...);
 void error(SrcPos pos, const char *fmt, ...);
 void next_token(void);
 void init_stream(const char *name, const char *buf);
+void clear_stream(void);
 unsigned is_token(TokenKind kind);
 unsigned is_token_eof(void);
 unsigned is_a_keyword(const char *name);

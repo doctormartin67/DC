@@ -620,11 +620,9 @@ static Operand resolve_expr_float(Expr *expr)
 static Operand resolve_expr_string(Expr *expr)
 {
 	assert(expr->kind == EXPR_STR);
-	char *val = 0;
-	buf_printf(val, expr->str_lit.val);
+	const char *val = expr->str_lit.val;
 	Operand operand = operand_const(type_string,
 			(Val){.s = str_intern(val)});
-	buf_free(val);
 	return operand;
 }
 

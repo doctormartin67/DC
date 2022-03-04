@@ -57,7 +57,7 @@ void init_keywords(void)
 	first_op_keyword = mod_keyword;
 	last_op_keyword = xor_keyword;
 
-	inited = 0;
+	inited = 1;
 }
 
 #undef KEYWORD
@@ -211,6 +211,10 @@ static void scan_float(void) {
 	token.float_val = val;
 }
 
+/*
+ * 'strs' is used to clear all strings once we are done with a stream
+ */
+static char **strs;
 static void scan_str(void) {
 	assert('"' == *stream);
 	stream++;
@@ -234,6 +238,7 @@ static void scan_str(void) {
 	buf_push(str, '\0');
 	token.kind = TOKEN_STR;
 	token.str_val = str;
+	buf_push(strs, str);
 }
 
 #define CASE1(c1, k1) \
@@ -367,6 +372,14 @@ void init_stream(const char *name, const char *buf)
 	token.pos.name = name ? name : "<editor>";
 	token.pos.line = 1;
 	next_token();
+}
+
+void clear_stream(void)
+{
+	for (size_t i = 0; i < buf_len(strs); i++) {
+		buf_free(strs[i]);
+	}
+	buf_free(strs);
 }
 
 unsigned is_token(TokenKind kind)

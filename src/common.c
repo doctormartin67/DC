@@ -129,6 +129,14 @@ static uint64_t map_get_uint64_from_uint64(Map *map, uint64_t key)
 
 static void map_put_uint64_from_uint64(Map *map, uint64_t key, uint64_t val);
 
+void map_free(Map *map)
+{
+	free(map->keys);
+	free(map->vals);
+	map->len = 0;
+	map->cap = 0;
+}
+
 static void map_grow(Map *map, size_t new_cap)
 {
 	new_cap = CLAMP_MIN(new_cap, 16);
@@ -143,8 +151,7 @@ static void map_grow(Map *map, size_t new_cap)
 					map->vals[i]);
 		}
 	}
-	free(map->keys);
-	free(map->vals);
+	map_free(map);
 	*map = new_map;
 }
 
@@ -214,6 +221,13 @@ void map_put_str(Map *map, const char *str, void *val)
 static Arena intern_arena;
 static Map interns;
 static size_t intern_memory_usage;
+
+void intern_free(void)
+{
+	map_free(&interns);
+	arena_free(&intern_arena);
+	intern_memory_usage = 0;
+}
 
 const char *intern_arena_end(void)
 {
