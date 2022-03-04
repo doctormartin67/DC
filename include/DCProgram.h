@@ -220,7 +220,7 @@ typedef struct {
 } DataSet;
 
 //---Useful functions for CurrentMembers---
-double gensum(const GenMatrix amount[], unsigned EREE, unsigned loop);
+double gensum(GenMatrix amount[], unsigned EREE, unsigned loop);
 
 //---Reconciliation declarations---
 enum runs {runLY, runUpdateInflation, runUpdateDR, runRF,

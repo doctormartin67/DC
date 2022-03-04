@@ -6,7 +6,7 @@ EXE = test
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror -pedantic
+CFLAGS = -g -Wall -Wextra -Werror -pedantic -O0
 INCLUDES = -I $(INCLUDE)
 LIBS = -lgeneral
 LDLIBS = $(LIBS)
@@ -14,7 +14,7 @@ LDFLAGS = -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
-OBJS = lex.o type.o ast.o print_ast.o parse.o resolve.o
+OBJS = lex.o type.o ast.o print_ast.o parse.o resolve.o interpret.o
 .DELETE_ON_ERROR: $(OBJS)
 
 # ---vpath---

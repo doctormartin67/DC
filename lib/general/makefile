@@ -5,7 +5,7 @@ EXE = test
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror -pedantic
+CFLAGS = -g -Wall -Wextra -Werror -pedantic -O0
 INCLUDES = -I $(INCLUDE)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 

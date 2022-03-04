@@ -1,4 +1,3 @@
-#include "calculator.h"
 #include "DCProgram.h"
 #include "xlsxwriter.h"
 #include "printresults.h"

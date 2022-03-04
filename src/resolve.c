@@ -32,31 +32,38 @@ static void print_sym_dim(Sym *sym)
 	}
 }
 
+void print_sym(Sym *sym)
+{
+	assert(sym);
+	switch (sym->kind) {
+		case SYM_TYPE:
+			printf("%s\n", sym->name);
+			break;
+		case SYM_DIM:
+			print_sym_dim(sym);	
+			break;
+		default:
+			assert(0);
+			break;
+	}
+
+}
+
 void print_syms(void)
 {
 	printf("\nall symbols:\n");
 	printf("-------\n");
 	for (Sym *sym = syms; sym < syms_end; sym++) {
-		switch (sym->kind) {
-			case SYM_TYPE:
-				printf("%s\n", sym->name);
-				break;
-			case SYM_DIM:
-				print_sym_dim(sym);	
-				break;
-			default:
-				assert(0);
-				break;
-		}
+		print_sym(sym);
 	}
 	printf("-------\n");
 }
 
-static Sym *sym_get(const char *name)
+Sym *sym_get(const char *name)
 {
 	for (Sym *it = syms_end; it != syms; it--) {
 		Sym *sym = it - 1;
-		if (sym->name == name) {
+		if (sym->name == str_intern(name)) {
 			return sym;
 		}
 	}
@@ -98,6 +105,15 @@ static unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 		}
 	}
 	return 1;
+}
+
+void syms_reset(void)
+{
+	for (Sym *it = syms_end; it != syms; it--) {
+		Sym *sym = it - 1;
+		*sym = (Sym){0};
+	}
+	syms_end = syms;
 }
 
 Operand operand_null;
@@ -493,8 +509,6 @@ static Operand resolve_binary_string_op(SrcPos pos, TokenKind op, Operand left,
 		case TOKEN_LTEQ:
 		case TOKEN_GT:
 		case TOKEN_GTEQ:
-			assert(0);
-			break;
 		case TOKEN_SUB:
 		case TOKEN_MOD:
 			fatal_error(pos, "Both operands of '%s' must have "
@@ -945,3 +959,4 @@ void resolve_stmts(Stmt **stmts)
 		resolve_stmt(stmts[i], 1);
 	}
 }
+

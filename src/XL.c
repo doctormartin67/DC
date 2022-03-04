@@ -1,6 +1,6 @@
 #include <string.h>
 #include <sys/stat.h>
-#include "libraryheader.h"
+#include "helperfunctions.h"
 #include "XL.h"
 
 /*

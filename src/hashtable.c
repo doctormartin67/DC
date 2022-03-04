@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "libraryheader.h"
+#include "helperfunctions.h"
 #include "hashtable.h"
 #include "errorexit.h"
 

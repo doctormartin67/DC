@@ -1,5 +1,5 @@
 #define _GNU_SOURCE
-#include "libraryheader.h"
+#include "helperfunctions.h"
 #include "errorexit.h"
 #include "XL.h"
 #include "assumptions.h"
@@ -175,7 +175,7 @@ void createCM(CurrentMember cm[static 1], Hashtable ht[static 1])
 	if (strcmp(getcmval(cm, PREP, -1, -1), "1") == 0)  cm->extra += CCRA;
 }
 
-double gensum(const GenMatrix amount[static EREE_AMOUNT],
+double gensum(GenMatrix amount[static EREE_AMOUNT],
 		unsigned EREE, unsigned k)
 {
 	double sum = 0;

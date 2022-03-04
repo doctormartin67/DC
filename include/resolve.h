@@ -40,7 +40,10 @@ enum {
 	MAX_SYMS = 1024
 };
 
+Sym *sym_get(const char *name);
+void syms_reset(void);
 void resolve_stmts(Stmt **stmts);
+void print_sym(Sym *sym);
 void print_syms(void);
 
 #endif

@@ -1,9 +1,7 @@
 #include <assert.h>
 #include "userinterface.h"
-#include "libraryheader.h"
+#include "helperfunctions.h"
 #include "errorexit.h"
-#include "interpreter.h"
-#include "treeerrors.h"
 
 const char *const validMsg[ERR_AMOUNT] = {
 	[DATEERR] = "[dd/mm/yyyy]", 

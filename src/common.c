@@ -85,6 +85,7 @@ void arena_free(Arena *arena)
 	for (char **it = arena->blocks; it != buf_end(arena->blocks); it++)
 		free(*it);
 	buf_free(arena->blocks);
+	arena->ptr = arena->end = 0;
 }
 
 static uint64_t hash_uint64(uint64_t x)

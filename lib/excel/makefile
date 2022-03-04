@@ -7,7 +7,7 @@ PACKAGE = libxml2-dev
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror -pedantic
+CFLAGS = -g -Wall -Wextra -Werror -pedantic -O0
 INCLUDES = -I $(INCLUDE) `pkg-config --cflags libxml-2.0`
 LIBS = -lgeneral
 LDLIBS = $(LIBS) `xml2-config --libs`
@@ -15,7 +15,7 @@ LDFLAGS = -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
-OBJS = excel.o
+OBJS = excel.o XL.o
 .DELETE_ON_ERROR: $(OBJS)
 
 # ---vpath---
@@ -30,21 +30,7 @@ CP = cp
 all: $(PACKAGE) $(EXE)
 
 $(PACKAGE):
-	@echo "#####"
-	@echo "Cheking if package '$(PACKAGE)' is installed"
-	@echo "#####"
-	@dpkg -s $(PACKAGE); \
-	if [ $$? ]; then \
-	    echo "#####"; \
-	    echo "package '$(PACKAGE)' found"; \
-	    echo "#####"; \
-	else \
-	    echo "package '$(PACKAGE)' not installed"; \
-	    read -p "install? (y/n)" confirm; \
-	    if [ $$confirm = y ]; then \
-		sudo apt install $(PACKAGE); \
-	    fi \
-	fi
+	$(call install_dependency, $(PACKAGE))
 	
 $(EXE): $(EXE).o libexcel.a
 
@@ -65,3 +51,21 @@ include $(subst .o,.d,$(OBJS))
 clean:
 	$(RM) *.[oda]
 	$(RM) $(EXE)
+
+# ---functions---
+define install_dependency
+	@echo "#####"
+	@echo "Cheking if package '$1' is installed"
+	@echo "#####"
+	if dpkg -s $1; then\
+	    echo "#####"; \
+	    echo "package '$1' found"; \
+	    echo "#####"; \
+	else \
+	    echo "package '$1' not installed"; \
+	    read -p "install? (y/n)" confirm; \
+	    if [ $$confirm = y ]; then \
+		sudo apt install $1; \
+	    fi \
+	fi
+endef

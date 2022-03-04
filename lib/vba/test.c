@@ -16,6 +16,7 @@
 #include "print_ast.h"
 #include "parse.h"
 #include "resolve.h"
+#include "interpret.h"
 
 #define PRINT_TEST_PARSE 0
 #define PRINT_TEST_RESOLVE 0
@@ -256,7 +257,6 @@ void test_resolve(void)
 		"end if"
 #endif
 		;
-	//TODO: resolve_binary_string_op!!!
 	init_stream(0, code);
 	init_builtin_types();
 	Stmt **stmts = 0;
@@ -272,6 +272,12 @@ void test_resolve(void)
 #if PRINT_TEST_RESOLVE
 	print_syms();
 #endif
+	syms_reset();
+
+	enum {N = 1024};
+	for (int i = 0; i < N; i++) {
+		interpret(code);
+	}
 }
 
 int main(void)

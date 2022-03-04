@@ -26,9 +26,8 @@ typedef struct Excel {
 } Excel;
 
 Excel *open_excel(const char *file_name, const char *sheet_name);
+Val cell_val(Excel *excel, const char *sheet_name, const char *cell);
 void print_excel(Excel *e);
-Content *cell_content(Excel *excel, const char *sheet_name, const char *cell);
-Val cell_val(Content *content);
 void print_content(Content *content);
 
 #endif

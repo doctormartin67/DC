@@ -531,16 +531,7 @@ void print_excel(Excel *e)
 	}
 }
 
-Val cell_val(Content *content)
-{
-	if (content) {
-		return content->val;
-	} else {
-		return (Val){.s = "0"};
-	}
-}
-
-Content *cell_content(Excel *excel, const char *sheet_name, const char *cell)
+static Content *cell_content(Excel *excel, const char *sheet_name, const char *cell)
 {
 	if (!excel || !cell) {
 		die("excel file and cell must have a value");
@@ -568,3 +559,14 @@ Content *cell_content(Excel *excel, const char *sheet_name, const char *cell)
 	die("No sheet '%s' found in file '%s'", sheet_name, excel->name);
 	return 0;
 }
+
+Val cell_val(Excel *excel, const char *sheet_name, const char *cell)
+{
+	Content *content = cell_content(excel, sheet_name, cell);
+	if (content) {
+		return content->val;
+	} else {
+		return (Val){.s = "0"};
+	}
+}
+

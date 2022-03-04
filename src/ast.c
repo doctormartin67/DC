@@ -8,6 +8,11 @@ static Arena ast_arena;
 
 static size_t ast_memory_usage;
 
+void ast_free(void)
+{
+	arena_free(&ast_arena);
+}
+
 static void *ast_alloc(size_t size)
 {
 	assert(0 != size);

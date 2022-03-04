@@ -2,7 +2,6 @@
 #define ASSUMPTIONS
 
 #include "userinterface.h"
-#include "interpreter.h"
 
 enum {
 	IA_CALCA, IA_CALCC, IA_CALCDTH, IA_SS, IA_NRA, IA_WXDEF, IA_RETX,

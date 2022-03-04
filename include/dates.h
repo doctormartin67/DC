@@ -1,7 +1,7 @@
 #ifndef DATES
 #define DATES
 
-#include "libraryheader.h"
+#include "helperfunctions.h"
 
 #define MINDATE3(X, Y, Z) MINDATE2(MINDATE2(X, Y), Z)
 #define MINDATE2(X, Y) minDate(X, Y)

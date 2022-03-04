@@ -192,6 +192,8 @@ struct Stmt {
 	};
 };
 
+void ast_free(void);
+
 StmtBlock new_StmtBlock(SrcPos pos, Stmt **stmts, size_t num_stmts);
 Typespec *new_typespec_name(SrcPos pos, const char *name);
 Expr *new_expr(ExprKind kind, SrcPos pos);
