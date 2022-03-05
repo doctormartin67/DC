@@ -80,6 +80,15 @@ void *arena_alloc(Arena *arena, size_t size)
 	return ptr;
 }
 
+char *arena_str_dup(Arena *arena, const char *str)
+{
+		char *new_str = 0;
+		size_t size = strlen(str) + 1;
+		new_str = arena_alloc(arena, size);
+		snprintf(new_str, size, "%s", str);
+		return new_str;
+}
+
 void arena_free(Arena *arena)
 {
 	for (char **it = arena->blocks; it != buf_end(arena->blocks); it++)

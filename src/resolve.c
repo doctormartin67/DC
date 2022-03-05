@@ -86,7 +86,7 @@ unsigned sym_push_type(const char *name, Type *type)
 	return 1;
 }
 
-static unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
+unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 {
 	if (sym_get(name)) {
 		return 0;

@@ -15,8 +15,8 @@ typedef struct Content {
 
 typedef struct Sheet {
 	const char *excel_name;
-	const char *name;
-	const char *sheetId;
+	char *name;
+	char *sheetId;
 	Map *cells;
 } Sheet;
 
@@ -26,6 +26,7 @@ typedef struct Excel {
 } Excel;
 
 Excel *open_excel(const char *file_name, const char *sheet_name);
+void close_excel(Excel *excel);
 Val cell_val(Excel *excel, const char *sheet_name, const char *cell);
 void print_excel(Excel *e);
 void print_content(Content *content);

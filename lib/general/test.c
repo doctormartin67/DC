@@ -55,6 +55,10 @@ void test_arena(void)
 	assert(arena.ptr - (char *)ptrd == 256);
 	assert(buf_len(arena.blocks) == 1);
 
+	char *str = arena_str_dup(&arena, "hello");
+	assert(!strcmp(str, "hello"));
+	assert(strcmp(str, "ello"));
+
 	arena_free(&arena);	
 }
 

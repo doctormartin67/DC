@@ -13,6 +13,7 @@ int main(void)
 	assert(!strcmp(cell_val(file, "Sheet2", "C7").s, "0"));
 	assert(!strcmp(cell_val(file, "Sheet3", "E5").s, "helloI"));
 	assert(!strcmp(cell_val(file, "Sheet3", "I1").s, "0"));
+	close_excel(file);
 	return 0;
 }
 

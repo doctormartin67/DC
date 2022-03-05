@@ -82,6 +82,7 @@ void *buf__grow(const void *buf, size_t new_len, size_t elem_size);
 char *buf__printf(char *buf, const char *fmt, ...);
 void arena_grow(Arena *arena, size_t min_size);
 void *arena_alloc(Arena *arena, size_t size);
+char *arena_str_dup(Arena *arena, const char *str);
 void arena_free(Arena *arena);
 const char *str_intern_range(const char *start, const char *end);
 const char *str_intern(const char *str);

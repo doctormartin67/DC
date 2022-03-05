@@ -246,45 +246,91 @@ void test_parse(void)
 
 void test_resolve(void)
 {
-	const char *code = 
+	const char *code[] = {
 		"dim str as string\n"
-		"dim str2 as string\n"
-		"dim i as integer\n"
-		"dim x as double\n"
-		"dim bool as boolean\n"
-		"bool = true or false or 2.2 and -2.3\n"
-		"str = \"hello\""
-		"if bool then\n"
+			"dim str2 as string\n"
+			"dim i as integer\n"
+			"dim x as double\n"
+			"dim bool as boolean\n"
+			"bool = true or false or 2.2 and -2.3\n"
+			"str = \"hello\""
+			"if bool then\n"
 			"x = -1.1 - 3/2\n"
-		"elseif true then\n"
+			"elseif true then\n"
 			"x = 1.2\n"
-		"end if\n"
-		"str2 = \"hel\" + \"lo\"\n"
-		"bool = false\n"
-		"bool = str = str2\n"
-		;
-	init_stream(0, code);
-	init_builtin_types();
-	Stmt **stmts = 0;
-	stmts = parse_stmts();
-	resolve_stmts(stmts);
-	for (size_t i = 0; i < buf_len(stmts); i++) {
-		assert(stmts[i]);
-#if PRINT_TEST_RESOLVE
-		print_stmt(stmts[i]);
-		printf("\n");
-#endif
+			"end if\n"
+			"str2 = \"hel\" + \"lo\"\n"
+			"bool = false\n"
+			"bool = str = str2\n"
+			"result = str2\n",
+		"dim str as string\n"
+			"dim str2 as string\n"
+			"dim i as integer\n"
+			"dim x as double\n"
+			"dim bool as boolean\n"
+			"bool = true or false or 2.2 and -2.3\n"
+			"str = \"hello\""
+			"if bool then\n"
+			"x = -1.1 - 3/2\n"
+			"i = 7\n"
+			"elseif true then\n"
+			"x = 1.2\n"
+			"end if\n"
+			"str2 = \"hel\" + \"lo\"\n"
+			"bool = false\n"
+			"bool = str = str2\n"
+			"result = i\n",
+		"dim str as string\n"
+			"dim str2 as string\n"
+			"dim i as integer\n"
+			"dim x as double\n"
+			"dim bool as boolean\n"
+			"bool = true or false or 2.2 and -2.3\n"
+			"str = \"hello\""
+			"if bool then\n"
+			"x = -1.1 - 3/2\n"
+			"i = 7\n"
+			"elseif true then\n"
+			"x = 1.2\n"
+			"end if\n"
+			"str2 = \"hel\" + \"lo\"\n"
+			"bool = false\n"
+			"bool = str = str2\n"
+			"result = x\n",
+		"dim str as string\n"
+			"dim str2 as string\n"
+			"dim i as integer\n"
+			"dim x as double\n"
+			"dim bool as boolean\n"
+			"bool = true or false or 2.2 and -2.3\n"
+			"str = \"hello\""
+			"if bool then\n"
+			"x = -1.1 - 3/2\n"
+			"i = 7\n"
+			"elseif true then\n"
+			"x = 1.2\n"
+			"end if\n"
+			"str2 = \"hel\" + \"lo\"\n"
+			"bool = false\n"
+			"bool = str = str2\n"
+			"result = x\n",
 	}
-#if PRINT_TEST_RESOLVE
-	print_syms();
-#endif
-	buf_free(stmts);
-	clear_stream();
-	syms_reset();
+	;
 
-	enum {N = 1024 * 1024};
+	const char *result_str = 0;
+	int result_int = 0;
+	double result_double = 0.0;
+	bool result_bool = false;
+	enum {N = 1024};
 	for (int i = 0; i < N; i++) {
-		interpret(code);
+		result_str = interpret(code[0], type_string).s;
+		assert(!strcmp(result_str, "hello"));
+		result_int = interpret(code[1], type_int).i;
+		assert(7 == result_int);
+		result_double = interpret(code[2], type_double).d;
+		assert(-2.600001 < result_double && -2.599999 > result_double);
+		result_bool = interpret(code[3], type_boolean).b;
+		assert(true == result_bool);
 	}
 	intern_free();
 }

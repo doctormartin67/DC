@@ -10,6 +10,8 @@
 #include "common.h"
 #include "helperfunctions.h"
 
+static Arena content_arena;
+
 static void remove_dir(const char *dir_name)
 {
 	assert(dir_name);
@@ -25,9 +27,6 @@ static void unzip_zip(const char *zip_name, const char *dir_name)
 	char cmd[BUFSIZ];
 
 	remove_dir(dir_name);
-
-	if (system(cmd) != 0)
-		die("system command [%s] failed, are you on windows?", cmd);
 
 	if (mkdir(dir_name, S_IRWXU | S_IRWXG | S_IRWXO) == -1)
 		die("Error making directory [%s]", dir_name);
@@ -45,9 +44,6 @@ static void create_zip(const char *zip_name, const char *file_name)
 	char cmd[BUFSIZ];
 
 	remove_dir(zip_name);
-
-	if (system(cmd) != 0)
-		die("system command [%s] failed, are you on windows?", cmd);
 
 	snprintf(cmd, sizeof(cmd), 
 			"%s%s%c%s%s%c", "cp '", file_name, '\'', " '",
@@ -253,7 +249,7 @@ static const xmlChar *xml_cast(const char *str)
 	return xml_str;
 }
 
-static Sheet *new_sheet(const char *file_name, const char *name, const char *sheetId)
+static Sheet *new_sheet(const char *file_name, char *name, char *sheetId)
 {
 	Sheet *s = jalloc(1, sizeof(*s));
 	s->excel_name = file_name;
@@ -263,10 +259,10 @@ static Sheet *new_sheet(const char *file_name, const char *name, const char *she
 	return s;
 }
 
-static const char *parse_attr(xmlAttrPtr attr, const char *attr_name)
+static char *parse_attr(xmlAttrPtr attr, const char *attr_name)
 {
 	assert(attr);
-	const char *content = 0;
+	char *content = 0;
 	int len = strlen(attr_name);
 	while (attr && 	
 			(xmlStrlen(attr->name) != len
@@ -374,6 +370,7 @@ static char *parse_shared_strings(unsigned long index, Sheet *sheet)
 			break;
 		}
 	}
+	xmlFreeDoc(sharedStrings);
 	assert(buf);
 	return buf;
 }
@@ -406,7 +403,8 @@ static Content parse_value(Sheet *sheet, xmlNodePtr node)
 		assert(!(index < 0));
 		buf = parse_shared_strings(index, sheet);
 		assert(buf);
-		content.val.s = buf;
+		content.val.s = arena_str_dup(&content_arena, buf);
+		buf_free(buf);
 	} else if (!xmlStrcmp(test->content, xml_cast("str"))
 			|| !xmlStrcmp(test->content, xml_cast("e"))
 			|| !xmlStrcmp(test->content, xml_cast("n"))) {
@@ -415,7 +413,8 @@ static Content parse_value(Sheet *sheet, xmlNodePtr node)
 		content.kind = TYPE_STRING;
 		buf_printf(buf, "%s", value_str);
 		assert(buf);
-		content.val.s = buf;
+		content.val.s = arena_str_dup(&content_arena, buf);
+		buf_free(buf);
 	} else {
 		assert(!xmlStrcmp(test->content, xml_cast("n")));
 		content.kind = TYPE_DOUBLE;
@@ -434,7 +433,7 @@ static void parse_col(Sheet *sheet, xmlNodePtr node)
 	assert(attr);
 	xmlNodePtr cell_name = find_node(attr->children, "text", FATAL);
 	const char *key = str_cast(cell_name->content);
-	Content *content = jalloc(1, sizeof(content));
+	Content *content = arena_alloc(&content_arena, sizeof(*content));
 	*content = parse_value(sheet, node);
 	map_put_str(sheet->cells, key, content);
 }
@@ -471,13 +470,14 @@ static void parse_cells(const char *file_name, Sheet *sheet)
 	xmlNodePtr node = xml_sheet->children->children;
 	node = find_node(node, "sheetData", FATAL);
 	parse_rows(sheet, node->children);
+	xmlFreeDoc(xml_sheet);
 }
 
 static Sheet *parse_sheet(const char *file_name, xmlNodePtr node)
 {
 	assert(node);
-	const char *name = parse_attr(node->properties, "name");	
-	const char *sheetId = parse_attr(node->properties, "sheetId");
+	char *name = parse_attr(node->properties, "name");	
+	char *sheetId = parse_attr(node->properties, "sheetId");
 
 	Sheet *sheet = new_sheet(file_name, name, sheetId);
 	parse_cells(file_name, sheet);
@@ -492,13 +492,15 @@ static Sheet **parse_sheets(const char *file_name, const char *sheet_name)
 	xmlNodePtr node = workbook->children->children;
 	assert(node);
 	node = find_node(node, "sheets", FATAL);
-	const char *curr_sheet_name = 0;
+	char *curr_sheet_name = 0;
 	for (xmlNodePtr it = node->children; it; it = it->next) {
 		curr_sheet_name = parse_attr(it->properties, "name");
 		if (!sheet_name || !strcmp(sheet_name, curr_sheet_name)) {
 			buf_push(sheets, parse_sheet(file_name, it));
 		}
+		free(curr_sheet_name);
 	}
+	xmlFreeDoc(workbook);
 	return sheets;
 }
 
@@ -507,13 +509,33 @@ Excel *open_excel(const char *file_name, const char *sheet_name)
 	assert(file_name);
 	extract_excel(file_name);
 	Excel *file = jalloc(1, sizeof(*file));
-	file->name = strdup(file_name);
+	file->name = file_name;
 	file->sheets = parse_sheets(file->name, sheet_name);
 	if (!file->sheets) {
 		assert(sheet_name);
 		die("No sheet '%s' found in file '%s'", sheet_name, file_name);
 	}
 	return file;
+}
+
+static void free_sheets(Sheet **sheets)
+{
+	for (size_t i = 0; i < buf_len(sheets); i++) {
+		map_free(sheets[i]->cells);
+		free(sheets[i]->cells);
+		free(sheets[i]->name);
+		free(sheets[i]->sheetId);
+		free(sheets[i]);
+	}
+	buf_free(sheets);
+}
+
+void close_excel(Excel *excel)
+{
+	free_sheets(excel->sheets);
+	arena_free(&content_arena);
+	free(excel);
+	xmlCleanupParser();
 }
 
 static void print_sheet(Sheet *s)
@@ -569,4 +591,3 @@ Val cell_val(Excel *excel, const char *sheet_name, const char *cell)
 		return (Val){.s = "0"};
 	}
 }
-

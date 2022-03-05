@@ -5,15 +5,19 @@
 #include "type.h"
 #include "resolve.h"
 
-static void init_interpreter(const char *vba_code)
+/*
+ * every interpreter will have a 'result' variable to be returned
+ */
+static const char *result = "result";
+static void init_interpreter(const char *vba_code, Type *type)
 {
 	init_stream(0, vba_code);
 	init_builtin_types();
+	sym_push_dim(result, type, 1);
 }
 
-static Sym *parse_interpreter(const char *name)
+static Sym *parse_interpreter(void)
 {
-	assert(name);
 	Stmt **stmts = 0;
 	stmts = parse_stmts();
 	resolve_stmts(stmts);
@@ -21,7 +25,7 @@ static Sym *parse_interpreter(const char *name)
 		assert(stmts[i]);
 	}
 	buf_free(stmts);
-	return sym_get(name);
+	return sym_get(result);
 }
 
 static void clear_interpreter(void)
@@ -31,9 +35,10 @@ static void clear_interpreter(void)
 	ast_free();
 }
 
-void interpret(const char *vba_code)
+Val interpret(const char *vba_code, Type *type)
 {
-	init_interpreter(vba_code);
-	(void)parse_interpreter("x");
+	init_interpreter(vba_code, type);
+	Val val = parse_interpreter()->val;
 	clear_interpreter();
+	return val;
 }
