@@ -41,7 +41,7 @@ enum {
 };
 
 Sym *sym_get(const char *name);
-unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt);
+unsigned sym_push_var(const char *name, Type *type, Val val);
 void syms_reset(void);
 void resolve_stmts(Stmt **stmts);
 void print_sym(Sym *sym);

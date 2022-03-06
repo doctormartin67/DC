@@ -2,6 +2,13 @@
 #include "xlsxwriter.h"
 #include "printresults.h"
 #include "assumptions.h"
+#include "common.h"
+
+struct variable {
+	char *name;
+	unsigned is_number;
+	Val v;
+};
 
 static struct variable tc_print[TC_AMOUNT] = {
 	[TC_KEY] = {"KEY", 0, .v.s = ""},
@@ -228,10 +235,10 @@ static void set_row_values(CurrentMember *cm, int row)
 {
 	unsigned a = 4;
 	unsigned gen = 0;
-	char *s = tc_print[TC_KEY].v.s;
-	size_t len = sizeof(tc_print[TC_KEY].v.s);
+	size_t size = strlen(tc_print[TC_KEY].v.s) + 1;
+	char s[size];
 
-	snprintf(s, len, "%s", cm->key);
+	snprintf(s, size, "%s", cm->key);
 
 	tc_print[TC_AGE].v.d = cm->age[row];
 	tc_print[TC_SAL].v.d = cm->sal[row];

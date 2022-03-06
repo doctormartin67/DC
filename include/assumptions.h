@@ -42,7 +42,13 @@ typedef struct {
 	double TRM_PercDef;
 	double taxes;
 	struct date *DOC;
-	struct casetree *ct[IA_AMOUNT];
+	const char *ss;
+	const char *nra;
+	const char *wxdef;
+	const char *retx;
+	const char *calc_a;
+	const char *calc_c;
+	const char *calc_dth;
 } Assumptions;
 
 Assumptions ass;
@@ -52,8 +58,8 @@ void set_tariffs(const CurrentMember *cm);
 void setparameters(const CurrentMember *cm, int k);
 double salaryscale(const CurrentMember *cm, int k);
 double calcA(const CurrentMember *cm, int k);
-double calcC(const CurrentMember *cm, int k);
-double calcDTH(const CurrentMember *cm, int k);
+double calcC(CurrentMember *cm, int k);
+double calcDTH(CurrentMember *cm, int k);
 double NRA(const CurrentMember *cm, int k);
 double wxdef(const CurrentMember *cm, int k);
 double retx(const CurrentMember *cm, int k);

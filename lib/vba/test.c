@@ -19,7 +19,7 @@
 #include "interpret.h"
 
 #define PRINT_TEST_PARSE 0
-#define PRINT_TEST_RESOLVE 1
+#define PRINT_TEST_RESOLVE 0
 
 void test_keywords(void)
 {
@@ -262,7 +262,7 @@ void test_resolve(void)
 			"str2 = \"hel\" + \"lo\"\n"
 			"bool = false\n"
 			"bool = str = str2\n"
-			"result = str2\n",
+			"result = str2 + children\n",
 		"dim str as string\n"
 			"dim str2 as string\n"
 			"dim i as integer\n"
@@ -279,24 +279,7 @@ void test_resolve(void)
 			"str2 = \"hel\" + \"lo\"\n"
 			"bool = false\n"
 			"bool = str = str2\n"
-			"result = i\n",
-		"dim str as string\n"
-			"dim str2 as string\n"
-			"dim i as integer\n"
-			"dim x as double\n"
-			"dim bool as boolean\n"
-			"bool = true or false or 2.2 and -2.3\n"
-			"str = \"hello\""
-			"if bool then\n"
-			"x = -1.1 - 3/2\n"
-			"i = 7\n"
-			"elseif true then\n"
-			"x = 1.2\n"
-			"end if\n"
-			"str2 = \"hel\" + \"lo\"\n"
-			"bool = false\n"
-			"bool = str = str2\n"
-			"result = x\n",
+			"result = i + age\n",
 		"dim str as string\n"
 			"dim str2 as string\n"
 			"dim i as integer\n"
@@ -314,6 +297,23 @@ void test_resolve(void)
 			"bool = false\n"
 			"bool = str = str2\n"
 			"result = x\n",
+		"dim str as string\n"
+			"dim str2 as string\n"
+			"dim i as integer\n"
+			"dim x as double\n"
+			"dim bool as boolean\n"
+			"bool = true or false or 2.2 and -2.3\n"
+			"str = \"hello\""
+			"if bool then\n"
+			"x = -1.1 - 3/2\n"
+			"i = 7\n"
+			"elseif true then\n"
+			"x = 1.2\n"
+			"end if\n"
+			"str2 = \"hel\" + \"lo\"\n"
+			"bool = false\n"
+			"bool = str = str2\n"
+			"result = true <> actcon\n",
 	}
 	;
 
@@ -323,15 +323,19 @@ void test_resolve(void)
 	bool result_bool = false;
 	enum {N = 1024};
 	for (int i = 0; i < N; i++) {
-		result_str = interpret(code[0], type_string).s;
-		assert(!strcmp(result_str, "hello"));
-		result_int = interpret(code[1], type_int).i;
-		assert(7 == result_int);
-		result_double = interpret(code[2], type_double).d;
+		add_builtin_int("children", 3);
+		result_str = interpret(code[0], TYPE_STRING).s;
+		assert(!strcmp(result_str, "hello3"));
+		add_builtin_double("age", 40);
+		result_int = interpret(code[1], TYPE_INT).i;
+		assert(47 == result_int);
+		result_double = interpret(code[2], TYPE_DOUBLE).d;
 		assert(-2.600001 < result_double && -2.599999 > result_double);
-		result_bool = interpret(code[3], type_boolean).b;
+		add_builtin_boolean("actcon", false);
+		result_bool = interpret(code[3], TYPE_BOOLEAN).b;
 		assert(true == result_bool);
 	}
+	assert(1 == interpret("result = 1\n", TYPE_INT).i);
 	intern_free();
 }
 

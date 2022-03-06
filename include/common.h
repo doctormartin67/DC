@@ -32,6 +32,8 @@
 #define buf_printf(b, ...) ((b) = buf__printf((b), __VA_ARGS__))
 #define buf_clear(b) ((b) ? buf__hdr(b)->len = 0 : 0)
 
+#undef MIN
+#undef MAX
 #define MIN(x, y) ((x) <= (y) ? (x) : (y))
 #define MAX(x, y) ((x) >= (y) ? (x) : (y))
 #define CLAMP_MAX(x, max) MIN(x, max)

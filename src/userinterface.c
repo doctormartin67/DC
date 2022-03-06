@@ -264,7 +264,6 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 	char *day = 0, *month = 0, *year = 0;
 	const char *tc = 0;
 	struct date *tempDate = 0;
-	struct casetree *ct = 0;
 
 	/* ----- Check File -----*/
 	if (!ht_get(get_ui_key(SPECIAL_FILENAME, UI_SPECIAL), ht))
@@ -383,22 +382,6 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 		updateValidation(val, WARNING, "DR $113 [%s], "
 				"expected of the form %s", 
 				value, validMsg[FLOATERR]);
-	}
-
-	init_var(0);
-	/* ----- Check Tree Variables -----*/
-	for (unsigned i = 0; i < UI_AMOUNT; i++) {
-		key = get_ui_key(i, UI_INT);
-		value = ht_get(key, ht);
-		ct = plantTree(strclean(value));
-		if (NOERR != getterrno()) {
-			updateValidation(val, ERROR, "%s: %s", key,
-					strterror(getterrno()));
-			setterrno(NOERR);
-		}
-
-		chopTree(ct);
-		ct = 0;
 	}
 
 	/* ----- Check test case -----*/

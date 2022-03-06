@@ -86,7 +86,7 @@ unsigned sym_push_type(const char *name, Type *type)
 	return 1;
 }
 
-unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
+static unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 {
 	if (sym_get(name)) {
 		return 0;
@@ -104,6 +104,23 @@ unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 			syms_end[-1].val.s = str_intern("");
 		}
 	}
+	return 1;
+}
+
+unsigned sym_push_var(const char *name, Type *type, Val val)
+{
+	if (sym_get(name)) {
+		return 0;
+	}
+	if (syms_end == syms + MAX_SYMS) {
+		fatal("Too many symbols");
+	}
+	*syms_end++ = (Sym){
+		.name = str_intern(name),
+			.kind = SYM_DIM,
+			.type = type,
+			.val = val
+	};
 	return 1;
 }
 

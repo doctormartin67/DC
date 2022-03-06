@@ -2,7 +2,7 @@
 #define USERINTERFACE
 
 #include "DCProgram.h"
-#define GLADEFILE "DCProgram.glade"
+#define GLADEFILE "glade/DCProgram.glade"
 
 enum {USER_INPUT_LY, USER_INPUT_TY};
 enum {

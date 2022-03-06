@@ -7,7 +7,7 @@ typedef enum {OK, WARNING, ERROR} Status;
 typedef enum {DATEERR, FLOATERR, AGECORRERR, CELLERR, ERR_AMOUNT} Err;
 
 /* The user will receive a maximum of 32 error messages of 256 length*/
-enum {MAXMSG = 32, MAXMSGSIZE = 256}; 
+enum {MAXMSG = 8, MAXMSGSIZE = 256}; 
 
 typedef struct {
     char MsgWarn[MAXMSG][MAXMSGSIZE];

@@ -14,9 +14,10 @@ CFLAGS = -g -Wall -Wextra -Werror -pedantic
 # THIS BELOW INCLUDRES AND LDLIBS ON XML CAN BE REMOVED
 INCLUDES = -I $(INCLUDE) `pkg-config --cflags gtk+-3.0` \
 	`pkg-config --cflags libxml-2.0`
-LIBS = -lgeneral -lexcel -lxlsxwriter
-LDLIBS = $(LIBS) `pkg-config --libs gtk+-3.0` `xml2-config --libs`
+LIBS = -lvba -lgeneral -lexcel -lxlsxwriter -lm#lm is needed for actuarial
+LDLIBS = $(LIBS) `pkg-config --libs gtk+-3.0` `xml2-config --libs` -rdynamic
 LDFLAGS = -L$(LIB)
+
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---

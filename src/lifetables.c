@@ -1,11 +1,13 @@
 #define _POSIX_C_SOURCE 1 /* for declaration of PATH_MAX */
 #include <limits.h> /* for declaration of PATH_MAX */
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "lifetables.h"
 #include "errorexit.h"
+#include "common.h"
 
-#define PATH "/home/doctormartin67/Projects/work/tables/tables/" //needs updating!!
+#define PATH "/tables/tables/"
 
 static const char *const lifetables[LT_AMOUNT] = {
 	[LXMR] = "LXMR",
@@ -30,12 +32,16 @@ void makeLifeTables(void)
 static void makeLifeTable(const char name[restrict static 1],
 		unsigned long clt[static 1])
 { 
-	char path[PATH_MAX]; 
+	char cwd[PATH_MAX];
+	char *path = 0;
 	char line[LENGTHLINE];
 	FILE *lt = 0;
 	char *lp = 0;
-
-	snprintf(path, sizeof(path), "%s%s", PATH, name);
+	
+	if (!getcwd(cwd, sizeof(cwd))) {
+		die("Unable to call getcwd");
+	}
+	buf_printf(path, "%s%s%s", cwd, PATH, name);
 
 	if (0 == (lt = fopen(path, "r"))) die("can't open %s", path);
 
@@ -49,6 +55,7 @@ static void makeLifeTable(const char name[restrict static 1],
 
 		*clt++ = atol(++lp);
 	}
-
+	
 	fclose(lt);
+	buf_free(path);
 }
