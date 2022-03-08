@@ -355,12 +355,19 @@ static char *parse_shared_strings_value(xmlNodePtr it)
 	return buf;
 }
 
-static char *parse_shared_strings(unsigned long index, Sheet *sheet)
+static Content parse_shared_strings(TypeKind kind, const char *value,
+		Sheet *sheet)
 {
 	xmlDocPtr sharedStrings = open_xml_from_excel(
 			sheet->excel_name, "sharedStrings");
+	Content content = (Content){0};
+	content.kind = kind;
 	char *buf = 0;
-	unsigned long i = 0;
+	char *end = 0;
+	long i = 0;
+	long index = strtol(value, &end, 0);
+	assert('\0' == *end);
+	assert(!(index < 0));
 	for (xmlNodePtr it = sharedStrings->children->children; it;
 			it = it->next)
 	{
@@ -372,7 +379,73 @@ static char *parse_shared_strings(unsigned long index, Sheet *sheet)
 	}
 	xmlFreeDoc(sharedStrings);
 	assert(buf);
-	return buf;
+	content.val.s = arena_str_dup(&content_arena, buf);
+	buf_free(buf);
+	return content;
+}
+
+static Content parse_string(TypeKind kind, const char *value)
+{
+	char *buf = 0;
+	Content content = (Content){0};
+	content.kind = kind;
+	buf_printf(buf, "%s", value);
+	assert(buf);
+	content.val.s = arena_str_dup(&content_arena, buf);
+	buf_free(buf);
+	return content;
+}
+
+static unsigned is_excel_float(const char *str)
+{
+	assert(str);
+	while (*str) {
+		if ('.' == *str || 'e' == *str || 'E' == *str) {
+			return 1;
+		}
+		str++;
+	}
+	return 0;
+}
+
+static Content parse_number(const char *value)
+{
+	char *end = 0;
+	Content content = (Content){0};
+	if (is_excel_float(value)) {
+		content.kind = TYPE_DOUBLE;
+		content.val.d = strtod(value, &end);
+		assert('\0' == *end);
+	} else {
+		content.kind = TYPE_INT;
+		content.val.i = strtol(value, &end, 10);
+		assert('\0' == *end);
+	}
+	return content;
+}
+
+static Content parse_content(Sheet *sheet, const xmlChar *type,
+		xmlNodePtr value)
+{
+	Content content = (Content){0};
+	const char *value_str = str_cast(value->content);
+
+	if (!xmlStrcmp(type, xml_cast("s"))) {
+		content = parse_shared_strings(TYPE_STRING, value_str, sheet);
+		assert(TYPE_STRING == content.kind);
+	} else if (!xmlStrcmp(type, xml_cast("str"))) {
+		content = parse_string(TYPE_STRING, value_str);
+		assert(TYPE_STRING == content.kind);
+	} else if (!xmlStrcmp(type, xml_cast("e"))) {
+		content = parse_string(TYPE_ERROR, "");
+		assert(TYPE_ERROR == content.kind);
+	} else {
+		assert(!xmlStrcmp(type, xml_cast("n")));
+		content = parse_number(value_str);
+		assert(TYPE_INT == content.kind
+				|| TYPE_DOUBLE == content.kind);
+	}
+	return content;
 }
 
 static Content parse_value(Sheet *sheet, xmlNodePtr node)
@@ -391,38 +464,7 @@ static Content parse_value(Sheet *sheet, xmlNodePtr node)
 	value = find_node(value->children, "text", FATAL);
 	assert(value->content);
 
-	Content content = (Content){0};
-	const char *value_str = str_cast(value->content);
-	char *buf = 0;
-
-	if (!xmlStrcmp(test->content, xml_cast("s"))) {
-		content.kind = TYPE_STRING;
-		char *end = 0;
-		long index = strtol(value_str, &end, 0);
-		assert('\0' == *end);
-		assert(!(index < 0));
-		buf = parse_shared_strings(index, sheet);
-		assert(buf);
-		content.val.s = arena_str_dup(&content_arena, buf);
-		buf_free(buf);
-	} else if (!xmlStrcmp(test->content, xml_cast("str"))
-			|| !xmlStrcmp(test->content, xml_cast("e"))
-			|| !xmlStrcmp(test->content, xml_cast("n"))) {
-		/* TODO: "n" should be treated as double (so removed from
-		   above */
-		content.kind = TYPE_STRING;
-		buf_printf(buf, "%s", value_str);
-		assert(buf);
-		content.val.s = arena_str_dup(&content_arena, buf);
-		buf_free(buf);
-	} else {
-		assert(!xmlStrcmp(test->content, xml_cast("n")));
-		content.kind = TYPE_DOUBLE;
-		char *end = 0;
-		content.val.d = strtod(value_str, &end);
-		assert('\0' == *end);
-	}
-	return content;
+	return parse_content(sheet, test->content, value);
 }
 
 static void parse_col(Sheet *sheet, xmlNodePtr node)
@@ -553,7 +595,7 @@ void print_excel(Excel *e)
 	}
 }
 
-static Content *cell_content(Excel *excel, const char *sheet_name, const char *cell)
+Content *cell_content(Excel *excel, const char *sheet_name, const char *cell)
 {
 	if (!excel || !cell) {
 		die("excel file and cell must have a value");
