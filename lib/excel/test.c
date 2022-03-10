@@ -27,7 +27,7 @@
 	assert(TYPE_ERROR == cell_content(file, sheet, cell)->kind); \
 	assert(!strcmp("", cell_content(file, sheet, cell)->val.s));
 
-int main(void)
+void test_excel(void)
 {
 	const char *file_name = "example.xlsx";
 	Excel *file = open_excel(file_name, 0);
@@ -40,6 +40,25 @@ int main(void)
 	assert_null("Sheet3", "I1");
 	assert_error("Sheet1", "J3");
 	close_excel(file);
+}
+
+void test_database(void)
+{
+	const char *file_name = "example.xlsx";
+	const char *sheet_name = "Sheet1";
+	Database *db = open_database(file_name, sheet_name, "D3");
+	assert(db);
+	printf("titles:\n");
+	for (size_t i = 0; i < db->num_titles; i++) {
+		printf("%s\n", db->titles[i]);
+	}
+	close_database(db);
+}
+
+int main(void)
+{
+	test_excel();
+	test_database();
 	return 0;
 }
 

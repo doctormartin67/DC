@@ -633,3 +633,91 @@ Val cell_val(Excel *excel, const char *sheet_name, const char *cell)
 		return (Val){.s = "0"};
 	}
 }
+
+static const char *parse_title(Content *content)
+{
+	const char *title = 0;
+	char *buf = 0;
+	switch (content->kind) {
+		case TYPE_INT:
+			buf_printf(buf, "%d", content->val.i);
+			title = arena_str_dup(&content_arena, buf);
+			buf_free(buf);
+			break;
+		case TYPE_DOUBLE:
+			buf_printf(buf, "%f", content->val.d);
+			title = arena_str_dup(&content_arena, buf);
+			buf_free(buf);
+			break;
+		case TYPE_STRING:
+		case TYPE_ERROR:
+			title = content->val.s;
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	assert(title);
+	return title;
+}
+
+static const char **parse_titles(Excel *excel, const char *sheet_name,
+		const char *cell)
+{
+	char curr_cell[32];
+	const char **titles = 0;
+	Content *content = cell_content(excel, sheet_name, cell);
+	if (!content) {
+		die("No database found in:\n"
+				"file: '%s'"
+				"sheet: '%s'"
+				"cell '%s'", excel->name, sheet_name, cell);
+	}
+
+	snprintf(curr_cell, sizeof(curr_cell), "%s", cell);
+	for (Content *cnt = content; cnt; cnt = cell_content(excel, sheet_name,
+				nextcol(curr_cell))) {
+		buf_push(titles, parse_title(cnt));		
+	}
+	return titles;
+}
+
+static Database *new_database(Excel *excel, const char **titles, Map **records)
+{
+	Database *db = arena_alloc(&content_arena, sizeof(*db));
+	db->excel = excel;
+	db->titles = titles;
+	db->num_titles = buf_len(titles);
+	db->records = records;
+	db->num_records = buf_len(records);
+	return db;
+}
+
+static Database *parse_database(Excel *excel, const char *sheet_name,
+		const char *cell)
+{
+	const char **titles = parse_titles(excel, sheet_name, cell);
+	Database *db = new_database(excel, titles, 0);
+	return db;
+}
+
+/*
+ * a Database will start at the upper left and the titles of the Database
+ * will be to the right of this cell (cell included) and the records of the
+ * Database will be downwards
+ */
+Database *open_database(const char *file_name, const char *sheet_name,
+		const char *cell)
+{
+	Excel *excel = open_excel(file_name, sheet_name);
+	assert(excel);
+	Database *db = parse_database(excel, sheet_name, cell);
+	assert(db);
+	return db;
+}
+
+void close_database(Database *db)
+{
+	buf_free(db->titles);
+	close_excel(db->excel);
+}
