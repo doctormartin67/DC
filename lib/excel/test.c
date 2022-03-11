@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include "excel.h"
 #include <stdlib.h>
+#include "excel.h"
 
 #define assert_null(sheet, cell) \
 	assert(!cell_content(file, sheet, cell));
@@ -48,17 +48,42 @@ void test_database(void)
 	const char *sheet_name = "Sheet1";
 	Database *db = open_database(file_name, sheet_name, "D3");
 	assert(db);
-	printf("titles:\n");
-	for (size_t i = 0; i < db->num_titles; i++) {
-		printf("%s\n", db->titles[i]);
-	}
+	print_database(db);
 	close_database(db);
+}
+
+extern char *nextrow(char *);
+void test_nextrow(void)
+{
+	char row[32];
+	char *next = 0;
+
+	snprintf(row, sizeof(row), "%s", "B11");
+	next = nextrow(row);
+	assert(!strcmp(next, "B12"));
+
+	snprintf(row, sizeof(row), "%s", "B99");
+	next = nextrow(row);
+	assert(!strcmp(next, "B100"));
+
+	snprintf(row, sizeof(row), "%s", "B990");
+	next = nextrow(row);
+	assert(!strcmp(next, "B991"));
+
+	snprintf(row, sizeof(row), "%s", "B959");
+	next = nextrow(row);
+	assert(!strcmp(next, "B960"));
+
+	snprintf(row, sizeof(row), "%s", "B599");
+	next = nextrow(row);
+	assert(!strcmp(next, "B600"));
 }
 
 int main(void)
 {
 	test_excel();
 	test_database();
+	test_nextrow();
 	return 0;
 }
 

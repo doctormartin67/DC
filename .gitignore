@@ -19,3 +19,7 @@ gmon.out
 #binaries
 main
 test
+#excel garbage
+*xlsx#
+#xml
+*xml

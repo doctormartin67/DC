@@ -5,9 +5,13 @@
 #include "errorexit.h"
 #include "common.h"
 
+enum {
+	CELL_LENGTH = 32,
+};
+
 typedef enum TypeKind {
-	TYPE_DOUBLE,
 	TYPE_INT,
+	TYPE_DOUBLE,
 	TYPE_STRING,
 	TYPE_ERROR,
 } TypeKind;
@@ -33,10 +37,16 @@ typedef struct Excel {
 	Sheet **sheets;
 } Excel;
 
+typedef struct Record {
+	Map *data;
+	const char **titles;
+	size_t num_titles;
+} Record;
+
 typedef struct Database {
 	Excel *excel;
 	const char **titles;
-	Map **records;
+	Record **records;
 	size_t num_titles;
 	size_t num_records;
 } Database;
@@ -46,10 +56,10 @@ void close_excel(Excel *excel);
 Content *cell_content(Excel *excel, const char *sheet_name, const char *cell);
 Val cell_val(Excel *excel, const char *sheet_name, const char *cell);
 void print_excel(Excel *e);
-void print_content(Content *content);
 Database *open_database(const char *file_name, const char *sheet_name,
 		const char *cell);
 void close_database(Database *db);
+void print_database(Database *db);
 
 /*
  * helper function for nextcol. it shifts all the char's one place to the
@@ -93,6 +103,28 @@ inline char *nextcol(char next[static 1])
 	s--;
 	while ('Z' == *s) *s-- = 'A';
 	(*s)++;
+	return next;
+}
+
+inline char *nextrow(char next[static 1])
+{
+	char *start = next;
+	assert(!isdigit(*start));
+	while (!isdigit(*start)) {
+		start++;
+	}
+	char *end = next + strlen(next);
+	char *s = end - 1;
+	while ('9' == *s) {
+		*s-- = '0';
+	}
+	if (s == start - 1) {
+		*++s = '1';
+		*end = '0';
+		*(end + 1) = '\0';
+	} else {
+		(*s)++;
+	}
 	return next;
 }
 

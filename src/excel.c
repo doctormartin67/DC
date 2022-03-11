@@ -206,23 +206,6 @@ static void print_xmlDoc(xmlDocPtr doc)
 }
 #endif
 
-void print_content(Content *content)
-{
-	if (!content) {
-		printf("(Empty cell)\n");	
-		return;
-	}
-	switch (content->kind) {
-		case TYPE_DOUBLE:
-			printf("%f\n", content->val.d);
-			break;
-		default:
-			assert(TYPE_STRING == content->kind);
-			printf("%s\n", content->val.s);
-			break;
-	}
-}
-
 static const char *str_cast(const xmlChar *xml_str)
 {
 	const xmlChar *orig = xml_str;
@@ -664,7 +647,7 @@ static const char *parse_title(Content *content)
 static const char **parse_titles(Excel *excel, const char *sheet_name,
 		const char *cell)
 {
-	char curr_cell[32];
+	char curr_cell[CELL_LENGTH];
 	const char **titles = 0;
 	Content *content = cell_content(excel, sheet_name, cell);
 	if (!content) {
@@ -682,7 +665,8 @@ static const char **parse_titles(Excel *excel, const char *sheet_name,
 	return titles;
 }
 
-static Database *new_database(Excel *excel, const char **titles, Map **records)
+static Database *new_database(Excel *excel, const char **titles,
+		Record **records)
 {
 	Database *db = arena_alloc(&content_arena, sizeof(*db));
 	db->excel = excel;
@@ -693,11 +677,94 @@ static Database *new_database(Excel *excel, const char **titles, Map **records)
 	return db;
 }
 
+static size_t double_titles(const char **titles)
+{
+	for (size_t i = 0; i < buf_len(titles); i++) {
+		for (size_t j = i + 1; j < buf_len(titles); j++) {
+			if (!strcmp(titles[i], titles[j])) {
+				return j;
+			}
+		}
+	}
+	return 0;
+}
+
+static Record *new_record(Map *data, const char **titles)
+{
+	Record *record = arena_alloc(&content_arena, sizeof(*record));
+	record->data = data;	
+	record->titles = titles;
+	record->num_titles = buf_len(titles);
+	return record;
+}
+
+static Record *parse_record(const char **titles, Excel *excel,
+		const char *sheet_name, const char *cell)
+{
+	char curr_cell[CELL_LENGTH];
+	size_t cnt_empty = 0;
+	snprintf(curr_cell, sizeof(curr_cell), "%s", cell);
+	Map *data = jalloc(1, sizeof(*data));
+	Content *content = 0;
+	Record *record = 0;
+	for (size_t i = 0; i < buf_len(titles); i++) {
+		content = cell_content(excel, sheet_name, curr_cell);
+		if (!content) {
+			cnt_empty++;
+		}
+		map_put_str(data, titles[i], content);
+		nextcol(curr_cell);
+	}
+	if (cnt_empty == buf_len(titles)) {
+		map_free(data);
+		free(data);
+	} else {
+		record = new_record(data, titles);
+	}
+	return record;
+}
+
+static Record **parse_records(const char **titles, Excel *excel,
+		const char *sheet_name, const char *cell)
+{
+	char curr_cell[CELL_LENGTH];
+	snprintf(curr_cell, sizeof(curr_cell), "%s", cell);
+	Record **records = 0;
+	Record *it = parse_record(titles, excel, sheet_name,
+			nextrow(curr_cell));
+	if (!it) {
+		die("Empty database at:\n"
+				"file: '%s'\n"
+				"sheet: '%s'\n"
+				"cell: '%s'\n", excel->name, sheet_name, cell);
+	}
+	while (1) {
+		buf_push(records, it);
+		it = parse_record(titles, excel, sheet_name,
+				nextrow(curr_cell));
+		if (!it) {
+			break;
+		}
+	}
+	assert(records);
+	return records;
+}
+
 static Database *parse_database(Excel *excel, const char *sheet_name,
 		const char *cell)
 {
 	const char **titles = parse_titles(excel, sheet_name, cell);
-	Database *db = new_database(excel, titles, 0);
+	size_t is_double_title = double_titles(titles);
+	if (is_double_title) {
+		die("unable to create database because of multiple titles of "
+				"the same name '%s':\n"
+				"file: '%s'\n"
+				"sheet: '%s'\n"
+				"cell: '%s'", titles[is_double_title],
+				excel->name, sheet_name, cell);
+	}
+	Record **records = parse_records(titles, excel, sheet_name, cell);
+	Database *db = new_database(excel, titles, records);
 	return db;
 }
 
@@ -716,8 +783,69 @@ Database *open_database(const char *file_name, const char *sheet_name,
 	return db;
 }
 
+static void close_records(Record **records)
+{
+	for (size_t i = 0; i < buf_len(records); i++) {
+		map_free(records[i]->data);
+		free(records[i]->data);
+	}
+	buf_free(records);
+}
+
 void close_database(Database *db)
 {
 	buf_free(db->titles);
+	close_records(db->records);
 	close_excel(db->excel);
+}
+
+static void print_titles(Database *db)
+{
+	for (size_t i = 0; i < db->num_titles; i++) {
+		printf("%s ", db->titles[i]);
+	}
+	printf("\n");
+}
+
+static void print_content(Content *content)
+{
+	switch (content->kind) {
+		case TYPE_INT:
+			printf("%d", content->val.i);
+			break;
+		case TYPE_DOUBLE:
+			printf("%f", content->val.d);
+			break;
+		case TYPE_STRING:
+		case TYPE_ERROR:
+			printf("%s", content->val.s);
+			break;
+	}
+}
+
+static void print_record(Record *record) {
+	for (size_t i = 0; i < record->num_titles; i++) {
+		print_content(map_get_str(record->data, record->titles[i]));
+		if (!(i == record->num_titles - 1)) {
+			printf(" ");
+		}
+	}
+}
+
+static void print_records(Database *db)
+{
+	for (size_t i = 0; i < db->num_records; i++) {
+		print_record(db->records[i]);
+		if (!(i == db->num_records - 1)) {
+			printf(" ");
+			printf("\n");
+		}
+	}
+	printf("\n");
+}
+
+void print_database(Database *db)
+{
+	print_titles(db);
+	print_records(db);
 }
