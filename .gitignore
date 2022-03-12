@@ -20,6 +20,8 @@ gmon.out
 main
 test
 #excel garbage
-*xlsx#
+*xlsx*
 #xml
 *xml
+#zip
+*zip

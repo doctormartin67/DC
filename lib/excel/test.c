@@ -42,13 +42,52 @@ void test_excel(void)
 	close_excel(file);
 }
 
+#undef assert_null
+#undef assert_int
+#undef assert_double
+#undef assert_string
+#undef assert_error
+
+#define assert_int(n, title, val) \
+	i = record_int(db, n, title); \
+	assert(val == i);
+
+#define assert_double(n, title, val) \
+	d = record_double(db, n, title); \
+	assert(val == d);
+
+#define assert_string(n, title, s) \
+	str = record_string(db, n, title); \
+	assert(str); \
+	assert(!strcmp(str, s));
+
+
 void test_database(void)
 {
 	const char *file_name = "example.xlsx";
 	const char *sheet_name = "Sheet1";
 	Database *db = open_database(file_name, sheet_name, "D3");
 	assert(db);
-	print_database(db);
+	//print_database(db);
+
+	int i = 0;
+	double d = 0.0;
+	const char *str = 0;
+	assert_int(0, "Title 2", 1);
+	assert_int(1, "Title 1", 2);
+	assert_double(3, "Title 1", 2.2);
+	assert_double(2, "Title 1", 6E-06);
+	assert_string(2, "Title 3", "gwl");	
+	assert_string(4, "Title 4", "Muriel");	
+
+	assert_string(4, "Title 1", "");	
+	assert_int(4, "Title 1", 0);	
+	assert_double(4, "Title 1", 0.0);	
+
+	assert_string(4, "Title 3", "");	
+	assert_int(4, "Title 3", 0);	
+	assert_double(4, "Title 3", 0.0);	
+
 	close_database(db);
 }
 

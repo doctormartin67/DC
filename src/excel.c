@@ -578,6 +578,109 @@ void print_excel(Excel *e)
 	}
 }
 
+static void cast_to_string(Content *content, TypeKind kind)
+{
+	assert(TYPE_STRING != content->kind);
+	char *buf = 0;
+	switch (kind) {
+		case TYPE_INT:
+			buf_printf(buf, "%d", content->val.i);
+			break;
+		case TYPE_DOUBLE:
+			buf_printf(buf, "%f", content->val.d);
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	assert(buf);
+	content->val.s = arena_str_dup(&content_arena, buf);
+	content->kind = TYPE_STRING;
+	buf_free(buf);
+}
+
+#define CAST(k1, k2, t1, t2) \
+	switch (kind) { \
+		case k1: \
+			 content->val.t1 = content->val.t2; \
+		break; \
+		case TYPE_STRING: \
+				  cast_to_string(content, k2); \
+		assert(TYPE_STRING == content->kind); \
+		break; \
+		case TYPE_ERROR: \
+				 assert(0); \
+		break; \
+		default: \
+			 assert(0); \
+		break; \
+	}
+
+
+static void cast_content(Content *content, TypeKind kind)
+{
+	if (kind == content->kind) {
+		return;
+	}
+
+	switch (content->kind) {
+		case TYPE_INT:
+			CAST(TYPE_DOUBLE, TYPE_INT, d, i);
+			break;
+		case TYPE_DOUBLE:
+			CAST(TYPE_INT, TYPE_DOUBLE, i, d);
+			break;
+		case TYPE_STRING:
+		case TYPE_ERROR:
+			switch (kind) {
+				case TYPE_INT:
+					content->val.i = 0;
+					break;
+				case TYPE_DOUBLE:
+					content->val.d = 0.0;
+					break;
+				case TYPE_STRING:
+				default:
+					break;
+			}
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	content->kind = kind;
+}
+
+static Content *record_content(Database *db, size_t num_record,
+		const char *title)
+{
+	return map_get_str(db->records[num_record]->data, title);
+}
+
+int record_int(Database *db, size_t num_record, const char *title)
+{
+	Content *content = record_content(db, num_record, title);
+	cast_content(content, TYPE_INT);
+	assert(TYPE_INT == content->kind);
+	return content->val.i;
+}
+
+double record_double(Database *db, size_t num_record, const char *title)
+{
+	Content *content = record_content(db, num_record, title);
+	cast_content(content, TYPE_DOUBLE);
+	assert(TYPE_DOUBLE == content->kind);
+	return content->val.d;
+}
+
+const char *record_string(Database *db, size_t num_record, const char *title)
+{
+	Content *content = record_content(db, num_record, title);
+	cast_content(content, TYPE_STRING);
+	assert(TYPE_STRING == content->kind);
+	return content->val.s;
+}
+
 Content *cell_content(Excel *excel, const char *sheet_name, const char *cell)
 {
 	if (!excel || !cell) {
