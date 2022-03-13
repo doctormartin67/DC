@@ -5,48 +5,78 @@
 #include "excel.h"
 
 #define assert_null(sheet, cell) \
-	assert(!cell_content(file, sheet, cell));
+	content = cell_content(file, sheet, cell); \
+	assert(!content);
+
+#define assert_boolean(sheet, cell, n) \
+	content = cell_content(file, sheet, cell); \
+	assert(content); \
+	assert(CONTENT_BOOLEAN == content->kind); \
+	assert(n == content->val.b);
 
 #define assert_int(sheet, cell, n) \
-	assert(cell_content(file, sheet, cell)); \
-	assert(TYPE_INT == cell_content(file, sheet, cell)->kind); \
-	assert(n == cell_content(file, sheet, cell)->val.i);
+	content = cell_content(file, sheet, cell); \
+	assert(content); \
+	assert(CONTENT_INT == content->kind); \
+	assert(n == content->val.i);
 
 #define assert_double(sheet, cell, n) \
-	assert(cell_content(file, sheet, cell)); \
-	assert(TYPE_DOUBLE == cell_content(file, sheet, cell)->kind); \
-	assert(n == cell_content(file, sheet, cell)->val.d);
+	content = cell_content(file, sheet, cell); \
+	assert(content); \
+	assert(CONTENT_DOUBLE == content->kind); \
+	assert(n == content->val.d);
 
 #define assert_string(sheet, cell, str) \
-	assert(cell_content(file, sheet, cell)); \
-	assert(TYPE_STRING == cell_content(file, sheet, cell)->kind); \
-	assert(!strcmp(str, cell_content(file, sheet, cell)->val.s));
+	content = cell_content(file, sheet, cell); \
+	assert(content); \
+	assert(CONTENT_STRING == content->kind); \
+	assert(!strcmp(str, content->val.s));
 
 #define assert_error(sheet, cell) \
-	assert(cell_content(file, sheet, cell)); \
-	assert(TYPE_ERROR == cell_content(file, sheet, cell)->kind); \
-	assert(!strcmp("", cell_content(file, sheet, cell)->val.s));
+	content = cell_content(file, sheet, cell); \
+	assert(content); \
+	assert(CONTENT_ERROR == content->kind); \
+	assert(!strcmp("", content->val.s));
 
-void test_excel(void)
+void test_excel(const char *file_name)
 {
-	const char *file_name = "example.xlsx";
-	Excel *file = open_excel(file_name, 0);
-	assert_int("Sheet1", "E5", 2);
-	assert_null("Sheet1", "J10");
-	assert_double("Sheet1", "D6", 6E-006);
-	assert_string("Sheet2", "F14", "hello");
-	assert_null("Sheet2", "C7");
-	assert_string("Sheet3", "E5", "helloI");
-	assert_null("Sheet3", "I1");
-	assert_error("Sheet1", "J3");
-	close_excel(file);
+	if (!file_name) {
+		file_name = "example.xlsx";
+		Excel *file = open_excel(file_name, 0);
+		Content *content = 0;
+		assert_int("Sheet1", "E5", 2);
+		assert_null("Sheet1", "J10");
+		assert_double("Sheet1", "D6", 6E-006);
+		assert_string("Sheet2", "F14", "hello");
+		assert_null("Sheet2", "C7");
+		assert_string("Sheet3", "E5", "helloI");
+		assert_null("Sheet3", "I1");
+		assert_error("Sheet1", "J3");
+		close_excel(file);
+	} else {
+		Excel *file = open_excel(file_name, 0);
+		Content *content = 0;
+		assert_int("Data", "S18", 65);
+		assert_null("Data", "AE7");
+		assert_double("Data", "AG329", 0.0475);
+		assert_string("Data", "F327", "ACT");
+		assert_null("Data", "L331");
+		assert_string("Data", "F323", "DEF");
+		assert_error("Data", "LL8");
+		close_excel(file);
+	}
 }
 
 #undef assert_null
+#undef assert_boolean
 #undef assert_int
 #undef assert_double
 #undef assert_string
 #undef assert_error
+
+#define assert_boolean(n, title, val) \
+	b = record_boolean(db, n, title); \
+	assert(val == b);
 
 #define assert_int(n, title, val) \
 	i = record_int(db, n, title); \
@@ -62,36 +92,67 @@ void test_excel(void)
 	assert(!strcmp(str, s));
 
 
-void test_database(void)
+void test_database(const char *file_name)
 {
-	const char *file_name = "example.xlsx";
-	const char *sheet_name = "Sheet1";
-	Database *db = open_database(file_name, sheet_name, "D3");
-	assert(db);
-	//print_database(db);
+	if (!file_name) {
+		file_name = "example.xlsx";
+		const char *sheet_name = "Sheet1";
+		Database *db = open_database(file_name, sheet_name, "D3");
+		assert(db);
 
-	int i = 0;
-	double d = 0.0;
-	const char *str = 0;
-	assert_int(0, "Title 2", 1);
-	assert_int(1, "Title 1", 2);
-	assert_double(3, "Title 1", 2.2);
-	assert_double(2, "Title 1", 6E-06);
-	assert_string(2, "Title 3", "gwl");	
-	assert_string(4, "Title 4", "Muriel");	
+		int i = 0;
+		double d = 0.0;
+		const char *str = 0;
+		assert_int(0, "Title 2", 1);
+		assert_int(1, "Title 1", 2);
+		assert_double(3, "Title 1", 2.2);
+		assert_double(2, "Title 1", 6E-06);
+		assert_string(2, "Title 3", "gwl");	
+		assert_string(4, "Title 4", "Muriel");	
 
-	assert_string(4, "Title 1", "");	
-	assert_int(4, "Title 1", 0);	
-	assert_double(4, "Title 1", 0.0);	
+		assert_string(4, "Title 1", "");	
+		assert_int(4, "Title 1", 0);	
+		assert_double(4, "Title 1", 0.0);	
 
-	assert_string(4, "Title 3", "");	
-	assert_int(4, "Title 3", 0);	
-	assert_double(4, "Title 3", 0.0);	
+		assert_string(4, "Title 3", "");	
+		assert_int(4, "Title 3", 0);	
+		assert_double(4, "Title 3", 0.0);	
 
-	close_database(db);
+		close_database(db);
+
+		sheet_name = "Sheet2";
+		db = open_database(file_name, sheet_name, "D12");
+		close_database(db);
+	} else {
+		const char *sheet_name = "Data";
+		Database *db = open_database(file_name, sheet_name, "B11");
+		assert(db);
+
+		bool b = false;
+		int i = 0;
+		double d = 0.0;
+		const char *str = 0;
+		assert_int(0, "NO REGLEMENT", 14286);
+		assert_int(4, "SEX", 2);
+		assert_double(317, "SAL", 2913.91);
+		assert_double(5, "ART24_C_GEN1", 354.56);
+		assert_string(2, "TARIEF", "UKMS");	
+		assert_string(4, "STATUS", "ACT");	
+
+		assert_string(5, "STATUS", "DEF");	
+		assert_int(20, "NRA", 65);	
+		assert_double(29, "RES_A_GEN1", 125.8);	
+
+		assert_string(100, "MS", "M");
+		assert_int(4, "# ENF", 0);	
+		assert_double(10, "TAUX_A_GEN4", 0.01);	
+
+		assert_boolean(4, "ACTIVE CONTRACT", true);	
+
+		close_database(db);
+	}
 }
 
-extern char *nextrow(char *);
 void test_nextrow(void)
 {
 	char row[32];
@@ -118,10 +179,16 @@ void test_nextrow(void)
 	assert(!strcmp(next, "B600"));
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-	test_excel();
-	test_database();
+	const char *file_name = 0;
+	if (2 == argc) {
+		file_name = argv[1];
+	} else {
+		assert(1 == argc);
+	}
+	test_excel(file_name);
+	test_database(file_name);
 	test_nextrow();
 	return 0;
 }

@@ -8,6 +8,7 @@
 #include "XL.h"
 #include "validation.h"
 #include "inputdata.h"
+#include "excel.h"
 
 //---Define BIT constants---
 //-  status BITS  -
@@ -131,19 +132,6 @@ typedef struct {
 	double X10; // MIXED combination
 	GenMatrix CAPDTH[EREE_AMOUNT]; /* Death lump sum (used for UKMT) */
 	GenMatrix RP[EREE_AMOUNT]; // Risk Premium
-	double CAO; // collectieve arbeidsovereenkomst
-	const char *ORU;
-	const char *CHOICEDTH; // Choice of death insurance
-	const char *CHOICEINVS; // Choice of invalide insurance sickness
-	const char *CHOICEINVW; // Choice of invalide insurance work
-	double contrDTH; // Death contributions
-	double percSALKO; // percentage of salary for death lump sum
-	const char *indexINV; // indexation for invalidity
-	const char *GRDGR;
-	const char *plan;
-	double baranc; // baremic ancienity
-	unsigned extra; /* 0000 0000 0000 0011 means prepensioner whose salary
-			   we increase at k = -1 */
 
 	//---Variable Definitions---    
 	double age[MAXPROJ + 1];
@@ -193,32 +181,6 @@ typedef struct {
 	double PBODTHNCCF[MAXPROJ]; // PBO Death Normal Cost Cashflows
 } CurrentMember;
 
-/*
- * When the XLfile is created from an excel file, the properties of the
- * parts of that file are stored in a struct DataSet.
- * In particular, we need to know
- * - the excel file (xl) to retrieve data
- * - where the data starts (cell with keyrow and keycolumn)
- * - all the keys that the hashtable will use
- * - the keynode used for libxml
- * - the sheet that the data lies in
- * - the amount of members in the data
- * - the user input that the data will run with (f.e. the assumptions)
- */
-typedef struct {
-	unsigned keyrow;
-	unsigned sheet;
-	unsigned membercnt;
-	char **keys;
-	char keycolumn[4];
-	char datasheet[256];
-	xmlNodePtr keynode;
-	XLfile *xl;
-	Hashtable **Data;
-	CurrentMember *cm;
-	Hashtable *ht_user_input;
-} DataSet;
-
 //---Useful functions for CurrentMembers---
 double gensum(GenMatrix amount[], unsigned EREE, unsigned loop);
 
@@ -265,20 +227,10 @@ typedef struct {
 Tariff tff; // Tariff structure
 
 //---Data Functions---
-DataSet *createDS(Validator *, Hashtable *);
-void createCM(CurrentMember *, Hashtable *);
-void freeDS(DataSet *ds);
-void freeCM(CurrentMember *cm);
-void setGenMatrix(CurrentMember *cm, GenMatrix var[], DataColumn);
-const char *getcmval(CurrentMember *cm, DataColumn, int EREE, int gen);
+CurrentMember *create_members(Database *db);
+void setGenMatrix(Database *db, size_t num_mbr, GenMatrix var[], DataColumn);
 void validateColumns(void);
 void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
 		const char *input);
-/* This function will allocate memory based on membercnt for the underlying
-   Hashtable used for the data.*/
-void createData(DataSet *ds);
-/* returns 1 if sheet and row were found, otherwise returns 0 */
-int setkey(DataSet *ds);
-void countMembers(DataSet *ds);
 
 #endif

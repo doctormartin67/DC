@@ -15,7 +15,7 @@ LDFLAGS = -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
-OBJS = excel.o XL.o
+OBJS = excel.o
 .DELETE_ON_ERROR: $(OBJS)
 
 # ---vpath---

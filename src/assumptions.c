@@ -126,8 +126,8 @@ void set_tariffs(const CurrentMember cm[static 1])
 	tff.costKO = interpret(temp_result, TYPE_DOUBLE).d;
 	tff.WDDTH = interpret(temp_result, TYPE_DOUBLE).d;
 	tff.MIXEDPS = (currrun >= runNewData ? 1 : 1);
-	tff.prepost = interpret(temp_result, TYPE_DOUBLE).d;
-	tff.term = interpret(temp_result, TYPE_DOUBLE).d;
+	tff.prepost = 1;
+	tff.term = 12;
 	ltins = interpret(temp_result, TYPE_DOUBLE).d;
 	ltterm = interpret(temp_result, TYPE_DOUBLE).d;
 	for (int l = 0; l < EREE_AMOUNT; l++) {

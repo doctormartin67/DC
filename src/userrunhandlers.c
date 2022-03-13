@@ -36,7 +36,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 		set_user_input(ht);
 		validatorLY.status = OK;
 		validateUI(&validatorLY, ht); 
-		validateData(&validatorLY, ht);
+		//validateData(&validatorLY, ht);
 
 		if (validatorLY.status != ERROR) {
 			choice = gtk_combo_box_text_get_active_text(
@@ -81,35 +81,38 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 static gpointer run(gpointer pl)
 {
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *file_name = ht_get(get_ui_key(SPECIAL_FILENAME,
+				UI_SPECIAL),ht);
+	const char *sheet_name = ht_get(get_ui_key(UI_SHEETNAME,
+				UI_FIXED),ht);
+	const char *cell = ht_get(get_ui_key(SPECIAL_KEYCELL,
+				UI_SPECIAL),ht);
+
 	unsigned tc = 0;
-	DataSet *ds = 0;
-	CurrentMember *cm = 0;
+	Database *db = open_database(file_name, sheet_name, cell);
+	CurrentMember *cm = create_members(db);
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};
 	g_idle_add(update_gui, &gd);
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	tc -= 1; // Index is one less than given test case
-	ds = createDS(0, ht);
-	cm = ds->cm;
-
+	
 	setassumptions();
-	for (unsigned i = 0; i < ds->membercnt; i++) {
+	for (size_t i = 0; i < db->num_records; i++) {
 		if (run_state & INTERRUPTED) {
-			freeDS(ds);
 			return stoprun(&gd);
 		}
 		runmember(cm + i);
-		snprintf(text, sizeof(text), "Progress: member %u out of %u "
-				"members complete", i + 1, ds->membercnt);
+		snprintf(text, sizeof(text), "Progress: member %lu out of %lu "
+				"members complete", i + 1, db->num_records);
 		gd.s = text;
 		g_idle_add(update_gui, &gd);
 	}
 
-	printresults(ds);
-	printtc(ds, tc);
+	printresults(db, cm);
+	//printtc(ds, tc);
 
-	freeDS(ds);
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
@@ -119,21 +122,25 @@ static gpointer run(gpointer pl)
 static gpointer runtc(gpointer pl)
 {
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *file_name = ht_get(get_ui_key(SPECIAL_FILENAME,
+				UI_SPECIAL),ht);
+	const char *sheet_name = ht_get(get_ui_key(UI_SHEETNAME,
+				UI_FIXED),ht);
+	const char *cell = ht_get(get_ui_key(SPECIAL_KEYCELL,
+				UI_SPECIAL),ht);
 	unsigned tc = 0;
-	DataSet *ds = 0;
-	CurrentMember *cm = 0;
+	Database *db = open_database(file_name, sheet_name, cell);
+	CurrentMember *cm = create_members(db);
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};
 	g_idle_add(update_gui, &gd);
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	tc -= 1; // Index is one less than given test case
-	ds = createDS(0, ht);
-	cm = ds->cm + tc;
+	cm = cm + tc;
 
 	printf("testcase: %s chosen\n", cm->key);
 	if (run_state & INTERRUPTED) {
-		freeDS(ds);
 		return stoprun(&gd);
 	}
 	setassumptions();
@@ -142,9 +149,8 @@ static gpointer runtc(gpointer pl)
 	gd.s = text;
 	g_idle_add(update_gui, &gd);
 
-	printtc(ds, tc);
+	printtc(cm, tc);
 
-	freeDS(ds);
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);

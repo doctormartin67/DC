@@ -61,13 +61,11 @@ static void set_generational_column_names(void);
 static void set_row_values(CurrentMember *cm, int row);
 static void free_print_names(void);
 
-unsigned printtc(const DataSet ds[static 1], unsigned tc)
+unsigned printtc(CurrentMember *cm, unsigned tc)
 {
 	char results[BUFSIZ];
 	char temp[64];
-	char *dirname = ds->xl->dirname;
 	int row = 0;
-	CurrentMember *cm = &ds->cm[tc];
 
 	lxw_workbook *wb = 0;
 	lxw_worksheet *ws = 0;
@@ -76,7 +74,7 @@ unsigned printtc(const DataSet ds[static 1], unsigned tc)
 	lxw_format *nformat = 0;
 
 	snprintf(temp, sizeof(temp), "TestCase%d", tc + 1);
-	snprintf(results, sizeof(results), "%s/%s.xlsx", dirname, temp);
+	snprintf(results, sizeof(results), "%s.xlsx", temp);
 
 	if (strlen(results) > PATH_MAX) return NAME_PRERR;
 
@@ -359,12 +357,72 @@ static void free_print_names(void)
 	}
 }
 
-unsigned printresults(const DataSet ds[static 1])
+static void print_content(lxw_worksheet *ws, Content *content,
+		size_t num_member, int col)
 {
+	assert(content);
+	switch (content->kind) {
+		case CONTENT_NONE:
+			return;
+		case CONTENT_BOOLEAN:
+			worksheet_write_boolean(ws, num_member + 1, col,
+					content->val.b, 0);
+			break;	
+		case CONTENT_INT:
+			worksheet_write_number(ws, num_member + 1, col,
+					content->val.i, 0);
+			break;	
+		case CONTENT_DOUBLE:
+			worksheet_write_number(ws, num_member + 1, col,
+					content->val.d, 0);
+			break;	
+		case CONTENT_STRING:
+		case CONTENT_ERROR:
+			worksheet_write_string(ws, num_member + 1, col,
+					content->val.s, 0);
+			break;	
+	}
+}
+
+static void print_record(lxw_worksheet *ws, Record *record, size_t num_member)
+{
+	assert(ws);
+	assert(record);
+	
+	Content *content = 0;
+	for (size_t i = 0; i < record->num_titles; i++) {
+		content = map_get_str(record->data, record->titles[i]);
+		if (!content) {
+			continue;
+		}
+		print_content(ws, content, num_member, i);
+	}
+}
+
+static void print_records(lxw_worksheet *ws, const Database *db)
+{
+	assert(ws);
+	assert(db);
+	for (size_t i = 0; i < db->num_records; i++) {
+		print_record(ws, db->records[i], i);
+	}
+}
+
+static void print_database(lxw_worksheet *ws, const Database *db)
+{
+	assert(ws);
+	assert(db);
+	for (size_t col = 0; col < db->num_titles; col++) {
+		worksheet_write_string(ws, 0, col, db->titles[col], 0);
+		print_records(ws, db);
+	}
+}
+
+unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
+{
+	assert(db);
+	assert(cm);
 	char results[BUFSIZ];
-	char *d = ds->xl->dirname;
-	char *key = *ds->keys;
-	const char *value = 0;
 	unsigned row = 0;
 	unsigned col = 0;  
 	unsigned index = 0;
@@ -401,12 +459,11 @@ unsigned printresults(const DataSet ds[static 1])
 
 	double ICNCDTHRESPART = 0.0;
 	double ICNCDTHRiskPART = 0.0;
-	CurrentMember *cm = ds->cm;
 
 	lxw_workbook *wb = 0;
 	lxw_worksheet *ws = 0;
 
-	snprintf(results, sizeof(results), "%s%s", d, "/results.xlsx");
+	snprintf(results, sizeof(results), "%s", "results.xlsx");
 
 	if (strlen(results) > PATH_MAX) return NAME_PRERR;
 
@@ -415,21 +472,11 @@ unsigned printresults(const DataSet ds[static 1])
 	worksheet_set_column(ws, 0, 250, 20, 0);
 
 	printf("Printing Data...\n");
-	while (0 != key) {
-		worksheet_write_string(ws, row, col, key, 0);
-		while (row < ds->membercnt) {
-			value = ht_get(key, ds->Data[row]);
-			worksheet_write_string(ws, row+1, col, value, 0);
-			row++;
-		}
-		col++;
-		key = ds->keys[col];
-		row = 0;
-	}
+	print_database(ws, db);
 	printf("Printing Data complete.\n");
 	printf("Printing results...\n");
 
-	col++;
+	col = db->num_titles + 1;
 	worksheet_write_string(ws, row, col+index++, "DR", 0);
 	worksheet_write_string(ws, row, col+index++, "DC NC", 0);
 	worksheet_write_string(ws, row, col+index++, "Method Standard", 0);
@@ -468,7 +515,7 @@ unsigned printresults(const DataSet ds[static 1])
 	worksheet_write_string(ws, row, col+index++, "DBO_TUC_RES", 0);
 	worksheet_write_string(ws, row, col+index++, "SC_ER_TUC_RES", 0);
 
-	while (row < ds->membercnt) {
+	while (row < db->num_records) {
 		index = 0;
 		worksheet_write_number(ws, row+1, col+index++, ass.DR, 0);
 		worksheet_write_number(ws, row+1, col+index++, ass.DR, 0);
@@ -582,7 +629,7 @@ unsigned printresults(const DataSet ds[static 1])
 				/ (1 + ass.taxes) : 0.0);
 		worksheet_write_number(ws, row+1, col+index++, 
 				MAX2(er, NCRETTUCPAR + ICNCRETTUCPAR
-				- ExpEEContr), 0);
+					- ExpEEContr), 0);
 		/* DBO RET PUC RES */
 
 		if (!(ass.method & mDTH)) {
@@ -599,7 +646,7 @@ unsigned printresults(const DataSet ds[static 1])
 		/* SC ER PUC RES */
 		worksheet_write_number(ws, row+1, col+index++, 
 				MAX2(0.0, NCRETPUCRES + ICNCRETPUCRES
-				+ NCDTHRESPART + ICNCDTHRESPART)
+					+ NCDTHRESPART + ICNCDTHRESPART)
 				- ExpEEContr + NCDTHRiskPART + ICNCDTHRiskPART
 				, 0);
 		/* DBO RET TUC RES */
@@ -609,7 +656,7 @@ unsigned printresults(const DataSet ds[static 1])
 		/* SC ER TUC RES */
 		worksheet_write_number(ws, row+1, col+index++, 
 				MAX2(er, NCRETTUCRES + ICNCRETTUCRES
-				+ NCDTHRESPART + ICNCDTHRESPART - ExpEEContr)
+					+ NCDTHRESPART + ICNCDTHRESPART - ExpEEContr)
 				+ NCDTHRiskPART + ICNCDTHRiskPART, 0);
 		row++;
 		cm++;

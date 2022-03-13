@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <libxml/parser.h>
 #include <assert.h>
+#include <locale.h> /* used for strtod strange '.' truncation */
 
 #include "excel.h"
 #include "errorexit.h"
@@ -116,7 +117,7 @@ static xmlDocPtr open_xml_from_excel(const char *file_name,
 			"/xl/", xml_name, ".xml");
 
 	if (0 == (doc = xmlParseFile(tmp))) {
-		die("Unable to parse xml file '%s'", file_name);
+		die("Unable to parse xml file '%s'", tmp);
 	}
 	return doc;
 }
@@ -210,12 +211,6 @@ static const char *str_cast(const xmlChar *xml_str)
 {
 	const xmlChar *orig = xml_str;
 	const char *str = (const char *)orig;
-	while (*xml_str) {
-		if (*xml_str++ > 127) {
-			printf("Warning cast '%s' to char *\n", orig);
-		}
-	}
-
 	return str;
 }
 
@@ -223,16 +218,10 @@ static const xmlChar *xml_cast(const char *str)
 {
 	const char *orig = str;
 	const xmlChar *xml_str = (const xmlChar *)orig;
-	while (*str) {
-		if (*str++ < 0) {
-			printf("Warning cast '%s' to xmlChar *\n", orig);
-		}
-	}
-
 	return xml_str;
 }
 
-static Sheet *new_sheet(const char *file_name, char *name, char *sheetId)
+static Sheet *new_sheet(const char *file_name, char *name, unsigned sheetId)
 {
 	Sheet *s = jalloc(1, sizeof(*s));
 	s->excel_name = file_name;
@@ -338,7 +327,7 @@ static char *parse_shared_strings_value(xmlNodePtr it)
 	return buf;
 }
 
-static Content parse_shared_strings(TypeKind kind, const char *value,
+static Content parse_shared_strings(ContentKind kind, const char *value,
 		Sheet *sheet)
 {
 	xmlDocPtr sharedStrings = open_xml_from_excel(
@@ -367,7 +356,7 @@ static Content parse_shared_strings(TypeKind kind, const char *value,
 	return content;
 }
 
-static Content parse_string(TypeKind kind, const char *value)
+static Content parse_string(ContentKind kind, const char *value)
 {
 	char *buf = 0;
 	Content content = (Content){0};
@@ -396,58 +385,93 @@ static Content parse_number(const char *value)
 	char *end = 0;
 	Content content = (Content){0};
 	if (is_excel_float(value)) {
-		content.kind = TYPE_DOUBLE;
+		content.kind = CONTENT_DOUBLE;
+		char *saved_locale = setlocale(LC_NUMERIC, "C");
 		content.val.d = strtod(value, &end);
 		assert('\0' == *end);
+		setlocale(LC_NUMERIC, saved_locale);
 	} else {
-		content.kind = TYPE_INT;
+		content.kind = CONTENT_INT;
 		content.val.i = strtol(value, &end, 10);
 		assert('\0' == *end);
 	}
 	return content;
 }
 
+static Content parse_boolean(const char *value)
+{
+	char *end = 0;
+	long long i = strtol(value, &end, 10);
+	assert(true == i || false == i);
+	Content content = (Content){0};
+	content.kind = CONTENT_BOOLEAN;
+	content.val.b = i;
+	assert('\0' == *end);
+	return content;
+}
+
 static Content parse_content(Sheet *sheet, const xmlChar *type,
 		xmlNodePtr value)
 {
+	assert(sheet);
+	assert(value);
 	Content content = (Content){0};
 	const char *value_str = str_cast(value->content);
 
 	if (!xmlStrcmp(type, xml_cast("s"))) {
-		content = parse_shared_strings(TYPE_STRING, value_str, sheet);
-		assert(TYPE_STRING == content.kind);
+		content = parse_shared_strings(CONTENT_STRING, value_str, sheet);
+		assert(CONTENT_STRING == content.kind);
 	} else if (!xmlStrcmp(type, xml_cast("str"))) {
-		content = parse_string(TYPE_STRING, value_str);
-		assert(TYPE_STRING == content.kind);
+		content = parse_string(CONTENT_STRING, value_str);
+		assert(CONTENT_STRING == content.kind);
 	} else if (!xmlStrcmp(type, xml_cast("e"))) {
-		content = parse_string(TYPE_ERROR, "");
-		assert(TYPE_ERROR == content.kind);
+		content = parse_string(CONTENT_ERROR, "");
+		assert(CONTENT_ERROR == content.kind);
+	} else if (!xmlStrcmp(type, xml_cast("b"))) {
+		content = parse_boolean(value_str);
+		assert(CONTENT_BOOLEAN == content.kind);
 	} else {
 		assert(!xmlStrcmp(type, xml_cast("n")));
 		content = parse_number(value_str);
-		assert(TYPE_INT == content.kind
-				|| TYPE_DOUBLE == content.kind);
+		assert(CONTENT_INT == content.kind
+				|| CONTENT_DOUBLE == content.kind);
 	}
+	assert(CONTENT_NONE != content.kind);
 	return content;
 }
 
+static void print_sheet(Sheet *s);
 static Content parse_value(Sheet *sheet, xmlNodePtr node)
 {
 	assert(sheet);
 	assert(node);
 	xmlAttrPtr attr = find_attr(node->properties, "t");
+	xmlNodePtr test = 0;
+	xmlNodePtr value = 0;
+	const xmlChar *type = 0;
 	if (!attr) {
-		assert(!find_node(node->children, "v", BENIGN));
-		return (Content){.kind = TYPE_STRING, .val.s = ""};
+		/* 
+		 * value with no type will be treated as number,
+		 * this can happen with f.e. dates. otherwise it is treated
+		 * as empty string
+		 */
+		if ((value = find_node(node->children, "v", BENIGN))) {
+			type = xml_cast("n");
+		} else {
+			return (Content){0};
+		}
+	} else {
+		test = find_node(attr->children, "text", FATAL);
+		value = find_node(node->children, "v", FATAL);
+		type = test->content;
 	}
 
-	xmlNodePtr test = find_node(attr->children, "text", FATAL);
-	xmlNodePtr value = find_node(node->children, "v", FATAL);
+	assert(type);
 	assert(value->children);
 	value = find_node(value->children, "text", FATAL);
 	assert(value->content);
 
-	return parse_content(sheet, test->content, value);
+	return parse_content(sheet, type, value);
 }
 
 static void parse_col(Sheet *sheet, xmlNodePtr node)
@@ -460,6 +484,7 @@ static void parse_col(Sheet *sheet, xmlNodePtr node)
 	const char *key = str_cast(cell_name->content);
 	Content *content = arena_alloc(&content_arena, sizeof(*content));
 	*content = parse_value(sheet, node);
+	assert(content);
 	map_put_str(sheet->cells, key, content);
 }
 
@@ -489,7 +514,7 @@ static void parse_rows(Sheet *sheet, xmlNodePtr node)
 static void parse_cells(const char *file_name, Sheet *sheet)
 {
 	char sheet_name[BUFSIZ];
-	snprintf(sheet_name, sizeof(sheet_name), "%s%s",
+	snprintf(sheet_name, sizeof(sheet_name), "%s%u",
 			"worksheets/sheet", sheet->sheetId);
 	xmlDocPtr xml_sheet = open_xml_from_excel(file_name, sheet_name);
 	xmlNodePtr node = xml_sheet->children->children;
@@ -498,11 +523,11 @@ static void parse_cells(const char *file_name, Sheet *sheet)
 	xmlFreeDoc(xml_sheet);
 }
 
-static Sheet *parse_sheet(const char *file_name, xmlNodePtr node)
+static Sheet *parse_sheet(const char *file_name, xmlNodePtr node,
+		unsigned sheetId)
 {
 	assert(node);
 	char *name = parse_attr(node->properties, "name");	
-	char *sheetId = parse_attr(node->properties, "sheetId");
 
 	Sheet *sheet = new_sheet(file_name, name, sheetId);
 	parse_cells(file_name, sheet);
@@ -518,10 +543,12 @@ static Sheet **parse_sheets(const char *file_name, const char *sheet_name)
 	assert(node);
 	node = find_node(node, "sheets", FATAL);
 	char *curr_sheet_name = 0;
+	unsigned sheetId = 0;
 	for (xmlNodePtr it = node->children; it; it = it->next) {
+		sheetId++;
 		curr_sheet_name = parse_attr(it->properties, "name");
 		if (!sheet_name || !strcmp(sheet_name, curr_sheet_name)) {
-			buf_push(sheets, parse_sheet(file_name, it));
+			buf_push(sheets, parse_sheet(file_name, it, sheetId));
 		}
 		free(curr_sheet_name);
 	}
@@ -549,7 +576,6 @@ static void free_sheets(Sheet **sheets)
 		map_free(sheets[i]->cells);
 		free(sheets[i]->cells);
 		free(sheets[i]->name);
-		free(sheets[i]->sheetId);
 		free(sheets[i]);
 	}
 	buf_free(sheets);
@@ -566,7 +592,7 @@ void close_excel(Excel *excel)
 static void print_sheet(Sheet *s)
 {
 	printf("sheet name: %s\n", s->name);
-	printf("sheet Id: %s\n", s->sheetId);
+	printf("sheet Id: %u\n", s->sheetId);
 }
 
 void print_excel(Excel *e)
@@ -578,15 +604,18 @@ void print_excel(Excel *e)
 	}
 }
 
-static void cast_to_string(Content *content, TypeKind kind)
+static void cast_to_string(Content *content, ContentKind kind)
 {
-	assert(TYPE_STRING != content->kind);
+	assert(CONTENT_STRING != content->kind);
 	char *buf = 0;
 	switch (kind) {
-		case TYPE_INT:
+		case CONTENT_BOOLEAN:
+			buf_printf(buf, "%d", content->val.b);
+			break;
+		case CONTENT_INT:
 			buf_printf(buf, "%d", content->val.i);
 			break;
-		case TYPE_DOUBLE:
+		case CONTENT_DOUBLE:
 			buf_printf(buf, "%f", content->val.d);
 			break;
 		default:
@@ -595,54 +624,88 @@ static void cast_to_string(Content *content, TypeKind kind)
 	}
 	assert(buf);
 	content->val.s = arena_str_dup(&content_arena, buf);
-	content->kind = TYPE_STRING;
+	content->kind = CONTENT_STRING;
 	buf_free(buf);
 }
 
-#define CAST(k1, k2, t1, t2) \
+#define CAST(t) \
 	switch (kind) { \
-		case k1: \
-			 content->val.t1 = content->val.t2; \
+		case CONTENT_BOOLEAN: \
+				      content->val.b = content->val.t; \
 		break; \
-		case TYPE_STRING: \
-				  cast_to_string(content, k2); \
-		assert(TYPE_STRING == content->kind); \
+		case CONTENT_INT: \
+				  content->val.i = content->val.t; \
 		break; \
-		case TYPE_ERROR: \
-				 assert(0); \
+		case CONTENT_DOUBLE: \
+				     content->val.d = content->val.t; \
+		break; \
+		case CONTENT_STRING: \
+				     cast_to_string(content, content->kind); \
+		assert(CONTENT_STRING == content->kind); \
+		break; \
+		case CONTENT_ERROR: \
+				    assert(0); \
 		break; \
 		default: \
 			 assert(0); \
 		break; \
 	}
 
+static Content *default_content(ContentKind kind)
+{
+	Content *content = arena_alloc(&content_arena, sizeof(*content));
+	switch (kind) {
+		case CONTENT_BOOLEAN:
+			content->val.b = false;
+			break;
+		case CONTENT_INT:
+			content->val.i = 0;
+			break;
+		case CONTENT_DOUBLE:
+			content->val.d = 0.0;
+			break;
+		case CONTENT_STRING:
+		case CONTENT_ERROR:
+			content->val.s = "";
+			break;
+		case CONTENT_NONE:
+			assert(0);
+			break;
+		default:
+			break;
+	}
+	content->kind = kind;
+	return content;
+}
 
-static void cast_content(Content *content, TypeKind kind)
+static void cast_content(Content *content, ContentKind kind)
 {
 	if (kind == content->kind) {
 		return;
 	}
 
 	switch (content->kind) {
-		case TYPE_INT:
-			CAST(TYPE_DOUBLE, TYPE_INT, d, i);
+		case CONTENT_BOOLEAN:
+			CAST(b);
 			break;
-		case TYPE_DOUBLE:
-			CAST(TYPE_INT, TYPE_DOUBLE, i, d);
+		case CONTENT_INT:
+			CAST(i);
 			break;
-		case TYPE_STRING:
-		case TYPE_ERROR:
-			switch (kind) {
-				case TYPE_INT:
-					content->val.i = 0;
-					break;
-				case TYPE_DOUBLE:
-					content->val.d = 0.0;
-					break;
-				case TYPE_STRING:
-				default:
-					break;
-			}
+		case CONTENT_DOUBLE:
+			CAST(d);
+			break;
+		case CONTENT_STRING:
+		case CONTENT_ERROR:
+		case CONTENT_NONE:
+			/*
+			 * we will not cast from string to number, if we've
+			 * reached this stage it means theres some format
+			 * issue or something and then the excel file should
+			 * be altered instead. in this case we just cast to
+			 * default values
+			 */
+			*content = *default_content(kind);
+			assert(kind == content->kind);
 			break;
 		default:
 			assert(0);
@@ -651,33 +714,77 @@ static void cast_content(Content *content, TypeKind kind)
 	content->kind = kind;
 }
 
+#undef CAST
+
 static Content *record_content(Database *db, size_t num_record,
 		const char *title)
 {
 	return map_get_str(db->records[num_record]->data, title);
 }
 
+static unsigned is_title(Database *db, const char *title)
+{
+	for (size_t i = 0; i < buf_len(db->titles); i++) {
+		if (!strcmp(title, db->titles[i])) {
+			return 1;	
+		}
+	}
+	return 0;
+}
+
+bool record_boolean(Database *db, size_t num_record, const char *title)
+{
+	if (!is_title(db, title)) {
+		die("Could not find title '%s' in the database", title);
+	}
+	Content *content = record_content(db, num_record, title);
+	if (!content) {
+		content = default_content(CONTENT_BOOLEAN);
+	}
+	cast_content(content, CONTENT_BOOLEAN);
+	assert(CONTENT_BOOLEAN == content->kind);
+	return content->val.b;
+}
+
 int record_int(Database *db, size_t num_record, const char *title)
 {
+	if (!is_title(db, title)) {
+		die("Could not find title '%s' in the database", title);
+	}
 	Content *content = record_content(db, num_record, title);
-	cast_content(content, TYPE_INT);
-	assert(TYPE_INT == content->kind);
+	if (!content) {
+		content = default_content(CONTENT_BOOLEAN);
+	}
+	cast_content(content, CONTENT_INT);
+	assert(CONTENT_INT == content->kind);
 	return content->val.i;
 }
 
 double record_double(Database *db, size_t num_record, const char *title)
 {
+	if (!is_title(db, title)) {
+		die("Could not find title '%s' in the database", title);
+	}
 	Content *content = record_content(db, num_record, title);
-	cast_content(content, TYPE_DOUBLE);
-	assert(TYPE_DOUBLE == content->kind);
+	if (!content) {
+		content = default_content(CONTENT_BOOLEAN);
+	}
+	cast_content(content, CONTENT_DOUBLE);
+	assert(CONTENT_DOUBLE == content->kind);
 	return content->val.d;
 }
 
 const char *record_string(Database *db, size_t num_record, const char *title)
 {
+	if (!is_title(db, title)) {
+		die("Could not find title '%s' in the database", title);
+	}
 	Content *content = record_content(db, num_record, title);
-	cast_content(content, TYPE_STRING);
-	assert(TYPE_STRING == content->kind);
+	if (!content) {
+		content = default_content(CONTENT_BOOLEAN);
+	}
+	cast_content(content, CONTENT_STRING);
+	assert(CONTENT_STRING == content->kind);
 	return content->val.s;
 }
 
@@ -725,18 +832,27 @@ static const char *parse_title(Content *content)
 	const char *title = 0;
 	char *buf = 0;
 	switch (content->kind) {
-		case TYPE_INT:
+		case CONTENT_BOOLEAN:
+			if (content->val.b) {
+				buf_printf(buf, "%s", "true");
+			} else {
+				buf_printf(buf, "%s", "false");
+			}
+			title = arena_str_dup(&content_arena, buf);
+			buf_free(buf);
+			break;
+		case CONTENT_INT:
 			buf_printf(buf, "%d", content->val.i);
 			title = arena_str_dup(&content_arena, buf);
 			buf_free(buf);
 			break;
-		case TYPE_DOUBLE:
+		case CONTENT_DOUBLE:
 			buf_printf(buf, "%f", content->val.d);
 			title = arena_str_dup(&content_arena, buf);
 			buf_free(buf);
 			break;
-		case TYPE_STRING:
-		case TYPE_ERROR:
+		case CONTENT_STRING:
+		case CONTENT_ERROR:
 			title = content->val.s;
 			break;
 		default:
@@ -747,6 +863,7 @@ static const char *parse_title(Content *content)
 	return title;
 }
 
+static char *nextcol(char next[static 1]);
 static const char **parse_titles(Excel *excel, const char *sheet_name,
 		const char *cell)
 {
@@ -754,15 +871,19 @@ static const char **parse_titles(Excel *excel, const char *sheet_name,
 	const char **titles = 0;
 	Content *content = cell_content(excel, sheet_name, cell);
 	if (!content) {
+		print_excel(excel);
 		die("No database found in:\n"
-				"file: '%s'"
-				"sheet: '%s'"
+				"file: '%s'\n"
+				"sheet: '%s'\n"
 				"cell '%s'", excel->name, sheet_name, cell);
 	}
 
 	snprintf(curr_cell, sizeof(curr_cell), "%s", cell);
 	for (Content *cnt = content; cnt; cnt = cell_content(excel, sheet_name,
 				nextcol(curr_cell))) {
+		if (CONTENT_NONE == cnt->kind) {
+			break;
+		}
 		buf_push(titles, parse_title(cnt));		
 	}
 	return titles;
@@ -858,13 +979,13 @@ static Database *parse_database(Excel *excel, const char *sheet_name,
 {
 	const char **titles = parse_titles(excel, sheet_name, cell);
 	size_t is_double_title = double_titles(titles);
-	if (is_double_title) {
-		die("unable to create database because of multiple titles of "
-				"the same name '%s':\n"
-				"file: '%s'\n"
-				"sheet: '%s'\n"
-				"cell: '%s'", titles[is_double_title],
-				excel->name, sheet_name, cell);
+	size_t cnt_double = 0;
+	while (is_double_title) {
+		char *buf = 0;
+		buf_printf(buf, "%s%d", titles[is_double_title], ++cnt_double);
+		titles[is_double_title] = arena_str_dup(&content_arena, buf);
+		buf_free(buf);
+		is_double_title = double_titles(titles);
 	}
 	Record **records = parse_records(titles, excel, sheet_name, cell);
 	Database *db = new_database(excel, titles, records);
@@ -902,6 +1023,7 @@ void close_database(Database *db)
 	close_excel(db->excel);
 }
 
+#if 0
 static void print_titles(Database *db)
 {
 	for (size_t i = 0; i < db->num_titles; i++) {
@@ -913,15 +1035,28 @@ static void print_titles(Database *db)
 static void print_content(Content *content)
 {
 	switch (content->kind) {
-		case TYPE_INT:
+		case CONTENT_BOOLEAN:
+			if (content->val.b) {
+				printf("true"); 
+			} else {
+				printf("false");
+			}
+			break;
+		case CONTENT_INT:
 			printf("%d", content->val.i);
 			break;
-		case TYPE_DOUBLE:
+		case CONTENT_DOUBLE:
 			printf("%f", content->val.d);
 			break;
-		case TYPE_STRING:
-		case TYPE_ERROR:
+		case CONTENT_STRING:
+		case CONTENT_ERROR:
 			printf("%s", content->val.s);
+			break;
+		case CONTENT_NONE:
+			assert(0);
+			break;
+		default:
+			assert(0);
 			break;
 	}
 }
@@ -947,8 +1082,76 @@ static void print_records(Database *db)
 	printf("\n");
 }
 
-void print_database(Database *db)
+static void print_database(Database *db)
 {
 	print_titles(db);
 	print_records(db);
+}
+#endif
+
+/*
+ * helper function for nextcol. it shifts all the char's one place to the
+ * right. It is needed in the case where the column is 'Z' or 'ZZ', meaning
+ * the next column would be 'AA' or 'AAA' respectively. As an example,
+ * Z11 becomes AA11
+ */
+static void strshift(char s[static 1])
+{
+	char *t = s;
+
+	while (*s) s++;
+	*(s + 1) = '\0';
+
+	while (s > t) {
+		*s = *(s - 1);
+		s--;
+	}
+}
+
+/*
+ * sets 'next' to the next cell to the right, f.e. B11 -> C11
+ */
+static char *nextcol(char next[static 1])
+{
+	char *s = next;
+	if ('Z' == *s && (isdigit(*(s + 1)) || 'Z' == *(s + 1))) {
+		strshift(s);
+		*s = 'A';
+		*(s + 1) = 'A';
+		if (!isdigit(*(s + 2)))
+			*(s + 2) = 'A';
+
+		return next;
+	}
+
+	while (!isdigit(*s) && '\0' != *s) {
+		if (*s <= 'z' && *s >= 'a') die("invalid cell [%s]", next);
+		s++;
+	}
+	s--;
+	while ('Z' == *s) *s-- = 'A';
+	(*s)++;
+	return next;
+}
+
+char *nextrow(char next[static 1])
+{
+	char *start = next;
+	assert(!isdigit(*start));
+	while (!isdigit(*start)) {
+		start++;
+	}
+	char *end = next + strlen(next);
+	char *s = end - 1;
+	while ('9' == *s) {
+		*s-- = '0';
+	}
+	if (s == start - 1) {
+		*++s = '1';
+		*end = '0';
+		*(end + 1) = '\0';
+	} else {
+		(*s)++;
+	}
+	return next;
 }

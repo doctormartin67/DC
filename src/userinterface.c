@@ -397,11 +397,9 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
  * the data, at which point it is instantly freed. The Validator val is
  * updated in the process
  */
-void validateData(Validator val[static 1], Hashtable ht[static 1])
+void validateData(Validator val[static 1])
 {
-	DataSet *ds = 0;
 	if (val->status == OK) {
-		ds = createDS(val, ht); 
-		freeDS(ds);
+		//TODO
 	}
 }

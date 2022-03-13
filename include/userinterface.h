@@ -65,7 +65,7 @@ Hashtable *get_user_input(unsigned ui);
 void set_user_input(Hashtable *);
 void update_user_interface(Hashtable *);
 void validateUI(Validator *, Hashtable *);
-void validateData(Validator *, Hashtable *);
+void validateData(Validator *);
 /* signal functions */
 void on_startstopbutton_clicked(GtkButton *, GtkWidget *);
 gboolean on_interpreterwindow_delete_event(GtkWidget *, GdkEvent *, gpointer);

@@ -21,7 +21,8 @@ main
 test
 #excel garbage
 *xlsx*
-#xml
+#xml garbage
 *xml
+*rels
 #zip
 *zip
