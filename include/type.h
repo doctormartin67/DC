@@ -1,6 +1,8 @@
 #ifndef TYPE_H_
 #define TYPE_H_
 
+#include <stddef.h>
+
 typedef enum TypeKind {
 	TYPE_NONE,
 	TYPE_INCOMPLETE,
@@ -10,6 +12,7 @@ typedef enum TypeKind {
 	TYPE_ULLONG,
 	TYPE_DOUBLE,
 	TYPE_STRING,
+	TYPE_FUNC,
 	NUM_TYPE_KINDS,
 } TypeKind;
 
@@ -18,9 +21,20 @@ typedef struct Sym Sym;
 
 struct Type {
 	TypeKind kind;
+	union {
+		struct {
+			Type **params;
+			size_t num_params;
+			unsigned has_varargs;
+			Type *varargs_type;
+			Type *ret;
+		} func;
+	};
 };
+typedef double double_func(double *params, size_t num_params);
 
 void init_builtin_types(void);
+void init_builtin_funcs(void);
 const char *type_name(TypeKind);
 unsigned is_integer_type(Type *type);
 unsigned is_floating_type(Type *type);

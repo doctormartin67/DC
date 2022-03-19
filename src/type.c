@@ -1,11 +1,37 @@
 #include <stdlib.h>
+#include <assert.h>
+#include "helperfunctions.h"
 #include "type.h"
 #include "common.h"
 
-Type *type_boolean = &(Type){TYPE_BOOLEAN};
-Type *type_int = &(Type){TYPE_INT};
-Type *type_double = &(Type){TYPE_DOUBLE};
-Type *type_string = &(Type){TYPE_STRING};
+Type *type_boolean = &(Type){TYPE_BOOLEAN, {{0}}};
+Type *type_int = &(Type){TYPE_INT, {{0}}};
+Type *type_double = &(Type){TYPE_DOUBLE, {{0}}};
+Type *type_string = &(Type){TYPE_STRING, {{0}}};
+
+Type *type_double_func; // to be inited
+
+static double min(double *params, size_t num_params)
+{
+	assert(params);
+	assert(num_params);
+	double result = *params;
+	for (size_t i = 1; i < num_params; i++) {
+		result = MIN(result, params[i]);
+	}
+	return result;
+}
+
+static double max(double *params, size_t num_params)
+{
+	assert(params);
+	assert(num_params);
+	double result = *params;
+	for (size_t i = 1; i < num_params; i++) {
+		result = MAX(result, params[i]);
+	}
+	return result;
+}
 
 static const char *const type_names[NUM_TYPE_KINDS] = {
 	[TYPE_BOOLEAN] = "boolean",
@@ -64,6 +90,7 @@ unsigned is_concatable(Type *type)
 }
 
 unsigned sym_push_type(const char *name, Type *type);
+unsigned sym_push_func(const char *name, Type *type, double_func func);
 
 static void init_builtin_type(Type *type)
 {
@@ -76,4 +103,27 @@ void init_builtin_types(void)
 	init_builtin_type(type_int);
 	init_builtin_type(type_double);
 	init_builtin_type(type_string);
+}
+
+static void init_builtin_func(const char *name, Type *type, double_func func)
+{
+	sym_push_func(name, type, func);
+}
+
+static void init_type_double_func(void)
+{
+	type_double_func = jalloc(1, sizeof(*type_double_func));
+	*type_double_func = (Type){
+		.kind = TYPE_FUNC, .func.params = 0, .func.num_params = 0,
+			.func.has_varargs = 1,
+			.func.varargs_type = type_double,
+			.func.ret = type_double
+	};
+}
+
+void init_builtin_funcs(void)
+{
+	init_type_double_func();
+	init_builtin_func("min", type_double_func, min);
+	init_builtin_func("max", type_double_func, max);
 }

@@ -23,7 +23,7 @@ COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 # ---Object files---
 OBJS = actuarialfunctions.o assumptions.o dates.o DCProgram.o hashtable.o \
 	lifetables.o printresults.o userinterface.o userrunhandlers.o \
-	usersignalhandlers.o validation.o XL.o
+	usersignalhandlers.o validation.o
 .DELETE_ON_ERROR: $(OBJS)
 
 # ---vpath---

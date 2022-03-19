@@ -86,6 +86,23 @@ unsigned sym_push_type(const char *name, Type *type)
 	return 1;
 }
 
+unsigned sym_push_func(const char *name, Type *type, double_func func)
+{
+	if (sym_get(name)) {
+		return 0;
+	}
+	if (syms_end == syms + MAX_SYMS) {
+		fatal("Too many symbols");
+	}
+	*syms_end++ = (Sym){
+		.name = str_intern(name),
+			.kind = SYM_FUNC,
+			.func = func,
+			.type = type,
+	};
+	return 1;
+}
+
 static unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 {
 	if (sym_get(name)) {
@@ -430,6 +447,9 @@ static Operand resolve_name_operand(SrcPos pos, const char *name)
 		Operand operand = operand_lvalue(sym->type);
 		operand.val = sym->val;
 		return operand;
+	} else if (sym->kind == SYM_FUNC) {
+		Operand operand = operand_lvalue(sym->type);
+		return operand;
 	} else {
 		fatal_error(pos, "%s must be a declared variable", name);
 		return operand_null;
@@ -596,6 +616,66 @@ static Operand resolve_expr_binary_op(TokenKind op, const char *op_name,
 }
 #undef FATAL_ERROR
 
+static Operand resolve_expr_call_default(Operand func, Expr *expr, Sym *sym)
+{
+	double *args = 0;
+	size_t num_params = func.type->func.num_params;
+	for (size_t i = 0; i < expr->call.num_args; i++) {
+		Type *param_type = i < num_params ? func.type->func.params[i]
+			: func.type->func.varargs_type;
+		Operand arg = resolve_expected_expr(expr->call.args[i],
+				param_type);
+		if (!convert_operand(&arg, param_type)) {
+			fatal_error(expr->call.args[i]->pos, "Invalid type in "
+					"function call argument. Expected %s, "
+					"got %s", type_name(param_type->kind),
+					type_name(arg.type->kind));
+		}
+		assert(type_double == arg.type);
+		buf_push(args, arg.val.d);	
+	}
+	Val val = (Val){.d = sym->func(args, expr->call.num_args)};
+	return operand_const(func.type->func.ret, val);
+}
+
+static Operand resolve_expr_call(Expr *expr)
+{
+	assert(expr->kind == EXPR_CALL);
+#if 0
+	if (expr->call.expr->kind == EXPR_NAME) {
+		if (sym && sym->kind == SYM_TYPE) {
+			if (1 != expr->call.num_args) {
+				fatal_error(expr->pos, "Type conversion "
+						"operator takes 1 argument");
+			}
+			Operand operand =
+				resolve_expr_rvalue(expr->call.args[0]);
+			if (!cast_operand(&operand, sym->type)) {
+				fatal_error(expr->pos, "Invalid type cast "
+						"from %s to %s",
+						get_type_name(operand.type),
+						get_type_name(sym->type));
+			}
+			set_resolved_sym(expr->call.expr, sym);
+			return operand;
+		}
+	}
+#endif
+	Sym *sym = resolve_name(expr->call.expr->name);
+	Operand func = resolve_expr(expr->call.expr);
+	if (func.type->kind != TYPE_FUNC) {
+		fatal_error(expr->pos, "Cannot call non-function value");
+	}
+	size_t num_params = func.type->func.num_params;
+	if (expr->call.num_args < num_params) {
+		fatal_error(expr->pos, "Function call with too few arguments");
+	}
+	if (expr->call.num_args > num_params && !func.type->func.has_varargs) {
+		fatal_error(expr->pos, "Function call with too many arguments");
+	}
+	return resolve_expr_call_default(func, expr, sym);
+}
+
 static Operand resolve_expr_binary(Expr *expr)
 {
 	assert(expr->kind == EXPR_BINARY);
@@ -659,9 +739,9 @@ static Operand resolve_expected_expr(Expr *expr, Type *expected_type)
 			return resolve_expr_string(expr);
 		case EXPR_NAME:
 			return resolve_expr_name(expr);
-#if 0
 		case EXPR_CALL:
 			return resolve_expr_call(expr);
+#if 0
 		case EXPR_INDEX:
 			return resolve_expr_index(expr);
 #endif

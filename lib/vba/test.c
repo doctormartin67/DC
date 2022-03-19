@@ -244,6 +244,96 @@ void test_parse(void)
 	}
 }
 
+void test_code(void)
+{
+	double result_double = 0.0;
+	const char *code = 
+		"dim reg as string\n"
+		"dim ndoe as double\n"
+		"dim sal as double\n"
+		"dim ceil1 as double\n"
+		"dim ceil2 as double\n"
+		"dim pt as double\n"
+		"\n"
+		"reg = \"7229\"\n"
+		"ndoe = 4\n"
+		"sal = 4000\n"
+		"ceil1 = 50000\n"
+		"ceil2 = 10000\n"
+		"pt = 1\n"
+		"\n"
+		"select case reg\n"
+		"case \"7229\"\n"
+		"select case ndoe\n"
+		"case is < 5\n"
+		"result = (0.02 * min(sal * 13.92, ceil1)"
+		"+ 0.05 * max(sal * 13.92 - ceil1, 0)) * pt\n"
+		"case is < 10\n"
+		"result = (0.03 * min(sal * 13.92, ceil1) +"
+		"0.075 * max(sal * 13.92 - ceil1, 0)) * pt\n"
+		"case else\n"
+		"result = (0.04 * min(sal * 13.92, ceil1)"
+		"+ 0.1 * max(sal * 13.92 - ceil1, 0)) * pt\n"
+		"end select\n"
+		"case \"14455\"\n"
+		"result = (0.05 * min(sal * 13.92, ceil1, ceil2)"
+		"+ 0.11 * max(min(sal * 13.92, ceil2) - ceil1, 0)) * pt\n"
+		"case \"7204\", \"7228\"\n"
+		"select case ndoe\n"
+		"case is < 10\n"
+		"result = 0.02 * sal * 13.92 * pt\n"
+		"case is < 20\n"
+		"result = 0.03 * sal * 13.92 * pt\n"
+		"case else\n"
+		"result = 0.04 * sal * 13.92 * pt\n"
+		"end select\n"
+		"case \"7203\"\n"
+		"result = (0.02 * min(sal * 13.8975, ceil1)"
+		"+ 0.08 * max(sal * 13.8975 - ceil1, 0)) * pt\n"
+		"case \"14286\"\n"
+		"result = (0.03* min(sal * 13.92, ceil1)"
+		"+ 0.09 * max(sal * 13.92 - ceil1, 0)) * pt\n"
+		"case \"7161\"\n"
+		"result = 444 * pt\n"
+		"end select\n";
+		result_double = interpret(code, TYPE_DOUBLE).d;
+		assert(1284 == result_double);
+}
+
+void test_select_case(void)
+{
+	double result_double = 0.0;
+	const char *code = 
+		"dim reg as string\n"
+		"dim ndoe as double\n"
+		"ndoe = 8\n"
+		"reg = \"7229\"\n"
+		"select case reg\n"
+		"case \"7229\"\n"
+		"select case ndoe\n"
+		"case is < 5\n"
+		"result = 1\n"
+		"case is < 10\n"
+		"result = 2\n"
+		"case else\n"
+		"result = 3\n"
+		"end select\n"
+		"case \"blabla\"\n"
+		"result = 5\n"
+		"case \"blabla2\"\n"
+		"result = 6\n"
+		"case \"blabla3\"\n"
+		"result = 7\n"
+		"case else\n"
+		"result = 4\n"
+		"end select"
+		;
+	init_stream(0, code);
+	clear_stream();
+	result_double = interpret(code, TYPE_DOUBLE).d;
+	assert(2 == result_double);
+}
+
 void test_resolve(void)
 {
 	const char *code[] = {
@@ -336,7 +426,14 @@ void test_resolve(void)
 		assert(true == result_bool);
 	}
 	assert(1 == interpret("result = 1\n", TYPE_INT).i);
-	intern_free();
+}
+
+void test_builtin_funcs(void)
+{
+	double result_double = 0.0;
+	const char *code = "result = min(4, 3, 6, 10) + min(6,7) + max(0.5, 1)";
+	result_double = interpret(code, TYPE_DOUBLE).d;
+	assert(10 == result_double);
 }
 
 int main(void)
@@ -345,5 +442,9 @@ int main(void)
 	test_expr();
 	test_parse();
 	test_resolve();
+	test_code();
+	test_builtin_funcs();
+	test_select_case();
+	intern_free();
 	return 0;
 }

@@ -19,13 +19,7 @@ const char *const colnames[KEYS_AMOUNT] = {
 	[CAPPS] = "CAPPS", [CAPDTH] = "CAPDTH", [RES] = "RES",
 	[RESPS] = "RESPS", [CAPRED] = "CAPRED", [TAUX] = "TAUX",
 	[DELTA_CAP_A_GEN1] = "DELTA_CAP_A_GEN1",
-	[DELTA_CAP_C_GEN1] = "DELTA_CAP_C_GEN1", [X10] = "X/10", [CAO] = "CAO",
-	[ORU] = "ORU", [CHOICEDTH] = "CHOICE DTH",
-	[CHOICEINVS] = "CHOICE INV SICKNESS", [CHOICEINVW] = "CHOICE INV WORK",
-	[CONTRD] = "Contr_D", [PERCOFSALFORKO] = "%ofSALforKO",
-	[INVINDEXATION] = "INV INDEXATION", [GRDGR] = "GR/DGR",
-	[PLAN] = "plan", [BARANC] = "Baremische ancienniteit",
-	[INCSALFIRSTYEAR] = "increaseSalFirstYear", [PREP] = "CCRA"
+	[DELTA_CAP_C_GEN1] = "DELTA_CAP_C_GEN1", [X10] = "X/10",
 };
 
 const char *const inscomb[INSCOMB_AMOUNT] = {

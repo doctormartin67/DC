@@ -5,13 +5,6 @@
 #include "lifetables.h"
 #include "interpret.h"
 
-/*
- * for now ive just put this garbage below to test the program.
- * afterwards this can be deleted and actual vba code needs input
- */
-static const char *const temp_result = "result = 0\n";
-
-
 enum {VAR_INTERPRETER, VAR_FIXED, VAR_COMBO};
 static const char *get_var(unsigned ui, unsigned var_type,
 		Hashtable ht[static 1]);
@@ -120,16 +113,22 @@ void set_tariffs(const CurrentMember cm[static 1])
 {
 	unsigned ltins = 0;
 	unsigned ltterm = 0;
-
-	tff.admincost = interpret(temp_result, TYPE_DOUBLE).d;
-	tff.costRES = interpret(temp_result, TYPE_DOUBLE).d;
-	tff.costKO = interpret(temp_result, TYPE_DOUBLE).d;
-	tff.WDDTH = interpret(temp_result, TYPE_DOUBLE).d;
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *s = get_var(UI_ADMINCOST, UI_INT, ht);
+	tff.admincost = interpret(s, TYPE_DOUBLE).d;
+	s = get_var(UI_COSTRES, UI_INT, ht);
+	tff.costRES = interpret(s, TYPE_DOUBLE).d;
+	s = get_var(UI_COSTKO, UI_INT, ht);
+	tff.costKO = interpret(s, TYPE_DOUBLE).d;
+	s = get_var(UI_WD, UI_INT, ht);
+	tff.WDDTH = interpret(s, TYPE_DOUBLE).d;
 	tff.MIXEDPS = (currrun >= runNewData ? 1 : 1);
-	tff.prepost = 1;
-	tff.term = 12;
-	ltins = interpret(temp_result, TYPE_DOUBLE).d;
-	ltterm = interpret(temp_result, TYPE_DOUBLE).d;
+	s = get_var(UI_PREPOST, UI_INT, ht);
+	tff.prepost = interpret(s, TYPE_DOUBLE).d;
+	s = get_var(UI_TERM, UI_INT, ht);
+	tff.term = interpret(s, TYPE_DOUBLE).d;
+	ltins = 0; // TODO
+	ltterm = 0; // TODO
 	for (int l = 0; l < EREE_AMOUNT; l++) {
 		for (int j = 0; j < MAXGEN; j++) {
 			tff.ltINS[l][j].lt = ltins;
@@ -148,24 +147,32 @@ double salaryscale(const CurrentMember cm[static 1], int k)
 {
 	(void)cm;
 	(void)k;
-	return ass.infl + interpret(temp_result, TYPE_DOUBLE).d;
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *s = get_var(UI_SS, UI_INT, ht);
+	return ass.infl + interpret(s, TYPE_DOUBLE).d;
 }
 
 double calcA(const CurrentMember cm[static 1], int k)
 {
 	(void)cm;
 	(void)k;
-	return interpret(temp_result, TYPE_DOUBLE).d;
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *s = get_var(UI_CONTRA, UI_INT, ht);
+	return interpret(s, TYPE_DOUBLE).d;
 }
 
 double calcC(CurrentMember cm[static 1], int k)
 {
+	(void)cm;
 	(void)k;
-	return gensum(cm->PREMIUM, EE, 0);
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *s = get_var(UI_CONTRC, UI_INT, ht);
+	return interpret(s, TYPE_DOUBLE).d;
 }
 
 double calcDTH(CurrentMember cm[static 1], int k)
 {
+	(void)cm;
 	(void)k;
 	return gensum(cm->CAPDTH, ER, 0);
 }
@@ -174,19 +181,25 @@ double NRA(const CurrentMember cm[static 1], int k)
 {
 	(void)cm;
 	(void)k;
-	return interpret(temp_result, TYPE_DOUBLE).d;
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *s = get_var(UI_NRA, UI_INT, ht);
+	return interpret(s, TYPE_DOUBLE).d;
 }
 
 double wxdef(const CurrentMember cm[static 1], int k)
 {
 	(void)cm;
 	(void)k;
-	return interpret(temp_result, TYPE_DOUBLE).d;
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *s = get_var(UI_TURNOVER, UI_INT, ht);
+	return interpret(s, TYPE_DOUBLE).d;
 }
 
 double retx(const CurrentMember cm[static 1], int k)
 {
 	(void)cm;
 	(void)k;
-	return interpret(temp_result, TYPE_DOUBLE).d;
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *s = get_var(UI_RETX, UI_INT, ht);
+	return interpret(s, TYPE_DOUBLE).d;
 }

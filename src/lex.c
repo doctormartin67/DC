@@ -10,6 +10,7 @@
 
 static SrcPos pos_builtin = {.name = "<builtin>"};
 static Token token;
+static const char *code;
 static const char *stream;
 static const char *line_start;
 
@@ -64,6 +65,7 @@ void init_keywords(void)
 
 unsigned is_keyword_name(const char *name)
 {
+	assert(first_keyword && last_keyword);
 	return first_keyword <= name && name <= last_keyword;
 }
 
@@ -132,6 +134,12 @@ void error(SrcPos pos, const char *fmt, ...)
 	}
 	va_list args;
 	va_start(args, fmt);
+	printf("---------------\n");
+	printf("Code:\n");
+	printf("---------------\n");
+	printf("%s\n", code);
+	printf("---------------\n");
+	printf("---------------\n");
 	printf("%s(%d): error: ", pos.name, pos.line);
 	vprintf(fmt, args);
 	printf("\n");
@@ -367,6 +375,7 @@ repeat:
 
 void init_stream(const char *name, const char *buf)
 {
+	code = buf;
 	stream = buf;
 	line_start = stream;
 	token.pos.name = name ? name : "<editor>";

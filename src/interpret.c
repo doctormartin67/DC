@@ -68,8 +68,10 @@ void add_builtin_string(const char *name, const char *s)
 
 static void init_interpreter(const char *vba_code, TypeKind kind)
 {
+	init_keywords();
 	init_stream(0, vba_code);
 	init_builtin_types();
+	init_builtin_funcs();
 
 	switch (kind) {
 		case TYPE_INT:

@@ -1,8 +1,10 @@
+#include <stdio.h>
 #include <assert.h>
 #include "parse.h"
 #include "ast.h"
 #include "lex.h"
 #include "common.h"
+#include "print_ast.h"
 
 static Typespec *parse_type_base(void)
 {
@@ -432,8 +434,8 @@ static SelectCase parse_stmt_select_case(void)
 	while (match_keyword(case_keyword)) {
 		if (match_keyword(else_keyword)) {
 			if (is_default) {
-				error_here("Duplicate default labels in same"
-						"switch clause");
+				error_here("Duplicate 'else' labels in same"
+						"select case clause");
 			}
 			is_default = 1;
 		} else {
@@ -472,17 +474,13 @@ static Stmt *parse_stmt_select(SrcPos pos)
 	SelectCase *cases = 0;
 	Stmt *stmt = 0;
 	while (!is_token_eof() && !is_a_keyword(end_keyword)) {
-		buf_push(cases, parse_stmt_select_case());
+		SelectCase sc = parse_stmt_select_case();
+		buf_push(cases, sc);
 	}
 	expect_keyword(end_keyword);
 	expect_keyword(select_keyword);
 	stmt = new_stmt_select_case(pos, expr, cases, buf_len(cases));
 	assert(stmt);
-
-	for (size_t i = 0; i < buf_len(cases); i++) {
-		buf_free(cases[i].patterns);
-	}
-	buf_free(cases);
 	return stmt;
 }
 

@@ -23,6 +23,7 @@ typedef enum SymKind {
 typedef struct Sym {
 	const char *name;
 	SymKind kind;
+	double_func *func;
 	struct {
 		Type *type;
 		Val val;

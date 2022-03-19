@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "print_ast.h"
+#include "common.h"
 
 static int indent;
 
@@ -142,7 +143,7 @@ void print_select_case_pattern(const SelectCasePattern scp)
 	}
 }
 
-void print_select_case(const SelectCase sc)
+void print_select_case(SelectCase sc)
 {
 	print_newline();
 	if (sc.is_default)
@@ -160,6 +161,13 @@ void print_select_case(const SelectCase sc)
 	print_stmt_block(sc.block);
 	indent--;
 	printf(")");
+}
+
+void print_select_cases(const SelectCase *cases)
+{
+	for (size_t i = 0; i < buf_len(cases); i++) {
+		print_select_case(cases[i]);
+	}
 }
 
 void print_stmt(const Stmt *stmt)
@@ -302,5 +310,14 @@ void print_stmt(const Stmt *stmt)
 		default:
 			assert(0);
 			break;
+	}
+}
+
+void print_stmts(Stmt **stmts)
+{
+	assert(stmts);
+	for (size_t i = 0; i < buf_len(stmts); i++) {
+		print_stmt(stmts[i]);
+		printf("\n");
 	}
 }
