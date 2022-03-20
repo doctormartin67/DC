@@ -716,13 +716,13 @@ static void cast_content(Content *content, ContentKind kind)
 
 #undef CAST
 
-static Content *record_content(Database *db, size_t num_record,
+static Content *record_content(const Database *db, size_t num_record,
 		const char *title)
 {
 	return map_get_str(db->records[num_record]->data, title);
 }
 
-static unsigned is_title(Database *db, const char *title)
+static unsigned is_title(const Database *db, const char *title)
 {
 	for (size_t i = 0; i < buf_len(db->titles); i++) {
 		if (!strcmp(title, db->titles[i])) {
@@ -732,7 +732,7 @@ static unsigned is_title(Database *db, const char *title)
 	return 0;
 }
 
-bool record_boolean(Database *db, size_t num_record, const char *title)
+bool record_boolean(const Database *db, size_t num_record, const char *title)
 {
 	if (!is_title(db, title)) {
 		die("Could not find title '%s' in the database", title);
@@ -746,7 +746,7 @@ bool record_boolean(Database *db, size_t num_record, const char *title)
 	return content->val.b;
 }
 
-int record_int(Database *db, size_t num_record, const char *title)
+int record_int(const Database *db, size_t num_record, const char *title)
 {
 	if (!is_title(db, title)) {
 		die("Could not find title '%s' in the database", title);
@@ -760,7 +760,7 @@ int record_int(Database *db, size_t num_record, const char *title)
 	return content->val.i;
 }
 
-double record_double(Database *db, size_t num_record, const char *title)
+double record_double(const Database *db, size_t num_record, const char *title)
 {
 	if (!is_title(db, title)) {
 		die("Could not find title '%s' in the database", title);
@@ -774,7 +774,8 @@ double record_double(Database *db, size_t num_record, const char *title)
 	return content->val.d;
 }
 
-const char *record_string(Database *db, size_t num_record, const char *title)
+const char *record_string(const Database *db, size_t num_record,
+		const char *title)
 {
 	if (!is_title(db, title)) {
 		die("Could not find title '%s' in the database", title);

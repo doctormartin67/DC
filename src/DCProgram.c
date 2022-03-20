@@ -30,6 +30,64 @@ static int colmissing[KEYS_AMOUNT];
 
 static Validator *val;
 
+static double get_gen_amount(const Database *db, size_t num_member,
+		DataColumn dc, size_t EREE, size_t gen)
+{
+	double result = 0.0;
+	char *buf = 0;
+	switch (EREE) {
+		case ER:
+			buf_printf(buf, "%s%s%d", colnames[dc], "_A_GEN",
+					gen + 1);
+			break;
+		case EE:
+			buf_printf(buf, "%s%s%d", colnames[dc], "_C_GEN",
+					gen + 1);
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	result = record_double(db, num_member, buf);
+	buf_free(buf);
+	return result;
+}
+
+static void set_methods(const Database *db, size_t num_member,
+		struct methods *method, DataColumn dc, size_t EREE, size_t gen)
+{
+	method->puc = get_gen_amount(db, num_member, dc, EREE, gen);
+	method->tuc = get_gen_amount(db, num_member, dc, EREE, gen);
+	method->tucps_1 = get_gen_amount(db, num_member, dc, EREE, gen);
+}
+
+static void set_lump_sums(const Database *db, size_t num_member,
+		struct lump_sums *ls)
+{
+	for (size_t i = 0; i < EREE_AMOUNT; i++) {
+		for (size_t j = 0; j < MAXGEN; j++) {
+			ls[j].lump_sum[i] =
+				get_gen_amount(db, num_member, CAP, i, j);
+			ls[j].ps[i] =
+				get_gen_amount(db, num_member, CAPPS, i, j);
+			set_methods(db, num_member, &ls[j].reduced[i], CAPRED,
+					i, j);
+		}
+	}
+}
+
+static void set_projection(const Database *db, size_t num_member,
+		struct projection *p)
+{
+	set_lump_sums(db, num_member, p->lump_sums);
+}
+
+static void set_projections(const Database *db, size_t num_member,
+		struct projection *p)
+{
+	set_projection(db, num_member, p);
+}
+
 static CurrentMember create_member(Database *db, size_t num_member)
 {
 	CurrentMember cm = (CurrentMember){0};
@@ -77,13 +135,13 @@ static CurrentMember create_member(Database *db, size_t num_member)
 
 	// define article 24 from data
 	cm.ART24[PUC][ER][ART24GEN1][0] = record_double(db, num_member,
-				colnames[ART24_A_GEN1]);
+			colnames[ART24_A_GEN1]);
 	cm.ART24[PUC][ER][ART24GEN2][0] = record_double(db, num_member,
-				colnames[ART24_A_GEN2]);
+			colnames[ART24_A_GEN2]);
 	cm.ART24[PUC][EE][ART24GEN1][0] = record_double(db, num_member,
-				colnames[ART24_C_GEN1]);
+			colnames[ART24_C_GEN1]);
 	cm.ART24[PUC][EE][ART24GEN2][0] = record_double(db, num_member,
-				colnames[ART24_C_GEN2]);
+			colnames[ART24_C_GEN2]);
 	/* PUC = TUC = TUCPS_1 */
 	for (unsigned j = 1; j < METHOD_AMOUNT; j++) {
 		cm.ART24[j][ER][ART24GEN1][0] = cm.ART24[PUC][ER][ART24GEN1][0];
@@ -95,14 +153,12 @@ static CurrentMember create_member(Database *db, size_t num_member)
 	// all variables that have generations, employer and employee
 	//-  VARIABLES WITH MAXGEN  -
 	setGenMatrix(db, num_member, cm.PREMIUM, PREMIUM);
-	setGenMatrix(db, num_member, cm.CAP, CAP);
-	setGenMatrix(db, num_member, cm.CAPPS, CAPPS);
 	setGenMatrix(db, num_member, cm.CAPDTH, CAPDTH);
 	for (unsigned k = 0; k < METHOD_AMOUNT; k++) {
 		setGenMatrix(db, num_member, cm.RES[k], RES);
 		setGenMatrix(db, num_member, cm.RESPS[k], RESPS);
-		setGenMatrix(db, num_member, cm.REDCAP[k], CAPRED);
 	}
+	set_projections(db, num_member, cm.proj);
 	char *buf = 0;
 	for (unsigned j = 0; j < MAXGEN; j++) {
 		buf_printf(buf, "%s%s%d", colnames[TAUX], "_A_GEN", j + 1);
@@ -115,9 +171,9 @@ static CurrentMember create_member(Database *db, size_t num_member)
 
 	//-  MISCELLANEOUS  -
 	cm.DELTACAP[ER][0] = record_double(db, num_member,
-				colnames[DELTA_CAP_A_GEN1]);
+			colnames[DELTA_CAP_A_GEN1]);
 	cm.DELTACAP[EE][0] = record_double(db, num_member,
-				colnames[DELTA_CAP_C_GEN1]);
+			colnames[DELTA_CAP_C_GEN1]);
 	cm.X10 = record_double(db, num_member, colnames[X10]);
 	if (cm.tariff == MIXED && cm.X10 == 0) {
 		printf("Warning: X/10 equals zero for %s but he has a "
@@ -135,6 +191,71 @@ CurrentMember *create_members(Database *db)
 		buf_push(cm, create_member(db, i));
 	}
 	return cm;
+}
+
+#define SUM(a) \
+	switch (method) { \
+		case PUC: \
+			  sum += a.puc; \
+		break; \
+		case TUC: \
+			  sum += a.tuc; \
+		break; \
+		case TUCPS_1: \
+			      sum += a.tucps_1; \
+		break; \
+	}
+
+static double gen_sum_lump_sums(const struct lump_sums *ls, size_t EREE,
+		DataColumn dc, size_t method)
+{
+	double sum = 0.0;
+	switch (dc) {
+		case CAP:
+			for (size_t i = 0; i < MAXGEN; i++) {
+				sum += ls[i].lump_sum[EREE];
+			}
+			break;
+		case CAPPS:
+			for (size_t i = 0; i < MAXGEN; i++) {
+				sum += ls[i].ps[EREE];
+			}
+			break;
+		case CAPRED:
+			for (size_t i = 0; i < MAXGEN; i++) {
+				SUM(ls[i].reduced[EREE]);
+			}
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	return sum;
+}
+
+#undef SUM
+
+double gen_sum(struct projection p, size_t EREE, DataColumn dc, size_t method)
+{
+	double sum = 0.0;
+	switch (dc) {
+		case CAP:
+			sum = gen_sum_lump_sums(
+					p.lump_sums, EREE, CAP, method);
+			break;
+		case CAPPS:
+			sum = gen_sum_lump_sums(
+					p.lump_sums, EREE, CAPPS, method);
+			break;
+		case CAPRED:
+			sum = gen_sum_lump_sums(
+					p.lump_sums, EREE, CAPRED, method);
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	return sum;
 }
 
 double gensum(GenMatrix amount[static EREE_AMOUNT],

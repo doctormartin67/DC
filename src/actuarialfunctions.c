@@ -176,10 +176,12 @@ void evolPremiums(CurrentMember cm[restrict static 1], int k)
 	double axcost = 0.0;
 	double RPcap = 0.0;
 	double RPres = 0.0;
+	double lump_sum = 0.0;
 
 	for (int i = 0; i < EREE_AMOUNT; i++) {
 		formula = (ER == i ? calcA(cm, k + 1) : calcC(cm, k + 1));
 		for (int j = 0; j < MAXGEN; j++) {
+			lump_sum = cm->proj[k].lump_sums[j].lump_sum[i];
 			prem = formula;
 			for (int l = 0; l < j; l++)
 				prem = prem - cm->PREMIUM[i][l][k+1];
@@ -203,7 +205,7 @@ void evolPremiums(CurrentMember cm[restrict static 1], int k)
 						cm->TAUX[i][j], tff.costRES, 0,
 						1, cm->age[k], 
 						cm->age[k+1], 0);
-				RPcap = cm->CAP[i][j][k]/cm->X10;
+				RPcap = lump_sum/cm->X10;
 				RPres = cm->RES[PUC][i][j][k];
 
 				cm->RP[i][j][k] = MAX2(0.0, (RPcap - RPres)
@@ -646,7 +648,7 @@ static void updateRESCAP(CurrentMember cm[restrict static 1], int k)
 			CI->age = cm->age[k+1];
 
 			cm->RES[PUC][i][gen][k+1] = calcRES(cm, CI);
-			cm->CAP[i][gen][k] = CI->cap;
+			cm->proj[k].lump_sums[gen].lump_sum[i] = CI->cap;
 		}
 	}
 	free(CI);
@@ -671,7 +673,7 @@ static void updateRESCAPPS(CurrentMember cm[restrict static 1], int k)
 			CI->age = cm->age[k+1];
 
 			cm->RESPS[PUC][i][gen][k+1] = calcRES(cm, CI);
-			cm->CAPPS[i][gen][k] = CI->cap;
+			cm->proj[k].lump_sums[gen].ps[i] = CI->cap;
 		}
 	}
 	free(CI);
@@ -698,7 +700,8 @@ static void updateREDCAPPUC(CurrentMember cm[restrict static 1], int k)
 			CI->deltacap = 0;
 			CI->age = CI->RA;
 			CI->RA = NRA(cm, k + 1);
-			cm->REDCAP[PUC][i][gen][k+1] = calcCAP(cm, CI);
+			cm->proj[k+1].lump_sums[gen].reduced[i].puc =
+				calcCAP(cm, CI);
 
 			// Profit sharing
 			CI->lt = &tff.ltAfterTRM[i][gen];
@@ -714,7 +717,8 @@ static void updateREDCAPPUC(CurrentMember cm[restrict static 1], int k)
 			CI->res = CI->cap;
 			CI->age = CI->RA;
 			CI->RA = NRA(cm, k + 1);
-			cm->REDCAP[PUC][i][gen][k+1] += calcCAP(cm, CI);
+			cm->proj[k+1].lump_sums[gen].reduced[i].puc +=
+				calcCAP(cm, CI);
 		}
 	}
 	free(CI);
@@ -776,7 +780,8 @@ static void updateREDCAPTUC(CurrentMember cm[restrict static 1], int k)
 				CI->res = CI->cap;
 				CI->age = CI->RA;
 				CI->RA = cm->NRA;
-				cm->REDCAP[TUC][i][gen][k+1] = calcCAP(cm, CI);
+				cm->proj[k+1].lump_sums[gen].reduced[i].tuc =
+					calcCAP(cm, CI);
 
 				// Profit sharing
 				CI->lt = &tff.ltAfterTRM[i][gen];
@@ -790,7 +795,8 @@ static void updateREDCAPTUC(CurrentMember cm[restrict static 1], int k)
 				CI->res = CI->cap;
 				CI->age = CI->RA;
 				CI->RA = cm->NRA;
-				cm->REDCAP[TUC][i][gen][k+1] += calcCAP(cm, CI); 
+				cm->proj[k+1].lump_sums[gen].reduced[i].tuc +=
+					calcCAP(cm, CI);
 			} else {
 				CI->lt = &tff.ltINS[i][gen];
 				CI->res = cm->RES[PUC][i][gen][1];
@@ -818,7 +824,8 @@ static void updateREDCAPTUC(CurrentMember cm[restrict static 1], int k)
 				CI->res = CI->cap;
 				CI->age = CI->RA;
 				CI->RA = NRA(cm, k + 1);
-				cm->REDCAP[TUC][i][gen][k+1] = calcCAP(cm, CI);
+				cm->proj[k+1].lump_sums[gen].reduced[i].tuc =
+					calcCAP(cm, CI);
 
 				// Profit sharing
 				CI->lt = &tff.ltINS[i][gen];
@@ -846,7 +853,7 @@ static void updateREDCAPTUC(CurrentMember cm[restrict static 1], int k)
 				CI->res = CI->cap;
 				CI->age = CI->RA;
 				CI->RA = NRA(cm, k + 1);
-				cm->REDCAP[TUC][i][gen][k+1] += 
+				cm->proj[k+1].lump_sums[gen].reduced[i].tuc +=
 					calcCAP(cm, CI);
 			}
 		}
@@ -912,7 +919,7 @@ static void updateREDCAPTUCPS_1(CurrentMember cm[restrict static 1], int k)
 				CI->res = CI->cap;
 				CI->age = CI->RA;
 				CI->RA = cm->NRA;
-				cm->REDCAP[TUCPS_1][i][gen][k+1] = 
+				cm->proj[k+1].lump_sums[gen].reduced[i].tucps_1 =
 					calcCAP(cm, CI);
 
 				// Profit sharing
@@ -927,8 +934,8 @@ static void updateREDCAPTUCPS_1(CurrentMember cm[restrict static 1], int k)
 				CI->res = CI->cap;
 				CI->age = CI->RA;
 				CI->RA = cm->NRA;
-				cm->REDCAP[TUCPS_1][i][gen][k+1] += 
-					calcCAP(cm, CI); 
+				cm->proj[k+1].lump_sums[gen].reduced[i].tucps_1
+					+= calcCAP(cm, CI);
 			} else {
 				CI->lt = &tff.ltINS[i][gen];
 				CI->res = cm->RES[PUC][i][gen][index];
@@ -956,8 +963,8 @@ static void updateREDCAPTUCPS_1(CurrentMember cm[restrict static 1], int k)
 				CI->res = CI->cap;
 				CI->age = CI->RA;
 				CI->RA = NRA(cm, k + 1);
-				cm->REDCAP[TUCPS_1][i][gen][k+1] = 
-					calcCAP(cm, CI);
+				cm->proj[k+1].lump_sums[gen].reduced[i].tucps_1
+					= calcCAP(cm, CI);
 
 				// Profit sharing
 				CI->lt = &tff.ltINS[i][gen];
@@ -985,8 +992,8 @@ static void updateREDCAPTUCPS_1(CurrentMember cm[restrict static 1], int k)
 				CI->res = CI->cap;
 				CI->age = CI->RA;
 				CI->RA = NRA(cm, k + 1);
-				cm->REDCAP[TUCPS_1][i][gen][k+1] += 
-					calcCAP(cm, CI);
+				cm->proj[k+1].lump_sums[gen].reduced[i].tucps_1
+					+= calcCAP(cm, CI);
 			}
 		}
 	}

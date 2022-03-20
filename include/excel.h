@@ -58,10 +58,11 @@ typedef struct Database {
 Excel *open_excel(const char *file_name, const char *sheet_name);
 void close_excel(Excel *excel);
 Content *cell_content(Excel *excel, const char *sheet_name, const char *cell);
-int record_int(Database *db, size_t num_record, const char *title);
-double record_double(Database *db, size_t num_record, const char *title);
-const char *record_string(Database *db, size_t num_record, const char *title);
-bool record_boolean(Database *db, size_t num_record, const char *title);
+int record_int(const Database *db, size_t num_record, const char *title);
+double record_double(const Database *db, size_t num_record, const char *title);
+const char *record_string(const Database *db, size_t num_record,
+		const char *title);
+bool record_boolean(const Database *db, size_t num_record, const char *title);
 
 Val cell_val(Excel *excel, const char *sheet_name, const char *cell);
 void print_excel(Excel *e);

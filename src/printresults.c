@@ -250,7 +250,8 @@ static void set_row_values(CurrentMember *cm, int row)
 	for (unsigned i = 0; i < MAXGEN; i++) {
 		for (unsigned j = 0; j < EREE_AMOUNT; j++) {
 			gen = a * i + a * MAXGEN * j;
-			tc_print[TC_CAP + gen].v.d = cm->CAP[j][i][row];
+			tc_print[TC_CAP + gen].v.d =
+				cm->proj[row].lump_sums[i].lump_sum[j];
 			tc_print[TC_PREM + gen].v.d = cm->PREMIUM[j][i][row];
 			tc_print[TC_RESPS + gen].v.d =
 				cm->RESPS[PUC][j][i][row];
@@ -266,12 +267,12 @@ static void set_row_values(CurrentMember *cm, int row)
 	tc_print[TC_TOTRESC].v.d = gensum(cm->RES[PUC], EE, row)
 		+ gensum(cm->RESPS[PUC], EE, row);
 
-	tc_print[TC_REDCAPPUC].v.d = gensum(cm->REDCAP[PUC], ER, row)
-		+ gensum(cm->REDCAP[PUC], EE, row);
-	tc_print[TC_REDCAPTUC].v.d = gensum(cm->REDCAP[TUC], ER, row)
-		+ gensum(cm->REDCAP[TUC], EE, row);
-	tc_print[TC_REDCAPTUCPS1].v.d = gensum(cm->REDCAP[TUCPS_1], ER, row)
-		+ gensum(cm->REDCAP[TUCPS_1], EE, row);
+	tc_print[TC_REDCAPPUC].v.d = gen_sum(cm->proj[row], ER, CAPRED, PUC)
+		+ gen_sum(cm->proj[row], EE, CAPRED, PUC);
+	tc_print[TC_REDCAPTUC].v.d = gen_sum(cm->proj[row], ER, CAPRED, TUC)
+		+ gen_sum(cm->proj[row], EE, CAPRED, TUC);
+	tc_print[TC_REDCAPTUCPS1].v.d = gen_sum(cm->proj[row], ER, CAPRED,
+			TUCPS_1) + gen_sum(cm->proj[row], EE, CAPRED, TUCPS_1);
 
 	tc_print[TC_RESPUC].v.d = gensum(cm->RES[PUC], ER, row)
 		+ gensum(cm->RES[PUC], EE, row)
@@ -388,7 +389,7 @@ static void print_record(lxw_worksheet *ws, Record *record, size_t num_member)
 {
 	assert(ws);
 	assert(record);
-	
+
 	Content *content = 0;
 	for (size_t i = 0; i < record->num_titles; i++) {
 		content = map_get_str(record->data, record->titles[i]);

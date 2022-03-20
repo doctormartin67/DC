@@ -88,6 +88,23 @@ typedef double GenMatrix[MAXGEN][MAXPROJ];
  * Under "Variable Definitions" we define extra variables needed in each
  * run of a member
  */
+
+struct methods {
+	double puc; //projected unit credit
+	double tuc; //traditional unit credit
+	double tucps_1; //traditional unit credit +1 service year
+};
+
+struct lump_sums {
+	double lump_sum[EREE_AMOUNT];
+	double ps[EREE_AMOUNT];
+	struct methods reduced[EREE_AMOUNT];
+};
+
+struct projection {
+	struct lump_sums lump_sums[MAXGEN];
+};
+
 typedef struct {
 	Hashtable *Data;
 	unsigned id; /* Used to print warning/error messages to user */
@@ -121,9 +138,6 @@ typedef struct {
 	 * Article 24 of the Belgium law (WAP)
 	 */
 	double ART24[METHOD_AMOUNT][EREE_AMOUNT][ART24GEN_AMOUNT][MAXPROJ]; 
-	GenMatrix CAP[EREE_AMOUNT]; // Pension lump sum
-	GenMatrix CAPPS[EREE_AMOUNT]; /* Pension lump sum profit sharing */
-	GenMatrix REDCAP[METHOD_AMOUNT][EREE_AMOUNT]; /* Reduced lump sum */
 	double TAUX[EREE_AMOUNT][MAXGEN]; /* return guarentee insurer */
 	GenMatrix PREMIUM[EREE_AMOUNT];
 	GenMatrix RES[METHOD_AMOUNT][EREE_AMOUNT]; // Reserves
@@ -179,9 +193,12 @@ typedef struct {
 	double PBONCCF[METHOD_AMOUNT][ASSET_AMOUNT][MAXPROJ]; // Normal Cost
 	double EBPDTH[METHOD_AMOUNT][MAXPROJ]; // Expected Benefits Paid Death
 	double PBODTHNCCF[MAXPROJ]; // PBO Death Normal Cost Cashflows
+
+	struct projection proj[MAXPROJ];
 } CurrentMember;
 
 //---Useful functions for CurrentMembers---
+double gen_sum(struct projection, size_t EREE, DataColumn, size_t method);
 double gensum(GenMatrix amount[], unsigned EREE, unsigned loop);
 
 //---Reconciliation declarations---
@@ -193,20 +210,20 @@ enum sensruns {runsensDuration = 21, runsensDRminus, runsensDRplus, runsensInfla
 	runsensInflationplus, runsensSSminus, runsensSSplus,
 	runsensAgeCorrminus, runsensAgeCorrplus};
 /*static const char *runnames[] = {"Reported Last Year", "Update Inflation",
-	"Update Discount Rate", "Roll Forward", "New Data", "New Methodology", "New Mortality",
-	"New Turnover", "New NRA", "New Inflation", "New Salary Increase", "New Discount Rate", 
-	"New Roll Forward", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", 
-	"Sensitivity Duration", "Sensitivity Discount Rate -", "Sensitivity Discount Rate +", 
-	"Sensitivity Inflation -", "Sensitivity Inflation +", "Sensitivity Salary Increase -", 
-	"Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
-	*/
+  "Update Discount Rate", "Roll Forward", "New Data", "New Methodology", "New Mortality",
+  "New Turnover", "New NRA", "New Inflation", "New Salary Increase", "New Discount Rate", 
+  "New Roll Forward", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", 
+  "Sensitivity Duration", "Sensitivity Discount Rate -", "Sensitivity Discount Rate +", 
+  "Sensitivity Inflation -", "Sensitivity Inflation +", "Sensitivity Salary Increase -", 
+  "Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
+ */
 unsigned currrun; // Current run
 
 //---Tariff Structure---
 typedef struct {
 	unsigned lt; /* there is an array of strings containing the names of lifetables. 
-			    I reference the array elements by using the index defined with an 
-			    enum lifetables. */
+			I reference the array elements by using the index defined with an 
+			enum lifetables. */
 	double i; // Insurance rate (This changes for prolongation table for example)
 } LifeTable;
 
