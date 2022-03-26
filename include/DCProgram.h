@@ -61,7 +61,7 @@ enum cashflows {PBO, TBO, CF_AMOUNT};
 
 enum {INTERPRETERTEXT_SIZE = 4096};
 
-static const double ART24TAUX[EREE_AMOUNT][ART24GEN_AMOUNT] = {
+static const double art24_interest_rates[EREE_AMOUNT][ART24GEN_AMOUNT] = {
 	[ER] = {
 		[ART24GEN1] = 0.0325, 
 		[ART24GEN2] = 0.0175
@@ -73,8 +73,6 @@ static const double ART24TAUX[EREE_AMOUNT][ART24GEN_AMOUNT] = {
 };
 /* Current guarenteed rates that the employers need to guarentee on the 
    reserves of their employees by Belgian law (Employer-Employee, generation)*/
-
-typedef double GenMatrix[MAXGEN][MAXPROJ]; 
 
 //---Data Declarations---
 
@@ -95,14 +93,33 @@ struct methods {
 	double tucps_1; //traditional unit credit +1 service year
 };
 
+struct reserves {
+	double ps[EREE_AMOUNT];
+	struct methods res[EREE_AMOUNT];
+};
+
 struct lump_sums {
 	double lump_sum[EREE_AMOUNT];
 	double ps[EREE_AMOUNT];
 	struct methods reduced[EREE_AMOUNT];
 };
 
+struct generations {
+	double premium[EREE_AMOUNT];
+	double risk_premium[EREE_AMOUNT];
+	double death_lump_sum[EREE_AMOUNT];
+	struct lump_sums lump_sums;
+	struct reserves reserves;
+};
+
+struct art24 {
+	double i[EREE_AMOUNT];
+	struct methods res[EREE_AMOUNT];
+};
+
 struct projection {
-	struct lump_sums lump_sums[MAXGEN];
+	struct generations gens[MAXGEN];
+	struct art24 art24[ART24GEN_AMOUNT];
 };
 
 typedef struct {
@@ -134,18 +151,9 @@ typedef struct {
 	double annINV; // annuity in case of invalidity
 	double contrINV; // contribution for invalidity insurance
 
-	/*
-	 * Article 24 of the Belgium law (WAP)
-	 */
-	double ART24[METHOD_AMOUNT][EREE_AMOUNT][ART24GEN_AMOUNT][MAXPROJ]; 
 	double TAUX[EREE_AMOUNT][MAXGEN]; /* return guarentee insurer */
-	GenMatrix PREMIUM[EREE_AMOUNT];
-	GenMatrix RES[METHOD_AMOUNT][EREE_AMOUNT]; // Reserves
-	GenMatrix RESPS[METHOD_AMOUNT][EREE_AMOUNT]; /* Profit Sharing */
 	double DELTACAP[EREE_AMOUNT][MAXPROJ]; // Delta Cap (AXA)
 	double X10; // MIXED combination
-	GenMatrix CAPDTH[EREE_AMOUNT]; /* Death lump sum (used for UKMT) */
-	GenMatrix RP[EREE_AMOUNT]; // Risk Premium
 
 	//---Variable Definitions---    
 	double age[MAXPROJ + 1];
@@ -198,8 +206,10 @@ typedef struct {
 } CurrentMember;
 
 //---Useful functions for CurrentMembers---
-double gen_sum(struct projection, size_t EREE, DataColumn, size_t method);
-double gensum(GenMatrix amount[], unsigned EREE, unsigned loop);
+double get_method_amount(struct methods m, size_t method);
+double gen_sum(const struct generations *, size_t EREE, DataColumn,
+		size_t method);
+double gen_sum_art24(const struct art24 *a24, size_t method);
 
 //---Reconciliation declarations---
 enum runs {runLY, runUpdateInflation, runUpdateDR, runRF,
@@ -245,7 +255,6 @@ Tariff tff; // Tariff structure
 
 //---Data Functions---
 CurrentMember *create_members(Database *db);
-void setGenMatrix(Database *db, size_t num_mbr, GenMatrix var[], DataColumn);
 void validateColumns(void);
 void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
 		const char *input);

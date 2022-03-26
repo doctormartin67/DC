@@ -172,9 +172,7 @@ double calcC(CurrentMember cm[static 1], int k)
 
 double calcDTH(CurrentMember cm[static 1], int k)
 {
-	(void)cm;
-	(void)k;
-	return gensum(cm->CAPDTH, ER, 0);
+	return gen_sum(cm->proj[k].gens, ER, CAPDTH, PUC);
 }
 
 double NRA(const CurrentMember cm[static 1], int k)

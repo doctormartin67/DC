@@ -1,24 +1,10 @@
-#ifndef ACTUARIALFUNCTIONS
-#define ACTUARIALFUNCTIONS
+#ifndef ACTUARIALFUNCTIONS_H
+#define ACTUARIALFUNCTIONS_H
 #include <math.h>
+#include "common.h"
 #include "lifetables.h"
-#include "DCProgram.h"
 
 #define EPS 0.0000001
-
-enum {DBO, NC, IC, ASSETS};
-enum {DEF, IMM}; // deferred or immediate payment
-
-typedef struct {
-	LifeTable *lt;
-	double res;
-	double prem; 
-	double deltacap; 
-	double capdth;
-	double age; 
-	double RA; 
-	double cap;
-} CalcInput;
 
 extern unsigned long lx[LT_AMOUNT][MAXAGE];
 
@@ -57,30 +43,6 @@ double Iaxn(register unsigned lt, register double i, register double charge,
 		register double ageX, register double ageXn,
 		register int corr) PURE ;
 
-void evolCAPDTH(CurrentMember *restrict cm, int k);
-void evolRES(CurrentMember *restrict cm, int k);
-void evolPremiums(CurrentMember *restrict cm, int k);
-void evolART24(CurrentMember *restrict cm, int k);
-double calcCAP(const CurrentMember *restrict cm, const CalcInput *restrict);
-double calcRES(const CurrentMember *restrict cm, const CalcInput *restrict);
-void evolDBONCIC(CurrentMember *restrict cm, int k,
-		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT]);
-void evolEBP(CurrentMember *restrict cm, int k,
-		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT]);
-
-// This is used as a help function to retrieve the appropriate amount
-// for the formula
-double getamount(const CurrentMember *restrict cm, int k, unsigned DBONCICASS,
-		unsigned method, unsigned assets, unsigned DEFIMM,
-		unsigned PBOTBO, 
-		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT], 
-		const double REDCAPTOT[const static METHOD_AMOUNT]);
-
 /*
  * inline functions
  */
@@ -102,8 +64,8 @@ inline double npx(register unsigned lt, register double ageX,
 	ageX += corr;
 	ageXn += corr;
 	max = MAXAGE - 2;
-	ageX = MIN2(max, MAX2(0, ageX));
-	ageXn = MIN2(max, MAX2(0, ageXn));
+	ageX = MIN(max, MAX(0, ageX));
+	ageXn = MIN(max, MAX(0, ageXn));
 	lxX = lx[lt][(unsigned)ageX];
 	lxX1 = lx[lt][(unsigned)(ageX + 1)];
 	lxXn = lx[lt][(unsigned)ageXn];

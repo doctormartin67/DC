@@ -1,5 +1,8 @@
-#include "helperfunctions.h"
+#include <math.h>
 #include "actuarialfunctions.h"
+#include "lifetables.h"
+#include "helperfunctions.h"
+#include "calculate.h"
 #include "errorexit.h"
 #include "assumptions.h"
 
@@ -72,23 +75,20 @@ void runmember(CurrentMember cm[static 1])
 		evolCAPDTH(cm, k - 1);
 		evolRES(cm, k - 1); 
 		evolPremiums(cm, k - 1);
-		evolART24(cm, k - 1);
+		update_art24(cm, k - 1);
 
 		for (int j = 0; j < METHOD_AMOUNT; j++) {
-			ART24TOT[j] = cm->ART24[j][ER][ART24GEN1][k]
-				+ cm->ART24[j][ER][ART24GEN2][k]
-				+ cm->ART24[j][EE][ART24GEN1][k]
-				+ cm->ART24[j][EE][ART24GEN2][k];
-			RESTOT[j] = gensum(cm->RES[j], ER, k)
-				+ gensum(cm->RES[j], EE, k)
-				+ gensum(cm->RESPS[j], ER, k)
-				+ gensum(cm->RESPS[j], EE, k);
-			REDCAPTOT[j] = gensum(cm->REDCAP[j], ER, k)
-				+ gensum(cm->REDCAP[j], EE, k);
+			ART24TOT[j] = gen_sum_art24(cm->proj[1].art24, j);
+			RESTOT[j] = gen_sum(cm->proj[k].gens, ER, RES, j)
+				+ gen_sum(cm->proj[k].gens, EE, RES, j)
+				+ gen_sum(cm->proj[k].gens, ER, RESPS, j)
+				+ gen_sum(cm->proj[k].gens, EE, RESPS, j);
+			REDCAPTOT[j] = gen_sum(cm->proj[k].gens, ER, CAPRED, j)
+				+ gen_sum(cm->proj[k].gens, EE, CAPRED, j);
 		}
 
-		ERprem = gensum(cm->PREMIUM, ER, 1);
-		EEprem = gensum(cm->PREMIUM, EE, 1);
+		ERprem = gen_sum(cm->proj[1].gens, ER, PREMIUM, PUC);
+		EEprem = gen_sum(cm->proj[1].gens, EE, PREMIUM, PUC);
 		if (!(cm->status & ACT) || 0 == ERprem + EEprem) {
 			cm->FF[k] = 1;
 			cm->FFSC[k] = 0;
@@ -143,8 +143,8 @@ void runmember(CurrentMember cm[static 1])
 
 		if (k + 1 < MAXPROJ) {
 			cm->kPx[k+1] = cm->kPx[k] * (1 - cm->qx[k])
-			* (1 - cm->wxdef[k] - cm->wximm[k])
-			* (1 - cm->retx[k]);
+				* (1 - cm->wxdef[k] - cm->wximm[k])
+				* (1 - cm->retx[k]);
 		}
 	}     
 }
@@ -168,22 +168,23 @@ static void init_cm(CurrentMember cm[static 1])
 
 	cm->CAPDTHRESPart[0] = 
 		(cm->tariff == UKMS ? 
-		 gensum(cm->RES[PUC], ER, 0) 
-		 + gensum(cm->RES[PUC], EE, 0)
-		 + gensum(cm->RESPS[PUC], ER, 0) 
-		 + gensum(cm->RESPS[PUC], EE, 0) : 0);
+		 gen_sum(cm->proj[0].gens, ER, RES, PUC) 
+		 + gen_sum(cm->proj[0].gens, EE, RES, PUC) 
+		 + gen_sum(cm->proj[0].gens, ER, RESPS, PUC) 
+		 + gen_sum(cm->proj[0].gens, EE, RESPS, PUC) : 0);
 	cm->CAPDTHRiskPart[0] = calcDTH(cm, 0); 
 
 	//-  Premium  -
 	for (int l = 0; l < EREE_AMOUNT; l++) {
-		prem = cm->PREMIUM[l][MAXGEN-1];
+		prem = &cm->proj[0].gens[MAXGEN - 1].premium[l];
 		*prem = (l == ER ? calcA(cm, 0) : calcC(cm, 0));
 		for (int j = 0; j < MAXGEN-1; j++) {
-			prem = cm->PREMIUM[l][MAXGEN-1];
-			*prem = MAX2(0.0, *prem - *cm->PREMIUM[l][j]);
+			prem = &cm->proj[0].gens[MAXGEN - 1].premium[l];
+			*prem = MAX(0.0, *prem
+					- cm->proj[0].gens[j].premium[l]);
 		}
 	}
-	
+
 	set_tariffs(cm);
 }
 
@@ -229,22 +230,20 @@ static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
 static void prolongate(CurrentMember cm[static 1], int k)
 {
 	for (int i = 0; i < EREE_AMOUNT; i++) {
-		cm->PREMIUM[i][MAXGEN-1][k] = gensum(cm->PREMIUM, i, k);
-		cm->CAPDTH[i][MAXGEN-1][k] = gensum(cm->CAPDTH, i, k);
-		for (int l = 0; l < METHOD_AMOUNT; l++) {
-			cm->RES[l][i][MAXGEN-1][k] =
-				gensum(cm->RES[l], i, k);
-			cm->RESPS[l][i][MAXGEN-1][k] =
-				gensum(cm->RESPS[l], i, k); 
-		}
+		cm->proj[k].gens[MAXGEN-1].premium[i] =
+			gen_sum(cm->proj[k].gens, i, PREMIUM, PUC);
+		cm->proj[k].gens[MAXGEN-1].death_lump_sum[i]
+			= gen_sum(cm->proj[k].gens, i, CAPDTH, PUC);
+		cm->proj[k].gens[MAXGEN-1].reserves.res[i].puc =
+			gen_sum(cm->proj[k].gens, i, RES, PUC);
+		cm->proj[k].gens[MAXGEN-1].reserves.ps[i] =
+			gen_sum(cm->proj[k].gens, i, RESPS, 0);
 		cm->DELTACAP[i][k] = 0;
 		for (int j = 0; j < MAXGEN-1; j++) {
-			cm->PREMIUM[i][j][k] = 0;
-			cm->CAPDTH[i][j][k] = 0;
-			for (int l = 0; l < METHOD_AMOUNT; l++) {
-				cm->RES[l][i][j][k] = 0;
-				cm->RESPS[l][i][j][k] = 0;
-			} 
+			cm->proj[k].gens[j].premium[i] = 0;
+			cm->proj[k].gens[j].death_lump_sum[i] = 0;
+			cm->proj[k].gens[j].reserves.res[i].puc = 0;
+			cm->proj[k].gens[j].reserves.ps[i] = 0;
 		}
 	}
 

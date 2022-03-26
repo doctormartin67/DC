@@ -242,59 +242,77 @@ static void set_row_values(CurrentMember *cm, int row)
 	tc_print[TC_SAL].v.d = cm->sal[row];
 	tc_print[TC_NDOA].v.d = cm->nDOA[row];
 	tc_print[TC_NDOE].v.d = cm->nDOE[row];
-	tc_print[TC_CONTRA].v.d = gensum(cm->PREMIUM, ER, row);
+	tc_print[TC_CONTRA].v.d = gen_sum(cm->proj[row].gens, ER, PREMIUM,
+			PUC);
 	tc_print[TC_DTHRISK].v.d = cm->CAPDTHRiskPart[row];
 	tc_print[TC_DTHRES].v.d = cm->CAPDTHRESPart[row];
-	tc_print[TC_CONTRC].v.d = gensum(cm->PREMIUM, EE, row);
+	tc_print[TC_CONTRC].v.d = gen_sum(cm->proj[row].gens, EE, PREMIUM,
+			PUC);
 
 	for (unsigned i = 0; i < MAXGEN; i++) {
 		for (unsigned j = 0; j < EREE_AMOUNT; j++) {
 			gen = a * i + a * MAXGEN * j;
 			tc_print[TC_CAP + gen].v.d =
-				cm->proj[row].lump_sums[i].lump_sum[j];
-			tc_print[TC_PREM + gen].v.d = cm->PREMIUM[j][i][row];
+				cm->proj[row].gens[i].lump_sums.lump_sum[j];
+			tc_print[TC_PREM + gen].v.d =
+				cm->proj[row].gens[i].premium[j];
 			tc_print[TC_RESPS + gen].v.d =
-				cm->RESPS[PUC][j][i][row];
-			tc_print[TC_RES + gen].v.d = cm->RES[PUC][j][i][row];
+				cm->proj[row].gens[i].reserves.ps[j];
+			tc_print[TC_RES + gen].v.d =
+				cm->proj[row].gens[i].reserves.res[j].puc;
 			tc_print[TC_CAP + gen].is_number = 1;
 			tc_print[TC_PREM + gen].is_number = 1;
 			tc_print[TC_RESPS + gen].is_number = 1;
 			tc_print[TC_RES + gen].is_number = 1;
 		}
 	}
-	tc_print[TC_TOTRESA].v.d = gensum(cm->RES[PUC], ER, row)
-		+ gensum(cm->RESPS[PUC], ER, row);
-	tc_print[TC_TOTRESC].v.d = gensum(cm->RES[PUC], EE, row)
-		+ gensum(cm->RESPS[PUC], EE, row);
+	tc_print[TC_TOTRESA].v.d
+		= gen_sum(cm->proj[row].gens, ER, RES, PUC)
+		+ gen_sum(cm->proj[row].gens, ER, RESPS, 0);
+	tc_print[TC_TOTRESC].v.d
+		= gen_sum(cm->proj[row].gens, EE, RES, PUC)
+		+ gen_sum(cm->proj[row].gens, EE, RESPS, 0);
 
-	tc_print[TC_REDCAPPUC].v.d = gen_sum(cm->proj[row], ER, CAPRED, PUC)
-		+ gen_sum(cm->proj[row], EE, CAPRED, PUC);
-	tc_print[TC_REDCAPTUC].v.d = gen_sum(cm->proj[row], ER, CAPRED, TUC)
-		+ gen_sum(cm->proj[row], EE, CAPRED, TUC);
-	tc_print[TC_REDCAPTUCPS1].v.d = gen_sum(cm->proj[row], ER, CAPRED,
-			TUCPS_1) + gen_sum(cm->proj[row], EE, CAPRED, TUCPS_1);
+	tc_print[TC_REDCAPPUC].v.d
+		= gen_sum(cm->proj[row].gens, ER, CAPRED, PUC)
+		+ gen_sum(cm->proj[row].gens, EE, CAPRED, PUC);
+	tc_print[TC_REDCAPTUC].v.d
+		= gen_sum(cm->proj[row].gens, ER, CAPRED, TUC)
+		+ gen_sum(cm->proj[row].gens, EE, CAPRED, TUC);
+	tc_print[TC_REDCAPTUCPS1].v.d
+		= gen_sum(cm->proj[row].gens, ER, CAPRED, TUCPS_1)
+		+ gen_sum(cm->proj[row].gens, EE, CAPRED, TUCPS_1);
 
-	tc_print[TC_RESPUC].v.d = gensum(cm->RES[PUC], ER, row)
-		+ gensum(cm->RES[PUC], EE, row)
-		+ gensum(cm->RESPS[PUC], ER, row)
-		+ gensum(cm->RESPS[PUC], EE, row);
-	tc_print[TC_RESTUC].v.d = gensum(cm->RES[TUC], ER, row)
-		+ gensum(cm->RES[TUC], EE, row)
-		+ gensum(cm->RESPS[TUC], ER, row)
-		+ gensum(cm->RESPS[TUC], EE, row);
-	tc_print[TC_RESTUCPS1].v.d = gensum(cm->RES[TUCPS_1], ER, row)
-		+ gensum(cm->RES[TUCPS_1], EE, row)
-		+ gensum(cm->RESPS[TUCPS_1], ER, row)
-		+ gensum(cm->RESPS[TUCPS_1], EE, row);
+	tc_print[TC_RESPUC].v.d
+		= gen_sum(cm->proj[row].gens, ER, RES, PUC)
+		+ gen_sum(cm->proj[row].gens, EE, RES, PUC)
+		+ gen_sum(cm->proj[row].gens, ER, RESPS, 0)
+		+ gen_sum(cm->proj[row].gens, EE, RESPS, 0);
+	tc_print[TC_RESTUC].v.d
+		= gen_sum(cm->proj[row].gens, ER, RES, TUC)
+		+ gen_sum(cm->proj[row].gens, EE, RES, TUC)
+		+ gen_sum(cm->proj[row].gens, ER, RESPS, 0)
+		+ gen_sum(cm->proj[row].gens, EE, RESPS, 0);
+	tc_print[TC_RESTUCPS1].v.d
+		= gen_sum(cm->proj[row].gens, ER, RES, TUCPS_1)
+		+ gen_sum(cm->proj[row].gens, EE, RES, TUCPS_1)
+		+ gen_sum(cm->proj[row].gens, ER, RESPS, 0)
+		+ gen_sum(cm->proj[row].gens, EE, RESPS, 0);
 
-	for (unsigned j = 0; j < METHOD_AMOUNT; j++) {
-		for (unsigned i = 0; i < ART24GEN_AMOUNT; i++) {
-			for (unsigned k = 0; k < EREE_AMOUNT; k++) {
-				gen = i+ART24GEN_AMOUNT*(METHOD_AMOUNT*k + j);
-				tc_print[TC_ART24 + gen].v.d =
-					cm->ART24[j][k][i][row];
-				tc_print[TC_ART24 + gen].is_number = 1;
-			}
+	for (unsigned i = 0; i < ART24GEN_AMOUNT; i++) {
+		for (unsigned k = 0; k < EREE_AMOUNT; k++) {
+			gen = i+ART24GEN_AMOUNT*(2*k + PUC);
+			tc_print[TC_ART24 + gen].v.d =
+				cm->proj[row].art24[i].res[k].puc;
+			tc_print[TC_ART24 + gen].is_number = 1;
+			gen = i+ART24GEN_AMOUNT*(2*k + TUC);
+			tc_print[TC_ART24 + gen].v.d =
+				cm->proj[row].art24[i].res[k].tuc;
+			tc_print[TC_ART24 + gen].is_number = 1;
+			gen = i+ART24GEN_AMOUNT*(2*k + TUCPS_1);
+			tc_print[TC_ART24 + gen].v.d =
+				cm->proj[row].art24[i].res[k].tucps_1;
+			tc_print[TC_ART24 + gen].is_number = 1;
 		}
 	}
 
@@ -552,10 +570,10 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 		ICNCRETTUCPAR = sum(MAXPROJ, cm->ICNCRET[TUC][PAR115]);
 		ICNCRETTUCRES = sum(MAXPROJ, cm->ICNCRET[TUC][MATHRES]);
 
-		ExpERContr = MAX2(0.0, MIN2(1.0, NRA(cm, 1) - cm->age[1]))
-			* gensum(cm->PREMIUM, ER, 1);
-		ExpEEContr = MAX2(0.0, MIN2(1.0, NRA(cm, 1) - cm->age[1]))
-			* gensum(cm->PREMIUM, EE, 1);
+		ExpERContr = MAX(0.0, MIN(1.0, NRA(cm, 1) - cm->age[1]))
+			* gen_sum(cm->proj[1].gens, ER, PREMIUM, PUC);
+		ExpEEContr = MAX(0.0, MIN(1.0, NRA(cm, 1) - cm->age[1]))
+			* gen_sum(cm->proj[1].gens, EE, PREMIUM, PUC);
 
 		DBODTHRESPART = sum(MAXPROJ, cm->DBODTHRESPart);
 		DBODTHRiskPART = sum(MAXPROJ, cm->DBODTHRiskPart);
@@ -566,10 +584,11 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 		assetsPAR113 = sum(MAXPROJ, cm->assets[PAR113]);
 		assetsRES = sum(MAXPROJ, cm->assets[MATHRES]);
 
-		ART24TOT = cm->ART24[PUC][ER][ART24GEN1][1]
-			+ cm->ART24[PUC][ER][ART24GEN2][1]
-			+ cm->ART24[PUC][EE][ART24GEN1][1]
-			+ cm->ART24[PUC][EE][ART24GEN2][1];
+		for (size_t i = 0; i < ART24GEN_AMOUNT; i++) {
+			for (size_t j = 0; j < EREE_AMOUNT; j++) {
+				ART24TOT += cm->proj[1].art24[i].res[j].puc;
+			}
+		}
 
 		ICNCDTHRESPART = sum(MAXPROJ, cm->ICNCDTHRESPart); 
 		ICNCDTHRiskPART = sum(MAXPROJ, cm->ICNCDTHRiskPart); 
