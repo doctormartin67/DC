@@ -239,13 +239,13 @@ static void set_row_values(CurrentMember *cm, int row)
 	snprintf(s, size, "%s", cm->key);
 
 	tc_print[TC_AGE].v.d = cm->age[row];
-	tc_print[TC_SAL].v.d = cm->sal[row];
-	tc_print[TC_NDOA].v.d = cm->nDOA[row];
-	tc_print[TC_NDOE].v.d = cm->nDOE[row];
+	tc_print[TC_SAL].v.d = cm->proj[row].sal;
+	tc_print[TC_NDOA].v.d = cm->proj[row].nDOA;
+	tc_print[TC_NDOE].v.d = cm->proj[row].nDOE;
 	tc_print[TC_CONTRA].v.d = gen_sum(cm->proj[row].gens, ER, PREMIUM,
 			PUC);
-	tc_print[TC_DTHRISK].v.d = cm->CAPDTHRiskPart[row];
-	tc_print[TC_DTHRES].v.d = cm->CAPDTHRESPart[row];
+	tc_print[TC_DTHRISK].v.d = cm->proj[row].death_risk;
+	tc_print[TC_DTHRES].v.d = cm->proj[row].death_res;
 	tc_print[TC_CONTRC].v.d = gen_sum(cm->proj[row].gens, EE, PREMIUM,
 			PUC);
 
@@ -317,15 +317,15 @@ static void set_row_values(CurrentMember *cm, int row)
 	}
 
 	if (row + 1 < MAXPROJ) {
-		tc_print[TC_FF].v.d = cm->FF[row + 1];
-		tc_print[TC_QX].v.d = cm->qx[row + 1];
-		tc_print[TC_WXDEF].v.d = cm->wxdef[row + 1];
-		tc_print[TC_WXIMM].v.d = cm->wximm[row + 1];
-		tc_print[TC_RETX].v.d = cm->retx[row + 1];
-		tc_print[TC_KPX].v.d = cm->kPx[row + 1];
-		tc_print[TC_NPK].v.d = cm->nPk[row + 1];
-		tc_print[TC_VK].v.d = cm->vk[row + 1];
-		tc_print[TC_VN].v.d = cm->vn[row + 1];
+		tc_print[TC_FF].v.d = cm->proj[row + 1].factor.ff;
+		tc_print[TC_QX].v.d = cm->proj[row + 1].factor.qx;
+		tc_print[TC_WXDEF].v.d = cm->proj[row + 1].factor.wxdef;
+		tc_print[TC_WXIMM].v.d = cm->proj[row + 1].factor.wximm;
+		tc_print[TC_RETX].v.d = cm->proj[row + 1].factor.retx;
+		tc_print[TC_KPX].v.d = cm->proj[row + 1].factor.kPx;
+		tc_print[TC_NPK].v.d = cm->proj[row + 1].factor.nPk;
+		tc_print[TC_VK].v.d = cm->proj[row + 1].factor.vk;
+		tc_print[TC_VN].v.d = cm->proj[row + 1].factor.vn;
 
 		a = 2;
 		for (unsigned i = 0; i < METHOD_AMOUNT - 1; i++) {
@@ -342,10 +342,10 @@ static void set_row_values(CurrentMember *cm, int row)
 
 		tc_print[TC_ASSETS115].v.d = cm->assets[PAR115][row + 1];
 		tc_print[TC_ASSETS113].v.d = cm->assets[PAR113][row + 1];
-		tc_print[TC_DBODTHRISK].v.d = cm->DBODTHRiskPart[row + 1];
-		tc_print[TC_DBODTHRES].v.d = cm->DBODTHRESPart[row + 1];
-		tc_print[TC_NCDTHRISK].v.d = cm->NCDTHRiskPart[row + 1];
-		tc_print[TC_NCDTHRES].v.d = cm->NCDTHRESPart[row + 1];
+		tc_print[TC_DBODTHRISK].v.d = cm->proj[row + 1].dbo.death_risk;
+		tc_print[TC_DBODTHRES].v.d = cm->proj[row + 1].dbo.death_res;
+		tc_print[TC_NCDTHRISK].v.d = cm->proj[row + 1].nc.death_risk;
+		tc_print[TC_NCDTHRES].v.d = cm->proj[row + 1].nc.death_res;
 
 		for (unsigned i = 0; i < METHOD_AMOUNT - 1; i++) {
 			for (unsigned j = 0; j < ASSET_AMOUNT; j++) {
@@ -575,10 +575,14 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 		ExpEEContr = MAX(0.0, MIN(1.0, NRA(cm, 1) - cm->age[1]))
 			* gen_sum(cm->proj[1].gens, EE, PREMIUM, PUC);
 
-		DBODTHRESPART = sum(MAXPROJ, cm->DBODTHRESPart);
-		DBODTHRiskPART = sum(MAXPROJ, cm->DBODTHRiskPart);
-		NCDTHRESPART = sum(MAXPROJ, cm->NCDTHRESPart);
-		NCDTHRiskPART = sum(MAXPROJ, cm->NCDTHRiskPart);
+		for (size_t i = 0; i < MAXPROJ; i++) {
+			DBODTHRESPART = cm->proj[i].dbo.death_res;
+			DBODTHRiskPART = cm->proj[i].dbo.death_risk;
+			NCDTHRESPART = cm->proj[i].nc.death_res;
+			NCDTHRiskPART = cm->proj[i].nc.death_risk;
+			ICNCDTHRESPART = cm->proj[i].nc.ic_death_res;
+			ICNCDTHRiskPART = cm->proj[i].nc.ic_death_risk;
+		}
 
 		assetsPAR115 = sum(MAXPROJ, cm->assets[PAR115]);
 		assetsPAR113 = sum(MAXPROJ, cm->assets[PAR113]);
@@ -589,9 +593,6 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 				ART24TOT += cm->proj[1].art24[i].res[j].puc;
 			}
 		}
-
-		ICNCDTHRESPART = sum(MAXPROJ, cm->ICNCDTHRESPart); 
-		ICNCDTHRiskPART = sum(MAXPROJ, cm->ICNCDTHRiskPart); 
 
 		/* Liability */
 		worksheet_write_number(ws, row+1, col+index++, DBORETPUCPAR,

@@ -45,7 +45,7 @@ DEPENDENCIES:
 $(EXE): $(EXE).o $(OBJS)
 
 # include dependencies created below
-include $(subst .o,.d,$(OBJS))
+include $(subst .o,.d,$(EXE).o $(OBJS))
 
 # trick to create dependencies, see make book page 33
 %.d: %.c

@@ -117,9 +117,44 @@ struct art24 {
 	struct methods res[EREE_AMOUNT];
 };
 
+//---Variables that are used for DBO calculation---
+struct factor {
+	double ff; // Funding Factor
+	double ff_sc; // Funding Factor Service Cost
+	double qx; // Chance to die within 1 year
+	double wxdef; // Turnover rate for 1 year (deferred payment)
+	double wximm; // Turnover rate for 1 year (immediate payment)
+	double retx; // Retirement rate for 1 year (mostly 100% at 65)
+	double nPk; // Chance to live from now until retirement
+	double kPx; // Chance to live from the start until now
+	double vk; // 1/(1+DR)^k with DR = discount rate
+	double vn; // 1/(1+DR)^n with DR = discount rate
+	double vk113; /* 1/(1+DR)^k with DR = discount rate
+				  according to IAS19 $113 */
+	double vn113; /* 1/(1+DR)^n with DR = discount rate
+				  according to IAS19 $113 */
+};
+
+struct liab {
+	double death_res; // Death Reserves Part
+	double death_risk; // Death Risk Part
+	double ic_death_res; // interest cost
+	double ic_death_risk; // interest cost
+};
+
 struct projection {
+	double nDOE; /* years since date of entry */
+	double nDOA; /* years since date of affiliation */
+	double sal;
+	double afsl;
+	double death_res; // Death Lump Sum Reserves Part
+	double death_risk; // Death Lump Sum Risk Part
+	double delta_cap[EREE_AMOUNT];
 	struct generations gens[MAXGEN];
 	struct art24 art24[ART24GEN_AMOUNT];
+	struct factor factor;
+	struct liab dbo;
+	struct liab nc;
 };
 
 typedef struct {
@@ -141,7 +176,6 @@ typedef struct {
 	struct date *DOR; // date of retirement
 	struct date *DOC[MAXPROJ + 1]; // date of calculation
 	const char *category; // f.e. blue collar, white collar, management, ...
-	double sal[MAXPROJ]; // salary
 	double PG; // pensioengrondslag (I have never needed this)
 	double PT; // part time
 	double NRA; // normal retirement age
@@ -152,29 +186,10 @@ typedef struct {
 	double contrINV; // contribution for invalidity insurance
 
 	double TAUX[EREE_AMOUNT][MAXGEN]; /* return guarentee insurer */
-	double DELTACAP[EREE_AMOUNT][MAXPROJ]; // Delta Cap (AXA)
 	double X10; // MIXED combination
 
 	//---Variable Definitions---    
 	double age[MAXPROJ + 1];
-	double nDOE[MAXPROJ]; // years since date of entry
-	double nDOA[MAXPROJ]; // years since date of affiliation
-
-	//---Variables that are used for DBO calculation---
-	double FF[MAXPROJ]; // Funding Factor
-	double FFSC[MAXPROJ]; // Funding Factor Service Cost
-	double qx[MAXPROJ]; // Chance to die within 1 year
-	double wxdef[MAXPROJ]; // Turnover rate for 1 year (deferred payment)
-	double wximm[MAXPROJ]; // Turnover rate for 1 year (immediate payment)
-	double retx[MAXPROJ]; // Retirement rate for 1 year (mostly 100% at 65)
-	double nPk[MAXPROJ]; // Chance to live from now until retirement
-	double kPx[MAXPROJ]; // Chance to live from the start until now
-	double vk[MAXPROJ]; // 1/(1+DR)^k with DR = discount rate
-	double vn[MAXPROJ]; // 1/(1+DR)^n with DR = discount rate
-	double vk113[MAXPROJ]; /* 1/(1+DR)^k with DR = discount rate
-				  according to IAS19 $113 */
-	double vn113[MAXPROJ]; /* 1/(1+DR)^n with DR = discount rate
-				  according to IAS19 $113 */
 
 	// Retirement
 	double DBORET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; // DBO
@@ -182,19 +197,6 @@ typedef struct {
 	// Interest Cost on Normal Cost 
 	double ICNCRET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; 
 	double assets[ASSET_AMOUNT][MAXPROJ];
-	double AFSL[MAXPROJ];
-
-	//---DBO DTH---
-	double CAPDTHRESPart[MAXPROJ]; // Death Lump Sum Reserves Part
-	double CAPDTHRiskPart[MAXPROJ]; // Death Lump Sum Risk Part
-	double DBODTHRESPart[MAXPROJ]; // DBO Death Reserves Part
-	double DBODTHRiskPart[MAXPROJ]; // DBO Death Risk Part
-	double NCDTHRESPart[MAXPROJ]; // NC Death Reserves Part
-	double NCDTHRiskPart[MAXPROJ]; // NC Death Risk Part
-	double ICNCDTHRESPart[MAXPROJ]; /* Interest Cost on Normal Cost Death
-					   Reserves Part */
-	double ICNCDTHRiskPart[MAXPROJ]; /* Interest Cost on Normal Cost Death
-					    Risk Part */
 
 	//---CASHFLOWS---
 	double EBP[METHOD_AMOUNT][ASSET_AMOUNT][CF_AMOUNT][MAXPROJ];

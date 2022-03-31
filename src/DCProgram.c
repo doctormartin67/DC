@@ -14,15 +14,10 @@ const char *const colnames[KEYS_AMOUNT] = {
 	[PG] = "PG", [PT] = "PT", [NORMRA] = "NRA", [ENF] = "# ENF",
 	[TARIEF] = "TARIEF", [KO] = "KO", [RENTINV] = "Rent INV",
 	[CONTRINV] = "Contr INV", [ART24] = "ART24",
-	[ART24_A_GEN1] = "ART24_A_GEN1", 
-	[ART24_A_GEN2] = "ART24_A_GEN2",
-	[ART24_C_GEN1] = "ART24_C_GEN1",
-	[ART24_C_GEN2] = "ART24_C_GEN2",
 	[PREMIUM] = "PREMIUM", [CAP] = "CAP",
 	[CAPPS] = "CAPPS", [CAPDTH] = "CAPDTH", [RES] = "RES",
 	[RESPS] = "RESPS", [CAPRED] = "CAPRED", [TAUX] = "TAUX",
-	[DELTA_CAP_A_GEN1] = "DELTA_CAP_A_GEN1",
-	[DELTA_CAP_C_GEN1] = "DELTA_CAP_C_GEN1", [X10] = "X/10",
+	[DELTA_CAP] = "DELTA_CAP", [X10] = "X/10",
 };
 
 const char *const inscomb[INSCOMB_AMOUNT] = {
@@ -89,6 +84,18 @@ static void set_generations(const Database *db, size_t num_member,
 	}
 }
 
+static void set_delta_cap(const Database *db, size_t num_member,
+		struct projection *p)
+{
+	for (size_t i = 0; i < EREE_AMOUNT; i++) {
+		for (size_t k = 0; k < MAXPROJ; k++) {
+			p[k].delta_cap[i]
+				= get_gen_amount(db, num_member,
+						DELTA_CAP, i, 0);
+		}
+	}
+}
+
 static void set_art24(const Database *db, size_t num_member, struct art24 *a24)
 {
 	for (size_t i = 0; i < EREE_AMOUNT; i++) {
@@ -100,10 +107,9 @@ static void set_art24(const Database *db, size_t num_member, struct art24 *a24)
 	}
 }
 
-static void set_projection(const Database *db, size_t num_member,
+static void set_art24s(const Database *db, size_t num_member,
 		struct projection *p)
 {
-	set_generations(db, num_member, p->gens);
 	for (size_t i = 0; i < MAXPROJ; i++) {
 		set_art24(db, num_member, p[i].art24);
 	}
@@ -112,7 +118,10 @@ static void set_projection(const Database *db, size_t num_member,
 static void set_projections(const Database *db, size_t num_member,
 		struct projection *p)
 {
-	set_projection(db, num_member, p);
+	set_generations(db, num_member, p->gens);
+	set_art24s(db, num_member, p);
+	p->sal = record_double(db, num_member, colnames[SAL]);
+	set_delta_cap(db, num_member, p);
 }
 
 static CurrentMember create_member(Database *db, size_t num_member)
@@ -144,7 +153,6 @@ static CurrentMember create_member(Database *db, size_t num_member)
 	cm.DOR = newDate(record_int(db, num_member, colnames[DOR]), 0, 0, 0);
 
 	cm.category = record_string(db, num_member, colnames[CATEGORIE]);
-	cm.sal[0] = record_double(db, num_member, colnames[SAL]);
 	cm.PG = record_double(db, num_member, colnames[PG]);
 	cm.PT = record_double(db, num_member, colnames[PT]);
 	cm.NRA = record_double(db, num_member, colnames[NORMRA]);
@@ -172,11 +180,6 @@ static CurrentMember create_member(Database *db, size_t num_member)
 		buf_free(buf);
 	}
 
-	//-  MISCELLANEOUS  -
-	cm.DELTACAP[ER][0] = record_double(db, num_member,
-			colnames[DELTA_CAP_A_GEN1]);
-	cm.DELTACAP[EE][0] = record_double(db, num_member,
-			colnames[DELTA_CAP_C_GEN1]);
 	cm.X10 = record_double(db, num_member, colnames[X10]);
 	if (cm.tariff == MIXED && cm.X10 == 0) {
 		printf("Warning: X/10 equals zero for %s but he has a "
@@ -390,30 +393,6 @@ void validateColumns(void)
 		cnt++;
 	}
 
-	if (colmissing[ART24_A_GEN1]) {
-		updateValidation(val, ERROR, "Column [%s] missing",
-				colnames[ART24_A_GEN1]);
-		cnt++;
-	}
-
-	if (colmissing[ART24_A_GEN2]) {
-		updateValidation(val, ERROR, "Column [%s] missing",
-				colnames[ART24_A_GEN2]);
-		cnt++;
-	}
-
-	if (colmissing[ART24_C_GEN1]) {
-		updateValidation(val, ERROR, "Column [%s] missing",
-				colnames[ART24_C_GEN1]);
-		cnt++;
-	}
-
-	if (colmissing[ART24_C_GEN2]) {
-		updateValidation(val, ERROR, "Column [%s] missing",
-				colnames[ART24_C_GEN2]);
-		cnt++;
-	}
-
 	if (colmissing[RES]) {
 		updateValidation(val, ERROR, "One or more of the generational "
 				"columns for [%s] are missing", colnames[RES]);
@@ -440,8 +419,7 @@ void validateInput(DataColumn dc, const CurrentMember cm[static 1],
 		const char key[static 1], const char input[static 1])
 {
 	const DataColumn floats[] = {
-		SAL, PT, NORMRA, ART24_A_GEN1, ART24_A_GEN2, ART24_C_GEN1,
-		ART24_C_GEN2, PREMIUM, CAP, CAPPS, RES, RESPS, CAPRED, TAUX
+		SAL, PT, NORMRA, PREMIUM, CAP, CAPPS, RES, RESPS, CAPRED, TAUX
 	};
 	const DataColumn dates[] = {DOB, DOS, DOA, DOR};
 

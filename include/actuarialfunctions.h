@@ -138,8 +138,8 @@ inline double axn(register unsigned lt, register double i, register double charg
 	return value;
 }
 
-inline double CAP_UKMS_UKZT(double res, double prem, double deltacap, double age,
-		double RA, double ac, double Ex, double ax)
+inline double CAP_UKMS_UKZT(double res, double prem, double deltacap,
+		double age, double RA, double ac, double Ex, double ax)
 {
 	return (res + prem * (1 - ac) * ax) / Ex + deltacap * (RA - age) * 12;
 }

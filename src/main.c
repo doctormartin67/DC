@@ -61,15 +61,16 @@ void runmember(CurrentMember cm[static 1])
 
 		cm->age[k] = calcyears(cm->DOB, cm->DOC[k], 1);
 		cm->age[k+1] = calcyears(cm->DOB, cm->DOC[k+1], 1);
-		cm->nDOA[k] = calcyears(cm->DOA, cm->DOC[k], 
+		cm->proj[k].nDOA = calcyears(cm->DOA, cm->DOC[k], 
 				(cm->DOA->day == 1 ? 0 : 1));
-		cm->nDOE[k] = calcyears(cm->DOE, cm->DOC[k], 
+		cm->proj[k].nDOE = calcyears(cm->DOE, cm->DOC[k], 
 				(cm->DOE->day == 1 ? 0 : 1));
 
-		cm->sal[k] = cm->sal[k-1] * pow((1 + salaryscale(cm, k)),
-				cm->DOC[k]->year 
-				- cm->DOC[k-1]->year 
-				+ (1 == k ? ass.incrSalk1 : 0));
+		cm->proj[k].sal = cm->proj[k-1].sal
+			* pow((1 + salaryscale(cm, k)),
+					cm->DOC[k]->year 
+					- cm->DOC[k-1]->year 
+					+ (1 == k ? ass.incrSalk1 : 0));
 
 
 		evolCAPDTH(cm, k - 1);
@@ -90,61 +91,71 @@ void runmember(CurrentMember cm[static 1])
 		ERprem = gen_sum(cm->proj[1].gens, ER, PREMIUM, PUC);
 		EEprem = gen_sum(cm->proj[1].gens, EE, PREMIUM, PUC);
 		if (!(cm->status & ACT) || 0 == ERprem + EEprem) {
-			cm->FF[k] = 1;
-			cm->FFSC[k] = 0;
+			cm->proj[k].factor.ff = 1;
+			cm->proj[k].factor.ff_sc = 0;
 		} else {
-			nDOA = (0 == cm->nDOA[k] ? 1 : cm->nDOA[k]);
-			cm->FF[k] = cm->nDOA[1] / nDOA;
-			if (1 == k)
-				cm->FFSC[k] = 0.0; 
-			else
-				cm->FFSC[k] = (cm->age[2] - cm->age[1]) / nDOA;
+			nDOA = (0 == cm->proj[k].nDOA ? 1 : cm->proj[k].nDOA);
+			cm->proj[k].factor.ff = cm->proj[1].nDOA / nDOA;
+			if (1 == k) {
+				cm->proj[k].factor.ff_sc = 0.0; 
+			} else {
+				cm->proj[k].factor.ff_sc
+					= (cm->age[2] - cm->age[1]) / nDOA;
+			}
 
 		}
 
 		wx = wxdef(cm, k) * (cm->age[k+1] - cm->age[k]);
-		cm->wxdef[k] = wx * TRMDef;
-		cm->wximm[k] = wx * TRMImm;
+		cm->proj[k].factor.wxdef = wx * TRMDef;
+		cm->proj[k].factor.wximm = wx * TRMImm;
 
-		cm->qx[k] = 1 - npx((cm->status & MALE ? LXMR : LXFR),
-				cm->age[k], cm->age[k+1], ass.agecorr);
-		cm->retx[k] = retx(cm, k) 
+		cm->proj[k].factor.qx
+			= 1 - npx((cm->status & MALE ? LXMR : LXFR),
+					cm->age[k], cm->age[k+1], ass.agecorr);
+		cm->proj[k].factor.retx = retx(cm, k) 
 			* (k > 1 && cm->age[k] == cm->age[k-1] ? 0 : 1);
-		cm->nPk[k] = npx((cm->status & MALE ? LXMR : LXFR),
+		cm->proj[k].factor.nPk = npx((cm->status & MALE ? LXMR : LXFR),
 				cm->age[k], NRA(cm, k), ass.agecorr);
 
 		periodk = cm->age[k] - cm->age[1];
 		periodNRA = NRA(cm, k) - cm->age[1];
-		cm->vk[k] = pow(1 + ass.DR, -periodk);
-		cm->vn[k] = pow(1 + ass.DR, -periodNRA);    
-		cm->vk113[k] = pow(1 + ass.DR113, -periodk);
-		cm->vn113[k] = pow(1 + ass.DR113, -periodNRA);    
+		cm->proj[k].factor.vk = pow(1 + ass.DR, -periodk);
+		cm->proj[k].factor.vn = pow(1 + ass.DR, -periodNRA);    
+		cm->proj[k].factor.vk113 = pow(1 + ass.DR113, -periodk);
+		cm->proj[k].factor.vn113 = pow(1 + ass.DR113, -periodNRA);    
 
 		evolDBONCIC(cm, k, ART24TOT, RESTOT, REDCAPTOT);
 
-		cm->AFSL[k] = cm->AFSL[k-1]
-			* (cm->wxdef[k] + cm->wximm[k] + cm->retx[k])
-			* cm->kPx[k] * periodk; 
+		cm->proj[k].afsl = cm->proj[k-1].afsl
+			* (cm->proj[k].factor.wxdef + cm->proj[k].factor.wximm
+			* + cm->proj[k].factor.retx)
+			* cm->proj[k].factor.kPx * periodk; 
 
-		cm->CAPDTHRESPart[k] = (UKMS == cm->tariff ? RESTOT[PUC] : 0);
-		cm->CAPDTHRiskPart[k] = calcDTH(cm, k); 
-		probs = cm->FF[k] * cm->qx[k] * cm->kPx[k] * cm->vk[k];
-		probsSC = cm->FFSC[k] * cm->qx[k] * cm->kPx[k] * cm->vk[k];
-		cm->DBODTHRESPart[k] = cm->CAPDTHRESPart[k] * probs; 
-		cm->DBODTHRiskPart[k] = cm->CAPDTHRiskPart[k] * probs; 
-		cm->NCDTHRESPart[k] = cm->CAPDTHRESPart[k] * probsSC; 
-		cm->NCDTHRiskPart[k] = cm->CAPDTHRiskPart[k] * probsSC; 
-		cm->ICNCDTHRESPart[k] = 
-			cm->CAPDTHRESPart[k] * probsSC * ass.DR; 
-		cm->ICNCDTHRiskPart[k] = 
-			cm->CAPDTHRiskPart[k] * probsSC * ass.DR; 
+		cm->proj[k].death_res = (UKMS == cm->tariff ? RESTOT[PUC] : 0);
+		cm->proj[k].death_risk = calcDTH(cm, k); 
+		probs = cm->proj[k].factor.ff
+			* cm->proj[k].factor.qx
+			* cm->proj[k].factor.kPx * cm->proj[k].factor.vk;
+		probsSC = cm->proj[k].factor.ff_sc * cm->proj[k].factor.qx
+			* cm->proj[k].factor.kPx * cm->proj[k].factor.vk;
+		cm->proj[k].dbo.death_res = cm->proj[k].death_res * probs; 
+		cm->proj[k].dbo.death_risk = cm->proj[k].death_risk * probs; 
+		cm->proj[k].nc.death_res = cm->proj[k].death_res * probsSC; 
+		cm->proj[k].nc.death_risk = cm->proj[k].death_risk * probsSC; 
+		cm->proj[k].nc.ic_death_res = 
+			cm->proj[k].death_res * probsSC * ass.DR; 
+		cm->proj[k].nc.ic_death_risk = 
+			cm->proj[k].death_risk * probsSC * ass.DR; 
 
 		evolEBP(cm, k, ART24TOT, RESTOT, REDCAPTOT);
 
 		if (k + 1 < MAXPROJ) {
-			cm->kPx[k+1] = cm->kPx[k] * (1 - cm->qx[k])
-				* (1 - cm->wxdef[k] - cm->wximm[k])
-				* (1 - cm->retx[k]);
+			cm->proj[k+1].factor.kPx
+				= cm->proj[k].factor.kPx
+				* (1 - cm->proj[k].factor.qx)
+				* (1 - cm->proj[k].factor.wxdef
+						- cm->proj[k].factor.wximm)
+				* (1 - cm->proj[k].factor.retx);
 		}
 	}     
 }
@@ -161,18 +172,18 @@ static void init_cm(CurrentMember cm[static 1])
 	doc[0] = Datedup(cm->DOS);
 	doc[1] = Datedup(ass.DOC);
 	cm->age[0] = calcyears(dob, *doc, 1);
-	cm->nDOE[0] = calcyears(doe, *doc, (1 == doe->day ? 0 : 1));
-	cm->nDOA[0] = calcyears(doa, *doc, (1 == doa->day ? 0 : 1));
+	cm->proj[0].nDOE = calcyears(doe, *doc, (1 == doe->day ? 0 : 1));
+	cm->proj[0].nDOA = calcyears(doa, *doc, (1 == doa->day ? 0 : 1));
 
-	cm->kPx[1] = 1;
+	cm->proj[1].factor.kPx = 1;
 
-	cm->CAPDTHRESPart[0] = 
+	cm->proj[0].death_res = 
 		(cm->tariff == UKMS ? 
 		 gen_sum(cm->proj[0].gens, ER, RES, PUC) 
 		 + gen_sum(cm->proj[0].gens, EE, RES, PUC) 
 		 + gen_sum(cm->proj[0].gens, ER, RESPS, PUC) 
 		 + gen_sum(cm->proj[0].gens, EE, RESPS, PUC) : 0);
-	cm->CAPDTHRiskPart[0] = calcDTH(cm, 0); 
+	cm->proj[0].death_risk = calcDTH(cm, 0); 
 
 	//-  Premium  -
 	for (int l = 0; l < EREE_AMOUNT; l++) {
@@ -238,7 +249,7 @@ static void prolongate(CurrentMember cm[static 1], int k)
 			gen_sum(cm->proj[k].gens, i, RES, PUC);
 		cm->proj[k].gens[MAXGEN-1].reserves.ps[i] =
 			gen_sum(cm->proj[k].gens, i, RESPS, 0);
-		cm->DELTACAP[i][k] = 0;
+		cm->proj[k].delta_cap[i] = 0;
 		for (int j = 0; j < MAXGEN-1; j++) {
 			cm->proj[k].gens[j].premium[i] = 0;
 			cm->proj[k].gens[j].death_lump_sum[i] = 0;
