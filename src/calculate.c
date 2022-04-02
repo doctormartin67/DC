@@ -589,13 +589,26 @@ void evolDBONCIC(CurrentMember cm[restrict static 1], int k,
 		}
 	}
 
+	double *target = 0;
 	for (int i = 0; i < ASSET_AMOUNT; i++) {
 		amountdef = getamount(cm, k, ASSETS, 0, i, DEF, PBO,
 				ART24TOT, RESTOT, REDCAPTOT);
 		amountimm = getamount(cm, k, ASSETS, 0, i, IMM, PBO,
 				ART24TOT, RESTOT, REDCAPTOT);
-		cm->assets[i][k] = amountdef * probfactdef
-			+ amountimm * probfactimm;
+		switch (i) {
+			case MATHRES:
+				target = &cm->proj[k].assets.math_res;
+				break;
+			case PAR115:
+				target = &cm->proj[k].assets.par115;
+				break;
+			case PAR113:
+				target = &cm->proj[k].assets.par113;
+				break;
+			default:
+				assert(0);
+		}
+		*target = amountdef * probfactdef + amountimm * probfactimm;
 	}
 }
 
@@ -619,13 +632,13 @@ void evolEBP(CurrentMember cm[restrict static 1], int k,
 	struct date *DEFdate = 0;
 
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
-	yearIMM = calcyears(cm->DOC[1], cm->DOC[k], 0);
-	IMMdate = newDate(0, cm->DOC[1]->year + yearIMM, cm->DOC[1]->month, 1);
-	yearDEF = MAX(0.0, calcyears(cm->DOC[1], Ndate, 0));
-	DEFdate = newDate(0, cm->DOC[1]->year + yearDEF, cm->DOC[1]->month, 1);
+	yearIMM = calcyears(cm->proj[1].DOC, cm->proj[k].DOC, 0);
+	IMMdate = newDate(0, cm->proj[1].DOC->year + yearIMM, cm->proj[1].DOC->month, 1);
+	yearDEF = MAX(0.0, calcyears(cm->proj[1].DOC, Ndate, 0));
+	DEFdate = newDate(0, cm->proj[1].DOC->year + yearDEF, cm->proj[1].DOC->month, 1);
 
 	if (yearIMM >= 0) {
-		vIMM = pow(1 + ass.DR, -calcyears(IMMdate, cm->DOC[k], 0));
+		vIMM = pow(1 + ass.DR, -calcyears(IMMdate, cm->proj[k].DOC, 0));
 		probfactimm = (cm->proj[k].factor.wximm + cm->proj[k].factor.retx)
 			* cm->proj[k].factor.kPx * vIMM;
 

@@ -54,7 +54,7 @@ enum {PUC, TUC, TUCPS_1, METHOD_AMOUNT};
 // Assets $115
 // Assets Mathematical Reserves
 // Assets $113
-enum assets {PAR115, MATHRES, PAR113, ASSET_AMOUNT};
+enum {PAR115, MATHRES, PAR113, ASSET_AMOUNT};
 // PBO Cashflows
 // TBO Cashflows
 enum cashflows {PBO, TBO, CF_AMOUNT};
@@ -142,6 +142,28 @@ struct liab {
 	double ic_death_risk; // interest cost
 };
 
+struct assets {
+	double math_res;
+	double par115;
+	double par113;
+};
+
+typedef enum {
+	PROJ_NDOE,
+	PROJ_NDOA,
+	PROJ_SAL,
+	PROJ_AFSL,
+	PROJ_DEATH_RES,
+	PROJ_DEATH_RISK,
+	PROJ_DELTA_CAP,
+	PROJ_GENS,
+	PROJ_ART24,
+	PROJ_FACTOR,
+	PROJ_DBO,
+	PROJ_NC,
+	PROJ_ASSETS,
+} ProjectionKind;
+
 struct projection {
 	double nDOE; /* years since date of entry */
 	double nDOA; /* years since date of affiliation */
@@ -155,6 +177,8 @@ struct projection {
 	struct factor factor;
 	struct liab dbo;
 	struct liab nc;
+	struct assets assets;
+	struct date *DOC; // date of calculation
 };
 
 typedef struct {
@@ -174,7 +198,6 @@ typedef struct {
 	struct date *DOS; // date of situation
 	struct date *DOA; // date of affiliation
 	struct date *DOR; // date of retirement
-	struct date *DOC[MAXPROJ + 1]; // date of calculation
 	const char *category; // f.e. blue collar, white collar, management, ...
 	double PG; // pensioengrondslag (I have never needed this)
 	double PT; // part time
@@ -196,7 +219,6 @@ typedef struct {
 	double NCRET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; // Normal Cost
 	// Interest Cost on Normal Cost 
 	double ICNCRET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; 
-	double assets[ASSET_AMOUNT][MAXPROJ];
 
 	//---CASHFLOWS---
 	double EBP[METHOD_AMOUNT][ASSET_AMOUNT][CF_AMOUNT][MAXPROJ];
@@ -204,7 +226,7 @@ typedef struct {
 	double EBPDTH[METHOD_AMOUNT][MAXPROJ]; // Expected Benefits Paid Death
 	double PBODTHNCCF[MAXPROJ]; // PBO Death Normal Cost Cashflows
 
-	struct projection proj[MAXPROJ];
+	struct projection proj[MAXPROJ + 1];
 } CurrentMember;
 
 //---Useful functions for CurrentMembers---

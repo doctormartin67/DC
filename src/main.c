@@ -42,34 +42,34 @@ void runmember(CurrentMember cm[static 1])
 
 	for (int k = 1; k < MAXPROJ; k++) {
 		if (1 == k) {
-			cm->DOC[k+1] = getDOC(cm, k);
+			cm->proj[k+1].DOC = getDOC(cm, k);
 		} else if (1 < k && MAXPROJBEFOREPROL > k) {
-			free(cm->DOC[k]);
-			cm->DOC[k] = getDOC(cm, k - 1);
-			cm->DOC[k+1] = getDOC(cm, k);
+			free(cm->proj[k].DOC);
+			cm->proj[k].DOC = getDOC(cm, k - 1);
+			cm->proj[k+1].DOC = getDOC(cm, k);
 		} else if (MAXPROJBEFOREPROL == k) {
-			free(cm->DOC[k]);
-			cm->DOC[k] = getDOC(cm, k - 1);
-			cm->DOC[k+1] = getDOC_prolongation(cm, k);		
+			free(cm->proj[k].DOC);
+			cm->proj[k].DOC = getDOC(cm, k - 1);
+			cm->proj[k+1].DOC = getDOC_prolongation(cm, k);		
 		} else if (MAXPROJBEFOREPROL < k) {
-			free(cm->DOC[k]);
-			cm->DOC[k] = getDOC_prolongation(cm, k - 1);
-			cm->DOC[k+1] = getDOC_prolongation(cm, k);		
+			free(cm->proj[k].DOC);
+			cm->proj[k].DOC = getDOC_prolongation(cm, k - 1);
+			cm->proj[k+1].DOC = getDOC_prolongation(cm, k);		
 			if (MAXPROJBEFOREPROL + 1 == k)
 				prolongate(cm, k - 1);
 		}
 
-		cm->age[k] = calcyears(cm->DOB, cm->DOC[k], 1);
-		cm->age[k+1] = calcyears(cm->DOB, cm->DOC[k+1], 1);
-		cm->proj[k].nDOA = calcyears(cm->DOA, cm->DOC[k], 
+		cm->age[k] = calcyears(cm->DOB, cm->proj[k].DOC, 1);
+		cm->age[k+1] = calcyears(cm->DOB, cm->proj[k+1].DOC, 1);
+		cm->proj[k].nDOA = calcyears(cm->DOA, cm->proj[k].DOC, 
 				(cm->DOA->day == 1 ? 0 : 1));
-		cm->proj[k].nDOE = calcyears(cm->DOE, cm->DOC[k], 
+		cm->proj[k].nDOE = calcyears(cm->DOE, cm->proj[k].DOC, 
 				(cm->DOE->day == 1 ? 0 : 1));
 
 		cm->proj[k].sal = cm->proj[k-1].sal
 			* pow((1 + salaryscale(cm, k)),
-					cm->DOC[k]->year 
-					- cm->DOC[k-1]->year 
+					cm->proj[k].DOC->year 
+					- cm->proj[k-1].DOC->year 
 					+ (1 == k ? ass.incrSalk1 : 0));
 
 
@@ -79,7 +79,7 @@ void runmember(CurrentMember cm[static 1])
 		update_art24(cm, k - 1);
 
 		for (int j = 0; j < METHOD_AMOUNT; j++) {
-			ART24TOT[j] = gen_sum_art24(cm->proj[1].art24, j);
+			ART24TOT[j] = gen_sum_art24(cm->proj[k].art24, j);
 			RESTOT[j] = gen_sum(cm->proj[k].gens, ER, RES, j)
 				+ gen_sum(cm->proj[k].gens, EE, RES, j)
 				+ gen_sum(cm->proj[k].gens, ER, RESPS, j)
@@ -162,18 +162,19 @@ void runmember(CurrentMember cm[static 1])
 
 static void init_cm(CurrentMember cm[static 1])
 {
-	struct date **doc = cm->DOC;
+	struct date *doc = 0;
 	const struct date *dob = cm->DOB;
 	const struct date *doe = cm->DOE;
 	const struct date *doa = cm->DOA;
 	double *prem = 0;
 
 	//-  Dates and age  -
-	doc[0] = Datedup(cm->DOS);
-	doc[1] = Datedup(ass.DOC);
-	cm->age[0] = calcyears(dob, *doc, 1);
-	cm->proj[0].nDOE = calcyears(doe, *doc, (1 == doe->day ? 0 : 1));
-	cm->proj[0].nDOA = calcyears(doa, *doc, (1 == doa->day ? 0 : 1));
+	cm->proj[0].DOC = Datedup(cm->DOS);
+	cm->proj[1].DOC = Datedup(ass.DOC);
+	doc = cm->proj[0].DOC;
+	cm->age[0] = calcyears(dob, doc, 1);
+	cm->proj[0].nDOE = calcyears(doe, doc, (1 == doe->day ? 0 : 1));
+	cm->proj[0].nDOA = calcyears(doa, doc, (1 == doa->day ? 0 : 1));
 
 	cm->proj[1].factor.kPx = 1;
 
@@ -204,7 +205,7 @@ static struct date *getDOC(const CurrentMember cm[static 1], int k)
 	struct date *d = 0, *Ndate = 0, *docdate = 0;
 
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
-	docdate = newDate(0, cm->DOC[k]->year + 1, cm->DOC[k]->month, 1);
+	docdate = newDate(0, cm->proj[k].DOC->year + 1, cm->proj[k].DOC->month, 1);
 
 	if (0 == Ndate || 0 == docdate) die("invalid date");
 
@@ -224,9 +225,9 @@ static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
 	unsigned addyear = 0;
 	struct date *d = 0, *Ndate = 0, *docdate = 0;
 
-	addyear = (cm->DOC[k]->month >= cm->DOC[1]->month) ? 1 : 0;
+	addyear = (cm->proj[k].DOC->month >= cm->proj[1].DOC->month) ? 1 : 0;
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
-	docdate = newDate(0, cm->DOC[k]->year + addyear, cm->DOC[1]->month, 1);
+	docdate = newDate(0, cm->proj[k].DOC->year + addyear, cm->proj[1].DOC->month, 1);
 
 	if (0 == Ndate || 0 == docdate) die("invalid date");
 

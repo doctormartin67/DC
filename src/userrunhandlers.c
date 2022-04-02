@@ -111,7 +111,7 @@ static gpointer run(gpointer pl)
 	}
 
 	printresults(db, cm);
-	//printtc(ds, tc);
+	printtc(cm, tc);
 
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
@@ -149,7 +149,7 @@ static gpointer runtc(gpointer pl)
 	gd.s = text;
 	g_idle_add(update_gui, &gd);
 
-	printtc(cm, tc);
+	print_test_case(cm, tc);
 
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),

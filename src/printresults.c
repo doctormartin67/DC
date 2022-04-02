@@ -61,6 +61,165 @@ static void set_generational_column_names(void);
 static void set_row_values(CurrentMember *cm, int row);
 static void free_print_names(void);
 
+static unsigned column;
+
+static void print_str(lxw_worksheet *ws, const char *title, const char *str)
+{
+	assert(ws);
+	assert(title);
+	assert(str);
+
+	worksheet_write_string(ws, 0, column, title, 0);
+	for (unsigned row = 0; row < MAXPROJ; row++) {
+		worksheet_write_string(ws, row+1, column, str, 0);
+	}
+	column++;
+}
+
+static void print_date(lxw_workbook *wb, lxw_worksheet *ws, unsigned row, 
+		const char *title, const struct date *d)
+{
+	assert(wb);
+	assert(ws);
+	assert(title);
+	assert(d);
+
+	lxw_datetime dt = (lxw_datetime){0};
+	lxw_format *dt_format = workbook_add_format(wb);
+	format_set_num_format(dt_format, "dd/mm/yyyy");
+
+	assert(row);
+	if (1 != row) {
+		worksheet_write_string(ws, 0, column, title, 0);
+	}
+	dt.year = d->year;
+	dt.month = d->month;
+	dt.day = d->day;
+	dt.hour = dt.min = dt.sec = 0;
+	worksheet_write_datetime(ws, row, column, &dt, dt_format);
+}
+
+static void print_dates(lxw_workbook *wb, lxw_worksheet *ws, const char *title,
+	const struct date *d)
+{
+	assert(wb);
+	assert(ws);
+	assert(title);
+	assert(d);
+	for (unsigned row = 0; row < MAXPROJ; row++) {
+		print_date(wb, ws, row+1, title, d);
+	}
+	column++;
+}
+
+static void print_number(lxw_workbook *wb, lxw_worksheet *ws, unsigned row,
+		const char *title, double number)
+{
+	assert(wb);
+	assert(ws);
+	assert(title);
+
+	lxw_format *nformat = 0;
+	nformat = workbook_add_format(wb);
+	format_set_num_format(nformat, "#,##0.00");
+
+	assert(row);
+	if (1 != row) {
+		worksheet_write_string(ws, 0, column, title, 0);
+	}
+	worksheet_write_number(ws, row, column, number, nformat);
+}
+
+#define PRINT_NUMBER(title, d) \
+	print_number(wb, ws, row+1, title, proj[row].d);
+	
+static void print_proj_kind(lxw_workbook *wb, lxw_worksheet *ws, 
+		const struct projection *proj, ProjectionKind kind)
+{
+	assert(wb);
+	assert(ws);
+	assert(proj);
+	for (unsigned row = 0; row < MAXPROJ; row++) {
+		switch (kind) {
+			case PROJ_NDOE:
+				PRINT_NUMBER("Service DoE", nDOE);
+				break;
+			case PROJ_NDOA:
+				PRINT_NUMBER("Service DoA", nDOA);
+				break;
+			case PROJ_SAL:
+				PRINT_NUMBER("Salary", sal);
+				break;
+			case PROJ_AFSL:
+				PRINT_NUMBER("AFSL", afsl);
+				break;
+			case PROJ_DEATH_RES:
+				PRINT_NUMBER("Death RES", death_res);
+				break;
+			case PROJ_DEATH_RISK:
+				PRINT_NUMBER("Death Risk", death_risk);
+				break;
+			default:
+				assert(0);
+		}
+	}
+	column++;
+}
+
+#undef PRINT_NUMBER
+
+static void print_proj(lxw_workbook *wb, lxw_worksheet *ws, 
+		const struct projection *proj)
+{
+	assert(wb);
+	assert(ws);
+	assert(proj);
+
+	print_proj_kind(wb, ws, proj, PROJ_NDOE);
+	print_proj_kind(wb, ws, proj, PROJ_NDOA);
+	print_proj_kind(wb, ws, proj, PROJ_SAL);
+	print_proj_kind(wb, ws, proj, PROJ_AFSL);
+	print_proj_kind(wb, ws, proj, PROJ_DEATH_RES);
+	print_proj_kind(wb, ws, proj, PROJ_DEATH_RISK);
+}
+
+static void print_member(lxw_workbook *wb, lxw_worksheet *ws,
+		const CurrentMember *cm)
+{
+	assert(ws);
+	assert(cm);
+
+	print_str(ws, "KEY", cm->key);
+	print_dates(wb, ws, "DOB", cm->DOB);
+	print_proj(wb, ws, cm->proj);
+}
+
+void print_test_case(const CurrentMember *cm, unsigned tc)
+{
+	char *results = 0;
+	char *tmp = 0;
+
+	lxw_workbook *wb = 0;
+	lxw_worksheet *ws = 0;
+
+	buf_printf(tmp, "TestCase%d", tc + 1);
+	buf_printf(results, "%s.xlsx", tmp);
+
+	if (strlen(results) > PATH_MAX) {
+		die("file name [%s] too large.\n [%d] is maximum while file "
+				"name is [%lu]",
+				results, PATH_MAX, strlen(results));
+	}
+
+	wb = workbook_new(results);
+	ws = workbook_add_worksheet(wb, tmp);
+	worksheet_set_column(ws, 0, 200, 25, 0);
+	buf_free(tmp);
+	buf_free(results);
+	print_member(wb, ws, cm);
+	workbook_close(wb);
+}
+
 unsigned printtc(CurrentMember *cm, unsigned tc)
 {
 	char results[BUFSIZ];
@@ -96,9 +255,9 @@ unsigned printtc(CurrentMember *cm, unsigned tc)
 
 	while (row < MAXPROJ) {
 		set_row_values(cm, row);
-		DOC.year = cm->DOC[row]->year;
-		DOC.month = cm->DOC[row]->month;
-		DOC.day = cm->DOC[row]->day;
+		DOC.year = cm->proj[row].DOC->year;
+		DOC.month = cm->proj[row].DOC->month;
+		DOC.day = cm->proj[row].DOC->day;
 		DOC.hour = DOC.min = DOC.sec = 0;
 		for (unsigned i = 0; i < TC_FF; i++) {
 			if (0 == tc_print[i].name) continue;
@@ -127,7 +286,7 @@ unsigned printtc(CurrentMember *cm, unsigned tc)
 		row++;
 	}
 	printf("Printing test case complete.\n");
-	
+
 	workbook_close(wb);
 	free_print_names();
 	return NO_PRERR;
@@ -214,9 +373,9 @@ static void set_generational_column_names(void)
 			to_free[TC_PBONCCF + gen] = 1;
 			for (unsigned k = 0; k < CF_AMOUNT; k++) {
 				gen = j + ASSET_AMOUNT * i
-				+ ASSET_AMOUNT
-				* (METHOD_AMOUNT - 1)
-				* (1 + k) - 1;
+					+ ASSET_AMOUNT
+					* (METHOD_AMOUNT - 1)
+					* (1 + k) - 1;
 				snprintf(tmp, len, "EBP %s %s %s",
 						cf[k], m[i], assets[j]);
 				tc_print[TC_EBP + gen].name = strdup(tmp);
@@ -301,15 +460,15 @@ static void set_row_values(CurrentMember *cm, int row)
 
 	for (unsigned i = 0; i < ART24GEN_AMOUNT; i++) {
 		for (unsigned k = 0; k < EREE_AMOUNT; k++) {
-			gen = i+ART24GEN_AMOUNT*(2*k + PUC);
+			gen = i+ART24GEN_AMOUNT*(3*k + PUC);
 			tc_print[TC_ART24 + gen].v.d =
 				cm->proj[row].art24[i].res[k].puc;
 			tc_print[TC_ART24 + gen].is_number = 1;
-			gen = i+ART24GEN_AMOUNT*(2*k + TUC);
+			gen = i+ART24GEN_AMOUNT*(3*k + TUC);
 			tc_print[TC_ART24 + gen].v.d =
 				cm->proj[row].art24[i].res[k].tuc;
 			tc_print[TC_ART24 + gen].is_number = 1;
-			gen = i+ART24GEN_AMOUNT*(2*k + TUCPS_1);
+			gen = i+ART24GEN_AMOUNT*(3*k + TUCPS_1);
 			tc_print[TC_ART24 + gen].v.d =
 				cm->proj[row].art24[i].res[k].tucps_1;
 			tc_print[TC_ART24 + gen].is_number = 1;
@@ -340,8 +499,8 @@ static void set_row_values(CurrentMember *cm, int row)
 			}
 		}
 
-		tc_print[TC_ASSETS115].v.d = cm->assets[PAR115][row + 1];
-		tc_print[TC_ASSETS113].v.d = cm->assets[PAR113][row + 1];
+		tc_print[TC_ASSETS115].v.d = cm->proj[row + 1].assets.par115;
+		tc_print[TC_ASSETS113].v.d = cm->proj[row + 1].assets.par113;
 		tc_print[TC_DBODTHRISK].v.d = cm->proj[row + 1].dbo.death_risk;
 		tc_print[TC_DBODTHRES].v.d = cm->proj[row + 1].dbo.death_res;
 		tc_print[TC_NCDTHRISK].v.d = cm->proj[row + 1].nc.death_risk;
@@ -576,17 +735,17 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 			* gen_sum(cm->proj[1].gens, EE, PREMIUM, PUC);
 
 		for (size_t i = 0; i < MAXPROJ; i++) {
-			DBODTHRESPART = cm->proj[i].dbo.death_res;
-			DBODTHRiskPART = cm->proj[i].dbo.death_risk;
-			NCDTHRESPART = cm->proj[i].nc.death_res;
-			NCDTHRiskPART = cm->proj[i].nc.death_risk;
-			ICNCDTHRESPART = cm->proj[i].nc.ic_death_res;
-			ICNCDTHRiskPART = cm->proj[i].nc.ic_death_risk;
+			DBODTHRESPART += cm->proj[i].dbo.death_res;
+			DBODTHRiskPART += cm->proj[i].dbo.death_risk;
+			NCDTHRESPART += cm->proj[i].nc.death_res;
+			NCDTHRiskPART += cm->proj[i].nc.death_risk;
+			ICNCDTHRESPART += cm->proj[i].nc.ic_death_res;
+			ICNCDTHRiskPART += cm->proj[i].nc.ic_death_risk;
+			assetsPAR115 += cm->proj[i].assets.par115;
+			assetsPAR113 += cm->proj[i].assets.par113;
+			assetsRES += cm->proj[i].assets.math_res;
 		}
 
-		assetsPAR115 = sum(MAXPROJ, cm->assets[PAR115]);
-		assetsPAR113 = sum(MAXPROJ, cm->assets[PAR113]);
-		assetsRES = sum(MAXPROJ, cm->assets[MATHRES]);
 
 		for (size_t i = 0; i < ART24GEN_AMOUNT; i++) {
 			for (size_t j = 0; j < EREE_AMOUNT; j++) {
