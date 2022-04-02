@@ -9,14 +9,18 @@ void evolCAPDTH(CurrentMember *restrict cm, int k);
 void evolRES(CurrentMember *restrict cm, int k);
 void evolPremiums(CurrentMember *restrict cm, int k);
 void update_art24(CurrentMember *restrict cm, int k);
-void evolDBONCIC(CurrentMember *restrict cm, int k,
-		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT]);
+void set_dbo_ret(struct retirement *dbo,
+		const double art24[const static METHOD_AMOUNT],
+		double res, double red_cap, struct factor f);
+void set_nc_ret(struct retirement *nc, const double art24[const static
+		METHOD_AMOUNT], struct factor f);
+void set_ic_nc_ret(struct retirement *ic_nc, const double art24[const static
+		METHOD_AMOUNT], struct factor f);
+void set_assets(struct assets *assets, double res, double red_cap,
+		struct factor f);
 void evolEBP(CurrentMember *restrict cm, int k,
 		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT]);
+		double res, double red_cap);
 
 // This is used as a help function to retrieve the appropriate amount
 // for the formula
@@ -24,7 +28,6 @@ double getamount(const CurrentMember *restrict cm, int k, unsigned DBONCICASS,
 		unsigned method, unsigned assets, unsigned DEFIMM,
 		unsigned PBOTBO, 
 		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT], 
-		const double REDCAPTOT[const static METHOD_AMOUNT]);
+		double res, double red_cap);
 
 #endif

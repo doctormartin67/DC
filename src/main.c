@@ -59,8 +59,8 @@ void runmember(CurrentMember cm[static 1])
 				prolongate(cm, k - 1);
 		}
 
-		cm->age[k] = calcyears(cm->DOB, cm->proj[k].DOC, 1);
-		cm->age[k+1] = calcyears(cm->DOB, cm->proj[k+1].DOC, 1);
+		cm->proj[k].age = calcyears(cm->DOB, cm->proj[k].DOC, 1);
+		cm->proj[k+1].age = calcyears(cm->DOB, cm->proj[k+1].DOC, 1);
 		cm->proj[k].nDOA = calcyears(cm->DOA, cm->proj[k].DOC, 
 				(cm->DOA->day == 1 ? 0 : 1));
 		cm->proj[k].nDOE = calcyears(cm->DOE, cm->proj[k].DOC, 
@@ -100,31 +100,36 @@ void runmember(CurrentMember cm[static 1])
 				cm->proj[k].factor.ff_sc = 0.0; 
 			} else {
 				cm->proj[k].factor.ff_sc
-					= (cm->age[2] - cm->age[1]) / nDOA;
+					= (cm->proj[2].age - cm->proj[1].age) / nDOA;
 			}
 
 		}
 
-		wx = wxdef(cm, k) * (cm->age[k+1] - cm->age[k]);
+		wx = wxdef(cm, k) * (cm->proj[k+1].age - cm->proj[k].age);
 		cm->proj[k].factor.wxdef = wx * TRMDef;
 		cm->proj[k].factor.wximm = wx * TRMImm;
 
 		cm->proj[k].factor.qx
 			= 1 - npx((cm->status & MALE ? LXMR : LXFR),
-					cm->age[k], cm->age[k+1], ass.agecorr);
+					cm->proj[k].age, cm->proj[k+1].age, ass.agecorr);
 		cm->proj[k].factor.retx = retx(cm, k) 
-			* (k > 1 && cm->age[k] == cm->age[k-1] ? 0 : 1);
+			* (k > 1 && cm->proj[k].age == cm->proj[k-1].age ? 0 : 1);
 		cm->proj[k].factor.nPk = npx((cm->status & MALE ? LXMR : LXFR),
-				cm->age[k], NRA(cm, k), ass.agecorr);
+				cm->proj[k].age, NRA(cm, k), ass.agecorr);
 
-		periodk = cm->age[k] - cm->age[1];
-		periodNRA = NRA(cm, k) - cm->age[1];
+		periodk = cm->proj[k].age - cm->proj[1].age;
+		periodNRA = NRA(cm, k) - cm->proj[1].age;
 		cm->proj[k].factor.vk = pow(1 + ass.DR, -periodk);
 		cm->proj[k].factor.vn = pow(1 + ass.DR, -periodNRA);    
 		cm->proj[k].factor.vk113 = pow(1 + ass.DR113, -periodk);
 		cm->proj[k].factor.vn113 = pow(1 + ass.DR113, -periodNRA);    
 
-		evolDBONCIC(cm, k, ART24TOT, RESTOT, REDCAPTOT);
+		set_dbo_ret(&cm->proj[k].dbo_ret, ART24TOT, RESTOT[TUC],
+				REDCAPTOT[TUC], cm->proj[k].factor);
+		set_nc_ret(&cm->proj[k].nc_ret, ART24TOT, cm->proj[k].factor);
+		set_ic_nc_ret(&cm->proj[k].ic_nc_ret, ART24TOT, cm->proj[k].factor);
+		set_assets(&cm->proj[k].assets, RESTOT[TUC], REDCAPTOT[TUC],
+				cm->proj[k].factor);
 
 		cm->proj[k].afsl = cm->proj[k-1].afsl
 			* (cm->proj[k].factor.wxdef + cm->proj[k].factor.wximm
@@ -138,16 +143,16 @@ void runmember(CurrentMember cm[static 1])
 			* cm->proj[k].factor.kPx * cm->proj[k].factor.vk;
 		probsSC = cm->proj[k].factor.ff_sc * cm->proj[k].factor.qx
 			* cm->proj[k].factor.kPx * cm->proj[k].factor.vk;
-		cm->proj[k].dbo.death_res = cm->proj[k].death_res * probs; 
-		cm->proj[k].dbo.death_risk = cm->proj[k].death_risk * probs; 
-		cm->proj[k].nc.death_res = cm->proj[k].death_res * probsSC; 
-		cm->proj[k].nc.death_risk = cm->proj[k].death_risk * probsSC; 
-		cm->proj[k].nc.ic_death_res = 
+		cm->proj[k].dbo_death.death_res = cm->proj[k].death_res * probs; 
+		cm->proj[k].dbo_death.death_risk = cm->proj[k].death_risk * probs; 
+		cm->proj[k].nc_death.death_res = cm->proj[k].death_res * probsSC; 
+		cm->proj[k].nc_death.death_risk = cm->proj[k].death_risk * probsSC; 
+		cm->proj[k].nc_death.ic_death_res = 
 			cm->proj[k].death_res * probsSC * ass.DR; 
-		cm->proj[k].nc.ic_death_risk = 
+		cm->proj[k].nc_death.ic_death_risk = 
 			cm->proj[k].death_risk * probsSC * ass.DR; 
 
-		evolEBP(cm, k, ART24TOT, RESTOT, REDCAPTOT);
+		evolEBP(cm, k, ART24TOT, RESTOT[TUC], REDCAPTOT[TUC]);
 
 		if (k + 1 < MAXPROJ) {
 			cm->proj[k+1].factor.kPx
@@ -172,7 +177,7 @@ static void init_cm(CurrentMember cm[static 1])
 	cm->proj[0].DOC = Datedup(cm->DOS);
 	cm->proj[1].DOC = Datedup(ass.DOC);
 	doc = cm->proj[0].DOC;
-	cm->age[0] = calcyears(dob, doc, 1);
+	cm->proj[0].age = calcyears(dob, doc, 1);
 	cm->proj[0].nDOE = calcyears(doe, doc, (1 == doe->day ? 0 : 1));
 	cm->proj[0].nDOA = calcyears(doa, doc, (1 == doa->day ? 0 : 1));
 

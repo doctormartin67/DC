@@ -3,16 +3,6 @@
 #include "assumptions.h"
 #include "actuarialfunctions.h"
 
-static double getDBO(const CurrentMember cm[restrict static 1], int k,
-		unsigned method, unsigned assets, unsigned DEFIMM,
-		unsigned PBOTBO,
-		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT]);
-static double getAssets(const CurrentMember cm[restrict static 1], int k,
-		unsigned assets, unsigned DEFIMM,
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT]);
 double calc_lump_sum(unsigned tariff, double X10,
 		double res, double prem, double deltacap, double capdth,
 		double age, double RA, LifeTable *lt);
@@ -27,7 +17,7 @@ void evolCAPDTH(CurrentMember cm[restrict static 1], int k) {
 				= cm->proj[k].gens[gen].death_lump_sum[i]
 				+ cm->proj[k].gens[gen].premium[i]
 				* (1 - tff.admincost)
-				* (cm->age[k+1] - cm->age[k]);
+				* (cm->proj[k+1].age - cm->proj[k].age);
 		}
 	}
 }
@@ -55,7 +45,7 @@ static double update_res_puc(CurrentMember *cm, size_t EREE, size_t gen,
 	double prem = cm->proj[k].gens[gen].premium[EREE];
 	double res = cm->proj[k].gens[gen].reserves.res[EREE].puc;
 	double cap = update_res(target, cm->tariff, cm->X10, res, prem,
-			delta_cap, capdth, cm->age[k], cm->age[k+1], RA, lt);
+			delta_cap, capdth, cm->proj[k].age, cm->proj[k+1].age, RA, lt);
 	return cap;
 }
 
@@ -67,7 +57,7 @@ static double update_res_ps(CurrentMember *cm, size_t EREE, size_t gen,
 	double RA = (k + 1 > MAXPROJBEFOREPROL ? NRA(cm, k + 1) : cm->NRA);
 	double res = cm->proj[k].gens[gen].reserves.ps[EREE];
 	double cap = update_res(target, cm->tariff, cm->X10, res,
-			0.0, 0.0, 0.0, cm->age[k], cm->age[k+1], RA, lt);
+			0.0, 0.0, 0.0, cm->proj[k].age, cm->proj[k+1].age, RA, lt);
 	return cap;
 }
 
@@ -76,17 +66,17 @@ static double get_res_tuc(const CurrentMember *cm, size_t EREE, size_t gen,
 {
 	LifeTable *lt = &tff.ltINS[EREE][gen];
 	double i = cm->TAUX[EREE][gen];
-	double RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->age[k+1]);
+	double RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->proj[k+1].age);
 	double Ex = nEx(tff.ltINS[EREE][gen].lt, i, tff.costRES, RA,
 					MIN(NRA(cm, k), cm->NRA), 0);
 	double capdth = cm->proj[index].gens[gen].death_lump_sum[EREE];
 	double res = cm->proj[index].gens[gen].reserves.res[EREE].puc;
 	double cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, capdth,
-			cm->age[index], RA, lt);
-	cap += cm->proj[0].delta_cap[EREE] * (RA - cm->age[index]) * 12 * Ex;
+			cm->proj[index].age, RA, lt);
+	cap += cm->proj[0].delta_cap[EREE] * (RA - cm->proj[index].age) * 12 * Ex;
 	lt = &tff.ltProlong[EREE];
 	res = calc_lump_sum(cm->tariff, cm->X10, cap, 0.0, 0.0, capdth, RA,
-			cm->age[k+1], lt);
+			cm->proj[k+1].age, lt);
 	return res;
 }
 
@@ -107,7 +97,7 @@ static double get_redcap_puc(CurrentMember *cm, size_t EREE, size_t gen,
 	double capdth = cm->proj[k+1].gens[gen].death_lump_sum[EREE];
 	double delta_cap = cm->proj[k+1].delta_cap[EREE];
 	double res = cm->proj[k+1].gens[gen].reserves.res[EREE].puc;
-	double age = cm->age[k+1];
+	double age = cm->proj[k+1].age;
 	double cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, delta_cap,
 			capdth, age, RA, lt);
 
@@ -120,7 +110,7 @@ static double get_redcap_puc(CurrentMember *cm, size_t EREE, size_t gen,
 
 	lt = &tff.ltAfterTRM[EREE][gen];
 	res = cm->proj[k+1].gens[gen].reserves.ps[EREE];
-	age = cm->age[k+1];
+	age = cm->proj[k+1].age;
 	RA = (k + 1 > MAXPROJBEFOREPROL ? NRA(cm, k + 1) : cm->NRA);
 	double capps = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, 0.0,
 			age, RA, lt);
@@ -140,7 +130,7 @@ static double get_redcap_mixed_ukmt(const CurrentMember *cm, size_t EREE, size_t
 	double RA = MIN(NRA(cm, k + 1), cm->NRA);
 	double capdth = cm->proj[index].gens[gen].death_lump_sum[EREE];
 	double res = cm->proj[index].gens[gen].reserves.res[EREE].puc;
-	double age = cm->age[index];
+	double age = cm->proj[index].age;
 	double cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, capdth,
 			age, RA, lt)
 		+ cm->proj[0].delta_cap[EREE] * (cm->NRA - age) * 12;
@@ -154,7 +144,7 @@ static double get_redcap_mixed_ukmt(const CurrentMember *cm, size_t EREE, size_t
 
 	lt = &tff.ltAfterTRM[EREE][gen];
 	res = cm->proj[index].gens[gen].reserves.ps[EREE];
-	age = cm->age[index];
+	age = cm->proj[index].age;
 	RA = MIN(NRA(cm, k + 1), cm->NRA);
 	double capps = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, 0.0,
 			age, RA, lt);
@@ -172,10 +162,10 @@ static double get_redcap_ukms_ukzt(const CurrentMember *cm, size_t EREE,
 		size_t gen, size_t k, size_t index)
 {
 	LifeTable *lt = &tff.ltINS[EREE][gen];
-	double RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->age[k+1]);
+	double RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->proj[k+1].age);
 	double capdth = cm->proj[index].gens[gen].death_lump_sum[EREE];
 	double res = cm->proj[index].gens[gen].reserves.res[EREE].puc;
-	double age = cm->age[index];
+	double age = cm->proj[index].age;
 	double cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, capdth,
 			age, RA, lt);
 
@@ -190,7 +180,7 @@ static double get_redcap_ukms_ukzt(const CurrentMember *cm, size_t EREE,
 	lt = &tff.ltProlong[EREE];
 	res = cap;
 	age = RA;
-	RA = MAX(MIN(NRA(cm, k+1), cm->NRA), cm->age[k+1]);
+	RA = MAX(MIN(NRA(cm, k+1), cm->NRA), cm->proj[k+1].age);
 	cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, capdth,
 			age, RA, lt);
 	
@@ -203,8 +193,8 @@ static double get_redcap_ukms_ukzt(const CurrentMember *cm, size_t EREE,
 
 	lt = &tff.ltINS[EREE][gen];
 	res = cm->proj[index].gens[gen].reserves.ps[EREE];
-	age = cm->age[index];
-	RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->age[k+1]);
+	age = cm->proj[index].age;
+	RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->proj[k+1].age);
 	double capps = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, 0.0,
 			age, RA, lt);
 
@@ -218,7 +208,7 @@ static double get_redcap_ukms_ukzt(const CurrentMember *cm, size_t EREE,
 	lt = &tff.ltProlong[EREE];
 	res = capps;
 	age = RA;
-	RA = MAX(MIN(NRA(cm, k+1), cm->NRA), cm->age[k+1]);
+	RA = MAX(MIN(NRA(cm, k+1), cm->NRA), cm->proj[k+1].age);
 	capps = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, 0.0,
 			age, RA, lt);
 
@@ -296,21 +286,21 @@ void evolPremiums(CurrentMember cm[restrict static 1], int k)
 
 			cm->proj[k+1].gens[j].premium[i] = prem;
 
-			if (cm->age[k+1] == cm->age[k] 
+			if (cm->proj[k+1].age == cm->proj[k].age 
 					|| (cm->tariff != MIXED))
 				cm->proj[k].gens[j].risk_premium[i] = 0;
 			else {
 				Ax1 = Ax1n(tff.ltINS[i][j].lt, cm->TAUX[i][j],
-						tff.costRES, cm->age[k], 
-						cm->age[k+1], 0);
+						tff.costRES, cm->proj[k].age, 
+						cm->proj[k+1].age, 0);
 				ax = axn(tff.ltINS[i][j].lt, cm->TAUX[i][j],
 						tff.costRES, tff.prepost, 
-						tff.term, cm->age[k], 
-						cm->age[k+1], 0);
+						tff.term, cm->proj[k].age, 
+						cm->proj[k+1].age, 0);
 				axcost = axn(tff.ltINS[i][j].lt, 
 						cm->TAUX[i][j], tff.costRES, 0,
-						1, cm->age[k], 
-						cm->age[k+1], 0);
+						1, cm->proj[k].age, 
+						cm->proj[k+1].age, 0);
 				RPcap = lump_sum/cm->X10;
 				RPres = cm->proj[k].gens[j].reserves.res[i].puc;
 
@@ -405,7 +395,7 @@ static void update_art24_act(CurrentMember *cm, int k)
 {
 	assert(cm);
 	double period = 0.0;
-	period = cm->age[k+1] - cm->age[k];
+	period = cm->proj[k+1].age - cm->proj[k].age;
 	update_art24_acts(cm->proj[k+1].art24, cm->proj[k].art24,
 			period, cm->proj[k].gens, k);
 }
@@ -548,74 +538,182 @@ double calc_res(unsigned tariff, double X10, double cap, double prem,
 	return value;
 }
 
-void evolDBONCIC(CurrentMember cm[restrict static 1], int k, 
-		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT])
+static double get_assets(unsigned assets, unsigned def_imm, double res,
+		double red_cap, struct factor f)
+{
+	double a = 0.0;
+	double corrfactor = 0.0;
+
+	switch (def_imm) {
+		case DEF: 
+			a = red_cap;
+			break; 
+		case IMM: 
+			a = res;
+			break;
+		default:
+			die("should be deferred or immediate, "
+					"got something unknown");
+	}
+
+	switch (assets) {
+		case PAR115:
+		case MATHRES:
+			corrfactor = 1.0;
+			break;
+		case PAR113:
+			corrfactor = f.vn113 / f.vn;
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	return a * corrfactor;
+}
+
+static double get_dbo(unsigned method, unsigned ASSETS,
+		unsigned def_imm, unsigned PBOTBO, 
+		const double art24[const static METHOD_AMOUNT],
+		double res, double red_cap, struct factor f)
+{
+	double liab = 0.0;
+	double assets = get_assets(ASSETS, def_imm, res, red_cap, f);
+	switch (method) {
+		case PUC:
+			liab = art24[PUC] * pow(f.ff, 1 - PBOTBO);
+			break;
+		case TUC:
+			liab = art24[TUC];
+			break;
+		default:
+			die("Unknown method");
+	}
+
+	switch (ASSETS) {
+		case PAR113 :
+		case PAR115 :
+			return MAX(liab, assets);
+			break;
+		case MATHRES : return liab;
+		default: die("unknown assets = %d", ASSETS);
+	}
+	return liab;
+}
+
+static double get_nc(unsigned method, struct factor f,
+		const double art24[const static METHOD_AMOUNT])
+{
+	double ff = f.ff_sc;
+	switch (method) {
+		case PUC:
+			return art24[PUC] * ff;
+		case TUC:
+			return (art24[TUCPS_1] - art24[TUC]);
+		default:
+			die("method = %d", method);
+			return 0.0;
+	}
+}
+
+#define DBO(m1, m2, a) \
+	amountdef = get_dbo(m1, a, DEF, PBO, art24, res, red_cap, f); \
+	amountimm = get_dbo(m1, a, IMM, PBO, art24, res, red_cap, f); \
+	dbo->m2[a] = amountdef * probfactdef + amountimm * probfactimm;
+#define NC(m1, m2, a) \
+	amountdef = get_nc(m1, f, art24); \
+	amountimm = amountdef; \
+	nc->m2[a] = amountdef * probfactdef + amountimm * probfactimm;
+#define IC_NC(m1, m2, a) \
+	amountdef = get_nc(m1, f, art24) * ass.DR; \
+	amountimm = amountdef; \
+	ic_nc->m2[a] = amountdef * probfactdef + amountimm * probfactimm;
+#define ASSETS(m, a) \
+	amountdef = get_assets(a, DEF, res, red_cap, f); \
+	amountimm = get_assets(a, IMM, res, red_cap, f); \
+	assets->m = amountdef * probfactdef + amountimm * probfactimm;
+
+void set_dbo_ret(struct retirement *dbo,
+		const double art24[const static METHOD_AMOUNT],
+		double res, double red_cap, struct factor f)
 {
 	double probfactdef = 0.0; // probability factors for deferred payment
 	double probfactimm = 0.0; // probability factors for immediate payment
 	double amountdef = 0.0;
 	double amountimm = 0.0;
 
-	probfactdef = cm->proj[k].factor.wxdef * cm->proj[k].factor.kPx
-		* cm->proj[k].factor.nPk * cm->proj[k].factor.vn;
-	probfactimm = (cm->proj[k].factor.wximm + cm->proj[k].factor.retx)
-		* cm->proj[k].factor.kPx * cm->proj[k].factor.vk;
+	probfactdef = f.wxdef * f.kPx * f.nPk * f.vn;
+	probfactimm = (f.wximm + f.retx) * f.kPx * f.vk;
 
-	for (int i = 0; i < METHOD_AMOUNT; i++) {
-		if (PUC != i && TUC != i) continue;
-		for (int j = 0; j < ASSET_AMOUNT; j++) {
-			amountdef = getamount(cm, k, DBO, i, j, DEF, PBO,
-					ART24TOT, RESTOT, REDCAPTOT);
-			amountimm = getamount(cm, k, DBO, i, j, IMM, PBO,
-					ART24TOT, RESTOT, REDCAPTOT);
-			cm->DBORET[i][j][k] = amountdef * probfactdef
-				+ amountimm * probfactimm;
-
-			amountdef = getamount(cm, k, NC, i, j, DEF, PBO,
-					ART24TOT, RESTOT, REDCAPTOT);
-			amountimm = getamount(cm, k, NC, i, j, IMM, PBO,
-					ART24TOT, RESTOT, REDCAPTOT);
-			cm->NCRET[i][j][k] = amountdef * probfactdef
-				+ amountimm * probfactimm;
-
-			amountdef = getamount(cm, k, IC, i, j, DEF, PBO,
-					ART24TOT, RESTOT, REDCAPTOT);
-			amountimm = getamount(cm, k, IC, i, j, IMM, PBO,
-					ART24TOT, RESTOT, REDCAPTOT);
-			cm->ICNCRET[i][j][k] = amountdef * probfactdef
-				+ amountimm * probfactimm;
-		}
-	}
-
-	double *target = 0;
-	for (int i = 0; i < ASSET_AMOUNT; i++) {
-		amountdef = getamount(cm, k, ASSETS, 0, i, DEF, PBO,
-				ART24TOT, RESTOT, REDCAPTOT);
-		amountimm = getamount(cm, k, ASSETS, 0, i, IMM, PBO,
-				ART24TOT, RESTOT, REDCAPTOT);
-		switch (i) {
-			case MATHRES:
-				target = &cm->proj[k].assets.math_res;
-				break;
-			case PAR115:
-				target = &cm->proj[k].assets.par115;
-				break;
-			case PAR113:
-				target = &cm->proj[k].assets.par113;
-				break;
-			default:
-				assert(0);
-		}
-		*target = amountdef * probfactdef + amountimm * probfactimm;
-	}
+	DBO(PUC, puc, PAR115);
+	DBO(PUC, puc, PAR113);
+	DBO(PUC, puc, MATHRES);
+	DBO(TUC, tuc, PAR115);
+	DBO(TUC, tuc, PAR113);
+	DBO(TUC, tuc, MATHRES);
 }
+
+void set_nc_ret(struct retirement *nc, const double art24[const static
+		METHOD_AMOUNT], struct factor f)
+{
+	double probfactdef = 0.0; // probability factors for deferred payment
+	double probfactimm = 0.0; // probability factors for immediate payment
+	double amountdef = 0.0;
+	double amountimm = 0.0;
+
+	probfactdef = f.wxdef * f.kPx * f.nPk * f.vn;
+	probfactimm = (f.wximm + f.retx) * f.kPx * f.vk;
+
+	NC(PUC, puc, PAR115);
+	NC(PUC, puc, PAR113);
+	NC(PUC, puc, MATHRES);
+	NC(TUC, tuc, PAR115);
+	NC(TUC, tuc, PAR113);
+	NC(TUC, tuc, MATHRES);
+}
+
+void set_ic_nc_ret(struct retirement *ic_nc, const double art24[const static
+		METHOD_AMOUNT], struct factor f)
+{
+	double probfactdef = 0.0; // probability factors for deferred payment
+	double probfactimm = 0.0; // probability factors for immediate payment
+	double amountdef = 0.0;
+	double amountimm = 0.0;
+
+	probfactdef = f.wxdef * f.kPx * f.nPk * f.vn;
+	probfactimm = (f.wximm + f.retx) * f.kPx * f.vk;
+
+	IC_NC(PUC, puc, PAR115);
+	IC_NC(PUC, puc, PAR113);
+	IC_NC(PUC, puc, MATHRES);
+	IC_NC(TUC, tuc, PAR115);
+	IC_NC(TUC, tuc, PAR113);
+	IC_NC(TUC, tuc, MATHRES);
+}
+
+void set_assets(struct assets *assets, double res, double red_cap,
+		struct factor f)
+{
+	double probfactdef = 0.0; // probability factors for deferred payment
+	double probfactimm = 0.0; // probability factors for immediate payment
+	double amountdef = 0.0;
+	double amountimm = 0.0;
+
+	probfactdef = f.wxdef * f.kPx * f.nPk * f.vn;
+	probfactimm = (f.wximm + f.retx) * f.kPx * f.vk;
+
+	ASSETS(par115, PAR115);
+	ASSETS(par113, PAR113);
+	ASSETS(math_res, MATHRES);
+}
+
+#undef DBO
+#undef NC
+#undef IC_NC
+#undef ASSETS
 
 void evolEBP(CurrentMember cm[restrict static 1], int k, 
 		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT])
+		double res, double red_cap)
 {
 	double probfactdef = 0.0;
 	double probfactimm = 0.0;
@@ -648,13 +746,12 @@ void evolEBP(CurrentMember cm[restrict static 1], int k,
 				for (int l = 0; l < CF_AMOUNT; l++) {
 					amountimm = getamount(cm, k, DBO, i, j,
 							IMM, l, ART24TOT,
-							RESTOT, REDCAPTOT);
+							res, red_cap);
 					cm->EBP[i][j][l][yearIMM+1] +=
 						amountimm * probfactimm;
 				}
 				amountimm = getamount(cm, k, NC, i, j, IMM,
-						PBO, ART24TOT, RESTOT,
-						REDCAPTOT);
+						PBO, ART24TOT, res, red_cap);
 				cm->PBONCCF[i][j][yearIMM+1] += amountimm
 					* probfactimm;
 			}
@@ -675,12 +772,12 @@ void evolEBP(CurrentMember cm[restrict static 1], int k,
 		for (int j = 0; j < ASSET_AMOUNT; j++) {
 			for (int l = 0; l < CF_AMOUNT; l++) {
 				amountdef = getamount(cm, k, DBO, i, j, DEF, l,
-						ART24TOT, RESTOT, REDCAPTOT);
+						ART24TOT, res, red_cap);
 				cm->EBP[i][j][l][yearDEF+1] += amountdef
 					* probfactdef;
 			}
 			amountdef = getamount(cm, k, NC, i, j, DEF, PBO,
-					ART24TOT, RESTOT, REDCAPTOT);
+					ART24TOT, res, red_cap);
 			cm->PBONCCF[i][j][yearDEF+1] += amountdef
 				* probfactdef;
 		}
@@ -695,91 +792,37 @@ double getamount(const CurrentMember cm[restrict static 1], int k,
 		unsigned DBONCICASS, unsigned method, unsigned assets,
 		unsigned DEFIMM, unsigned PBOTBO, 
 		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT])
+		double res, double red_cap)
 {
 	switch (DBONCICASS) {
 		case DBO:
-			return getDBO(cm, k, method, assets, DEFIMM, PBOTBO,
-					ART24TOT, RESTOT, REDCAPTOT);
+			return get_dbo(method, assets, DEFIMM, PBOTBO,
+					ART24TOT, res, red_cap,
+					cm->proj[k].factor);
 		case NC:
 			switch (method) {
 				case PUC: return ART24TOT[PUC] *
-					   cm->proj[k].factor.ff_sc;
+					  cm->proj[k].factor.ff_sc;
 				case TUC: return (ART24TOT[TUCPS_1]
-							   - ART24TOT[TUC]);
+							  - ART24TOT[TUC]);
 				default: die("method = %d", method);
 			}
 			break;
 		case IC:
 			switch (method) {
 				case PUC: return ART24TOT[PUC] *
-					   cm->proj[k].factor.ff_sc * ass.DR;
+					  cm->proj[k].factor.ff_sc * ass.DR;
 				case TUC: return (ART24TOT[TUCPS_1]
-							   - ART24TOT[TUC])
-					   * ass.DR;
+							  - ART24TOT[TUC])
+					  * ass.DR;
 				default: die("method = %d", method);
 			}
 			break;
-		case ASSETS: return getAssets(cm, k, assets, DEFIMM, RESTOT,
-					      REDCAPTOT);
-		default : die("unknown amount [%d]", DBONCICASS);
+		case ASSETS:
+			return get_assets(assets, DEFIMM, res,
+					red_cap, cm->proj[k].factor);
+		default: die("unknown amount [%d]", DBONCICASS);
 	}
 
 	return 0.0;
-}
-
-static double getDBO(const CurrentMember cm[restrict static 1], int k, unsigned method,
-		unsigned assets, unsigned DEFIMM, unsigned PBOTBO, 
-		const double ART24TOT[const static METHOD_AMOUNT],
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT])
-{
-	double liab = 0.0;
-	if (PUC == method)
-		liab = ART24TOT[PUC] * pow(cm->proj[k].factor.ff, 1 - PBOTBO);
-	else if (TUC == method)
-		liab = ART24TOT[TUC];
-	else
-		die("method = %d", method);
-
-	switch (assets) {
-		case PAR113 :
-		case PAR115 :
-			switch (DEFIMM) {
-				case DEF: return MAX(liab, REDCAPTOT[TUC]);
-				case IMM: return MAX(liab, RESTOT[TUC]);
-				default: die("DEFIMM = %d", DEFIMM);
-			}
-			break;
-		case MATHRES : return liab;
-		default: die("assets = %d", assets);
-	}
-	return liab;
-}
-
-static double getAssets(const CurrentMember cm[restrict static 1], int k,
-		unsigned assets, unsigned DEFIMM,
-		const double RESTOT[const static METHOD_AMOUNT],
-		const double REDCAPTOT[const static METHOD_AMOUNT])
-{
-	double a = 0.0;
-	double corrfactor = 1.0;
-
-	switch (DEFIMM) {
-		case DEF: 
-			a = REDCAPTOT[TUC];
-			break; 
-		case IMM: 
-			a = RESTOT[TUC]; 
-			break;
-		default:
-			die("DEFIMM = %d", DEFIMM);
-	}
-
-	if (PAR113 == assets) {
-		corrfactor = cm->proj[k].factor.vn113 / cm->proj[k].factor.vn;
-	}
-
-	return a * corrfactor;
 }

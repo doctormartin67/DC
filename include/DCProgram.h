@@ -104,6 +104,18 @@ struct lump_sums {
 	struct methods reduced[EREE_AMOUNT];
 };
 
+typedef enum {
+	GENS_NONE,
+	GENS_PREMIUM_A,
+	GENS_PREMIUM_C,
+	GENS_RP_A,
+	GENS_RP_C,
+	GENS_DEATH_CAP_A,
+	GENS_DEATH_CAP_C,
+	GENS_LUMP_SUM,
+	GENS_RES,
+} GenerationKind;
+
 struct generations {
 	double premium[EREE_AMOUNT];
 	double risk_premium[EREE_AMOUNT];
@@ -135,36 +147,49 @@ struct factor {
 				  according to IAS19 $113 */
 };
 
-struct liab {
-	double death_res; // Death Reserves Part
-	double death_risk; // Death Risk Part
-	double ic_death_res; // interest cost
-	double ic_death_risk; // interest cost
-};
-
 struct assets {
 	double math_res;
 	double par115;
 	double par113;
 };
 
+struct death {
+	double death_res; // Death Reserves Part
+	double death_risk; // Death Risk Part
+	double ic_death_res; // interest cost
+	double ic_death_risk; // interest cost
+};
+
+struct retirement {
+	double puc[ASSET_AMOUNT];
+	double tuc[ASSET_AMOUNT];
+};
+
 typedef enum {
+	PROJ_NONE,
+	PROJ_AGE,
 	PROJ_NDOE,
 	PROJ_NDOA,
 	PROJ_SAL,
 	PROJ_AFSL,
 	PROJ_DEATH_RES,
 	PROJ_DEATH_RISK,
-	PROJ_DELTA_CAP,
+	PROJ_DELTA_CAP_A,
+	PROJ_DELTA_CAP_C,
+	PROJ_DOC,
 	PROJ_GENS,
 	PROJ_ART24,
 	PROJ_FACTOR,
-	PROJ_DBO,
-	PROJ_NC,
+	PROJ_DBO_RET,
+	PROJ_NC_RET,
+	PROJ_IC_NC_RET,
+	PROJ_DBO_DEATH,
+	PROJ_NC_DEATH,
 	PROJ_ASSETS,
 } ProjectionKind;
 
 struct projection {
+	double age;
 	double nDOE; /* years since date of entry */
 	double nDOA; /* years since date of affiliation */
 	double sal;
@@ -172,17 +197,19 @@ struct projection {
 	double death_res; // Death Lump Sum Reserves Part
 	double death_risk; // Death Lump Sum Risk Part
 	double delta_cap[EREE_AMOUNT];
+	struct date *DOC; // date of calculation
 	struct generations gens[MAXGEN];
 	struct art24 art24[ART24GEN_AMOUNT];
 	struct factor factor;
-	struct liab dbo;
-	struct liab nc;
+	struct retirement dbo_ret;
+	struct retirement nc_ret;
+	struct retirement ic_nc_ret;
+	struct death dbo_death;
+	struct death nc_death;
 	struct assets assets;
-	struct date *DOC; // date of calculation
 };
 
 typedef struct {
-	Hashtable *Data;
 	unsigned id; /* Used to print warning/error messages to user */
 
 	//---Variable Declarations---  
@@ -210,15 +237,6 @@ typedef struct {
 
 	double TAUX[EREE_AMOUNT][MAXGEN]; /* return guarentee insurer */
 	double X10; // MIXED combination
-
-	//---Variable Definitions---    
-	double age[MAXPROJ + 1];
-
-	// Retirement
-	double DBORET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; // DBO
-	double NCRET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; // Normal Cost
-	// Interest Cost on Normal Cost 
-	double ICNCRET[METHOD_AMOUNT-1][ASSET_AMOUNT][MAXPROJ]; 
 
 	//---CASHFLOWS---
 	double EBP[METHOD_AMOUNT][ASSET_AMOUNT][CF_AMOUNT][MAXPROJ];

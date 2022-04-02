@@ -129,44 +129,134 @@ static void print_number(lxw_workbook *wb, lxw_worksheet *ws, unsigned row,
 	}
 	worksheet_write_number(ws, row, column, number, nformat);
 }
+#define PRINT_NUMBER(title, d) \
+	buf_printf(buf, "%s Gen %d", title, gen + 1); \
+	for (unsigned row = 0; row < MAXPROJ; row++) { \
+		print_number(wb, ws, row+1, buf, proj[row].gens[gen].d); \
+	} \
+	column++;
+
+static void print_gen_kind(lxw_workbook *wb, lxw_worksheet *ws, 
+		const struct projection *proj, size_t gen, GenerationKind kind)
+{
+	assert(wb);
+	assert(ws);
+	assert(proj);
+
+	char *buf = 0;
+
+	switch (kind) {
+		case GENS_NONE:
+			assert(0);
+			break;
+		case GENS_PREMIUM_A:
+			PRINT_NUMBER("Premium A", premium[ER]);
+			break;
+		case GENS_PREMIUM_C:
+			PRINT_NUMBER("Premium C", premium[EE]);
+			break;
+		case GENS_RP_A:
+			PRINT_NUMBER("Risk Premium A", risk_premium[ER]);
+			break;
+		case GENS_RP_C:
+			PRINT_NUMBER("Risk Premium C", risk_premium[EE]);
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	assert(buf);
+	buf_free(buf);
+}
+
+static void print_gen(lxw_workbook *wb, lxw_worksheet *ws,
+		const struct projection *proj, size_t gen)
+{
+	assert(wb);
+	assert(ws);
+	assert(proj);
+	print_gen_kind(wb, ws, proj, gen, GENS_PREMIUM_A);
+	print_gen_kind(wb, ws, proj, gen, GENS_PREMIUM_C);
+	print_gen_kind(wb, ws, proj, gen, GENS_RP_A);
+	print_gen_kind(wb, ws, proj, gen, GENS_RP_C);
+}
+
+#undef PRINT_NUMBER
+
+static void print_gens(lxw_workbook *wb, lxw_worksheet *ws,
+		const struct projection *proj)
+{
+	assert(wb);
+	assert(ws);
+	assert(proj);
+
+	for (size_t i = 0; i < MAXGEN; i++) {
+		print_gen(wb, ws, proj, i);
+	}
+}
 
 #define PRINT_NUMBER(title, d) \
-	print_number(wb, ws, row+1, title, proj[row].d);
-	
+	for (unsigned row = 0; row < MAXPROJ; row++) { \
+		print_number(wb, ws, row+1, title, proj[row].d); \
+	} \
+	column++;
+#define PRINT_DATE(title, d) \
+	for (unsigned row = 0; row < MAXPROJ; row++) { \
+		print_date(wb, ws, row+1, title, proj[row].d); \
+	} \
+	column++;
+
 static void print_proj_kind(lxw_workbook *wb, lxw_worksheet *ws, 
 		const struct projection *proj, ProjectionKind kind)
 {
 	assert(wb);
 	assert(ws);
 	assert(proj);
-	for (unsigned row = 0; row < MAXPROJ; row++) {
-		switch (kind) {
-			case PROJ_NDOE:
-				PRINT_NUMBER("Service DoE", nDOE);
-				break;
-			case PROJ_NDOA:
-				PRINT_NUMBER("Service DoA", nDOA);
-				break;
-			case PROJ_SAL:
-				PRINT_NUMBER("Salary", sal);
-				break;
-			case PROJ_AFSL:
-				PRINT_NUMBER("AFSL", afsl);
-				break;
-			case PROJ_DEATH_RES:
-				PRINT_NUMBER("Death RES", death_res);
-				break;
-			case PROJ_DEATH_RISK:
-				PRINT_NUMBER("Death Risk", death_risk);
-				break;
-			default:
-				assert(0);
-		}
+	switch (kind) {
+		case PROJ_NONE:
+			assert(0);
+			break;
+		case PROJ_AGE:
+			PRINT_NUMBER("Age", age);
+			break;
+		case PROJ_NDOE:
+			PRINT_NUMBER("Service DoE", nDOE);
+			break;
+		case PROJ_NDOA:
+			PRINT_NUMBER("Service DoA", nDOA);
+			break;
+		case PROJ_SAL:
+			PRINT_NUMBER("Salary", sal);
+			break;
+		case PROJ_AFSL:
+			PRINT_NUMBER("AFSL", afsl);
+			break;
+		case PROJ_DEATH_RES:
+			PRINT_NUMBER("Death RES", death_res);
+			break;
+		case PROJ_DEATH_RISK:
+			PRINT_NUMBER("Death Risk", death_risk);
+			break;
+		case PROJ_DELTA_CAP_A:
+			PRINT_NUMBER("Delta Cap A", delta_cap[ER]);
+			break;
+		case PROJ_DELTA_CAP_C:
+			PRINT_NUMBER("Delta Cap C", delta_cap[EE]);
+			break;
+		case PROJ_DOC:
+			PRINT_DATE("DoC", DOC);
+			break;
+		case PROJ_GENS:
+			print_gens(wb, ws, proj);
+			break;
+		default:
+			assert(0);
+			break;
 	}
-	column++;
 }
 
 #undef PRINT_NUMBER
+#undef PRINT_DATE
 
 static void print_proj(lxw_workbook *wb, lxw_worksheet *ws, 
 		const struct projection *proj)
@@ -175,12 +265,17 @@ static void print_proj(lxw_workbook *wb, lxw_worksheet *ws,
 	assert(ws);
 	assert(proj);
 
+	print_proj_kind(wb, ws, proj, PROJ_DOC);
+	print_proj_kind(wb, ws, proj, PROJ_AGE);
 	print_proj_kind(wb, ws, proj, PROJ_NDOE);
 	print_proj_kind(wb, ws, proj, PROJ_NDOA);
 	print_proj_kind(wb, ws, proj, PROJ_SAL);
 	print_proj_kind(wb, ws, proj, PROJ_AFSL);
 	print_proj_kind(wb, ws, proj, PROJ_DEATH_RES);
 	print_proj_kind(wb, ws, proj, PROJ_DEATH_RISK);
+	print_proj_kind(wb, ws, proj, PROJ_DELTA_CAP_A);
+	print_proj_kind(wb, ws, proj, PROJ_DELTA_CAP_C);
+	print_proj_kind(wb, ws, proj, PROJ_GENS);
 }
 
 static void print_member(lxw_workbook *wb, lxw_worksheet *ws,
@@ -397,7 +492,7 @@ static void set_row_values(CurrentMember *cm, int row)
 
 	snprintf(s, size, "%s", cm->key);
 
-	tc_print[TC_AGE].v.d = cm->age[row];
+	tc_print[TC_AGE].v.d = cm->proj[row].age;
 	tc_print[TC_SAL].v.d = cm->proj[row].sal;
 	tc_print[TC_NDOA].v.d = cm->proj[row].nDOA;
 	tc_print[TC_NDOE].v.d = cm->proj[row].nDOE;
@@ -487,24 +582,13 @@ static void set_row_values(CurrentMember *cm, int row)
 		tc_print[TC_VN].v.d = cm->proj[row + 1].factor.vn;
 
 		a = 2;
-		for (unsigned i = 0; i < METHOD_AMOUNT - 1; i++) {
-			for (unsigned j = 0; j < ASSET_AMOUNT; j++) {
-				gen = a * j + a * ASSET_AMOUNT * i;
-				tc_print[TC_DBO + gen].v.d =
-					cm->DBORET[i][j][row + 1];
-				tc_print[TC_NC + gen].v.d =
-					cm->NCRET[i][j][row + 1];
-				tc_print[TC_DBO + gen].is_number = 1;
-				tc_print[TC_NC + gen].is_number = 1;
-			}
-		}
 
 		tc_print[TC_ASSETS115].v.d = cm->proj[row + 1].assets.par115;
 		tc_print[TC_ASSETS113].v.d = cm->proj[row + 1].assets.par113;
-		tc_print[TC_DBODTHRISK].v.d = cm->proj[row + 1].dbo.death_risk;
-		tc_print[TC_DBODTHRES].v.d = cm->proj[row + 1].dbo.death_res;
-		tc_print[TC_NCDTHRISK].v.d = cm->proj[row + 1].nc.death_risk;
-		tc_print[TC_NCDTHRES].v.d = cm->proj[row + 1].nc.death_res;
+		tc_print[TC_DBODTHRISK].v.d = cm->proj[row + 1].dbo_death.death_risk;
+		tc_print[TC_DBODTHRES].v.d = cm->proj[row + 1].dbo_death.death_res;
+		tc_print[TC_NCDTHRISK].v.d = cm->proj[row + 1].nc_death.death_risk;
+		tc_print[TC_NCDTHRES].v.d = cm->proj[row + 1].nc_death.death_res;
 
 		for (unsigned i = 0; i < METHOD_AMOUNT - 1; i++) {
 			for (unsigned j = 0; j < ASSET_AMOUNT; j++) {
@@ -709,38 +793,23 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 				(ass.method & mDTH ? 1 : 0), 0);
 		worksheet_write_number(ws, row+1, col+index++, tff.admincost,
 				0);
-		worksheet_write_number(ws, row+1, col+index++, *cm->age, 0);
+		worksheet_write_number(ws, row+1, col+index++, cm->proj[0].age, 0);
 		worksheet_write_number(ws, row+1, col+index++,
 				salaryscale(cm, 1), 0);
 		index++;
 
-		DBORETPUCPAR = sum(MAXPROJ, cm->DBORET[PUC][PAR115]);
-		DBORETPUCRES = sum(MAXPROJ, cm->DBORET[PUC][MATHRES]);
-		DBORETTUCPAR = sum(MAXPROJ, cm->DBORET[TUC][PAR115]);
-		DBORETTUCRES = sum(MAXPROJ, cm->DBORET[TUC][MATHRES]);
-
-		NCRETPUCPAR = sum(MAXPROJ, cm->NCRET[PUC][PAR115]);
-		NCRETPUCRES = sum(MAXPROJ, cm->NCRET[PUC][MATHRES]);
-		NCRETTUCPAR = sum(MAXPROJ, cm->NCRET[TUC][PAR115]);
-		NCRETTUCRES = sum(MAXPROJ, cm->NCRET[TUC][MATHRES]);
-
-		ICNCRETPUCPAR = sum(MAXPROJ, cm->ICNCRET[PUC][PAR115]);
-		ICNCRETPUCRES = sum(MAXPROJ, cm->ICNCRET[PUC][MATHRES]);
-		ICNCRETTUCPAR = sum(MAXPROJ, cm->ICNCRET[TUC][PAR115]);
-		ICNCRETTUCRES = sum(MAXPROJ, cm->ICNCRET[TUC][MATHRES]);
-
-		ExpERContr = MAX(0.0, MIN(1.0, NRA(cm, 1) - cm->age[1]))
+		ExpERContr = MAX(0.0, MIN(1.0, NRA(cm, 1) - cm->proj[1].age))
 			* gen_sum(cm->proj[1].gens, ER, PREMIUM, PUC);
-		ExpEEContr = MAX(0.0, MIN(1.0, NRA(cm, 1) - cm->age[1]))
+		ExpEEContr = MAX(0.0, MIN(1.0, NRA(cm, 1) - cm->proj[1].age))
 			* gen_sum(cm->proj[1].gens, EE, PREMIUM, PUC);
 
 		for (size_t i = 0; i < MAXPROJ; i++) {
-			DBODTHRESPART += cm->proj[i].dbo.death_res;
-			DBODTHRiskPART += cm->proj[i].dbo.death_risk;
-			NCDTHRESPART += cm->proj[i].nc.death_res;
-			NCDTHRiskPART += cm->proj[i].nc.death_risk;
-			ICNCDTHRESPART += cm->proj[i].nc.ic_death_res;
-			ICNCDTHRiskPART += cm->proj[i].nc.ic_death_risk;
+			DBODTHRESPART += cm->proj[i].dbo_death.death_res;
+			DBODTHRiskPART += cm->proj[i].dbo_death.death_risk;
+			NCDTHRESPART += cm->proj[i].nc_death.death_res;
+			NCDTHRiskPART += cm->proj[i].nc_death.death_risk;
+			ICNCDTHRESPART += cm->proj[i].nc_death.ic_death_res;
+			ICNCDTHRiskPART += cm->proj[i].nc_death.ic_death_risk;
 			assetsPAR115 += cm->proj[i].assets.par115;
 			assetsPAR113 += cm->proj[i].assets.par113;
 			assetsRES += cm->proj[i].assets.math_res;
