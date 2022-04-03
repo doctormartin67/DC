@@ -10,6 +10,21 @@ static const char *get_var(unsigned ui, unsigned var_type,
 		Hashtable ht[static 1]);
 static void set_methodology(Hashtable ht[static 1]);
 
+static void add_builtin_vars(const CurrentMember *cm, int k)
+{
+	add_builtin_double("age", cm->proj[k].age);
+}
+
+static Val interpret_code(const CurrentMember *cm, int k, const char *code,
+		TypeKind return_type)
+{
+	if (!cm || !code) {
+		return (Val){0};	
+	}
+	add_builtin_vars(cm, k);
+	return interpret(code, return_type);
+}
+
 void setassumptions(void)
 {
 	/* this needs updating when we have a UITY!!! */
@@ -80,18 +95,18 @@ void set_tariffs(const CurrentMember cm[static 1])
 	unsigned ltterm = 0;
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	const char *s = get_var(UI_ADMINCOST, UI_INT, ht);
-	tff.admincost = interpret(s, TYPE_DOUBLE).d;
+	tff.admincost = interpret_code(cm, 0, s, TYPE_DOUBLE).d;
 	s = get_var(UI_COSTRES, UI_INT, ht);
-	tff.costRES = interpret(s, TYPE_DOUBLE).d;
+	tff.costRES = interpret_code(cm, 0, s, TYPE_DOUBLE).d;
 	s = get_var(UI_COSTKO, UI_INT, ht);
-	tff.costKO = interpret(s, TYPE_DOUBLE).d;
+	tff.costKO = interpret_code(cm, 0, s, TYPE_DOUBLE).d;
 	s = get_var(UI_WD, UI_INT, ht);
-	tff.WDDTH = interpret(s, TYPE_DOUBLE).d;
+	tff.WDDTH = interpret_code(cm, 0, s, TYPE_DOUBLE).d;
 	tff.MIXEDPS = 1;
 	s = get_var(UI_PREPOST, UI_INT, ht);
-	tff.prepost = interpret(s, TYPE_DOUBLE).d;
+	tff.prepost = interpret_code(cm, 0, s, TYPE_DOUBLE).d;
 	s = get_var(UI_TERM, UI_INT, ht);
-	tff.term = interpret(s, TYPE_DOUBLE).d;
+	tff.term = interpret_code(cm, 0, s, TYPE_DOUBLE).d;
 	ltins = 0; // TODO
 	ltterm = 0; // TODO
 	for (int l = 0; l < EREE_AMOUNT; l++) {
@@ -110,29 +125,23 @@ void set_tariffs(const CurrentMember cm[static 1])
 
 double salaryscale(const CurrentMember cm[static 1], int k)
 {
-	(void)cm;
-	(void)k;
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	const char *s = get_var(UI_SS, UI_INT, ht);
-	return ass.infl + interpret(s, TYPE_DOUBLE).d;
+	return ass.infl + interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
 
 double calcA(const CurrentMember cm[static 1], int k)
 {
-	(void)cm;
-	(void)k;
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	const char *s = get_var(UI_CONTRA, UI_INT, ht);
-	return interpret(s, TYPE_DOUBLE).d;
+	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
 
 double calcC(const CurrentMember cm[static 1], int k)
 {
-	(void)cm;
-	(void)k;
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	const char *s = get_var(UI_CONTRC, UI_INT, ht);
-	return interpret(s, TYPE_DOUBLE).d;
+	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
 
 double calcDTH(const CurrentMember cm[static 1], int k)
@@ -142,27 +151,21 @@ double calcDTH(const CurrentMember cm[static 1], int k)
 
 double NRA(const CurrentMember cm[static 1], int k)
 {
-	(void)cm;
-	(void)k;
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	const char *s = get_var(UI_NRA, UI_INT, ht);
-	return interpret(s, TYPE_DOUBLE).d;
+	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
 
 double wxdef(const CurrentMember cm[static 1], int k)
 {
-	(void)cm;
-	(void)k;
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	const char *s = get_var(UI_TURNOVER, UI_INT, ht);
-	return interpret(s, TYPE_DOUBLE).d;
+	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
 
 double retx(const CurrentMember cm[static 1], int k)
 {
-	(void)cm;
-	(void)k;
 	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	const char *s = get_var(UI_RETX, UI_INT, ht);
-	return interpret(s, TYPE_DOUBLE).d;
+	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }

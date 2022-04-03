@@ -174,8 +174,11 @@ typedef enum {
 	PROJ_AFSL,
 	PROJ_DEATH_RES,
 	PROJ_DEATH_RISK,
+	PROJ_PBO_NC_DEATH,
 	PROJ_DELTA_CAP_A,
 	PROJ_DELTA_CAP_C,
+	PROJ_EBP_DEATH_PBO,
+	PROJ_EBP_DEATH_TBO,
 	PROJ_DOC,
 	PROJ_GENS,
 	PROJ_ART24,
@@ -183,6 +186,9 @@ typedef enum {
 	PROJ_DBO_RET,
 	PROJ_NC_RET,
 	PROJ_IC_NC_RET,
+	PROJ_EBP_RET_PBO,
+	PROJ_EBP_RET_TBO,
+	PROJ_PBO_NC_RET,
 	PROJ_DBO_DEATH,
 	PROJ_NC_DEATH,
 	PROJ_ASSETS,
@@ -235,9 +241,6 @@ typedef struct {
 	double NRA; // normal retirement age
 	unsigned kids; // amount of kids
 	unsigned tariff; // UKMS, UKZT, UKMT, MIXED
-	double KO; // death lump sum (kapitaal overlijden)
-	double annINV; // annuity in case of invalidity
-	double contrINV; // contribution for invalidity insurance
 
 	double TAUX[EREE_AMOUNT][MAXGEN]; /* return guarentee insurer */
 	double X10; // MIXED combination

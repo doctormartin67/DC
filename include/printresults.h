@@ -44,8 +44,8 @@ enum {
  * create an excel file called TestCase[tc] with all the values for a given
  * person in the data to test the results.
  */
-void print_test_case(const CurrentMember *cm, unsigned tc);
+void print_test_case(const CurrentMember *cm);
+void print_results(const Database *db, const CurrentMember *cm);
 unsigned printtc(CurrentMember *cm, unsigned tc);
-unsigned printresults(const Database *db, CurrentMember *cm);
 
 #endif

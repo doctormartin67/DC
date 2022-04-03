@@ -347,11 +347,20 @@ static void print_proj_kind(lxw_workbook *wb, lxw_worksheet *ws,
 		case PROJ_DEATH_RISK:
 			PRINT_NUMBER("Death Risk", death_risk);
 			break;
+		case PROJ_PBO_NC_DEATH:
+			PRINT_NUMBER("PBO NC Death", pbo_nc_death);
+			break;
 		case PROJ_DELTA_CAP_A:
 			PRINT_NUMBER("Delta Cap A", delta_cap[ER]);
 			break;
 		case PROJ_DELTA_CAP_C:
 			PRINT_NUMBER("Delta Cap C", delta_cap[EE]);
+			break;
+		case PROJ_EBP_DEATH_PBO:
+			PRINT_NUMBER("PBO EBP Death", ebp_death[PBO]);
+			break;
+		case PROJ_EBP_DEATH_TBO:
+			PRINT_NUMBER("TBO EBP Death", ebp_death[TBO]);
 			break;
 		case PROJ_DOC:
 			PRINT_DATE("DoC", DOC);
@@ -373,6 +382,15 @@ static void print_proj_kind(lxw_workbook *wb, lxw_worksheet *ws,
 			break;
 		case PROJ_IC_NC_RET:
 			PRINT_RETIREMENT("IC NC", ic_nc_ret);
+			break;
+		case PROJ_EBP_RET_PBO:
+			PRINT_RETIREMENT("PBO EBP Retirement", ebp_ret[PBO]);
+			break;
+		case PROJ_EBP_RET_TBO:
+			PRINT_RETIREMENT("TBO EBP Retirement", ebp_ret[TBO]);
+			break;
+		case PROJ_PBO_NC_RET:
+			PRINT_RETIREMENT("PBO NC Retirement", pbo_nc_ret);
 			break;
 		case PROJ_DBO_DEATH:
 			PRINT_DEATH("DBO", dbo_death);
@@ -423,6 +441,12 @@ static void print_proj(lxw_workbook *wb, lxw_worksheet *ws,
 	print_proj_kind(wb, ws, proj, PROJ_IC_NC_RET);
 	print_proj_kind(wb, ws, proj, PROJ_DBO_DEATH);
 	print_proj_kind(wb, ws, proj, PROJ_ASSETS);
+	print_proj_kind(wb, ws, proj, PROJ_PBO_NC_RET);
+	print_proj_kind(wb, ws, proj, PROJ_PBO_NC_DEATH);
+	print_proj_kind(wb, ws, proj, PROJ_EBP_RET_PBO);
+	print_proj_kind(wb, ws, proj, PROJ_EBP_RET_TBO);
+	print_proj_kind(wb, ws, proj, PROJ_EBP_DEATH_PBO);
+	print_proj_kind(wb, ws, proj, PROJ_EBP_DEATH_TBO);
 }
 
 static void print_status(lxw_worksheet *ws, unsigned status)
@@ -448,15 +472,17 @@ static void print_member(lxw_workbook *wb, lxw_worksheet *ws,
 	print_proj(wb, ws, cm->proj);
 }
 
-void print_test_case(const CurrentMember *cm, unsigned tc)
+void print_test_case(const CurrentMember *cm)
 {
+	column = 0;
+	assert(cm);
 	char *results = 0;
 	char *tmp = 0;
 
 	lxw_workbook *wb = 0;
 	lxw_worksheet *ws = 0;
 
-	buf_printf(tmp, "TestCase%d", tc + 1);
+	buf_printf(tmp, "TestCase");
 	buf_printf(results, "%s.xlsx", tmp);
 
 	if (strlen(results) > PATH_MAX) {
@@ -818,6 +844,39 @@ static void print_database(lxw_worksheet *ws, const Database *db)
 		worksheet_write_string(ws, 0, col, db->titles[col], 0);
 		print_records(ws, db);
 	}
+}
+
+void print_results(const Database db[static 1], const CurrentMember *cm)
+{
+	column = 0;
+	assert(db);
+	assert(cm);
+	char *results = 0;
+	char *tmp = 0;
+
+	lxw_workbook *wb = 0;
+	lxw_worksheet *ws = 0;
+
+	buf_printf(tmp, "data");
+	buf_printf(results, "results.xlsx");
+
+	if (strlen(results) > PATH_MAX) {
+		die("file name [%s] too large.\n [%d] is maximum while file "
+				"name is [%lu]",
+				results, PATH_MAX, strlen(results));
+	}
+
+	wb = workbook_new(results);
+	ws = workbook_add_worksheet(wb, tmp);
+	worksheet_set_column(ws, 0, 512, 20, 0);
+	buf_free(tmp);
+	buf_free(results);
+
+	printf("Printing Data...\n");
+	print_database(ws, db);
+	printf("Printing Data complete.\n");
+	printf("Printing results...\n");
+	workbook_close(wb);
 }
 
 unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])

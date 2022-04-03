@@ -12,8 +12,7 @@ const char *const colnames[KEYS_AMOUNT] = {
 	[DOB] = "DOB", [DOE] = "DOE", [DOL] = "DOL", [DOS] = "DOS",
 	[DOA] = "DOA", [DOR] = "DOR", [CATEGORIE] = "CATEGORIE", [SAL] = "SAL",
 	[PG] = "PG", [PT] = "PT", [NORMRA] = "NRA", [ENF] = "# ENF",
-	[TARIEF] = "TARIEF", [KO] = "KO", [RENTINV] = "Rent INV",
-	[CONTRINV] = "Contr INV", [ART24] = "ART24",
+	[TARIEF] = "TARIEF", [ART24] = "ART24",
 	[PREMIUM] = "PREMIUM", [CAP] = "CAP",
 	[CAPPS] = "CAPPS", [CAPDTH] = "CAPDTH", [RES] = "RES",
 	[RESPS] = "RESPS", [CAPRED] = "CAPRED", [TAUX] = "TAUX",
@@ -164,9 +163,6 @@ static CurrentMember create_member(Database *db, size_t num_member)
 			cm.tariff = i;
 		}
 	}
-	cm.KO = record_double(db, num_member, colnames[KO]);
-	cm.annINV = record_double(db, num_member, colnames[RENTINV]);
-	cm.contrINV = record_double(db, num_member, colnames[CONTRINV]);
 
 	// all variables that have generations, employer and employee
 	set_projections(db, num_member, cm.proj);
