@@ -249,7 +249,7 @@ static void prolongate(CurrentMember cm[static 1], int k)
 	for (int i = 0; i < EREE_AMOUNT; i++) {
 		cm->proj[k].gens[MAXGEN-1].premium[i] =
 			gen_sum(cm->proj[k].gens, i, PREMIUM, PUC);
-		cm->proj[k].gens[MAXGEN-1].death_lump_sum[i]
+		cm->proj[k].gens[MAXGEN-1].lump_sums.death_lump_sum[i]
 			= gen_sum(cm->proj[k].gens, i, CAPDTH, PUC);
 		cm->proj[k].gens[MAXGEN-1].reserves.res[i].puc =
 			gen_sum(cm->proj[k].gens, i, RES, PUC);
@@ -258,7 +258,7 @@ static void prolongate(CurrentMember cm[static 1], int k)
 		cm->proj[k].delta_cap[i] = 0;
 		for (int j = 0; j < MAXGEN-1; j++) {
 			cm->proj[k].gens[j].premium[i] = 0;
-			cm->proj[k].gens[j].death_lump_sum[i] = 0;
+			cm->proj[k].gens[j].lump_sums.death_lump_sum[i] = 0;
 			cm->proj[k].gens[j].reserves.res[i].puc = 0;
 			cm->proj[k].gens[j].reserves.ps[i] = 0;
 		}

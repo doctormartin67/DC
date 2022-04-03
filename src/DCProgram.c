@@ -73,7 +73,7 @@ static void set_generations(const Database *db, size_t num_member,
 
 			gen[j].premium[i] =
 				get_gen_amount(db, num_member, PREMIUM, i, j);
-			gen[j].death_lump_sum[i] =
+			gen[j].lump_sums.death_lump_sum[i] =
 				get_gen_amount(db, num_member, CAPDTH, i, j);
 
 			set_methods(db, num_member,
@@ -264,7 +264,7 @@ static double gen_sum_type(const struct generations *g, size_t EREE,
 			break;
 		case CAPDTH:
 			for (size_t i = 0; i < MAXGEN; i++) {
-				sum += g[i].death_lump_sum[EREE];
+				sum += g[i].lump_sums.death_lump_sum[EREE];
 			}
 			break;
 		case RES:

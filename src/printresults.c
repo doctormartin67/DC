@@ -129,12 +129,18 @@ static void print_number(lxw_workbook *wb, lxw_worksheet *ws, unsigned row,
 	}
 	worksheet_write_number(ws, row, column, number, nformat);
 }
+
 #define PRINT_NUMBER(title, d) \
 	buf_printf(buf, "%s Gen %d", title, gen + 1); \
 	for (unsigned row = 0; row < MAXPROJ; row++) { \
 		print_number(wb, ws, row+1, buf, proj[row].gens[gen].d); \
 	} \
+	buf_free(buf); \
 	column++;
+#define PRINT_LS(title, d) \
+	PRINT_NUMBER(title, lump_sums.d)
+#define PRINT_RES(title, d) \
+	PRINT_NUMBER(title, reserves.d)
 
 static void print_gen_kind(lxw_workbook *wb, lxw_worksheet *ws, 
 		const struct projection *proj, size_t gen, GenerationKind kind)
@@ -161,13 +167,40 @@ static void print_gen_kind(lxw_workbook *wb, lxw_worksheet *ws,
 		case GENS_RP_C:
 			PRINT_NUMBER("Risk Premium C", risk_premium[EE]);
 			break;
+		case GENS_RES:
+			PRINT_RES("Reserves PUC A", res[ER].puc);
+			PRINT_RES("Reserves PUC C", res[EE].puc);
+			PRINT_RES("Reserves TUC A", res[ER].tuc);
+			PRINT_RES("Reserves TUC C", res[EE].tuc);
+			PRINT_RES("Reserves TUC+1 A", res[ER].tucps_1);
+			PRINT_RES("Reserves TUC+1 C", res[EE].tucps_1);
+			PRINT_RES("Reserves PS A", ps[ER]);
+			PRINT_RES("Reserves PS C", ps[EE]);
+			break;
+		case GENS_LUMP_SUM:
+			PRINT_LS("Lump Sum A", lump_sum[ER]);
+			PRINT_LS("Lump Sum C", lump_sum[EE]);
+			PRINT_LS("Lump Sum PS A", ps[ER]);
+			PRINT_LS("Lump Sum PS C", ps[EE]);
+			PRINT_LS("Death Lump Sum A", death_lump_sum[ER]);
+			PRINT_LS("Death Lump Sum C", death_lump_sum[EE]);
+			PRINT_LS("Reduced Lump Sum PUC A", reduced[ER].puc);
+			PRINT_LS("Reduced Lump Sum PUC C", reduced[EE].puc);
+			PRINT_LS("Reduced Lump Sum TUC A", reduced[ER].tuc);
+			PRINT_LS("Reduced Lump Sum TUC C", reduced[EE].tuc);
+			PRINT_LS("Reduced Lump Sum TUC+1 A",
+					reduced[ER].tucps_1);
+			PRINT_LS("Reduced Lump Sum TUC+1 C",
+					reduced[EE].tucps_1);
+			break;
 		default:
 			assert(0);
 			break;
 	}
-	assert(buf);
-	buf_free(buf);
 }
+
+#undef PRINT_LS
+#undef PRINT_NUMBER
 
 static void print_gen(lxw_workbook *wb, lxw_worksheet *ws,
 		const struct projection *proj, size_t gen)
@@ -179,9 +212,9 @@ static void print_gen(lxw_workbook *wb, lxw_worksheet *ws,
 	print_gen_kind(wb, ws, proj, gen, GENS_PREMIUM_C);
 	print_gen_kind(wb, ws, proj, gen, GENS_RP_A);
 	print_gen_kind(wb, ws, proj, gen, GENS_RP_C);
+	print_gen_kind(wb, ws, proj, gen, GENS_RES);
+	print_gen_kind(wb, ws, proj, gen, GENS_LUMP_SUM);
 }
-
-#undef PRINT_NUMBER
 
 static void print_gens(lxw_workbook *wb, lxw_worksheet *ws,
 		const struct projection *proj)
@@ -196,6 +229,46 @@ static void print_gens(lxw_workbook *wb, lxw_worksheet *ws,
 }
 
 #define PRINT_NUMBER(title, d) \
+	buf_printf(buf, "%s Gen %d", title, gen + 1); \
+	for (unsigned row = 0; row < MAXPROJ; row++) { \
+		print_number(wb, ws, row+1, buf, proj[row].art24[gen].d); \
+	} \
+	buf_free(buf); \
+	column++;
+
+static void print_art24(lxw_workbook *wb, lxw_worksheet *ws,
+		const struct projection *proj, size_t gen)
+{
+	assert(wb);
+	assert(ws);
+	assert(proj);
+	assert(gen < ART24GEN_AMOUNT);
+
+	char *buf = 0;
+
+	PRINT_NUMBER("Art 24 PUC A", res[ER].puc);
+	PRINT_NUMBER("Art 24 PUC C", res[EE].puc);
+	PRINT_NUMBER("Art 24 TUC A", res[ER].tuc);
+	PRINT_NUMBER("Art 24 TUC C", res[EE].tuc);
+	PRINT_NUMBER("Art 24 TUC+1 A", res[ER].tucps_1);
+	PRINT_NUMBER("Art 24 TUC+1 C", res[EE].tucps_1);
+}
+
+#undef PRINT_NUMBER
+
+static void print_art24s(lxw_workbook *wb, lxw_worksheet *ws,
+		const struct projection *proj)
+{
+	assert(wb);
+	assert(ws);
+	assert(proj);
+
+	for (size_t i = 0; i < ART24GEN_AMOUNT; i++) {
+		print_art24(wb, ws, proj, i);
+	}
+}
+
+#define PRINT_NUMBER(title, d) \
 	for (unsigned row = 0; row < MAXPROJ; row++) { \
 		print_number(wb, ws, row+1, title, proj[row].d); \
 	} \
@@ -205,6 +278,43 @@ static void print_gens(lxw_workbook *wb, lxw_worksheet *ws,
 		print_date(wb, ws, row+1, title, proj[row].d); \
 	} \
 	column++;
+#define PRINT_FACTOR(title, d) \
+	PRINT_NUMBER(title, factor.d)
+#define PRINT_RET(title, d, a) \
+	PRINT_NUMBER(title, d[a])
+#define PRINT_RETIREMENT(t1, t2) \
+	PRINT_RET(t1" RET PUC PAR115", t2.puc, PAR115); \
+	PRINT_RET(t1" RET TUC PAR115", t2.tuc, PAR115); \
+	PRINT_RET(t1" RET PUC PAR113", t2.puc, PAR113); \
+	PRINT_RET(t1" RET TUC PAR113", t2.tuc, PAR113); \
+	PRINT_RET(t1" RET PUC MATH RES", t2.puc, MATHRES); \
+	PRINT_RET(t1" RET TUC MATH RES", t2.tuc, MATHRES);
+#define PRINT_DEATH(title, d) \
+	PRINT_NUMBER(title" Death Reserves", d.death_res); \
+	PRINT_NUMBER(title" Death Risk", d.death_risk); \
+	PRINT_NUMBER(title" IC Death Reserves", d.ic_death_res); \
+	PRINT_NUMBER(title" IC Death Risk", d.ic_death_risk);
+
+
+static void print_factor(lxw_workbook *wb, lxw_worksheet *ws,
+		const struct projection *proj)
+{
+	assert(wb);
+	assert(ws);
+	assert(proj);
+	PRINT_FACTOR("FF", ff);
+	PRINT_FACTOR("FF Service Cost", ff_sc);
+	PRINT_FACTOR("Qx", qx);
+	PRINT_FACTOR("turnover deferred", wxdef);
+	PRINT_FACTOR("turnover immediate", wximm);
+	PRINT_FACTOR("retirement probability", retx);
+	PRINT_FACTOR("nPk", nPk);
+	PRINT_FACTOR("kPx", kPx);
+	PRINT_FACTOR("(1+DR)^-k", vk);
+	PRINT_FACTOR("(1+DR)^-n", vn);
+	PRINT_FACTOR("(1+DR113)^-k", vk113);
+	PRINT_FACTOR("(1+DR113)^-n", vn113);
+}
 
 static void print_proj_kind(lxw_workbook *wb, lxw_worksheet *ws, 
 		const struct projection *proj, ProjectionKind kind)
@@ -249,6 +359,32 @@ static void print_proj_kind(lxw_workbook *wb, lxw_worksheet *ws,
 		case PROJ_GENS:
 			print_gens(wb, ws, proj);
 			break;
+		case PROJ_ART24:
+			print_art24s(wb, ws, proj);
+			break;
+		case PROJ_FACTOR:
+			print_factor(wb, ws, proj);
+			break;
+		case PROJ_DBO_RET:
+			PRINT_RETIREMENT("DBO", dbo_ret);
+			break;
+		case PROJ_NC_RET:
+			PRINT_RETIREMENT("NC", nc_ret);
+			break;
+		case PROJ_IC_NC_RET:
+			PRINT_RETIREMENT("IC NC", ic_nc_ret);
+			break;
+		case PROJ_DBO_DEATH:
+			PRINT_DEATH("DBO", dbo_death);
+			break;
+		case PROJ_NC_DEATH:
+			PRINT_DEATH("NC", nc_death);
+			break;
+		case PROJ_ASSETS:
+			PRINT_NUMBER("Assets PAR115", assets.par115);
+			PRINT_NUMBER("Assets PAR113", assets.par113);
+			PRINT_NUMBER("Assets Math reserves", assets.math_res);
+			break;
 		default:
 			assert(0);
 			break;
@@ -257,6 +393,10 @@ static void print_proj_kind(lxw_workbook *wb, lxw_worksheet *ws,
 
 #undef PRINT_NUMBER
 #undef PRINT_DATE
+#undef PRINT_FACTOR
+#undef PRINT_RET
+#undef PRINT_RETIREMENT
+#undef PRINT_DEATH
 
 static void print_proj(lxw_workbook *wb, lxw_worksheet *ws, 
 		const struct projection *proj)
@@ -276,6 +416,13 @@ static void print_proj(lxw_workbook *wb, lxw_worksheet *ws,
 	print_proj_kind(wb, ws, proj, PROJ_DELTA_CAP_A);
 	print_proj_kind(wb, ws, proj, PROJ_DELTA_CAP_C);
 	print_proj_kind(wb, ws, proj, PROJ_GENS);
+	print_proj_kind(wb, ws, proj, PROJ_ART24);
+	print_proj_kind(wb, ws, proj, PROJ_FACTOR);
+	print_proj_kind(wb, ws, proj, PROJ_DBO_RET);
+	print_proj_kind(wb, ws, proj, PROJ_NC_RET);
+	print_proj_kind(wb, ws, proj, PROJ_IC_NC_RET);
+	print_proj_kind(wb, ws, proj, PROJ_DBO_DEATH);
+	print_proj_kind(wb, ws, proj, PROJ_ASSETS);
 }
 
 static void print_member(lxw_workbook *wb, lxw_worksheet *ws,
@@ -308,7 +455,7 @@ void print_test_case(const CurrentMember *cm, unsigned tc)
 
 	wb = workbook_new(results);
 	ws = workbook_add_worksheet(wb, tmp);
-	worksheet_set_column(ws, 0, 200, 25, 0);
+	worksheet_set_column(ws, 0, 512, 20, 0);
 	buf_free(tmp);
 	buf_free(results);
 	print_member(wb, ws, cm);
@@ -731,7 +878,7 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 
 	wb = workbook_new(results);
 	ws = workbook_add_worksheet(wb, "dataTY");
-	worksheet_set_column(ws, 0, 250, 20, 0);
+	worksheet_set_column(ws, 0, 512, 20, 0);
 
 	printf("Printing Data...\n");
 	print_database(ws, db);

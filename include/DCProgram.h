@@ -101,6 +101,7 @@ struct reserves {
 struct lump_sums {
 	double lump_sum[EREE_AMOUNT];
 	double ps[EREE_AMOUNT];
+	double death_lump_sum[EREE_AMOUNT];
 	struct methods reduced[EREE_AMOUNT];
 };
 
@@ -119,7 +120,6 @@ typedef enum {
 struct generations {
 	double premium[EREE_AMOUNT];
 	double risk_premium[EREE_AMOUNT];
-	double death_lump_sum[EREE_AMOUNT];
 	struct lump_sums lump_sums;
 	struct reserves reserves;
 };

@@ -13,8 +13,8 @@ double calc_res(unsigned tariff, double X10, double cap, double prem,
 void evolCAPDTH(CurrentMember cm[restrict static 1], int k) {
 	for (int i = 0; i < EREE_AMOUNT; i++) {
 		for (int gen = 0; gen < MAXGEN; gen++) {
-			cm->proj[k+1].gens[gen].death_lump_sum[i]
-				= cm->proj[k].gens[gen].death_lump_sum[i]
+			cm->proj[k+1].gens[gen].lump_sums.death_lump_sum[i]
+				= cm->proj[k].gens[gen].lump_sums.death_lump_sum[i]
 				+ cm->proj[k].gens[gen].premium[i]
 				* (1 - tff.admincost)
 				* (cm->proj[k+1].age - cm->proj[k].age);
@@ -40,7 +40,7 @@ static double update_res_puc(CurrentMember *cm, size_t EREE, size_t gen,
 	LifeTable *lt = &tff.ltINS[EREE][gen];
 	double *target = &cm->proj[k+1].gens[gen].reserves.res[EREE].puc;
 	double RA = (k + 1 > MAXPROJBEFOREPROL ? NRA(cm, k + 1) : cm->NRA);
-	double capdth = cm->proj[k].gens[gen].death_lump_sum[EREE];
+	double capdth = cm->proj[k].gens[gen].lump_sums.death_lump_sum[EREE];
 	double delta_cap = cm->proj[k].delta_cap[EREE];
 	double prem = cm->proj[k].gens[gen].premium[EREE];
 	double res = cm->proj[k].gens[gen].reserves.res[EREE].puc;
@@ -69,7 +69,7 @@ static double get_res_tuc(const CurrentMember *cm, size_t EREE, size_t gen,
 	double RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->proj[k+1].age);
 	double Ex = nEx(tff.ltINS[EREE][gen].lt, i, tff.costRES, RA,
 					MIN(NRA(cm, k), cm->NRA), 0);
-	double capdth = cm->proj[index].gens[gen].death_lump_sum[EREE];
+	double capdth = cm->proj[index].gens[gen].lump_sums.death_lump_sum[EREE];
 	double res = cm->proj[index].gens[gen].reserves.res[EREE].puc;
 	double cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, capdth,
 			cm->proj[index].age, RA, lt);
@@ -94,7 +94,7 @@ static double get_redcap_puc(CurrentMember *cm, size_t EREE, size_t gen,
 {
 	LifeTable *lt = &tff.ltAfterTRM[EREE][gen];
 	double RA = (k + 1 > MAXPROJBEFOREPROL ? NRA(cm, k + 1) : cm->NRA);
-	double capdth = cm->proj[k+1].gens[gen].death_lump_sum[EREE];
+	double capdth = cm->proj[k+1].gens[gen].lump_sums.death_lump_sum[EREE];
 	double delta_cap = cm->proj[k+1].delta_cap[EREE];
 	double res = cm->proj[k+1].gens[gen].reserves.res[EREE].puc;
 	double age = cm->proj[k+1].age;
@@ -128,7 +128,7 @@ static double get_redcap_mixed_ukmt(const CurrentMember *cm, size_t EREE, size_t
 {
 	LifeTable *lt = &tff.ltAfterTRM[EREE][gen];
 	double RA = MIN(NRA(cm, k + 1), cm->NRA);
-	double capdth = cm->proj[index].gens[gen].death_lump_sum[EREE];
+	double capdth = cm->proj[index].gens[gen].lump_sums.death_lump_sum[EREE];
 	double res = cm->proj[index].gens[gen].reserves.res[EREE].puc;
 	double age = cm->proj[index].age;
 	double cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, capdth,
@@ -163,7 +163,7 @@ static double get_redcap_ukms_ukzt(const CurrentMember *cm, size_t EREE,
 {
 	LifeTable *lt = &tff.ltINS[EREE][gen];
 	double RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->proj[k+1].age);
-	double capdth = cm->proj[index].gens[gen].death_lump_sum[EREE];
+	double capdth = cm->proj[index].gens[gen].lump_sums.death_lump_sum[EREE];
 	double res = cm->proj[index].gens[gen].reserves.res[EREE].puc;
 	double age = cm->proj[index].age;
 	double cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, capdth,
