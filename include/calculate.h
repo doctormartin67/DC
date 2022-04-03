@@ -5,9 +5,9 @@
 enum {DBO, NC, IC, ASSETS};
 enum {DEF, IMM}; // deferred or immediate payment
 
-void evolCAPDTH(CurrentMember *restrict cm, int k);
-void evolRES(CurrentMember *restrict cm, int k);
-void evolPremiums(CurrentMember *restrict cm, int k);
+void update_res_lump_sums(CurrentMember *cm, int k);
+void update_death_lump_sums(CurrentMember *cm, int k);
+void update_premiums(CurrentMember *cm, int k);
 void update_art24(CurrentMember *restrict cm, int k);
 void set_dbo_ret(struct retirement *dbo,
 		const double art24[const static METHOD_AMOUNT],

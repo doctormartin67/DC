@@ -10,14 +10,24 @@ double calc_res(unsigned tariff, double X10, double cap, double prem,
 		double deltacap, double capdth, double age, double RA,
 		LifeTable *lt);
 
-void evolCAPDTH(CurrentMember cm[restrict static 1], int k) {
+static double get_death_lump_sum(const CurrentMember *cm, int k, size_t EREE,
+size_t gen)
+{
+	double ls = cm->proj[k].gens[gen].lump_sums.death_lump_sum[EREE];
+	double premium = cm->proj[k].gens[gen].premium[EREE];
+	double ac = tff.admincost;
+	double age_k1 = cm->proj[k+1].age;
+	double age_k = cm->proj[k].age;
+
+	return ls + premium * (1 - ac) * (age_k1 - age_k);
+}
+
+void update_death_lump_sums(CurrentMember cm[static 1], int k) {
+	assert(cm);
 	for (int i = 0; i < EREE_AMOUNT; i++) {
 		for (int gen = 0; gen < MAXGEN; gen++) {
 			cm->proj[k+1].gens[gen].lump_sums.death_lump_sum[i]
-				= cm->proj[k].gens[gen].lump_sums.death_lump_sum[i]
-				+ cm->proj[k].gens[gen].premium[i]
-				* (1 - tff.admincost)
-				* (cm->proj[k+1].age - cm->proj[k].age);
+				= get_death_lump_sum(cm, k, i, gen);
 		}
 	}
 }
@@ -68,7 +78,7 @@ static double get_res_tuc(const CurrentMember *cm, size_t EREE, size_t gen,
 	double i = cm->TAUX[EREE][gen];
 	double RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->proj[k+1].age);
 	double Ex = nEx(tff.ltINS[EREE][gen].lt, i, tff.costRES, RA,
-					MIN(NRA(cm, k), cm->NRA), 0);
+			MIN(NRA(cm, k), cm->NRA), 0);
 	double capdth = cm->proj[index].gens[gen].lump_sums.death_lump_sum[EREE];
 	double res = cm->proj[index].gens[gen].reserves.res[EREE].puc;
 	double cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, capdth,
@@ -183,7 +193,7 @@ static double get_redcap_ukms_ukzt(const CurrentMember *cm, size_t EREE,
 	RA = MAX(MIN(NRA(cm, k+1), cm->NRA), cm->proj[k+1].age);
 	cap = calc_lump_sum(cm->tariff, cm->X10, res, 0.0, 0.0, capdth,
 			age, RA, lt);
-	
+
 	lt = &tff.ltProlongAfterTRM[EREE];
 	res = cap;
 	age = RA;
@@ -253,7 +263,7 @@ static void update_res_and_lump_sum(CurrentMember *cm, size_t EREE, size_t gen,
 	update_redcaps(cm, EREE, gen, k);
 }
 
-void evolRES(CurrentMember cm[restrict static 1], int k)
+void update_res_lump_sums(CurrentMember cm[static 1], int k)
 {
 	for (size_t i = 0; i < EREE_AMOUNT; i++) {
 		for (size_t j = 0; j < MAXGEN; j++) {
@@ -262,55 +272,53 @@ void evolRES(CurrentMember cm[restrict static 1], int k)
 	}
 }
 
-void evolPremiums(CurrentMember cm[restrict static 1], int k)
+static double get_premium(const CurrentMember *cm,
+		int k, size_t EREE, size_t gen)
 {
-	double formula = 0.0;
-	double prem = 0.0;
-	double Ax1 = 0.0;
-	double ax = 0.0;
-	double axcost = 0.0;
-	double RPcap = 0.0;
-	double RPres = 0.0;
-	double lump_sum = 0.0;
-
-	for (int i = 0; i < EREE_AMOUNT; i++) {
-		formula = (ER == i ? calcA(cm, k + 1) : calcC(cm, k + 1));
-		for (int j = 0; j < MAXGEN; j++) {
-			lump_sum = cm->proj[k].gens[j].lump_sums.lump_sum[i];
-			prem = formula;
-			for (int l = 0; l < j; l++)
-				prem = prem - cm->proj[k+1].gens[j].premium[i];
-			prem = (j < MAXGEN - 1 ?
-					MIN(cm->proj[k].gens[j].premium[i],
-						prem) : prem);
-
-			cm->proj[k+1].gens[j].premium[i] = prem;
-
-			if (cm->proj[k+1].age == cm->proj[k].age 
-					|| (cm->tariff != MIXED))
-				cm->proj[k].gens[j].risk_premium[i] = 0;
-			else {
-				Ax1 = Ax1n(tff.ltINS[i][j].lt, cm->TAUX[i][j],
-						tff.costRES, cm->proj[k].age, 
-						cm->proj[k+1].age, 0);
-				ax = axn(tff.ltINS[i][j].lt, cm->TAUX[i][j],
-						tff.costRES, tff.prepost, 
-						tff.term, cm->proj[k].age, 
-						cm->proj[k+1].age, 0);
-				axcost = axn(tff.ltINS[i][j].lt, 
-						cm->TAUX[i][j], tff.costRES, 0,
-						1, cm->proj[k].age, 
-						cm->proj[k+1].age, 0);
-				RPcap = lump_sum/cm->X10;
-				RPres = cm->proj[k].gens[j].reserves.res[i].puc;
-
-				cm->proj[k].gens[j].risk_premium[i]
-					= MAX(0.0, (RPcap - RPres) * Ax1/ax)
-					+ RPcap * tff.costKO * axcost;
-			}			     
-		}
+	double prem = (ER == EREE ? calcA(cm, k + 1) : calcC(cm, k + 1));
+	double prem_prev = cm->proj[k].gens[gen].premium[EREE];
+	for (size_t l = 0; l < gen; l++) {
+		prem = prem - cm->proj[k+1].gens[gen].premium[EREE];
 	}
+	prem = (gen < MAXGEN - 1 ?  MIN(prem_prev, prem) : prem);
 
+	return prem;
+}
+
+static double get_risk_premium(const CurrentMember *cm,
+		int k, size_t EREE, size_t gen)
+{
+	double age_k1 = cm->proj[k+1].age;
+	double age_k = cm->proj[k].age;
+
+	if (age_k1 == age_k || (MIXED != cm->tariff)) {
+		return 0.0;
+	} 
+
+	unsigned lt = tff.ltINS[EREE][gen].lt;
+	double cR = tff.costRES;
+	double cK = tff.costKO;
+	double ir = cm->TAUX[EREE][gen];
+	double Ax1 = Ax1n(lt, ir, cR, age_k, age_k1, 0);
+	double ax = axn(lt, ir, cR, tff.prepost, tff.term, age_k, age_k1, 0);
+	double axcost = axn(lt, ir, cR, 0, 1, age_k, age_k1, 0);
+	double lump_sum = cm->proj[k].gens[gen].lump_sums.lump_sum[EREE];
+	double RPcap = lump_sum/cm->X10;
+	double RPres = cm->proj[k].gens[gen].reserves.res[EREE].puc;
+
+	return MAX(0.0, (RPcap - RPres) * Ax1/ax) + RPcap * cK *axcost;
+}
+
+void update_premiums(CurrentMember cm[static 1], int k)
+{
+	for (size_t i = 0; i < EREE_AMOUNT; i++) {
+		for (size_t j = 0; j < MAXGEN; j++) {
+			cm->proj[k+1].gens[j].premium[i]
+				= get_premium(cm, k, i, j);
+			cm->proj[k].gens[j].risk_premium[i]
+				= get_risk_premium(cm, k, i, j);
+		}			     
+	}
 }
 
 static double get_premium_method(size_t method, const struct generations *g,

@@ -43,12 +43,8 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 					GTK_COMBO_BOX_TEXT(
 						widgets[RUNCHOICE]));
 			if (strcmp("Run one run", choice) == 0) {
-				// This needs updating when I start with reconciliation runs!!
-				currrun = runNewRF; 
 				g_thread_new("run", run, pl);
 			} else if (strcmp("Run test case", choice) == 0) {
-				// This needs updating when I start with reconciliation runs!!
-				currrun = runNewRF; 
 				g_thread_new("runtc", runtc, pl);
 			} else if (strcmp("Run reconciliation", choice) == 0) {
 				printf("something else\n");

@@ -253,24 +253,6 @@ double gen_sum(const struct generations *, size_t EREE, DataColumn,
 		size_t method);
 double gen_sum_art24(const struct art24 *a24, size_t method);
 
-//---Reconciliation declarations---
-enum runs {runLY, runUpdateInflation, runUpdateDR, runRF,
-	runNewData, runNewMethodology, runNewMortality,
-	runNewTurnover, runNewNRA, runNewInflation, runNewSS,
-	runNewDR, runNewRF, runSensitivities};
-enum sensruns {runsensDuration = 21, runsensDRminus, runsensDRplus, runsensInflationminus,
-	runsensInflationplus, runsensSSminus, runsensSSplus,
-	runsensAgeCorrminus, runsensAgeCorrplus};
-/*static const char *runnames[] = {"Reported Last Year", "Update Inflation",
-  "Update Discount Rate", "Roll Forward", "New Data", "New Methodology", "New Mortality",
-  "New Turnover", "New NRA", "New Inflation", "New Salary Increase", "New Discount Rate", 
-  "New Roll Forward", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", "FREE", 
-  "Sensitivity Duration", "Sensitivity Discount Rate -", "Sensitivity Discount Rate +", 
-  "Sensitivity Inflation -", "Sensitivity Inflation +", "Sensitivity Salary Increase -", 
-  "Sensitivity Salary Increase +", "Sensitivity Mortality -", "Sensitivity Mortality +"}; 
- */
-unsigned currrun; // Current run
-
 //---Tariff Structure---
 typedef struct {
 	unsigned lt; /* there is an array of strings containing the names of lifetables. 

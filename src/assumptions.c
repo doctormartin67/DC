@@ -13,70 +13,35 @@ static void set_methodology(Hashtable ht[static 1]);
 void setassumptions(void)
 {
 	/* this needs updating when we have a UITY!!! */
-	Hashtable *htTY = get_user_input(USER_INPUT_LY);
-	Hashtable *htLY = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
 	char temp[BUFSIZ];
 	char *year, *month, *day;
 	year = month = day = 0;
 
-	if (currrun >= runRF) 
-		snprintf(temp, sizeof(temp), "%s",
-				get_var(UI_DOC, VAR_FIXED, htTY));
-	else 
-		snprintf(temp, sizeof(temp), "%s", 
-				get_var(UI_DOC, VAR_FIXED, htLY));
-
+	snprintf(temp, sizeof(temp), "%s", get_var(UI_DOC, VAR_FIXED, ht));
 	day = strtok(temp, "/");
 	month = strtok(0, "/");
 	year = strtok(0, "");
 
 	ass.DOC = newDate(0, atoi(year), atoi(month), atoi(day));
-	ass.DR = (currrun >= runNewDR ?
-			atof(get_var(UI_DR, VAR_FIXED, htTY)) :
-			atof(get_var(UI_DR, VAR_FIXED, htLY)));
-	ass.DR113 =
-		(currrun >= runNewDR ?
-		 atof(get_var(UI_DR113, VAR_FIXED, htTY)) :
-		 atof(get_var(UI_DR113, VAR_FIXED, htLY)));
-	ass.agecorr = (currrun >= runNewMortality ?
-			atoi(get_var(UI_AGECORR, VAR_FIXED, htTY)) :
-			atoi(get_var(UI_AGECORR, VAR_FIXED, htLY)));
-	ass.infl = (currrun >= runNewInflation ?
-			atof(get_var(UI_INFL, VAR_FIXED, htTY)) :
-			atof(get_var(UI_INFL, VAR_FIXED, htLY)));
-	ass.ss =
-		(currrun >= runNewSS ?
-		 get_var(UI_SS, VAR_INTERPRETER, htTY) :
-		 get_var(UI_SS, VAR_INTERPRETER, htLY));
-	ass.nra =
-		(currrun >= runNewNRA ?
-		 get_var(UI_NRA, VAR_INTERPRETER, htTY) :
-		 get_var(UI_NRA, VAR_INTERPRETER, htLY));
-	ass.wxdef =
-		(currrun >= runNewTurnover ?
-		 get_var(UI_TURNOVER, VAR_INTERPRETER, htTY) :
-		 get_var(UI_TURNOVER, VAR_INTERPRETER, htLY));
-	ass.retx =
-		(currrun >= runNewNRA ?
-		 get_var(UI_RETX, VAR_INTERPRETER, htTY) :
-		 get_var(UI_RETX, VAR_INTERPRETER, htLY));
-	ass.calc_a = 
-		(currrun >= runNewMethodology ?
-		 get_var(UI_CONTRA, VAR_INTERPRETER, htTY) :
-		 get_var(UI_CONTRA, VAR_INTERPRETER, htLY));
+	ass.DR = atof(get_var(UI_DR, VAR_FIXED, ht));
+	ass.DR113 = atof(get_var(UI_DR113, VAR_FIXED, ht));
+	ass.agecorr = atoi(get_var(UI_AGECORR, VAR_FIXED, ht));
+	ass.infl = atof(get_var(UI_INFL, VAR_FIXED, ht));
+	ass.ss = get_var(UI_SS, VAR_INTERPRETER, ht);
+	ass.nra = get_var(UI_NRA, VAR_INTERPRETER, ht);
+	ass.wxdef = get_var(UI_TURNOVER, VAR_INTERPRETER, ht);
+	ass.retx = get_var(UI_RETX, VAR_INTERPRETER, ht);
+	ass.calc_a = get_var(UI_CONTRA, VAR_INTERPRETER, ht);
 	ass.calc_c = 0;
 	ass.calc_dth = 0;
 
 	// Assumptions that usually won't change from year to year
 	ass.incrSalk0 = 0; // determine whether sal gets increased at k = 0
 	ass.incrSalk1 = 1; // determine whether sal gets increased at k = 1
-	ass.TRM_PercDef = atof(get_var(UI_TRM_PERCDEF, VAR_FIXED, htTY));
+	ass.TRM_PercDef = atof(get_var(UI_TRM_PERCDEF, VAR_FIXED, ht));
 
-	if (currrun >= runNewMethodology) {
-		set_methodology(htTY);
-	} else {
-		set_methodology(htLY);
-	}
+	set_methodology(ht);
 }
 
 static const char *get_var(unsigned ui, unsigned var_type,
@@ -122,7 +87,7 @@ void set_tariffs(const CurrentMember cm[static 1])
 	tff.costKO = interpret(s, TYPE_DOUBLE).d;
 	s = get_var(UI_WD, UI_INT, ht);
 	tff.WDDTH = interpret(s, TYPE_DOUBLE).d;
-	tff.MIXEDPS = (currrun >= runNewData ? 1 : 1);
+	tff.MIXEDPS = 1;
 	s = get_var(UI_PREPOST, UI_INT, ht);
 	tff.prepost = interpret(s, TYPE_DOUBLE).d;
 	s = get_var(UI_TERM, UI_INT, ht);
@@ -161,7 +126,7 @@ double calcA(const CurrentMember cm[static 1], int k)
 	return interpret(s, TYPE_DOUBLE).d;
 }
 
-double calcC(CurrentMember cm[static 1], int k)
+double calcC(const CurrentMember cm[static 1], int k)
 {
 	(void)cm;
 	(void)k;
@@ -170,7 +135,7 @@ double calcC(CurrentMember cm[static 1], int k)
 	return interpret(s, TYPE_DOUBLE).d;
 }
 
-double calcDTH(CurrentMember cm[static 1], int k)
+double calcDTH(const CurrentMember cm[static 1], int k)
 {
 	return gen_sum(cm->proj[k].gens, ER, CAPDTH, PUC);
 }

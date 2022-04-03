@@ -73,9 +73,9 @@ void runmember(CurrentMember cm[static 1])
 					+ (1 == k ? ass.incrSalk1 : 0));
 
 
-		evolCAPDTH(cm, k - 1);
-		evolRES(cm, k - 1); 
-		evolPremiums(cm, k - 1);
+		update_death_lump_sums(cm, k - 1);
+		update_res_lump_sums(cm, k - 1); 
+		update_premiums(cm, k - 1);
 		update_art24(cm, k - 1);
 
 		for (int j = 0; j < METHOD_AMOUNT; j++) {

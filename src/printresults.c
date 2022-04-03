@@ -425,6 +425,15 @@ static void print_proj(lxw_workbook *wb, lxw_worksheet *ws,
 	print_proj_kind(wb, ws, proj, PROJ_ASSETS);
 }
 
+static void print_status(lxw_worksheet *ws, unsigned status)
+{
+	if (status & ACT) {
+		print_str(ws, "STATUS", "ACT");
+	} else {
+		print_str(ws, "STATUS", "DEF");
+	}
+}
+
 static void print_member(lxw_workbook *wb, lxw_worksheet *ws,
 		const CurrentMember *cm)
 {
@@ -432,6 +441,9 @@ static void print_member(lxw_workbook *wb, lxw_worksheet *ws,
 	assert(cm);
 
 	print_str(ws, "KEY", cm->key);
+	print_str(ws, "REGLEMENT", cm->regl);
+	print_str(ws, "NAME", cm->name);
+	print_status(ws, cm->status);
 	print_dates(wb, ws, "DOB", cm->DOB);
 	print_proj(wb, ws, cm->proj);
 }
