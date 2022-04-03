@@ -719,8 +719,36 @@ void set_assets(struct assets *assets, double res, double red_cap,
 #undef IC_NC
 #undef ASSETS
 
-void evolEBP(CurrentMember cm[restrict static 1], int k, 
-		const double ART24TOT[const static METHOD_AMOUNT],
+static void update_EBP_death(CurrentMember *cm, int k)
+{
+	const struct date *DOC_1 = cm->proj[1].DOC;
+	const struct date *DOC_k = cm->proj[k].DOC;
+	int year = calcyears(DOC_1, DOC_k, 0);
+	struct factor f = cm->proj[k].factor;
+	struct date *IMMdate = newDate(0, DOC_1->year + year, DOC_1->month, 1);
+	double vk = 0.0;
+	double capdth = 0.0;
+	double probs = 0.0;
+	if (year >= 0) {
+		vk = pow(1 + ass.DR, -calcyears(IMMdate, DOC_k, 0));
+		capdth = cm->proj[k].death_risk + cm->proj[k].death_res;
+		probs = f.qx * f.kPx * vk;
+		cm->proj[year+1].ebp_death[TBO] += capdth * probs;
+		cm->proj[year+1].ebp_death[PBO] += capdth * f.ff * probs;
+		cm->proj[year+1].pbo_nc_death += capdth * f.ff_sc * probs;
+	}
+	free(IMMdate);
+}
+
+#define EBP_RET(m1, m2, a, cf, p1, p2) \
+	amount##p2 = get_dbo(m1, a, p1, cf, art24, res, red_cap, f); \
+	cm->proj[year##p1+1].ebp_ret[cf].m2[a] += amount##p2 * probfact##p2;
+#define PBO_NC(m1, m2, a, p1, p2) \
+	amount##p2 = get_nc(m1, f, art24); \
+	cm->proj[year##p1+1].pbo_nc_ret.m2[a] += amount##p2 * probfact##p2;
+
+void update_EBP_ret(CurrentMember *cm, int k,
+		const double art24[const static METHOD_AMOUNT],
 		double res, double red_cap)
 {
 	double probfactdef = 0.0;
@@ -729,13 +757,12 @@ void evolEBP(CurrentMember cm[restrict static 1], int k,
 	double amountimm = 0.0;
 	double vIMM = 0.0;
 	double vDEF = 0.0;
-	double capdth = 0.0;
-	double probs = 0.0;
-	int yearIMM = 0.0;
-	int yearDEF = 0.0;
+	int yearIMM = 0;
+	int yearDEF = 0;
 	struct date *Ndate = 0;
 	struct date *IMMdate = 0;
 	struct date *DEFdate = 0;
+	struct factor f = cm->proj[k].factor;
 
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
 	yearIMM = calcyears(cm->proj[1].DOC, cm->proj[k].DOC, 0);
@@ -745,92 +772,62 @@ void evolEBP(CurrentMember cm[restrict static 1], int k,
 
 	if (yearIMM >= 0) {
 		vIMM = pow(1 + ass.DR, -calcyears(IMMdate, cm->proj[k].DOC, 0));
-		probfactimm = (cm->proj[k].factor.wximm + cm->proj[k].factor.retx)
-			* cm->proj[k].factor.kPx * vIMM;
+		probfactimm = (f.wximm + f.retx) * f.kPx * vIMM;
 
-		for (int i = 0; i < METHOD_AMOUNT; i++) {
-			if (PUC != i && TUC != i) continue;
-			for (int j = 0; j < ASSET_AMOUNT; j++) {
-				for (int l = 0; l < CF_AMOUNT; l++) {
-					amountimm = getamount(cm, k, DBO, i, j,
-							IMM, l, ART24TOT,
-							res, red_cap);
-					cm->EBP[i][j][l][yearIMM+1] +=
-						amountimm * probfactimm;
-				}
-				amountimm = getamount(cm, k, NC, i, j, IMM,
-						PBO, ART24TOT, res, red_cap);
-				cm->PBONCCF[i][j][yearIMM+1] += amountimm
-					* probfactimm;
-			}
-		}
-		capdth = cm->proj[k].death_risk + cm->proj[k].death_res;
-		probs = cm->proj[k].factor.qx * cm->proj[k].factor.kPx * vIMM;
-		cm->EBPDTH[TBO][yearIMM+1] += capdth * probs;
-		cm->EBPDTH[PBO][yearIMM+1] += capdth * cm->proj[k].factor.ff * probs;
-		cm->PBODTHNCCF[yearIMM+1] += capdth * cm->proj[k].factor.ff_sc * probs;
+		EBP_RET(PUC, puc, PAR115, PBO, IMM, imm);
+		EBP_RET(PUC, puc, PAR115, TBO, IMM, imm);
+		PBO_NC(PUC, puc, PAR115, IMM, imm);
+		EBP_RET(PUC, puc, PAR113, PBO, IMM, imm);
+		EBP_RET(PUC, puc, PAR113, TBO, IMM, imm);
+		PBO_NC(PUC, puc, PAR113, IMM, imm);
+		EBP_RET(PUC, puc, MATHRES, PBO, IMM, imm);
+		EBP_RET(PUC, puc, MATHRES, TBO, IMM, imm);
+		PBO_NC(PUC, puc, MATHRES, IMM, imm);
+		EBP_RET(TUC, tuc, PAR115, PBO, IMM, imm);
+		EBP_RET(TUC, tuc, PAR115, TBO, IMM, imm);
+		PBO_NC(TUC, tuc, PAR115, IMM, imm);
+		EBP_RET(TUC, tuc, PAR113, PBO, IMM, imm);
+		EBP_RET(TUC, tuc, PAR113, TBO, IMM, imm);
+		PBO_NC(TUC, tuc, PAR113, IMM, imm);
+		EBP_RET(TUC, tuc, MATHRES, PBO, IMM, imm);
+		EBP_RET(TUC, tuc, MATHRES, TBO, IMM, imm);
+		PBO_NC(TUC, tuc, MATHRES, IMM, imm);
 	}
 
 	vDEF = pow(1 + ass.DR, -calcyears(DEFdate, Ndate, 0));
-	probfactdef = cm->proj[k].factor.wxdef * cm->proj[k].factor.nPk
-		* cm->proj[k].factor.kPx * vDEF;
+	probfactdef = f.wxdef * f.nPk * f.kPx * vDEF;
 
-	for (int i = 0; i < METHOD_AMOUNT; i++) {
-		if (PUC != i && TUC != i) continue;
-		for (int j = 0; j < ASSET_AMOUNT; j++) {
-			for (int l = 0; l < CF_AMOUNT; l++) {
-				amountdef = getamount(cm, k, DBO, i, j, DEF, l,
-						ART24TOT, res, red_cap);
-				cm->EBP[i][j][l][yearDEF+1] += amountdef
-					* probfactdef;
-			}
-			amountdef = getamount(cm, k, NC, i, j, DEF, PBO,
-					ART24TOT, res, red_cap);
-			cm->PBONCCF[i][j][yearDEF+1] += amountdef
-				* probfactdef;
-		}
-	}
+	EBP_RET(PUC, puc, PAR115, PBO, DEF, def);
+	EBP_RET(PUC, puc, PAR115, TBO, DEF, def);
+	PBO_NC(PUC, puc, PAR115, DEF, def);
+	EBP_RET(PUC, puc, PAR113, PBO, DEF, def);
+	EBP_RET(PUC, puc, PAR113, TBO, DEF, def);
+	PBO_NC(PUC, puc, PAR113, DEF, def);
+	EBP_RET(PUC, puc, MATHRES, PBO, DEF, def);
+	EBP_RET(PUC, puc, MATHRES, TBO, DEF, def);
+	PBO_NC(PUC, puc, MATHRES, DEF, def);
+	EBP_RET(TUC, tuc, PAR115, PBO, DEF, def);
+	EBP_RET(TUC, tuc, PAR115, TBO, DEF, def);
+	PBO_NC(TUC, tuc, PAR115, DEF, def);
+	EBP_RET(TUC, tuc, PAR113, PBO, DEF, def);
+	EBP_RET(TUC, tuc, PAR113, TBO, DEF, def);
+	PBO_NC(TUC, tuc, PAR113, DEF, def);
+	EBP_RET(TUC, tuc, MATHRES, PBO, DEF, def);
+	EBP_RET(TUC, tuc, MATHRES, TBO, DEF, def);
+	PBO_NC(TUC, tuc, MATHRES, DEF, def);
 
 	free(Ndate);
 	free(IMMdate);
 	free(DEFdate);
 }
 
-double getamount(const CurrentMember cm[restrict static 1], int k,
-		unsigned DBONCICASS, unsigned method, unsigned assets,
-		unsigned DEFIMM, unsigned PBOTBO, 
-		const double ART24TOT[const static METHOD_AMOUNT],
+#undef EBP_RET
+#undef PBO_NC
+
+void update_EBP(CurrentMember *cm, int k,
+		const double art24[const static METHOD_AMOUNT],
 		double res, double red_cap)
 {
-	switch (DBONCICASS) {
-		case DBO:
-			return get_dbo(method, assets, DEFIMM, PBOTBO,
-					ART24TOT, res, red_cap,
-					cm->proj[k].factor);
-		case NC:
-			switch (method) {
-				case PUC: return ART24TOT[PUC] *
-					  cm->proj[k].factor.ff_sc;
-				case TUC: return (ART24TOT[TUCPS_1]
-							  - ART24TOT[TUC]);
-				default: die("method = %d", method);
-			}
-			break;
-		case IC:
-			switch (method) {
-				case PUC: return ART24TOT[PUC] *
-					  cm->proj[k].factor.ff_sc * ass.DR;
-				case TUC: return (ART24TOT[TUCPS_1]
-							  - ART24TOT[TUC])
-					  * ass.DR;
-				default: die("method = %d", method);
-			}
-			break;
-		case ASSETS:
-			return get_assets(assets, DEFIMM, res,
-					red_cap, cm->proj[k].factor);
-		default: die("unknown amount [%d]", DBONCICASS);
-	}
-
-	return 0.0;
+	update_EBP_death(cm, k);
+	update_EBP_ret(cm, k, art24, res, red_cap);
 }

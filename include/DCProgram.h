@@ -196,7 +196,9 @@ struct projection {
 	double afsl;
 	double death_res; // Death Lump Sum Reserves Part
 	double death_risk; // Death Lump Sum Risk Part
+	double pbo_nc_death;
 	double delta_cap[EREE_AMOUNT];
+	double ebp_death[CF_AMOUNT];
 	struct date *DOC; // date of calculation
 	struct generations gens[MAXGEN];
 	struct art24 art24[ART24GEN_AMOUNT];
@@ -204,6 +206,8 @@ struct projection {
 	struct retirement dbo_ret;
 	struct retirement nc_ret;
 	struct retirement ic_nc_ret;
+	struct retirement ebp_ret[CF_AMOUNT];
+	struct retirement pbo_nc_ret;
 	struct death dbo_death;
 	struct death nc_death;
 	struct assets assets;
@@ -237,12 +241,6 @@ typedef struct {
 
 	double TAUX[EREE_AMOUNT][MAXGEN]; /* return guarentee insurer */
 	double X10; // MIXED combination
-
-	//---CASHFLOWS---
-	double EBP[METHOD_AMOUNT][ASSET_AMOUNT][CF_AMOUNT][MAXPROJ];
-	double PBONCCF[METHOD_AMOUNT][ASSET_AMOUNT][MAXPROJ]; // Normal Cost
-	double EBPDTH[METHOD_AMOUNT][MAXPROJ]; // Expected Benefits Paid Death
-	double PBODTHNCCF[MAXPROJ]; // PBO Death Normal Cost Cashflows
 
 	struct projection proj[MAXPROJ + 1];
 } CurrentMember;

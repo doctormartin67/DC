@@ -152,7 +152,7 @@ void runmember(CurrentMember cm[static 1])
 		cm->proj[k].nc_death.ic_death_risk = 
 			cm->proj[k].death_risk * probsSC * ass.DR; 
 
-		evolEBP(cm, k, ART24TOT, RESTOT[TUC], REDCAPTOT[TUC]);
+		update_EBP(cm, k, ART24TOT, RESTOT[TUC], REDCAPTOT[TUC]);
 
 		if (k + 1 < MAXPROJ) {
 			cm->proj[k+1].factor.kPx
@@ -263,5 +263,4 @@ static void prolongate(CurrentMember cm[static 1], int k)
 			cm->proj[k].gens[j].reserves.ps[i] = 0;
 		}
 	}
-
 }

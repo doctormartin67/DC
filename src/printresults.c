@@ -749,25 +749,6 @@ static void set_row_values(CurrentMember *cm, int row)
 		tc_print[TC_NCDTHRISK].v.d = cm->proj[row + 1].nc_death.death_risk;
 		tc_print[TC_NCDTHRES].v.d = cm->proj[row + 1].nc_death.death_res;
 
-		for (unsigned i = 0; i < METHOD_AMOUNT - 1; i++) {
-			for (unsigned j = 0; j < ASSET_AMOUNT; j++) {
-				gen = j + ASSET_AMOUNT * i;
-				tc_print[TC_PBONCCF + gen].v.d =
-					cm->PBONCCF[i][j][row + 1];
-				for (unsigned k = 0; k < CF_AMOUNT; k++) {
-					gen = j + ASSET_AMOUNT * i
-						+ ASSET_AMOUNT
-						* (METHOD_AMOUNT - 1)
-						* (1 + k) - 1;
-					tc_print[TC_EBP + gen].v.d =
-						cm->EBP[i][j][k][row + 1];
-				}
-			}
-		}
-
-		tc_print[TC_EBPDTHTBO].v.d = cm->EBPDTH[TBO][row + 1];
-		tc_print[TC_EBPDTHPBO].v.d = cm->EBPDTH[PBO][row + 1];
-		tc_print[TC_PBODTHNCCF].v.d = cm->PBODTHNCCF[row + 1];
 	}
 }
 
