@@ -125,6 +125,8 @@ void test_parse(void)
 {
 	const char *ds[] = {
 		"dim x as integer, y as double",
+		"dim a as double project -0.02\n",
+		"dim b as double project infl\n",
 		"x = 4",
 		"func(x)",
 		"x = 4 + 3",
@@ -343,7 +345,7 @@ void test_resolve(void)
 			"dim x as double\n"
 			"dim bool as boolean\n"
 			"bool = true or false or 2.2 and -2.3\n"
-			"str = \"hello\""
+			"str = \"hello\"\n"
 			"if bool then\n"
 			"x = -1.1 - 3/2\n"
 			"elseif true then\n"

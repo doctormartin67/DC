@@ -26,6 +26,11 @@ static Typespec *parse_type_base(void)
 Typespec *parse_type(void)
 {
 	Typespec *type = parse_type_base();
+	SrcPos pos = token_pos();
+	if (match_keyword(project_keyword)) {
+		Expr *expr = parse_expr();
+		type = new_typespec_project(pos, type, expr);
+	}
 	return type;
 }
 
@@ -145,7 +150,8 @@ static Expr *parse_expr_add(void)
 
 static unsigned is_cmp_op(void)
 {
-	return (TOKEN_FIRST_CMP <= token_kind() && token_kind() <= TOKEN_LAST_CMP)
+	return (TOKEN_FIRST_CMP <= token_kind()
+			&& token_kind() <= TOKEN_LAST_CMP)
 		|| TOKEN_ASSIGN == token_kind();
 }
 

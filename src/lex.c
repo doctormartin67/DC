@@ -50,6 +50,7 @@ void init_keywords(void)
 	KEYWORD(next);
 	KEYWORD(select);
 	KEYWORD(case);
+	KEYWORD(project);
 	KEYWORD(is);
 	assert(intern_arena_end() == arena_end);
 	first_keyword = dim_keyword;

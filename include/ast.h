@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "lex.h"
+#include "common.h"
 
 typedef struct Expr Expr;
 typedef struct Stmt Stmt;
@@ -15,9 +16,16 @@ typedef struct StmtBlock {
 	size_t num_stmts;
 } StmtBlock;
 
+/*
+ * TYPESPEC_PROJECT was created so that the user can create variable with a
+ * 'projection' qualifier so that the variable will be projected each loop
+ * according to the given qualifier
+ */
+
 typedef enum TypespecKind {
 	TYPESPEC_NONE,
 	TYPESPEC_NAME,
+	TYPESPEC_PROJECT,
 	TYPESPEC_FUNC,
 } TypespecKind;
 
@@ -31,6 +39,9 @@ struct Typespec {
 			Typespec **args;
 			size_t num_args;
 		} func;
+		struct {
+			Expr *expr;
+		} project;
 	};
 };
 
@@ -196,6 +207,7 @@ void ast_free(void);
 
 StmtBlock new_StmtBlock(SrcPos pos, Stmt **stmts, size_t num_stmts);
 Typespec *new_typespec_name(SrcPos pos, const char *name);
+Typespec *new_typespec_project(SrcPos pos, Typespec *base, Expr *expr);
 Expr *new_expr(ExprKind kind, SrcPos pos);
 Expr *new_expr_paren(SrcPos pos, Expr *expr);
 Expr *new_expr_boolean(SrcPos pos, bool val);

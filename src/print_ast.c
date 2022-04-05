@@ -9,6 +9,9 @@ void print_typespec(const Typespec *type)
 {
 	const Typespec *t = type;
 	switch (t->kind) {
+		case TYPESPEC_NONE:
+			assert(0);
+			break;
 		case TYPESPEC_NAME:
 			printf("%s", t->name);
 			break;
@@ -21,6 +24,13 @@ void print_typespec(const Typespec *type)
 			}
 			printf(" ) ");
 			printf(")");
+			break;
+		case TYPESPEC_PROJECT:
+			printf("(project (");
+			print_typespec(type->base);
+			printf(" ");
+			print_expr(type->project.expr);
+			printf("))");
 			break;
 		default:
 			assert(0);

@@ -42,6 +42,7 @@ StmtBlock new_StmtBlock(SrcPos pos, Stmt **stmts, size_t num_stmts)
 
 static Typespec *new_typespec(TypespecKind kind, SrcPos pos)
 {
+	assert(kind != TYPESPEC_NONE);
 	Typespec *t = ast_alloc(sizeof(*t));
 	t->kind = kind;
 	t->pos = pos;
@@ -54,6 +55,14 @@ Typespec *new_typespec_name(SrcPos pos, const char *name)
 	t->name = name;
 	return t;
 
+}
+
+Typespec *new_typespec_project(SrcPos pos, Typespec *base, Expr *expr)
+{
+	Typespec *t = new_typespec(TYPESPEC_PROJECT, pos);
+	t->base = base;
+	t->project.expr = expr;
+	return t;
 }
 
 Expr *new_expr(ExprKind kind, SrcPos pos)
