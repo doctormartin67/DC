@@ -7,6 +7,7 @@
 Type *type_boolean = &(Type){TYPE_BOOLEAN, {{0}}};
 Type *type_int = &(Type){TYPE_INT, {{0}}};
 Type *type_double = &(Type){TYPE_DOUBLE, {{0}}};
+Type *type_project = &(Type){TYPE_DOUBLE, {{0}}};
 Type *type_string = &(Type){TYPE_STRING, {{0}}};
 
 Type *type_double_func; // to be inited

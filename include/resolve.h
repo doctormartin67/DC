@@ -24,9 +24,14 @@ typedef struct Sym {
 	const char *name;
 	SymKind kind;
 	double_func *func;
+	unsigned is_project;
 	struct {
 		Type *type;
 		Val val;
+		struct {
+			unsigned loop;
+			double val;
+		} project;
 	};
 } Sym;
 

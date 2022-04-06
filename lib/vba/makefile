@@ -8,7 +8,7 @@ EXE = test
 CC = gcc
 CFLAGS = -g -Wall -Wextra -Werror -pedantic -O0
 INCLUDES = -I $(INCLUDE)
-LIBS = -lgeneral
+LIBS = -lgeneral -lm
 LDLIBS = $(LIBS)
 LDFLAGS = -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
@@ -35,7 +35,7 @@ libvba.a: $(OBJS)
 	$(CP) $@ ..
 
 # include dependencies created below
-include $(subst .o,.d,$(OBJS))
+include $(subst .o,.d,$(OBJS) $(EXE).o)
 
 # trick to create dependencies, see make book page 33
 %.d: %.c

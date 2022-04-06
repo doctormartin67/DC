@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <limits.h>
+#include <math.h>
 #include "resolve.h"
 
+extern unsigned projection_loop;
 static Sym syms[MAX_SYMS];
 static Sym *syms_end = syms;
 
@@ -100,6 +102,39 @@ unsigned sym_push_func(const char *name, Type *type, double_func func)
 			.func = func,
 			.type = type,
 	};
+	return 1;
+}
+
+static Operand resolve_expr(Expr *expr);
+static unsigned convert_operand(Operand *operand, Type *type);
+static unsigned sym_push_project(const char *name, Type *type,
+		unsigned eval_stmt, Typespec *typespec)
+{
+	if (sym_get(name)) {
+		return 0;
+	}
+	if (syms_end == syms + MAX_SYMS) {
+		fatal("Too many symbols");
+	}
+	Operand operand = resolve_expr(typespec->project.expr);
+	if (!convert_operand(&operand, type_double)) { \
+		fatal("Projection type '%s' is not convertible to double",
+				type_name(operand.type->kind));
+	}
+
+	if (eval_stmt) {
+		*syms_end++ = (Sym){
+			.name = str_intern(name),
+				.is_project = 1,
+				.kind = SYM_DIM,
+				.type = type,
+				.project.loop = projection_loop,
+				.project.val = operand.val.d,
+		};
+		if (type_string == type) {
+			syms_end[-1].val.s = str_intern("");
+		}
+	}
 	return 1;
 }
 
@@ -298,16 +333,28 @@ static Sym *resolve_name(const char *name)
 	return sym;
 }
 
-static Type *resolve_typespec(Typespec *typespec)
+static Type *resolve_typespec_name(const char *name)
 {
-	assert(typespec);
-	assert(TYPESPEC_NAME == typespec->kind);
-	Sym *sym = resolve_name(typespec->name);
+	Sym *sym = resolve_name(name);
 	if (sym->kind != SYM_TYPE) {
-		fatal("%s must denote a type", typespec->name);
+		fatal("%s must denote a type", name);
 		return 0;
 	}
 	return sym->type;
+}
+
+static Type *resolve_typespec(Typespec *typespec)
+{
+	assert(typespec);
+	Type *type = 0;
+	if (TYPESPEC_PROJECT == typespec->kind) {
+		type = resolve_typespec_name(typespec->base->name);
+	} else {
+		assert(TYPESPEC_NAME == typespec->kind);
+		type = resolve_typespec_name(typespec->name);
+	}
+	assert(type);
+	return type;
 }
 
 static long long eval_binary_op_i(TokenKind op, long long left, long long right)
@@ -641,26 +688,6 @@ static Operand resolve_expr_call_default(Operand func, Expr *expr, Sym *sym)
 static Operand resolve_expr_call(Expr *expr)
 {
 	assert(expr->kind == EXPR_CALL);
-#if 0
-	if (expr->call.expr->kind == EXPR_NAME) {
-		if (sym && sym->kind == SYM_TYPE) {
-			if (1 != expr->call.num_args) {
-				fatal_error(expr->pos, "Type conversion "
-						"operator takes 1 argument");
-			}
-			Operand operand =
-				resolve_expr_rvalue(expr->call.args[0]);
-			if (!cast_operand(&operand, sym->type)) {
-				fatal_error(expr->pos, "Invalid type cast "
-						"from %s to %s",
-						get_type_name(operand.type),
-						get_type_name(sym->type));
-			}
-			set_resolved_sym(expr->call.expr, sym);
-			return operand;
-		}
-	}
-#endif
 	Sym *sym = resolve_name(expr->call.expr->name);
 	Operand func = resolve_expr(expr->call.expr);
 	if (func.type->kind != TYPE_FUNC) {
@@ -807,22 +834,43 @@ static void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 
 	}
 	if (eval_stmt) {
-		sym->val = right.val;
+		if (sym->is_project) {
+			assert(is_floating_type(sym->type));
+			assert(is_floating_type(right.type));
+			unsigned loop = sym->project.loop;
+			double val = sym->project.val;
+			sym->val.d = right.val.d * pow(1 + val, loop);
+		} else {
+			sym->val = right.val;
+		}
 	}
 }
 
 static void resolve_stmt_dim(Stmt *stmt, unsigned eval_stmt)
 {
 	assert(STMT_DIM == stmt->kind);
+	const char *name = 0;
+	Typespec *typespec = 0;
 	Type *type = 0;
 	for (size_t i = 0; i < stmt->dim_stmt.num_dims; i++) {
-		type = resolve_typespec(stmt->dim_stmt.dims[i].type);
+		name = stmt->dim_stmt.dims[i].name;
+		typespec = stmt->dim_stmt.dims[i].type;
+		type = resolve_typespec(typespec);
 		assert(type);
-		if (!sym_push_dim(stmt->dim_stmt.dims[i].name, type,
-					eval_stmt)) {
-			fatal_error(stmt->pos, "Variable '%s' declared "
-					"multiple times",
-					stmt->dim_stmt.dims[i].name);
+		if (TYPESPEC_NAME == typespec->kind) {
+			if (!sym_push_dim(name, type, eval_stmt)) {
+				fatal_error(stmt->pos, "variable '%s' declared"
+						" multiple times", name);
+			}
+		} else if (TYPESPEC_PROJECT == typespec->kind) {
+			if (!sym_push_project(name, type, eval_stmt, typespec))
+			{
+				fatal_error(stmt->pos, "variable '%s' declared"
+						" multiple times", name);
+			}
+
+		} else {
+			assert(0);
 		}
 	}
 }

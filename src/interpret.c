@@ -1,9 +1,18 @@
 #include <assert.h>
+#include "interpret.h"
 #include "common.h"
 #include "lex.h"
 #include "parse.h"
 #include "type.h"
 #include "resolve.h"
+
+
+/*
+ * the user can create variables that will increase with each loop the program
+ * is run in. this global variable is set to the current loop that the program
+ * is in
+ */
+unsigned projection_loop;
 
 static Sym builtin_syms[MAX_SYMS];
 static Sym *builtin_syms_end = builtin_syms;
@@ -66,12 +75,15 @@ void add_builtin_string(const char *name, const char *s)
 	add_builtin_var(name, type_string, (Val){.s = str_intern(s)});
 }
 
-static void init_interpreter(const char *vba_code, TypeKind kind)
+static void init_interpreter(const char *vba_code, TypeKind kind,
+		unsigned loop)
 {
 	init_keywords();
 	init_stream(0, vba_code);
 	init_builtin_types();
 	init_builtin_funcs();
+
+	projection_loop = loop;
 
 	switch (kind) {
 		case TYPE_INT:
@@ -107,15 +119,16 @@ static Sym *parse_interpreter(void)
 
 static void clear_interpreter(void)
 {
+	projection_loop = 0;
 	clear_stream();
 	builtin_syms_reset();
 	syms_reset();
 	ast_free();
 }
 
-Val interpret(const char *vba_code, TypeKind return_type)
+Val interpret(const char *vba_code, TypeKind return_type, unsigned loop)
 {
-	init_interpreter(vba_code, return_type);
+	init_interpreter(vba_code, return_type, loop);
 	Val val = parse_interpreter()->val;
 	clear_interpreter();
 	return val;
