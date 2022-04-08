@@ -5,6 +5,7 @@
 #include "lifetables.h"
 #include "interpret.h"
 
+extern const Database *get_database(void);
 enum {VAR_INTERPRETER, VAR_FIXED, VAR_COMBO};
 static const char *get_var(unsigned ui, unsigned var_type,
 		Hashtable ht[static 1]);
@@ -12,17 +13,23 @@ static void set_methodology(Hashtable ht[static 1]);
 
 static void add_builtin_vars(const CurrentMember *cm, int k)
 {
+	add_builtin_double("infl", ass.infl);
+	add_builtin_double("ndoe", cm->proj[k].nDOE);
 	add_builtin_double("age", cm->proj[k].age);
+	add_builtin_double("sal", cm->proj[k].sal);
 }
 
 static Val interpret_code(const CurrentMember *cm, int k, const char *code,
 		TypeKind return_type)
 {
 	if (!cm || !code) {
-		return (Val){0};	
+		return (Val){0};
 	}
 	add_builtin_vars(cm, k);
-	return interpret(code, return_type);
+	const Database *db = get_database();
+	assert(db);
+	unsigned years = cm->proj[k].DOC->year - cm->proj[0].DOC->year;
+	return interpret(code, return_type, years, db, cm->id);
 }
 
 void setassumptions(void)

@@ -76,8 +76,8 @@ static Expr *parse_expr_operand(void)
 static Expr *parse_expr_base(void)
 {
 	Expr *expr = parse_expr_operand();
+	SrcPos pos = token_pos();
 	while (is_token(TOKEN_LPAREN)) {
-		SrcPos pos = token_pos();
 		expect_token(TOKEN_LPAREN);
 		Expr **args = 0;
 		if (!is_token(TOKEN_RPAREN)) {
@@ -89,6 +89,12 @@ static Expr *parse_expr_base(void)
 		expect_token(TOKEN_RPAREN);
 		expr = new_expr_call(pos, expr, args, buf_len(args));
 		buf_free(args);
+	}
+	if (is_token(TOKEN_LBRACKET)) {
+		expect_token(TOKEN_LBRACKET);
+		Expr *index = parse_expr();
+		expect_token(TOKEN_RBRACKET);
+		expr = new_expr_index(pos, expr, index);
 	}
 	return expr;
 }

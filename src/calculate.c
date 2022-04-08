@@ -278,7 +278,7 @@ static double get_premium(const CurrentMember *cm,
 	double prem = (ER == EREE ? calcA(cm, k + 1) : calcC(cm, k + 1));
 	double prem_prev = cm->proj[k].gens[gen].premium[EREE];
 	for (size_t l = 0; l < gen; l++) {
-		prem = prem - cm->proj[k+1].gens[gen].premium[EREE];
+		prem = prem - cm->proj[k+1].gens[l].premium[EREE];
 	}
 	prem = (gen < MAXGEN - 1 ?  MIN(prem_prev, prem) : prem);
 

@@ -127,6 +127,7 @@ void test_parse(void)
 		"dim x as integer, y as double",
 		"dim a as double project -0.02\n",
 		"dim b as double project infl\n",
+		"x = db[\"hello\"]\n",
 		"x = 4",
 		"func(x)",
 		"x = 4 + 3",
@@ -298,7 +299,7 @@ void test_code(void)
 		"case \"7161\"\n"
 		"result = 444 * pt\n"
 		"end select\n";
-		result_double = interpret(code, TYPE_DOUBLE, 0).d;
+		result_double = interpret(code, TYPE_DOUBLE, 0, 0, 0).d;
 		assert(1284 == result_double);
 }
 
@@ -332,7 +333,7 @@ void test_select_case(void)
 		;
 	init_stream(0, code);
 	clear_stream();
-	result_double = interpret(code, TYPE_DOUBLE, 0).d;
+	result_double = interpret(code, TYPE_DOUBLE, 0, 0, 0).d;
 	assert(2 == result_double);
 }
 
@@ -406,7 +407,7 @@ void test_resolve(void)
 			"bool = false\n"
 			"bool = str = str2\n"
 			"result = true <> actcon\n",
-		"dim x as double project 0.02\n"
+		"dim x as double project 0.01 + 0.01\n"
 			"x = 100\n"
 			"result = x",
 	}
@@ -419,27 +420,27 @@ void test_resolve(void)
 	enum {N = 1024};
 	for (int i = 0; i < N; i++) {
 		add_builtin_int("children", 3);
-		result_str = interpret(code[0], TYPE_STRING, 0).s;
+		result_str = interpret(code[0], TYPE_STRING, 0, 0, 0).s;
 		assert(!strcmp(result_str, "hello3"));
 		add_builtin_double("age", 40);
-		result_int = interpret(code[1], TYPE_INT, 0).i;
+		result_int = interpret(code[1], TYPE_INT, 0, 0, 0).i;
 		assert(47 == result_int);
-		result_double = interpret(code[2], TYPE_DOUBLE, 0).d;
+		result_double = interpret(code[2], TYPE_DOUBLE, 0, 0, 0).d;
 		assert(-2.600001 < result_double && -2.599999 > result_double);
 		add_builtin_boolean("actcon", false);
-		result_bool = interpret(code[3], TYPE_BOOLEAN, 0).b;
+		result_bool = interpret(code[3], TYPE_BOOLEAN, 0, 0, 0).b;
 		assert(true == result_bool);
-		result_double = interpret(code[4], TYPE_DOUBLE, i).d;
+		result_double = interpret(code[4], TYPE_DOUBLE, i, 0, 0).d;
 		assert(result_double == 100 * pow(1.02, i));
 	}
-	assert(1 == interpret("result = 1\n", TYPE_INT, 0).i);
+	assert(1 == interpret("result = 1\n", TYPE_INT, 0, 0, 0).i);
 }
 
 void test_builtin_funcs(void)
 {
 	double result_double = 0.0;
 	const char *code = "result = min(4, 3, 6, 10) + min(6,7) + max(0.5, 1)";
-	result_double = interpret(code, TYPE_DOUBLE, 0).d;
+	result_double = interpret(code, TYPE_DOUBLE, 0, 0, 0).d;
 	assert(10 == result_double);
 }
 

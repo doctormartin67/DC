@@ -7,6 +7,7 @@
 #define INTERRUPTED 04
 
 static _Atomic unsigned run_state = NOT_RUNNING;
+static const Database *db;
 
 struct gui_data {
 	char *s;
@@ -18,6 +19,14 @@ static gpointer run(gpointer pl);
 static gpointer runtc(gpointer pl);
 static gpointer stoprun(gpointer data);
 gboolean update_gui(gpointer data);
+
+const Database *get_database(void)
+{
+	if (!db) {
+		die("Database has not been set");
+	}
+	return db;
+}
 
 void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
@@ -85,7 +94,7 @@ static gpointer run(gpointer pl)
 				UI_SPECIAL),ht);
 
 	unsigned tc = 0;
-	Database *db = open_database(file_name, sheet_name, cell);
+	db = open_database(file_name, sheet_name, cell);
 	CurrentMember *cm = create_members(db);
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};
@@ -126,7 +135,7 @@ static gpointer runtc(gpointer pl)
 	const char *cell = ht_get(get_ui_key(SPECIAL_KEYCELL,
 				UI_SPECIAL),ht);
 	unsigned tc = 0;
-	Database *db = open_database(file_name, sheet_name, cell);
+	db = open_database(file_name, sheet_name, cell);
 	CurrentMember *cm = create_members(db);
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};

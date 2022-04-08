@@ -123,10 +123,11 @@ static void set_projections(const Database *db, size_t num_member,
 	set_delta_cap(db, num_member, p);
 }
 
-static CurrentMember create_member(Database *db, size_t num_member)
+static CurrentMember create_member(const Database *db, size_t num_member)
 {
 	CurrentMember cm = (CurrentMember){0};
 
+	cm.id = num_member;
 	cm.key = record_string(db, num_member, colnames[KEY]);
 	cm.regl = record_string(db, num_member, colnames[NOREGLEMENT]);
 	cm.name = record_string(db, num_member, colnames[NAAM]);
@@ -186,7 +187,7 @@ static CurrentMember create_member(Database *db, size_t num_member)
 	return cm;
 }
 
-CurrentMember *create_members(Database *db)
+CurrentMember *create_members(const Database *db)
 {
 	CurrentMember *cm = 0;
 	for (size_t i = 0; i < db->num_records; i++) {

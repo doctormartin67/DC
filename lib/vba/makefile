@@ -7,9 +7,9 @@ EXE = test
 # ---Rule Structure---
 CC = gcc
 CFLAGS = -g -Wall -Wextra -Werror -pedantic -O0
-INCLUDES = -I $(INCLUDE)
-LIBS = -lgeneral -lm
-LDLIBS = $(LIBS)
+INCLUDES = -I $(INCLUDE) `pkg-config --cflags libxml-2.0`
+LIBS = -lgeneral -lm -lexcel
+LDLIBS = $(LIBS) `xml2-config --libs`
 LDFLAGS = -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 

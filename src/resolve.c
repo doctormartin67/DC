@@ -4,8 +4,12 @@
 #include <limits.h>
 #include <math.h>
 #include "resolve.h"
+#include "excel.h"
 
 extern unsigned projection_loop;
+extern const Database *db_index;
+extern size_t record_number;
+
 static Sym syms[MAX_SYMS];
 static Sym *syms_end = syms;
 
@@ -703,6 +707,53 @@ static Operand resolve_expr_call(Expr *expr)
 	return resolve_expr_call_default(func, expr, sym);
 }
 
+#define INDEX(t1, t2) \
+	result = operand_const(type_##t1, (Val){.t2 \
+			= record_##t1(db, record_number, title)}); \
+			break;
+
+static Operand resolve_expr_index(Expr *index, Type *type)
+{
+	if (!db_index) {
+		fatal_error(index->pos, "Database not set");
+	}
+	const Database *db = db_index;
+	assert(index);
+	assert(type);
+
+	Operand result = (Operand){0};
+	Operand op = resolve_expected_expr(index->index.index, type_string);
+	const char *title = op.val.s;
+
+	switch (type->kind) {
+		case TYPE_NONE:
+			assert(0);
+			break;
+		case TYPE_INT:
+			INDEX(int, i);
+			break;
+		case TYPE_DOUBLE:
+			INDEX(double, d);
+			break;
+		case TYPE_STRING:
+			result = operand_const(type_string, (Val){.s
+					= str_intern(record_string(db,
+								record_number,
+								title))});
+			break;
+		case TYPE_BOOLEAN:
+			INDEX(boolean, b);
+			break;
+		default:
+			assert(0);
+			break;
+	}
+
+	return result;
+}
+
+#undef INDEX
+
 static Operand resolve_expr_binary(Expr *expr)
 {
 	assert(expr->kind == EXPR_BINARY);
@@ -768,10 +819,8 @@ static Operand resolve_expected_expr(Expr *expr, Type *expected_type)
 			return resolve_expr_name(expr);
 		case EXPR_CALL:
 			return resolve_expr_call(expr);
-#if 0
 		case EXPR_INDEX:
-			return resolve_expr_index(expr);
-#endif
+			return resolve_expr_index(expr, expected_type);
 		case EXPR_UNARY:
 			return resolve_expr_unary(expr);
 		case EXPR_BINARY:

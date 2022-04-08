@@ -217,6 +217,7 @@ Expr *new_expr_float(SrcPos pos, const char *start, const char *end,
 Expr *new_expr_str(SrcPos pos, const char *val);
 Expr *new_expr_name(SrcPos pos, const char *name);
 Expr *new_expr_call(SrcPos pos, Expr *expr, Expr **args, size_t num_args);
+Expr *new_expr_index(SrcPos pos, Expr *expr, Expr *index);
 Expr *new_expr_unary(SrcPos pos, TokenKind op, Expr *expr);
 Expr *new_expr_binary(SrcPos pos, TokenKind op, Expr *left, Expr *right);
 

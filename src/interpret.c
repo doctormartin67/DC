@@ -14,6 +14,13 @@
  */
 unsigned projection_loop;
 
+/*
+ * the interpreter also can take in a database so that the user can access a
+ * record of an affiliate
+ */
+const Database *db_index;
+size_t record_number;
+
 static Sym builtin_syms[MAX_SYMS];
 static Sym *builtin_syms_end = builtin_syms;
 
@@ -76,7 +83,7 @@ void add_builtin_string(const char *name, const char *s)
 }
 
 static void init_interpreter(const char *vba_code, TypeKind kind,
-		unsigned loop)
+		unsigned loop, const Database *db, size_t num_record)
 {
 	init_keywords();
 	init_stream(0, vba_code);
@@ -84,6 +91,8 @@ static void init_interpreter(const char *vba_code, TypeKind kind,
 	init_builtin_funcs();
 
 	projection_loop = loop;
+	db_index = db;
+	record_number = num_record;
 
 	switch (kind) {
 		case TYPE_INT:
@@ -126,9 +135,10 @@ static void clear_interpreter(void)
 	ast_free();
 }
 
-Val interpret(const char *vba_code, TypeKind return_type, unsigned loop)
+Val interpret(const char *vba_code, TypeKind return_type, unsigned loop,
+		const Database *db, size_t num_record)
 {
-	init_interpreter(vba_code, return_type, loop);
+	init_interpreter(vba_code, return_type, loop, db, num_record);
 	Val val = parse_interpreter()->val;
 	clear_interpreter();
 	return val;

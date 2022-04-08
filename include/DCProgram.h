@@ -220,7 +220,7 @@ struct projection {
 };
 
 typedef struct {
-	unsigned id; /* Used to print warning/error messages to user */
+	size_t id; /* Used to print warning/error messages to user */
 
 	//---Variable Declarations---  
 	const char *key; // KEY
@@ -279,7 +279,7 @@ typedef struct {
 Tariff tff; // Tariff structure
 
 //---Data Functions---
-CurrentMember *create_members(Database *db);
+CurrentMember *create_members(const Database *db);
 void validateColumns(void);
 void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
 		const char *input);

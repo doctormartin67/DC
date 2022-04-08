@@ -127,9 +127,6 @@ Expr *new_expr_call(SrcPos pos, Expr *expr, Expr **args, size_t num_args)
 	return e;
 }
 
-/*
- * TODO: this function is not used anywhere yet
- */
 Expr *new_expr_index(SrcPos pos, Expr *expr, Expr *index)
 {
 	Expr *e = new_expr(EXPR_INDEX, pos);
