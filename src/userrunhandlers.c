@@ -7,10 +7,10 @@
 #define INTERRUPTED 04
 
 static _Atomic unsigned run_state = NOT_RUNNING;
-static const Database *db;
+static Database *db;
 
 struct gui_data {
-	char *s;
+	const char *s;
 	gpointer pl;
 };
 
@@ -26,6 +26,37 @@ const Database *get_database(void)
 		die("Database has not been set");
 	}
 	return db;
+}
+
+/*
+ * TODO: this function needs to make checks before proceeding with the
+ * import. currently it just aborts if an error occurs
+ */
+static gpointer import_data(gpointer pl)
+{
+	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	const char *file_name = ht_get(get_ui_key(SPECIAL_FILENAME,
+				UI_SPECIAL),ht);
+	const char *sheet_name = ht_get(get_ui_key(UI_SHEETNAME,
+				UI_FIXED),ht);
+	const char *cell = ht_get(get_ui_key(SPECIAL_KEYCELL,
+				UI_SPECIAL),ht);
+	struct gui_data gd = {"Importing data...", pl};
+	g_idle_add(update_gui, &gd);
+	db = open_database(file_name, sheet_name, cell);
+	gtk_label_set_text(GTK_LABEL(pl), "Import complete.");
+	return 0;
+}
+
+void on_import_data_clicked(GtkButton *b, GtkWidget *label)
+{
+	assert(label);
+	printf("[%s] pressed\n", gtk_button_get_label(b));
+	if (db) {
+		close_database(db);
+		db = 0;
+	}
+	g_thread_new("import_data", import_data, label);
 }
 
 void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
@@ -55,8 +86,6 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 				g_thread_new("run", run, pl);
 			} else if (strcmp("Run test case", choice) == 0) {
 				g_thread_new("runtc", runtc, pl);
-			} else if (strcmp("Run reconciliation", choice) == 0) {
-				printf("something else\n");
 			} else
 				die("should never reach here");
 
@@ -85,16 +114,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 
 static gpointer run(gpointer pl)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
-	const char *file_name = ht_get(get_ui_key(SPECIAL_FILENAME,
-				UI_SPECIAL),ht);
-	const char *sheet_name = ht_get(get_ui_key(UI_SHEETNAME,
-				UI_FIXED),ht);
-	const char *cell = ht_get(get_ui_key(SPECIAL_KEYCELL,
-				UI_SPECIAL),ht);
-
 	unsigned tc = 0;
-	db = open_database(file_name, sheet_name, cell);
 	CurrentMember *cm = create_members(db);
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};
@@ -103,7 +123,7 @@ static gpointer run(gpointer pl)
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	assert(tc < db->num_records);
 	tc -= 1; // Index is one less than given test case
-	
+
 	setassumptions();
 	for (size_t i = 0; i < db->num_records; i++) {
 		if (run_state & INTERRUPTED) {
@@ -127,15 +147,7 @@ static gpointer run(gpointer pl)
 
 static gpointer runtc(gpointer pl)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
-	const char *file_name = ht_get(get_ui_key(SPECIAL_FILENAME,
-				UI_SPECIAL),ht);
-	const char *sheet_name = ht_get(get_ui_key(UI_SHEETNAME,
-				UI_FIXED),ht);
-	const char *cell = ht_get(get_ui_key(SPECIAL_KEYCELL,
-				UI_SPECIAL),ht);
 	unsigned tc = 0;
-	db = open_database(file_name, sheet_name, cell);
 	CurrentMember *cm = create_members(db);
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};

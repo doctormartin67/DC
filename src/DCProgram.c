@@ -189,6 +189,7 @@ static CurrentMember create_member(const Database *db, size_t num_member)
 
 CurrentMember *create_members(const Database *db)
 {
+	assert(db);
 	CurrentMember *cm = 0;
 	for (size_t i = 0; i < db->num_records; i++) {
 		buf_push(cm, create_member(db, i));

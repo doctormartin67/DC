@@ -30,8 +30,7 @@ static Val interpret_code(const CurrentMember *cm, int k, const char *code,
 	const Database *db = get_database();
 	assert(db);
 	unsigned years = cm->proj[k].DOC->year - cm->proj[0].DOC->year;
-	years = 0;
-	Interpreter *i = new_interpreter(code, db, years, 0, return_type);
+	Interpreter *i = new_interpreter(code, db, years, cm->id, return_type);
 	Val val = interpret(i);
 	interpreter_free(i);
 	return val;
