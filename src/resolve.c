@@ -136,6 +136,7 @@ static unsigned sym_push_project(const char *name, Type *type,
 		if (type_string == type) {
 			syms_end[-1].val.s = str_intern("");
 		}
+		add_user_sym(&syms_end[-1]);
 	}
 	return 1;
 }
@@ -157,6 +158,7 @@ static unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 		if (type_string == type) {
 			syms_end[-1].val.s = str_intern("");
 		}
+		add_user_sym(&syms_end[-1]);
 	}
 	return 1;
 }

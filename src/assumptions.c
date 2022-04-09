@@ -4,6 +4,7 @@
 #include "assumptions.h"
 #include "lifetables.h"
 #include "interpret.h"
+#include "resolve.h"
 
 extern const Database *get_database(void);
 enum {VAR_INTERPRETER, VAR_FIXED, VAR_COMBO};
@@ -29,7 +30,11 @@ static Val interpret_code(const CurrentMember *cm, int k, const char *code,
 	const Database *db = get_database();
 	assert(db);
 	unsigned years = cm->proj[k].DOC->year - cm->proj[0].DOC->year;
-	return interpret(code, return_type, years, db, cm->id);
+	years = 0;
+	Interpreter *i = new_interpreter(code, db, years, 0, return_type);
+	Val val = interpret(i);
+	interpreter_free(i);
+	return val;
 }
 
 void setassumptions(void)

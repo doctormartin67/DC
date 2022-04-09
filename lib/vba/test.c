@@ -258,9 +258,9 @@ void test_code(void)
 		"dim ceil2 as double\n"
 		"dim pt as double\n"
 		"\n"
-		"reg = \"7229\"\n"
+		"reg = \"14286\"\n"
 		"ndoe = 4\n"
-		"sal = 4000\n"
+		"sal = 2460.6477\n"
 		"ceil1 = 50000\n"
 		"ceil2 = 10000\n"
 		"pt = 1\n"
@@ -298,11 +298,12 @@ void test_code(void)
 		"+ 0.09 * max(sal * 13.92 - ceil1, 0)) * pt\n"
 		"case \"7161\"\n"
 		"result = 444 * pt\n"
-		"end select\n";
+		"end select\n"
+		"sal = 2000\n";
 	Interpreter *interpreter = new_interpreter(code, 0, 0, 0, TYPE_DOUBLE);
 	result_double = interpret(interpreter).d;
-	assert(1284 == result_double);
-	free(interpreter);
+	assert(1027.56 < result_double && 1027.57 > result_double);
+	interpreter_free(interpreter);
 }
 
 void test_select_case(void)
@@ -339,7 +340,7 @@ void test_select_case(void)
 	interpreter = new_interpreter(code, 0, 0, 0, TYPE_DOUBLE);
 	result_double = interpret(interpreter).d;
 	assert(2 == result_double);
-	free(interpreter);
+	interpreter_free(interpreter);
 }
 
 void test_resolve(void)
@@ -428,30 +429,30 @@ void test_resolve(void)
 		add_builtin_int("children", 3);
 		interpreter = new_interpreter(code[0], 0, 0, 0, TYPE_STRING);
 		result_str = interpret(interpreter).s;
-		free(interpreter);
+		interpreter_free(interpreter);
 		assert(!strcmp(result_str, "hello3"));
 		add_builtin_double("age", 40);
 		interpreter = new_interpreter(code[1], 0, 0, 0, TYPE_INT);
 		result_int = interpret(interpreter).i;
-		free(interpreter);
+		interpreter_free(interpreter);
 		assert(47 == result_int);
 		interpreter = new_interpreter(code[2], 0, 0, 0, TYPE_DOUBLE);
 		result_double = interpret(interpreter).d;
-		free(interpreter);
+		interpreter_free(interpreter);
 		assert(-2.600001 < result_double && -2.599999 > result_double);
 		add_builtin_boolean("actcon", false);
 		interpreter = new_interpreter(code[3], 0, 0, 0, TYPE_BOOLEAN);
 		result_bool = interpret(interpreter).b;
-		free(interpreter);
+		interpreter_free(interpreter);
 		assert(true == result_bool);
 		interpreter = new_interpreter(code[4], 0, i, 0, TYPE_DOUBLE);
 		result_double = interpret(interpreter).d;
-		free(interpreter);
+		interpreter_free(interpreter);
 		assert(result_double == 100 * pow(1.02, i));
 	}
 	interpreter = new_interpreter("result = 1\n", 0, 0, 0, TYPE_INT);
 	assert(1 == interpret(interpreter).i);
-	free(interpreter);
+	interpreter_free(interpreter);
 }
 
 void test_builtin_funcs(void)
@@ -461,7 +462,7 @@ void test_builtin_funcs(void)
 	Interpreter *interpreter = new_interpreter(code, 0, 0, 0, TYPE_DOUBLE);
 	result_double = interpret(interpreter).d;
 	assert(10 == result_double);
-	free(interpreter);
+	interpreter_free(interpreter);
 }
 
 int main(void)

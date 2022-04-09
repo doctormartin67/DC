@@ -8,6 +8,7 @@
 #include "helperfunctions.h"
 
 static Interpreter *interpreter;
+static Sym **user_defined_syms;
 
 static Sym builtin_syms[MAX_SYMS];
 static Sym *builtin_syms_end = builtin_syms;
@@ -59,7 +60,7 @@ void add_builtin_boolean(const char *name, bool b)
 	add_builtin_var(name, type_boolean, (Val){.b = b});
 }
 
-void add_builtin_double(const char *name, int d)
+void add_builtin_double(const char *name, double d)
 {
 	add_builtin_var(name, type_double, (Val){.d = d});
 }
@@ -107,6 +108,10 @@ static Sym *parse_interpreter(void)
 		assert(stmts[i]);
 	}
 	buf_free(stmts);
+	for (size_t i = 0; i < buf_len(user_defined_syms); i++) {
+		buf_push(interpreter->syms, *user_defined_syms[i]);
+		interpreter->num_syms++;
+	}
 	return sym_get(result);
 }
 
@@ -116,6 +121,7 @@ static void clear_interpreter(void)
 	clear_stream();
 	builtin_syms_reset();
 	syms_reset();
+	buf_free(user_defined_syms);
 	ast_free();
 }
 
@@ -136,6 +142,8 @@ Interpreter *new_interpreter(const char *code, const Database *db,
 	i->project_years = project_years;
 	i->num_record = num_record;
 	i->return_type = return_type;
+	i->syms = 0;
+	i->num_syms = 0;
 	return i;
 }
 
@@ -145,4 +153,22 @@ const Interpreter *get_interpreter(void)
 		die("interpreter not set");
 	}
 	return interpreter;
+}
+
+void interpreter_free(Interpreter *i)
+{
+	if (!i) {
+		return;
+	}
+	buf_free(i->syms);
+	free(i);
+}
+
+void add_user_sym(Sym *sym)
+{
+	assert(sym);
+	if (!interpreter) {
+		die("interpreter not set");
+	}
+	buf_push(user_defined_syms, sym);
 }
