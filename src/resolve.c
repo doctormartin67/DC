@@ -3,12 +3,9 @@
 #include <assert.h>
 #include <limits.h>
 #include <math.h>
+#include "interpret.h"
 #include "resolve.h"
 #include "excel.h"
-
-extern unsigned projection_loop;
-extern const Database *db_index;
-extern size_t record_number;
 
 static Sym syms[MAX_SYMS];
 static Sym *syms_end = syms;
@@ -126,13 +123,14 @@ static unsigned sym_push_project(const char *name, Type *type,
 				type_name(operand.type->kind));
 	}
 
+	int project_years = get_interpreter()->project_years;
 	if (eval_stmt) {
 		*syms_end++ = (Sym){
 			.name = str_intern(name),
 				.is_project = 1,
 				.kind = SYM_DIM,
 				.type = type,
-				.project.loop = projection_loop,
+				.project.years = project_years,
 				.project.val = operand.val.d,
 		};
 		if (type_string == type) {
@@ -709,15 +707,17 @@ static Operand resolve_expr_call(Expr *expr)
 
 #define INDEX(t1, t2) \
 	result = operand_const(type_##t1, (Val){.t2 \
-			= record_##t1(db, record_number, title)}); \
+			= record_##t1(db, num_record, title)}); \
 			break;
 
 static Operand resolve_expr_index(Expr *index, Type *type)
 {
-	if (!db_index) {
+	const Interpreter *i = get_interpreter();
+	if (!i->db) {
 		fatal_error(index->pos, "Database not set");
 	}
-	const Database *db = db_index;
+	const Database *db = i->db;
+	size_t num_record = i->num_record;
 	assert(index);
 	assert(type);
 
@@ -738,7 +738,7 @@ static Operand resolve_expr_index(Expr *index, Type *type)
 		case TYPE_STRING:
 			result = operand_const(type_string, (Val){.s
 					= str_intern(record_string(db,
-								record_number,
+								num_record,
 								title))});
 			break;
 		case TYPE_BOOLEAN:
@@ -886,9 +886,9 @@ static void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 		if (sym->is_project) {
 			assert(is_floating_type(sym->type));
 			assert(is_floating_type(right.type));
-			unsigned loop = sym->project.loop;
+			int years = sym->project.years;
 			double val = sym->project.val;
-			sym->val.d = right.val.d * pow(1 + val, loop);
+			sym->val.d = right.val.d * pow(1 + val, years);
 		} else {
 			sym->val = right.val;
 		}

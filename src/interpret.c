@@ -5,21 +5,9 @@
 #include "parse.h"
 #include "type.h"
 #include "resolve.h"
+#include "helperfunctions.h"
 
-
-/*
- * the user can create variables that will increase with each loop the program
- * is run in. this global variable is set to the current loop that the program
- * is in
- */
-unsigned projection_loop;
-
-/*
- * the interpreter also can take in a database so that the user can access a
- * record of an affiliate
- */
-const Database *db_index;
-size_t record_number;
+static Interpreter *interpreter;
 
 static Sym builtin_syms[MAX_SYMS];
 static Sym *builtin_syms_end = builtin_syms;
@@ -28,7 +16,6 @@ static Sym *builtin_syms_end = builtin_syms;
  * every interpreter will have a 'result' variable to be returned
  */
 static const char *result = "result";
-
 
 static void add_builtin_var(const char *name, Type *type, Val val)
 {
@@ -82,19 +69,16 @@ void add_builtin_string(const char *name, const char *s)
 	add_builtin_var(name, type_string, (Val){.s = str_intern(s)});
 }
 
-static void init_interpreter(const char *vba_code, TypeKind kind,
-		unsigned loop, const Database *db, size_t num_record)
+static void init_interpreter(Interpreter *i)
 {
 	init_keywords();
-	init_stream(0, vba_code);
+	init_stream(0, i->code);
 	init_builtin_types();
 	init_builtin_funcs();
 
-	projection_loop = loop;
-	db_index = db;
-	record_number = num_record;
+	interpreter = i;
 
-	switch (kind) {
+	switch (i->return_type) {
 		case TYPE_INT:
 			add_builtin_int(result, 0);
 			break;
@@ -128,18 +112,37 @@ static Sym *parse_interpreter(void)
 
 static void clear_interpreter(void)
 {
-	projection_loop = 0;
+	interpreter = 0;
 	clear_stream();
 	builtin_syms_reset();
 	syms_reset();
 	ast_free();
 }
 
-Val interpret(const char *vba_code, TypeKind return_type, unsigned loop,
-		const Database *db, size_t num_record)
+Val interpret(Interpreter *i)
 {
-	init_interpreter(vba_code, return_type, loop, db, num_record);
+	init_interpreter(i);
 	Val val = parse_interpreter()->val;
 	clear_interpreter();
 	return val;
+}
+
+Interpreter *new_interpreter(const char *code, const Database *db,
+		int project_years, size_t num_record, TypeKind return_type)
+{
+	Interpreter *i = jalloc(1, sizeof(*i));
+	i->code = code;
+	i->db = db;
+	i->project_years = project_years;
+	i->num_record = num_record;
+	i->return_type = return_type;
+	return i;
+}
+
+const Interpreter *get_interpreter(void)
+{
+	if (!interpreter) {
+		die("interpreter not set");
+	}
+	return interpreter;
 }

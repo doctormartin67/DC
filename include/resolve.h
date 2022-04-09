@@ -29,7 +29,7 @@ typedef struct Sym {
 		Type *type;
 		Val val;
 		struct {
-			unsigned loop;
+			int years;
 			double val;
 		} project;
 	};
