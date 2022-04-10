@@ -128,3 +128,14 @@ void init_builtin_funcs(void)
 	init_builtin_func("min", type_double_func, min);
 	init_builtin_func("max", type_double_func, max);
 }
+
+static void clear_builtin_funcs(void)
+{
+	free(type_double_func);
+	type_double_func = 0;
+}
+
+void clear_builtin_types(void)
+{
+	clear_builtin_funcs();
+}

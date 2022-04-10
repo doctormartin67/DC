@@ -4,7 +4,6 @@
 #include "DCProgram.h"
 #define GLADEFILE "glade/DCProgram.glade"
 
-enum {USER_INPUT_LY, USER_INPUT_TY};
 enum {
 	SHEETNAME, KEYCELL, W_DOC_LY, DR, AGECORR, INFL, TRM_PERCDEF, DR113,
 	INTERPRETERTEXT, STANDARD, W_ASSETS_LY, PUCTUC, MAXPUCTUC, MAXERCONTR,
@@ -61,11 +60,12 @@ extern GtkWidget *widgets[WIDGET_AMOUNT];
 
 const char *get_ui_key(unsigned var, unsigned type);
 unsigned get_ui_widget(unsigned var, unsigned type);
-Hashtable *get_user_input(unsigned ui);
+Hashtable *get_user_input(void);
 void set_user_input(Hashtable *);
 void update_user_interface(Hashtable *);
 void validateUI(Validator *, Hashtable *);
 void validateData(Validator *);
+void free_garbage(void);
 /* signal functions */
 void on_startstopbutton_clicked(GtkButton *, GtkWidget *);
 gboolean on_interpreterwindow_delete_event(GtkWidget *, GdkEvent *, gpointer);

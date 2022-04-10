@@ -123,6 +123,7 @@ static void clear_interpreter(void)
 	syms_reset();
 	buf_free(user_defined_syms);
 	ast_free();
+	clear_builtin_types();
 }
 
 Val interpret(Interpreter *i)

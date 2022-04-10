@@ -38,8 +38,7 @@ static Val interpret_code(const CurrentMember *cm, int k, const char *code,
 
 void setassumptions(void)
 {
-	/* this needs updating when we have a UITY!!! */
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	char temp[BUFSIZ];
 	char *year, *month, *day;
 	year = month = day = 0;
@@ -73,8 +72,7 @@ void setassumptions(void)
 static const char *get_var(unsigned ui, unsigned var_type,
 		Hashtable ht[static 1])
 {
-	const char *s = 0;
-	s = ht_get(get_ui_key(ui, var_type), ht);	
+	const char *s = ht_get(get_ui_key(ui, var_type), ht);	
 	return s;
 }
 
@@ -104,7 +102,7 @@ void set_tariffs(const CurrentMember cm[static 1])
 {
 	unsigned ltins = 0;
 	unsigned ltterm = 0;
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	const char *s = get_var(UI_ADMINCOST, UI_INT, ht);
 	tff.admincost = interpret_code(cm, 0, s, TYPE_DOUBLE).d;
 	s = get_var(UI_COSTRES, UI_INT, ht);
@@ -136,21 +134,21 @@ void set_tariffs(const CurrentMember cm[static 1])
 
 double salaryscale(const CurrentMember cm[static 1], int k)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	const char *s = get_var(UI_SS, UI_INT, ht);
 	return ass.infl + interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
 
 double calcA(const CurrentMember cm[static 1], int k)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	const char *s = get_var(UI_CONTRA, UI_INT, ht);
 	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
 
 double calcC(const CurrentMember cm[static 1], int k)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	const char *s = get_var(UI_CONTRC, UI_INT, ht);
 	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
@@ -162,21 +160,21 @@ double calcDTH(const CurrentMember cm[static 1], int k)
 
 double NRA(const CurrentMember cm[static 1], int k)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	const char *s = get_var(UI_NRA, UI_INT, ht);
 	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
 
 double wxdef(const CurrentMember cm[static 1], int k)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	const char *s = get_var(UI_TURNOVER, UI_INT, ht);
 	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }
 
 double retx(const CurrentMember cm[static 1], int k)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	const char *s = get_var(UI_RETX, UI_INT, ht);
 	return interpret_code(cm, k, s, TYPE_DOUBLE).d;
 }

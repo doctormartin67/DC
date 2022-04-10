@@ -1,6 +1,8 @@
 #include <assert.h>
 #include "userinterface.h"
 
+extern void reset_database(void);
+
 /*
  * This equals the current index of the interpreter that will be set by the
  * open interpreter window once it closes
@@ -11,6 +13,7 @@ static void set_interpreter_text(unsigned intprtr);
 
 void on_close_button_press_event(void)
 {
+	reset_database();
 	gtk_main_quit();
 }
 
@@ -19,7 +22,7 @@ void on_close_button_press_event(void)
  */
 void on_openDC_activate(GtkMenuItem *m)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	char *filename = 0;
 	gint res = 0;
 	GtkDialog *dialog = 0;
@@ -57,7 +60,7 @@ void on_saveDC_activate(GtkMenuItem *m)
  */
 void on_saveasDC_activate(GtkMenuItem *m)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	char tmp[BUFSIZ];
 	char *filename = 0;
 	char *p = 0;
@@ -102,7 +105,7 @@ void on_saveasDC_activate(GtkMenuItem *m)
  */
 void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("dialog [%s] closed\n", gtk_file_chooser_button_get_title(b));
 
@@ -134,7 +137,7 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
 		gpointer p)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("GdkEventType [%d]\n", gdk_event_get_event_type(e));
 
@@ -276,7 +279,7 @@ void on_contrC_interpreterbutton_clicked(GtkButton *b, gpointer *w)
  */
 static void set_interpreter_text(unsigned intprtr)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	const char *s = get_ui_key(intprtr, UI_INT);
 	const char *t = ht_get(s, ht);
 	GtkTextBuffer *temp = gtk_text_view_get_buffer(

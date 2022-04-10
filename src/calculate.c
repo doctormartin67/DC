@@ -737,7 +737,6 @@ static void update_EBP_death(CurrentMember *cm, int k)
 		cm->proj[year+1].ebp_death[PBO] += capdth * f.ff * probs;
 		cm->proj[year+1].pbo_nc_death += capdth * f.ff_sc * probs;
 	}
-	free(IMMdate);
 }
 
 #define EBP_RET(m1, m2, a, cf, p1, p2) \
@@ -815,10 +814,6 @@ void update_EBP_ret(CurrentMember *cm, int k,
 	EBP_RET(TUC, tuc, MATHRES, PBO, DEF, def);
 	EBP_RET(TUC, tuc, MATHRES, TBO, DEF, def);
 	PBO_NC(TUC, tuc, MATHRES, DEF, def);
-
-	free(Ndate);
-	free(IMMdate);
-	free(DEFdate);
 }
 
 #undef EBP_RET

@@ -447,8 +447,6 @@ void validateInput(DataColumn dc, const CurrentMember cm[static 1],
 			tmp = newDate((unsigned)atoi(input), 0, 0, 0);
 			if (0 == tmp) {
 				update += invaliddate;
-			} else {
-				free(tmp);
 			}
 			break;
 		}

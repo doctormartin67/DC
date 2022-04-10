@@ -12,14 +12,32 @@ static void init_cm(CurrentMember *);
 static struct date *getDOC(const CurrentMember cm[static 1], int k);
 static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
 		int k);
-static void prolongate(CurrentMember cm[static 1], int k);
-
 int main(void)
 {
 	makeLifeTables();
-
 	userinterface();
 	return 0;
+}
+
+static void prolongate(struct projection *p)
+{
+	for (size_t i = 0; i < EREE_AMOUNT; i++) {
+		p->gens[MAXGEN-1].premium[i]
+			= gen_sum(p->gens, i, PREMIUM, PUC);
+		p->gens[MAXGEN-1].lump_sums.death_lump_sum[i]
+			= gen_sum(p->gens, i, CAPDTH, PUC);
+		p->gens[MAXGEN-1].reserves.res[i].puc
+			= gen_sum(p->gens, i, RES, PUC);
+		p->gens[MAXGEN-1].reserves.ps[i]
+			= gen_sum(p->gens, i, RESPS, 0);
+		p->delta_cap[i] = 0;
+		for (int j = 0; j < MAXGEN-1; j++) {
+			p->gens[j].premium[i] = 0;
+			p->gens[j].lump_sums.death_lump_sum[i] = 0;
+			p->gens[j].reserves.res[i].puc = 0;
+			p->gens[j].reserves.ps[i] = 0;
+		}
+	}
 }
 
 void runmember(CurrentMember cm[static 1])
@@ -40,23 +58,20 @@ void runmember(CurrentMember cm[static 1])
 
 	init_cm(cm);
 
-	for (int k = 1; k < MAXPROJ; k++) {
+	for (size_t k = 1; k < MAXPROJ; k++) {
 		if (1 == k) {
 			cm->proj[k+1].DOC = getDOC(cm, k);
 		} else if (1 < k && MAXPROJBEFOREPROL > k) {
-			free(cm->proj[k].DOC);
 			cm->proj[k].DOC = getDOC(cm, k - 1);
 			cm->proj[k+1].DOC = getDOC(cm, k);
 		} else if (MAXPROJBEFOREPROL == k) {
-			free(cm->proj[k].DOC);
 			cm->proj[k].DOC = getDOC(cm, k - 1);
 			cm->proj[k+1].DOC = getDOC_prolongation(cm, k);		
 		} else if (MAXPROJBEFOREPROL < k) {
-			free(cm->proj[k].DOC);
 			cm->proj[k].DOC = getDOC_prolongation(cm, k - 1);
 			cm->proj[k+1].DOC = getDOC_prolongation(cm, k);		
 			if (MAXPROJBEFOREPROL + 1 == k)
-				prolongate(cm, k - 1);
+				prolongate(&cm->proj[k-1]);
 		}
 
 		cm->proj[k].age = calcyears(cm->DOB, cm->proj[k].DOC, 1);
@@ -183,20 +198,23 @@ static void init_cm(CurrentMember cm[static 1])
 
 	cm->proj[1].factor.kPx = 1;
 
-	cm->proj[0].death_res = 
-		(cm->tariff == UKMS ? 
-		 gen_sum(cm->proj[0].gens, ER, RES, PUC) 
-		 + gen_sum(cm->proj[0].gens, EE, RES, PUC) 
-		 + gen_sum(cm->proj[0].gens, ER, RESPS, PUC) 
-		 + gen_sum(cm->proj[0].gens, EE, RESPS, PUC) : 0);
+	if (UKMS == cm->tariff) {
+		cm->proj[0].death_res
+			= gen_sum(cm->proj[0].gens, ER, RES, PUC) 
+			+ gen_sum(cm->proj[0].gens, EE, RES, PUC) 
+			+ gen_sum(cm->proj[0].gens, ER, RESPS, PUC) 
+			+ gen_sum(cm->proj[0].gens, EE, RESPS, PUC);
+	} else {
+		cm->proj[0].death_res = 0.0;
+	}
+
 	cm->proj[0].death_risk = calcDTH(cm, 0); 
 
 	//-  Premium  -
-	for (int l = 0; l < EREE_AMOUNT; l++) {
+	for (size_t l = 0; l < EREE_AMOUNT; l++) {
 		prem = &cm->proj[0].gens[MAXGEN - 1].premium[l];
 		*prem = (l == ER ? calcA(cm, 0) : calcC(cm, 0));
-		for (int j = 0; j < MAXGEN-1; j++) {
-			prem = &cm->proj[0].gens[MAXGEN - 1].premium[l];
+		for (size_t j = 0; j < MAXGEN-1; j++) {
 			*prem = MAX(0.0, *prem
 					- cm->proj[0].gens[j].premium[l]);
 		}
@@ -207,17 +225,17 @@ static void init_cm(CurrentMember cm[static 1])
 
 static struct date *getDOC(const CurrentMember cm[static 1], int k)
 {
+	unsigned month_k = cm->proj[k].DOC->month;
+	unsigned year_k = cm->proj[k].DOC->year;
 	struct date *d = 0, *Ndate = 0, *docdate = 0;
 
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
-	docdate = newDate(0, cm->proj[k].DOC->year + 1, cm->proj[k].DOC->month, 1);
+	docdate = newDate(0, year_k + 1, month_k, 1);
 
 	if (0 == Ndate || 0 == docdate) die("invalid date");
 
 	d = MINDATE3(Ndate, docdate, cm->DOR);
 
-	if (d != Ndate) free(Ndate);
-	if (d != docdate) free(docdate);
 	if (d == cm->DOR)
 		d = Datedup(cm->DOR);
 
@@ -230,37 +248,16 @@ static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
 	unsigned addyear = 0;
 	struct date *d = 0, *Ndate = 0, *docdate = 0;
 
-	addyear = (cm->proj[k].DOC->month >= cm->proj[1].DOC->month) ? 1 : 0;
+	unsigned month_1 = cm->proj[1].DOC->month;
+	unsigned month_k = cm->proj[k].DOC->month;
+	unsigned year_k = cm->proj[k].DOC->year;
+	addyear = (month_k >= month_1) ? 1 : 0;
 	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
-	docdate = newDate(0, cm->proj[k].DOC->year + addyear, cm->proj[1].DOC->month, 1);
+	docdate = newDate(0, year_k + addyear, month_1, 1);
 
 	if (0 == Ndate || 0 == docdate) die("invalid date");
 
 	d = MINDATE2(Ndate, docdate);
 
-	if (d != Ndate) free(Ndate);
-	if (d != docdate) free(docdate);
-
 	return d;
-}
-
-static void prolongate(CurrentMember cm[static 1], int k)
-{
-	for (int i = 0; i < EREE_AMOUNT; i++) {
-		cm->proj[k].gens[MAXGEN-1].premium[i] =
-			gen_sum(cm->proj[k].gens, i, PREMIUM, PUC);
-		cm->proj[k].gens[MAXGEN-1].lump_sums.death_lump_sum[i]
-			= gen_sum(cm->proj[k].gens, i, CAPDTH, PUC);
-		cm->proj[k].gens[MAXGEN-1].reserves.res[i].puc =
-			gen_sum(cm->proj[k].gens, i, RES, PUC);
-		cm->proj[k].gens[MAXGEN-1].reserves.ps[i] =
-			gen_sum(cm->proj[k].gens, i, RESPS, 0);
-		cm->proj[k].delta_cap[i] = 0;
-		for (int j = 0; j < MAXGEN-1; j++) {
-			cm->proj[k].gens[j].premium[i] = 0;
-			cm->proj[k].gens[j].lump_sums.death_lump_sum[i] = 0;
-			cm->proj[k].gens[j].reserves.res[i].puc = 0;
-			cm->proj[k].gens[j].reserves.ps[i] = 0;
-		}
-	}
 }

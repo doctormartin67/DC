@@ -35,6 +35,7 @@ typedef double double_func(double *params, size_t num_params);
 
 void init_builtin_types(void);
 void init_builtin_funcs(void);
+void clear_builtin_types(void);
 const char *type_name(TypeKind);
 unsigned is_integer_type(Type *type);
 unsigned is_floating_type(Type *type);

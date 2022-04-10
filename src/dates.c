@@ -7,7 +7,9 @@
 #include <stdarg.h>
 #include "dates.h"
 #include "errorexit.h"
+#include "common.h"
 
+static Arena dates_arena;
 /*
  * inline functions
  */
@@ -54,7 +56,8 @@ const unsigned leapdays[DEC + 1] = {1,
 struct date *newDate(unsigned XLday,
 		unsigned year, unsigned month, unsigned day)
 {
-	struct date *d = jalloc(1, sizeof(*d));
+	struct date *d = arena_alloc(&dates_arena, sizeof(*d));
+	*d = (struct date){0};
 
 	if (0 == XLday) {
 		if (day > days_in_month_year(year, month)) {
@@ -76,7 +79,6 @@ struct date *newDate(unsigned XLday,
 	// Error checking
 	if (d->month < 1 || d->month > DEC || d->day < 1
 		|| (d->day > days_in_month_year(d->year, d->month))) {
-		free(d);
 		d = 0;
 	}
 
@@ -167,4 +169,9 @@ void printDate(const struct date *restrict d)
 		printf("%d/%d/%d\n", d->day, d->month, d->year);
 	else
 		printf("(null)\n");
+}
+
+void dates_arena_free(void)
+{
+	arena_free(&dates_arena);
 }

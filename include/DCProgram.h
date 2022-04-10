@@ -5,7 +5,6 @@
 #include <gtk/gtk.h>
 #include "hashtable.h"
 #include "dates.h"
-#include "XL.h"
 #include "validation.h"
 #include "inputdata.h"
 #include "excel.h"

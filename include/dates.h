@@ -27,6 +27,7 @@ struct date *newDate(unsigned XLday,
 		unsigned year, unsigned month, unsigned day);
 struct date *minDate(struct date *, struct date *);
 void printDate(const struct date *restrict d);
+void dates_arena_free(void);
 
 /*
  * inline functions
@@ -66,14 +67,8 @@ inline struct date *Datedup(const struct date *restrict d)
 {
 	if (!d) return 0;
 
-	struct date *newdate = jalloc(1, sizeof(*newdate));
-
-	newdate->XLday = d->XLday;
-	newdate->year = d->year;
-	newdate->month = d->month;
-	newdate->day = d->day;
-
-	return newdate;
+	struct date *new_date = newDate(d->XLday, d->year, d->month, d->day);
+	return new_date;
 }
 
 #endif

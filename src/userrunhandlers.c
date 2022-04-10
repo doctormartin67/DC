@@ -34,28 +34,36 @@ const Database *get_database(void)
  */
 static gpointer import_data(gpointer pl)
 {
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	(void)pl;
+	Hashtable *ht = get_user_input();
 	const char *file_name = ht_get(get_ui_key(SPECIAL_FILENAME,
 				UI_SPECIAL),ht);
 	const char *sheet_name = ht_get(get_ui_key(UI_SHEETNAME,
 				UI_FIXED),ht);
 	const char *cell = ht_get(get_ui_key(SPECIAL_KEYCELL,
 				UI_SPECIAL),ht);
+#if 0
 	struct gui_data gd = {"Importing data...", pl};
 	g_idle_add(update_gui, &gd);
+#endif
 	db = open_database(file_name, sheet_name, cell);
 	gtk_label_set_text(GTK_LABEL(pl), "Import complete.");
 	return 0;
+}
+
+void reset_database(void)
+{
+	if (db) {
+		close_database(db);
+		db = 0;
+	}
 }
 
 void on_import_data_clicked(GtkButton *b, GtkWidget *label)
 {
 	assert(label);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	if (db) {
-		close_database(db);
-		db = 0;
-	}
+	reset_database();
 	g_thread_new("import_data", import_data, label);
 }
 
@@ -63,7 +71,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
 	Validator validatorLY = (Validator) {0};
-	Hashtable *ht = get_user_input(USER_INPUT_LY);
+	Hashtable *ht = get_user_input();
 	char *MsgErr = 0;
 	gchar *choice = 0;
 	GtkDialog *dialog = 0;
@@ -118,7 +126,9 @@ static gpointer run(gpointer pl)
 	CurrentMember *cm = create_members(db);
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};
+#if 0
 	g_idle_add(update_gui, &gd);
+#endif
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	assert(tc < db->num_records);
@@ -132,8 +142,10 @@ static gpointer run(gpointer pl)
 		runmember(cm + i);
 		snprintf(text, sizeof(text), "Progress: member %lu out of %lu "
 				"members complete", i + 1, db->num_records);
+#if 0
 		gd.s = text;
 		g_idle_add(update_gui, &gd);
+#endif
 	}
 
 	print_results(db, cm);
@@ -142,16 +154,20 @@ static gpointer run(gpointer pl)
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
+	free_garbage();
 	return 0;
 }
 
 static gpointer runtc(gpointer pl)
 {
+	(void)pl;
 	unsigned tc = 0;
 	CurrentMember *cm = create_members(db);
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};
+#if 0
 	g_idle_add(update_gui, &gd);
+#endif
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
 	assert(tc < db->num_records);
@@ -165,22 +181,28 @@ static gpointer runtc(gpointer pl)
 	setassumptions();
 	runmember(cm);
 	snprintf(text, sizeof(text), "%s [%u] has been run", cm->key, tc + 1);
+#if 0
 	gd.s = text;
 	g_idle_add(update_gui, &gd);
+#endif
 
 	print_test_case(cm);
 
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
+	free_garbage();
 	return 0;
 }
 
 static gpointer stoprun(gpointer data)
 {
+#if 0
 	struct gui_data *gd = data;
 	gd->s = "Progress: stopped";
 	g_idle_add(update_gui, gd);
+#endif
+	(void)data;
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);

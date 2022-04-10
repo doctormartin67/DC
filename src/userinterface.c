@@ -70,8 +70,7 @@ GtkWidget *widgets[WIDGET_AMOUNT];
 static GtkBuilder *builder;
 
 enum {HT_USER_INPUT_SIZE = 131};
-static Hashtable *ht_user_input_LY;
-static Hashtable *ht_user_input_TY;
+static Hashtable *ht_user_input;
 
 static GtkWidget *buildWidget(const char *);
 
@@ -79,8 +78,7 @@ void userinterface()
 {
 	gtk_init(0, 0);
 
-	ht_user_input_LY = newHashtable(HT_USER_INPUT_SIZE, 0);
-	ht_user_input_TY = newHashtable(HT_USER_INPUT_SIZE, 0);
+	ht_user_input = newHashtable(HT_USER_INPUT_SIZE, 0);
 
 	builder = gtk_builder_new_from_file(GLADEFILE);
 
@@ -154,15 +152,9 @@ unsigned get_ui_widget(unsigned var, unsigned type)
 	return wgt;
 }
 
-Hashtable *get_user_input(unsigned ui)
+Hashtable *get_user_input(void)
 {
-	if (USER_INPUT_LY == ui) {
-		return ht_user_input_LY;
-	} else if (USER_INPUT_TY == ui) { 
-		return ht_user_input_TY;
-	} else die("ui not equal to USER_INPUT_LY or USER_INPUT_TY");
-
-	return 0;
+	return ht_user_input;
 }
 
 void set_user_input(Hashtable ht[static 1])
@@ -177,7 +169,7 @@ void set_user_input(Hashtable ht[static 1])
 	ht_set(get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL), kc, ht);
 	free(kc);
 	kc = 0;
-	
+
 	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
 		key = get_ui_key(i, UI_FIXED);
 		wgt = get_ui_widget(i, UI_FIXED);
@@ -223,7 +215,7 @@ void update_user_interface(Hashtable ht[static 1])
 		wgt = get_ui_widget(i, UI_COMBO);
 		if (value)
 			gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[wgt]),
-				atoi(value));
+					atoi(value));
 	}
 }
 
@@ -254,7 +246,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 		}
 	}
 	if (err) return;
-	
+
 	key = get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL);
 	value = ht_get(key, ht);
 	size_t len = 0;
@@ -336,7 +328,6 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 					"expected of the form %s", 
 					value, validMsg[DATEERR]);
 		}
-		free(tempDate);
 	}
 
 	/* ----- Check DR -----*/
@@ -402,4 +393,9 @@ void validateData(Validator val[static 1])
 	if (val->status == OK) {
 		//TODO
 	}
+}
+
+void free_garbage(void)
+{
+	dates_arena_free();
 }
