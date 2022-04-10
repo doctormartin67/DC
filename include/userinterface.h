@@ -60,10 +60,10 @@ extern GtkWidget *widgets[WIDGET_AMOUNT];
 
 const char *get_ui_key(unsigned var, unsigned type);
 unsigned get_ui_widget(unsigned var, unsigned type);
-Hashtable *get_user_input(void);
-void set_user_input(Hashtable *);
-void update_user_interface(Hashtable *);
-void validateUI(Validator *, Hashtable *);
+Map *get_user_input(void);
+void set_user_input(void);
+void update_user_interface(void);
+void validateUI(Validator *); 
 void validateData(Validator *);
 void free_garbage(void);
 /* signal functions */

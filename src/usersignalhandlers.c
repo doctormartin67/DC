@@ -1,6 +1,9 @@
 #include <assert.h>
 #include "userinterface.h"
 
+#define LHEADER "<<<<<"
+#define RHEADER ">>>>>"
+
 extern void reset_database(void);
 
 /*
@@ -17,12 +20,106 @@ void on_close_button_press_event(void)
 	gtk_main_quit();
 }
 
+static void read_user_input(const char *file_name)
+{
+	Map *user_input = get_user_input();
+	FILE *fp = fopen(file_name, "r");
+	if (!fp) die("Unable to read file [%s]", file_name);
+	size_t len = BUFSIZ;
+	char line[len];
+	char value[len];
+	char *key = 0;
+	char *keyend = 0;
+	char *pl = line;
+	char *pv = value;
+	long fppos = 0;
+
+	while (0 != fgets(line, len, fp)) {
+		if (0 == (key = strinside(line, LHEADER, RHEADER))) continue;
+		keyend = strstr(key, RHEADER);
+		assert(0 != keyend);
+		*keyend = '\0';
+		key = strdup(key);
+
+		while (0 != fgets(line, len, fp)) {
+			if (strstr(line, LHEADER)) break;
+			while (*pl && pv < value + len) *pv++ = *pl++;
+			pl = line;
+			if (-1 == (fppos = ftell(fp)))
+				die("Unable to find position");
+		}
+
+		if (pv > value)
+			*(pv - 1) = '\0';
+		else
+			*pv = '\0';
+
+		map_put_str(user_input, key, strdup(value));
+
+		pv = value;
+		fseek(fp, fppos, SEEK_SET);
+	}
+
+	if (0 != fclose(fp)) die("Unable to close file");
+}
+
+static void write_user_input(const char *restrict file_name)
+{
+	Map *user_input = get_user_input();
+	FILE *fp = fopen(file_name, "w");
+	if (!fp) die("Unable to open/create file [%s]", file_name);
+	char *buf = 0;
+	char *key = 0;
+
+	for (size_t i = 0; i < UI_AMOUNT; i++) {
+		key = strdup(get_ui_key(i, UI_INT));
+		upper(key);
+		buf_printf(buf, "%s%s%s\n", LHEADER, key, RHEADER);
+		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
+		buf_free(buf);
+		buf_printf(buf, "%s\n", map_get_str(user_input, key));
+		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
+		buf_free(buf);
+	}
+	for (size_t i = 0; i < UI_FIXED_AMOUNT; i++) {
+		key = strdup(get_ui_key(i, UI_FIXED));
+		upper(key);
+		buf_printf(buf, "%s%s%s\n", LHEADER, key, RHEADER);
+		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
+		buf_free(buf);
+		buf_printf(buf, "%s\n", map_get_str(user_input, key));
+		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
+		buf_free(buf);
+	}
+	for (size_t i = 0; i < COMBO_AMOUNT; i++) {
+		key = strdup(get_ui_key(i, UI_COMBO));
+		upper(key);
+		buf_printf(buf, "%s%s%s\n", LHEADER, key, RHEADER);
+		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
+		buf_free(buf);
+		buf_printf(buf, "%s\n", map_get_str(user_input, key));
+		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
+		buf_free(buf);
+	}
+	for (size_t i = 0; i < SPECIAL_AMOUNT; i++) {
+		key = strdup(get_ui_key(i, UI_SPECIAL));
+		upper(key);
+		buf_printf(buf, "%s%s%s\n", LHEADER, key, RHEADER);
+		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
+		buf_free(buf);
+		buf_printf(buf, "%s\n", map_get_str(user_input, key));
+		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
+		buf_free(buf);
+	}
+
+	if (0 != fclose(fp)) die("Unable to close file");
+}
+
 /*
  * Open .dc file that will fill in the current user interface
  */
 void on_openDC_activate(GtkMenuItem *m)
 {
-	Hashtable *ht = get_user_input();
 	char *filename = 0;
 	gint res = 0;
 	GtkDialog *dialog = 0;
@@ -37,8 +134,8 @@ void on_openDC_activate(GtkMenuItem *m)
 		filename = gtk_file_chooser_get_filename(chooser);
 		printf("selected file [%s] to open\n", filename);
 
-		readHashtable(filename, ht);
-		update_user_interface(ht);
+		read_user_input(filename);
+		update_user_interface();
 
 		g_free(filename);
 		filename = 0;
@@ -47,7 +144,6 @@ void on_openDC_activate(GtkMenuItem *m)
 	}
 
 	gtk_widget_hide(GTK_WIDGET(dialog));
-	printHashtable(ht);
 }
 
 void on_saveDC_activate(GtkMenuItem *m)
@@ -60,7 +156,6 @@ void on_saveDC_activate(GtkMenuItem *m)
  */
 void on_saveasDC_activate(GtkMenuItem *m)
 {
-	Hashtable *ht = get_user_input();
 	char tmp[BUFSIZ];
 	char *filename = 0;
 	char *p = 0;
@@ -68,7 +163,7 @@ void on_saveasDC_activate(GtkMenuItem *m)
 	GtkFileChooser *chooser = 0;
 	gint res = 0;
 
-	set_user_input(ht);
+	set_user_input();
 	dialog = GTK_DIALOG(widgets[SAVEASDCFILE]);
 	gtk_widget_show(GTK_WIDGET(dialog));
 	res = gtk_dialog_run(dialog); 
@@ -89,7 +184,7 @@ void on_saveasDC_activate(GtkMenuItem *m)
 		}
 		printf("selected file [%s] to save\n", tmp);
 
-		writeHashtable(tmp, ht);
+		write_user_input(tmp);
 
 		g_free(filename);
 		p = filename = 0;
@@ -105,26 +200,27 @@ void on_saveasDC_activate(GtkMenuItem *m)
  */
 void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 {
-	Hashtable *ht = get_user_input();
+	Map *user_input = get_user_input();
 	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("dialog [%s] closed\n", gtk_file_chooser_button_get_title(b));
 
 	GtkDialog *dialog = 0;
 	const char *key = 0;
 	char *filename = 0;
-	char tmp[BUFSIZ];
+	char *tmp = 0;
 
 	dialog = GTK_DIALOG(widgets[OPENEXCELFILE]);
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
 	filename = gtk_file_chooser_get_filename(chooser);
 
 	key = get_ui_key(SPECIAL_FILENAME, UI_SPECIAL);
-	ht_set(key, filename, ht);
-	snprintf(tmp, sizeof(tmp), "File set to run:\n%s", ht_get(key, ht));
+	map_put_str(user_input, key, strdup(filename));
+	buf_printf(tmp, "File set to run:\n%s", filename);
 
-	printf("Excel to run: [%s]\n", ht_get(key, ht));
+	printf("Excel to run: [%s]\n", filename);
 	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), tmp); 
 	g_free(filename);
+	buf_free(tmp);
 }
 
 /*
@@ -137,7 +233,7 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
 		gpointer p)
 {
-	Hashtable *ht = get_user_input();
+	Map *user_input = get_user_input();
 	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("GdkEventType [%d]\n", gdk_event_get_event_type(e));
 
@@ -151,7 +247,8 @@ gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
 
 	assert(current_interpreter < UI_AMOUNT) ;
 
-	ht_set(get_ui_key(current_interpreter, UI_INT), s, ht);
+	map_put_str(user_input, get_ui_key(current_interpreter, UI_INT),
+			strdup(s));
 	g_free(s);
 
 	gtk_widget_hide(w);
@@ -279,9 +376,12 @@ void on_contrC_interpreterbutton_clicked(GtkButton *b, gpointer *w)
  */
 static void set_interpreter_text(unsigned intprtr)
 {
-	Hashtable *ht = get_user_input();
-	const char *s = get_ui_key(intprtr, UI_INT);
-	const char *t = ht_get(s, ht);
+	Map *user_input = get_user_input();
+	char *s = strdup(get_ui_key(intprtr, UI_INT));
+	upper(s);
+	const char *t = map_get_str(user_input, s);
+	printf("s = %s\n", s);
+	printf("t = %s\n", t);
 	GtkTextBuffer *temp = gtk_text_view_get_buffer(
 			GTK_TEXT_VIEW(widgets[INTERPRETERTEXT]));
 

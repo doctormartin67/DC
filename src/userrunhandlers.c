@@ -35,13 +35,13 @@ const Database *get_database(void)
 static gpointer import_data(gpointer pl)
 {
 	(void)pl;
-	Hashtable *ht = get_user_input();
-	const char *file_name = ht_get(get_ui_key(SPECIAL_FILENAME,
-				UI_SPECIAL),ht);
-	const char *sheet_name = ht_get(get_ui_key(UI_SHEETNAME,
-				UI_FIXED),ht);
-	const char *cell = ht_get(get_ui_key(SPECIAL_KEYCELL,
-				UI_SPECIAL),ht);
+	Map *user_input = get_user_input();
+	const char *file_name = map_get_str(user_input, get_ui_key(SPECIAL_FILENAME,
+				UI_SPECIAL));
+	const char *sheet_name = map_get_str(user_input, get_ui_key(UI_SHEETNAME,
+				UI_FIXED));
+	const char *cell = map_get_str(user_input, get_ui_key(SPECIAL_KEYCELL,
+				UI_SPECIAL));
 #if 0
 	struct gui_data gd = {"Importing data...", pl};
 	g_idle_add(update_gui, &gd);
@@ -71,7 +71,6 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
 	Validator validatorLY = (Validator) {0};
-	Hashtable *ht = get_user_input();
 	char *MsgErr = 0;
 	gchar *choice = 0;
 	GtkDialog *dialog = 0;
@@ -81,9 +80,9 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 		run_state = RUNNING;
 		gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
 				"media-playback-stop", GTK_ICON_SIZE_BUTTON);
-		set_user_input(ht);
+		set_user_input();
 		validatorLY.status = OK;
-		validateUI(&validatorLY, ht); 
+		validateUI(&validatorLY); 
 		//validateData(&validatorLY, ht);
 
 		if (validatorLY.status != ERROR) {

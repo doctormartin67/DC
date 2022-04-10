@@ -21,7 +21,7 @@ LDFLAGS = -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
-OBJS = actuarialfunctions.o assumptions.o dates.o DCProgram.o hashtable.o \
+OBJS = actuarialfunctions.o assumptions.o dates.o DCProgram.o \
 	lifetables.o printresults.o userinterface.o userrunhandlers.o \
 	usersignalhandlers.o validation.o calculate.o
 .DELETE_ON_ERROR: $(OBJS)
@@ -61,7 +61,7 @@ clean:
 # ---functions---
 define install_dependency
 	@echo "####################"
-	@echo "Cheking if package '$1' is installed"
+	@echo "Checking if package '$1' is installed"
 	@echo "####################"
 	@if dpkg -s $1; then \
 	    echo "####################"; \
@@ -78,7 +78,7 @@ endef
 
 define install_xlsxwriter
 	@echo "####################"
-	@echo "Cheking if library '$1' is installed"
+	@echo "Checking if library '$1' is installed"
 	@echo "####################"
 	@if ld -lxlsxwriter; then \
 	    echo "####################"; \

@@ -69,16 +69,13 @@ static const struct user_input ui_special_variables[SPECIAL_AMOUNT] = {
 GtkWidget *widgets[WIDGET_AMOUNT];
 static GtkBuilder *builder;
 
-enum {HT_USER_INPUT_SIZE = 131};
-static Hashtable *ht_user_input;
+static Map user_input;
 
 static GtkWidget *buildWidget(const char *);
 
 void userinterface()
 {
 	gtk_init(0, 0);
-
-	ht_user_input = newHashtable(HT_USER_INPUT_SIZE, 0);
 
 	builder = gtk_builder_new_from_file(GLADEFILE);
 
@@ -104,20 +101,21 @@ static GtkWidget *buildWidget(const char w[static 1])
 const char *get_ui_key(unsigned var, unsigned type)
 {
 	const char *s = 0;
+	char *key = 0;
 	switch (type) {
-		case UI_INT :
+		case UI_INT:
 			assert(var < UI_AMOUNT);
 			s = ui_interpreter_variables[var].key;	
 			break;
-		case UI_FIXED :
+		case UI_FIXED:
 			assert(var < UI_FIXED_AMOUNT);
 			s = ui_fixed_variables[var].key;
 			break;
-		case UI_COMBO :
+		case UI_COMBO:
 			assert(var < COMBO_AMOUNT);
 			s = ui_method_variables[var].key;
 			break;
-		case UI_SPECIAL :
+		case UI_SPECIAL:
 			assert(var < SPECIAL_AMOUNT);
 			s = ui_special_variables[var].key;
 			break;
@@ -126,22 +124,24 @@ const char *get_ui_key(unsigned var, unsigned type)
 	}
 
 	assert(s);
-	return s;
+	key = strdup(s);
+	upper(key);
+	return key;
 }
 
 unsigned get_ui_widget(unsigned var, unsigned type)
 {
 	unsigned wgt = 0;
 	switch (type) {
-		case UI_INT :
+		case UI_INT:
 			assert(var < UI_AMOUNT);
 			wgt = ui_interpreter_variables[var].widget;	
 			break;
-		case UI_FIXED :
+		case UI_FIXED:
 			assert(var < UI_FIXED_AMOUNT);
 			wgt = ui_fixed_variables[var].widget;
 			break;
-		case UI_COMBO :
+		case UI_COMBO:
 			assert(var < COMBO_AMOUNT);
 			wgt = ui_method_variables[var].widget;
 			break;
@@ -152,66 +152,72 @@ unsigned get_ui_widget(unsigned var, unsigned type)
 	return wgt;
 }
 
-Hashtable *get_user_input(void)
+Map *get_user_input(void)
 {
-	return ht_user_input;
+	return &user_input;
 }
 
-void set_user_input(Hashtable ht[static 1])
+void set_user_input(void)
 {
-	char tmp[64];
+	char *tmp = 0;
 	char *kc = 0;
 	const char *key = 0;
 	unsigned wgt = 0;
 
 	kc = strdup(gtk_entry_get_text(GTK_ENTRY(widgets[KEYCELL])));
 	upper(kc);
-	ht_set(get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL), kc, ht);
+	map_put_str(&user_input, get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL),
+	strdup(kc));
 	free(kc);
 	kc = 0;
 
 	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
 		key = get_ui_key(i, UI_FIXED);
 		wgt = get_ui_widget(i, UI_FIXED);
-		ht_set(key, gtk_entry_get_text(GTK_ENTRY(widgets[wgt])), ht);
+		map_put_str(&user_input, key,
+				strdup(gtk_entry_get_text(GTK_ENTRY(widgets[wgt]))));
 	}
 
 	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
 		key = get_ui_key(i, UI_COMBO);
 		wgt = get_ui_widget(i, UI_COMBO);
-		snprintf(tmp, sizeof(tmp), "%d", gtk_combo_box_get_active(
+		buf_printf(tmp, "%d", gtk_combo_box_get_active(
 					GTK_COMBO_BOX(widgets[wgt])));
-		ht_set(key, tmp, ht);
+		map_put_str(&user_input, key, strdup(tmp));
+		buf_free(tmp);
 	}
-
-	printHashtable(ht);
 }
 
-void update_user_interface(Hashtable ht[static 1])
+void update_user_interface(void)
 {
 	/* --- Data --- */
-	char s[BUFSIZ];
-	const char *key = 0;
+	char *s = 0;
+	char *key = 0;
 	const char *value = 0;
 	unsigned wgt = 0;
 
-	key = get_ui_key(SPECIAL_FILENAME, UI_SPECIAL);
-	value = ht_get(key, ht);
-	if (value)
-		snprintf(s, sizeof(s), "File set to run:\n%s", value);
-	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), s); 
+	key = strdup(get_ui_key(SPECIAL_FILENAME, UI_SPECIAL));
+	upper(key);
+	value = map_get_str(&user_input, key);
+	if (value) {
+		buf_printf(s, "File set to run:\n%s", value);
+		gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), s); 
+		buf_free(s);
+	}
 
 	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
-		key = get_ui_key(i, UI_FIXED);
-		value = ht_get(key, ht);
+		key = strdup(get_ui_key(i, UI_FIXED));
+		upper(key);
+		value = map_get_str(&user_input, key);
 		wgt = get_ui_widget(i, UI_FIXED);
 		if (value)
 			gtk_entry_set_text(GTK_ENTRY(widgets[wgt]), value);
 	}
 
 	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
-		key = get_ui_key(i, UI_COMBO);
-		value = ht_get(key, ht);
+		key = strdup(get_ui_key(i, UI_COMBO));
+		upper(key);
+		value = map_get_str(&user_input, key);
 		wgt = get_ui_widget(i, UI_COMBO);
 		if (value)
 			gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[wgt]),
@@ -219,28 +225,28 @@ void update_user_interface(Hashtable ht[static 1])
 	}
 }
 
-void validateUI(Validator val[static 1], Hashtable ht[static 1])
+void validateUI(Validator val[static 1])
 {
 	unsigned err = 0;
 	const char *key = 0;
 	const char *value = 0;
 	for (unsigned i = 0; i < UI_AMOUNT; i++) {
 		key = get_ui_key(i, UI_INT);
-		if (!ht_get(key, ht)) {
+		if (!map_get_str(&user_input, key)) {
 			updateValidation(val, ERROR, "%s undefined", key);
 			err++;
 		}
 	}
 	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
 		key = get_ui_key(i, UI_FIXED);
-		if (!ht_get(key, ht)) {
+		if (!map_get_str(&user_input, key)) {
 			updateValidation(val, ERROR, "%s undefined", key);
 			err++;
 		}
 	}
 	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
 		key = get_ui_key(i, UI_COMBO);
-		if (!ht_get(key, ht)) {
+		if (!map_get_str(&user_input, key)) {
 			updateValidation(val, ERROR, "%s undefined", key);
 			err++;
 		}
@@ -248,7 +254,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 	if (err) return;
 
 	key = get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL);
-	value = ht_get(key, ht);
+	value = map_get_str(&user_input, key);
 	size_t len = 0;
 	register unsigned colcnt = 0;
 	const char *kc = value;
@@ -258,8 +264,10 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 	struct date *tempDate = 0;
 
 	/* ----- Check File -----*/
-	if (!ht_get(get_ui_key(SPECIAL_FILENAME, UI_SPECIAL), ht))
+	if (!map_get_str(&user_input,
+				get_ui_key(SPECIAL_FILENAME, UI_SPECIAL))) {
 		updateValidation(val, ERROR, "No file selected to run");
+	}
 
 	/* ----- Check keycell -----*/
 	len = strlen(kc);
@@ -303,7 +311,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 
 	/* ----- Check DOC -----*/
 	key = get_ui_key(UI_DOC, UI_FIXED);
-	value = ht_get(key, ht);
+	value = map_get_str(&user_input, key);
 	char temp[strlen(value) + 1];
 	snprintf(temp, sizeof(temp), "%s", value);
 
@@ -332,7 +340,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 
 	/* ----- Check DR -----*/
 	key = get_ui_key(UI_DR, UI_FIXED);
-	value = ht_get(key, ht);
+	value = map_get_str(&user_input, key);
 	if (!isfloat(value)) {
 		updateValidation(val, ERROR, "DR [%s], "
 				"expected of the form %s",
@@ -341,7 +349,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 
 	/* ----- Check Age Correction -----*/
 	key = get_ui_key(UI_AGECORR, UI_FIXED);
-	value = ht_get(key, ht);
+	value = map_get_str(&user_input, key);
 	if (!isint(value)) {
 		updateValidation(val, ERROR, "Age Correction [%s], "
 				"expected of the form %s", 
@@ -350,7 +358,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 
 	/* ----- Check Inflation -----*/
 	key = get_ui_key(UI_INFL, UI_FIXED);
-	value = ht_get(key, ht);
+	value = map_get_str(&user_input, key);
 	if (!isfloat(value)) {
 		updateValidation(val, ERROR, "Inflation [%s], "
 				"expected of the form %s", 
@@ -359,7 +367,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 
 	/* ----- Check Termination percentage -----*/
 	key = get_ui_key(UI_TRM_PERCDEF, UI_FIXED);
-	value = ht_get(key, ht);
+	value = map_get_str(&user_input, key);
 	if (!isfloat(value)) {
 		updateValidation(val, ERROR, "Termination % [%s] (usually 1), "
 				"expected of the form %s", 
@@ -368,7 +376,7 @@ void validateUI(Validator val[static 1], Hashtable ht[static 1])
 
 	/* ----- Check DR 113 -----*/
 	key = get_ui_key(UI_DR113, UI_FIXED);
-	value = ht_get(key, ht);
+	value = map_get_str(&user_input, key);
 	if (!isfloat(value)) {
 		updateValidation(val, WARNING, "DR $113 [%s], "
 				"expected of the form %s", 

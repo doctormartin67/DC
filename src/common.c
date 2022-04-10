@@ -197,7 +197,7 @@ void *map_get(Map *map, const void *key)
 			(uint64_t)(uintptr_t)key);
 }
 
-void map_put(Map *map, const void *key, void *val)
+void map_put(Map *map, const void *key, const void *val)
 {
 	map_put_uint64_from_uint64(map, (uint64_t)(uintptr_t)key,
 			(uint64_t)(uintptr_t)val);
@@ -220,7 +220,7 @@ void *map_get_str(Map *map, const char *str)
 	return (void *)(uintptr_t)map_get_uint64_from_uint64(map, key);
 }
 
-void map_put_str(Map *map, const char *str, void *val)
+void map_put_str(Map *map, const char *str, const void *val)
 {
 	uint64_t hash = hash_bytes(str, strlen(str));
 	uint64_t key = hash ? hash : 1;

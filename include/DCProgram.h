@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <gtk/gtk.h>
-#include "hashtable.h"
 #include "dates.h"
 #include "validation.h"
 #include "inputdata.h"
