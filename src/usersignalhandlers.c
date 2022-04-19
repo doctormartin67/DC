@@ -4,6 +4,7 @@
 #define LHEADER "<<<<<"
 #define RHEADER ">>>>>"
 
+extern Arena ui_arena;
 extern void reset_database(void);
 
 /*
@@ -12,7 +13,7 @@ extern void reset_database(void);
  */
 static unsigned current_interpreter;
 
-static void set_interpreter_text(unsigned intprtr);
+static void set_interpreter_text(size_t i);
 
 void on_close_button_press_event(void)
 {
@@ -22,7 +23,6 @@ void on_close_button_press_event(void)
 
 static void read_user_input(const char *file_name)
 {
-	Map *user_input = get_user_input();
 	FILE *fp = fopen(file_name, "r");
 	if (!fp) die("Unable to read file [%s]", file_name);
 	size_t len = BUFSIZ;
@@ -33,6 +33,9 @@ static void read_user_input(const char *file_name)
 	char *pl = line;
 	char *pv = value;
 	long fppos = 0;
+
+	char *tmp = 0;
+	UserInput *const *ui = get_user_input();
 
 	while (0 != fgets(line, len, fp)) {
 		if (0 == (key = strinside(line, LHEADER, RHEADER))) continue;
@@ -54,7 +57,14 @@ static void read_user_input(const char *file_name)
 		else
 			*pv = '\0';
 
-		map_put_str(user_input, key, strdup(value));
+		for (size_t i = 0; i < buf_len(ui); i++) {
+			tmp = strdup(ui[i]->name);
+			upper(tmp);
+			if (!strcmp(tmp, key)) {
+				ui[i]->input = arena_str_dup(&ui_arena,
+						strdup(value));
+			}
+		}
 
 		pv = value;
 		fseek(fp, fppos, SEEK_SET);
@@ -65,49 +75,21 @@ static void read_user_input(const char *file_name)
 
 static void write_user_input(const char *restrict file_name)
 {
-	Map *user_input = get_user_input();
 	FILE *fp = fopen(file_name, "w");
 	if (!fp) die("Unable to open/create file [%s]", file_name);
-	char *buf = 0;
-	char *key = 0;
 
-	for (size_t i = 0; i < UI_AMOUNT; i++) {
-		key = strdup(get_ui_key(i, UI_INT));
-		upper(key);
-		buf_printf(buf, "%s%s%s\n", LHEADER, key, RHEADER);
+	const char *name = 0;
+	const char *input = 0;
+	char *buf = 0;
+	UserInput *const *ui = get_user_input();
+
+	for (size_t i = 0; i < buf_len(ui); i++) {
+		name = ui[i]->name;
+		input = ui[i]->input;
+		buf_printf(buf, "%s%s%s\n", LHEADER, name, RHEADER);
 		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
 		buf_free(buf);
-		buf_printf(buf, "%s\n", map_get_str(user_input, key));
-		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
-		buf_free(buf);
-	}
-	for (size_t i = 0; i < UI_FIXED_AMOUNT; i++) {
-		key = strdup(get_ui_key(i, UI_FIXED));
-		upper(key);
-		buf_printf(buf, "%s%s%s\n", LHEADER, key, RHEADER);
-		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
-		buf_free(buf);
-		buf_printf(buf, "%s\n", map_get_str(user_input, key));
-		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
-		buf_free(buf);
-	}
-	for (size_t i = 0; i < COMBO_AMOUNT; i++) {
-		key = strdup(get_ui_key(i, UI_COMBO));
-		upper(key);
-		buf_printf(buf, "%s%s%s\n", LHEADER, key, RHEADER);
-		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
-		buf_free(buf);
-		buf_printf(buf, "%s\n", map_get_str(user_input, key));
-		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
-		buf_free(buf);
-	}
-	for (size_t i = 0; i < SPECIAL_AMOUNT; i++) {
-		key = strdup(get_ui_key(i, UI_SPECIAL));
-		upper(key);
-		buf_printf(buf, "%s%s%s\n", LHEADER, key, RHEADER);
-		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
-		buf_free(buf);
-		buf_printf(buf, "%s\n", map_get_str(user_input, key));
+		buf_printf(buf, "%s\n", input);
 		if (fputs(buf, fp) == EOF) die("fputs returned EOF");
 		buf_free(buf);
 	}
@@ -125,7 +107,7 @@ void on_openDC_activate(GtkMenuItem *m)
 	GtkDialog *dialog = 0;
 	GtkFileChooser *chooser = 0;
 
-	dialog = GTK_DIALOG(widgets[OPENDCFILE]);
+	dialog = GTK_DIALOG(widgets[ID_OPENDCFILE]);
 	gtk_widget_show(GTK_WIDGET(dialog));
 	res = gtk_dialog_run(dialog); 
 
@@ -163,8 +145,8 @@ void on_saveasDC_activate(GtkMenuItem *m)
 	GtkFileChooser *chooser = 0;
 	gint res = 0;
 
-	set_user_input();
-	dialog = GTK_DIALOG(widgets[SAVEASDCFILE]);
+	set_user_inputs();
+	dialog = GTK_DIALOG(widgets[ID_SAVEASDCFILE]);
 	gtk_widget_show(GTK_WIDGET(dialog));
 	res = gtk_dialog_run(dialog); 
 
@@ -195,32 +177,54 @@ void on_saveasDC_activate(GtkMenuItem *m)
 	gtk_widget_hide(GTK_WIDGET(dialog));
 }
 
+static const char *get_chooser(WidgetId id)
+{
+	GtkDialog *dialog = GTK_DIALOG(widgets[id]);
+	GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+	const char *input = gtk_file_chooser_get_filename(chooser);
+	if (!input) {
+		printf("Warning: file name set to null\n");
+		return 0;
+	}
+	return arena_str_dup(&ui_arena, input);
+}
+
 /*
  * sets the file name of the user input to the chosen excel file
  */
 void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 {
-	Map *user_input = get_user_input();
 	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("dialog [%s] closed\n", gtk_file_chooser_button_get_title(b));
 
-	GtkDialog *dialog = 0;
-	const char *key = 0;
-	char *filename = 0;
 	char *tmp = 0;
+	const char *name = 0;
+	UserInput *const *ui = get_user_input();
 
-	dialog = GTK_DIALOG(widgets[OPENEXCELFILE]);
-	GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
-	filename = gtk_file_chooser_get_filename(chooser);
+	ui[INPUT_FILENAME]->input = get_chooser(ID_FILENAME);
+	name = ui[INPUT_FILENAME]->input;
+	buf_printf(tmp, "File set to run:\n%s", name);
 
-	key = get_ui_key(SPECIAL_FILENAME, UI_SPECIAL);
-	map_put_str(user_input, key, strdup(filename));
-	buf_printf(tmp, "File set to run:\n%s", filename);
-
-	printf("Excel to run: [%s]\n", filename);
-	gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), tmp); 
-	g_free(filename);
+	printf("Excel to run: [%s]\n", name);
+	gtk_label_set_text(GTK_LABEL(widgets[ID_FILENAME_LABEL]), tmp); 
 	buf_free(tmp);
+}
+
+static void set_input_interpreter(UserInput *ui)
+{
+	assert(ID_INTERPRETERTEXT == ui->id);
+	assert(WIDGET_INTERPRETER == ui->widget_kind);
+
+	GtkTextBuffer *temp = gtk_text_view_get_buffer(
+			GTK_TEXT_VIEW(widgets[ID_INTERPRETERTEXT]));
+	gchar *s = 0;
+	GtkTextIter begin, end;
+	gtk_text_buffer_get_iter_at_offset(temp, &begin, 0);
+	gtk_text_buffer_get_iter_at_offset(temp, &end, -1);
+	s = gtk_text_buffer_get_text(temp, &begin, &end, TRUE);
+
+	ui->input = arena_str_dup(&ui_arena, s);
+	g_free(s);
 }
 
 /*
@@ -233,24 +237,11 @@ void on_LYfilechooserbutton_file_set(GtkFileChooserButton *b, gpointer p)
 gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
 		gpointer p)
 {
-	Map *user_input = get_user_input();
 	if (0 != p) printf("unused pointer [%p]\n", p);
 	printf("GdkEventType [%d]\n", gdk_event_get_event_type(e));
 
-	GtkTextBuffer *temp = gtk_text_view_get_buffer(
-			GTK_TEXT_VIEW(widgets[INTERPRETERTEXT]));
-	gchar *s = 0;
-	GtkTextIter begin, end;
-	gtk_text_buffer_get_iter_at_offset(temp, &begin, 0);
-	gtk_text_buffer_get_iter_at_offset(temp, &end, -1);
-	s = gtk_text_buffer_get_text(temp, &begin, &end, TRUE);
-
-	assert(current_interpreter < UI_AMOUNT) ;
-
-	map_put_str(user_input, get_ui_key(current_interpreter, UI_INT),
-			strdup(s));
-	g_free(s);
-
+	UserInput *const *ui = get_user_input();
+	set_input_interpreter(ui[current_interpreter]);
 	gtk_widget_hide(w);
 	return TRUE;
 }
@@ -262,7 +253,7 @@ gboolean on_interpreterwindow_delete_event(GtkWidget *w, GdkEvent *e,
 void on_SS_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_SS);
+	set_interpreter_text(INPUT_SS);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -273,7 +264,7 @@ void on_SS_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 void on_turnover_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_TURNOVER);
+	set_interpreter_text(INPUT_TURNOVER);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -284,7 +275,7 @@ void on_turnover_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 void on_retx_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_RETX);
+	set_interpreter_text(INPUT_RETX);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -295,77 +286,77 @@ void on_retx_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 void on_NRA_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_NRA);
+	set_interpreter_text(INPUT_NRA);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_admincost_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_ADMINCOST);
+	set_interpreter_text(INPUT_ADMINCOST);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_costRES_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_COSTRES);
+	set_interpreter_text(INPUT_COSTRES);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_costKO_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_COSTKO);
+	set_interpreter_text(INPUT_COSTKO);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_WD_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_WD);
+	set_interpreter_text(INPUT_WD);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_prepost_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_PREPOST);
+	set_interpreter_text(INPUT_PREPOST);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_term_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_TERM);
+	set_interpreter_text(INPUT_TERM);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_ltINS_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_LTINS);
+	set_interpreter_text(INPUT_LTINS);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_ltTERM_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_LTTERM);
+	set_interpreter_text(INPUT_LTTERM);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_contrA_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_CONTRA);
+	set_interpreter_text(INPUT_CONTRA);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
 void on_contrC_interpreterbutton_clicked(GtkButton *b, gpointer *w)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	set_interpreter_text(UI_CONTRC);
+	set_interpreter_text(INPUT_CONTRC);
 	gtk_widget_show_all(GTK_WIDGET(w));
 }
 
@@ -374,21 +365,19 @@ void on_contrC_interpreterbutton_clicked(GtkButton *b, gpointer *w)
  * the interpreter window to s
  * also updates the current_interpreter to intprtr
  */
-static void set_interpreter_text(unsigned intprtr)
+static void set_interpreter_text(size_t i)
 {
-	Map *user_input = get_user_input();
-	char *s = strdup(get_ui_key(intprtr, UI_INT));
-	upper(s);
-	const char *t = map_get_str(user_input, s);
-	printf("s = %s\n", s);
-	printf("t = %s\n", t);
+	const UserInput *ui = get_user_input()[i];
+	assert(ui);
+	assert(WIDGET_INTERPRETER == ui->widget_kind);
+	const char *name = ui->name;
+	const char *input = ui->input;
 	GtkTextBuffer *temp = gtk_text_view_get_buffer(
-			GTK_TEXT_VIEW(widgets[INTERPRETERTEXT]));
+			GTK_TEXT_VIEW(widgets[ID_INTERPRETERTEXT]));
 
-	if (t) gtk_text_buffer_set_text(temp, t, -1);
+	if (input) gtk_text_buffer_set_text(temp, input, -1);
 	else gtk_text_buffer_set_text(temp, "", -1);
 
-	current_interpreter = intprtr;
-	assert(current_interpreter < UI_AMOUNT);
-	gtk_window_set_title(GTK_WINDOW(widgets[INTERPRETERWINDOW]), s);
+	current_interpreter = i;
+	gtk_window_set_title(GTK_WINDOW(widgets[ID_INTERPRETERWINDOW]), name);
 }

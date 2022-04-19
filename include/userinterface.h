@@ -4,64 +4,93 @@
 #include "DCProgram.h"
 #define GLADEFILE "glade/DCProgram.glade"
 
-enum {
-	SHEETNAME, KEYCELL, W_DOC_LY, DR, AGECORR, INFL, TRM_PERCDEF, DR113,
-	INTERPRETERTEXT, STANDARD, W_ASSETS_LY, PUCTUC, MAXPUCTUC, MAXERCONTR,
-	EVALUATEDTH, RUNCHOICE, TESTCASEBOX, TESTCASE, OPENDCFILE,
-	SAVEASDCFILE, OPENEXCELFILE, WINDOW, INTERPRETERWINDOW, MSGERR,
-	FILENAME, STARTSTOP, WIDGET_AMOUNT
-}; 
+typedef enum {
+	ID_SHEETNAME,
+	ID_KEYCELL,
+	ID_DOC,
+	ID_DR,
+	ID_AGECORR,
+	ID_INFL,
+	ID_TRM_PERCDEF,
+	ID_DR113,
+	ID_INTERPRETERTEXT,
+	ID_STANDARD,
+	ID_ASSETS,
+	ID_PUCTUC,
+	ID_MAXPUCTUC,
+	ID_MAXERCONTR,
+	ID_EVALUATEDTH,
+	ID_RUNCHOICE,
+	ID_TESTCASEBOX,
+	ID_TESTCASE,
+	ID_OPENDCFILE,
+	ID_SAVEASDCFILE,
+	ID_FILENAME,
+	ID_WINDOW,
+	ID_INTERPRETERWINDOW,
+	ID_MSGERR,
+	ID_FILENAME_LABEL,
+	ID_STARTSTOP,
+} WidgetId;
 
-/*
- * interpreter indexes, meaning the variables that use an interpreter to be
- * determined
- */
-enum {
-	UI_SS, UI_TURNOVER, UI_RETX, UI_NRA,
-	UI_ADMINCOST, UI_COSTRES, UI_COSTKO, UI_WD, UI_PREPOST, UI_TERM,
-	UI_LTINS, UI_LTTERM,
-	UI_CONTRA, UI_CONTRC,
-	UI_AMOUNT
-};
+typedef enum {
+	WIDGET_ENTRY,
+	WIDGET_COMBO_BOX,
+	WIDGET_INTERPRETER,
+	WIDGET_FILE_CHOOSER,
+} WidgetKind;
 
-/*
- * indexes used for the variables in the user interface that are fixed
- */
-enum {
-	UI_SHEETNAME, UI_DOC, UI_DR, UI_AGECORR, UI_INFL, UI_TRM_PERCDEF,
-	UI_DR113, UI_FIXED_AMOUNT
-};
+typedef enum {
+	// Interpreter
+	INPUT_SS,
+	INPUT_TURNOVER,
+	INPUT_RETX,
+	INPUT_NRA,
+	INPUT_ADMINCOST,
+	INPUT_COSTRES,
+	INPUT_COSTKO,
+	INPUT_WD,
+	INPUT_PREPOST,
+	INPUT_TERM,
+	INPUT_LTINS,
+	INPUT_LTTERM,
+	INPUT_CONTRA,
+	INPUT_CONTRC,
 
-/*
- * indexes used for user input that use combo boxes to determine which method
- * is used
- */
-enum {
-	COMBO_STANDARD, COMBO_ASSETS, COMBO_PUCTUC, COMBO_MAXPUCTUC,
-	COMBO_MAXERCONTR, COMBO_EVALDTH, COMBO_AMOUNT
-};
+	// Entry
+	INPUT_SHEETNAME,
+	INPUT_DOC,
+	INPUT_DR,
+	INPUT_AGECORR,
+	INPUT_INFL,
+	INPUT_TRM_PERCDEF,
+	INPUT_DR113,
 
-/*
- * indexes used for user input that have some special maniulation to be done
- */
-enum {
-	SPECIAL_KEYCELL, SPECIAL_FILENAME, SPECIAL_AMOUNT
-};
+	//Combo
+	INPUT_STANDARD,
+	INPUT_ASSETS,
+	INPUT_PUCTUC,
+	INPUT_MAXPUCTUC,
+	INPUT_MAXERCONTR,
+	INPUT_EVALUATEDTH,
 
-enum {UI_INT, UI_FIXED, UI_COMBO, UI_SPECIAL};
+	// Other
+	INPUT_KEYCELL,
+	INPUT_FILENAME,
+} InputKind;
 
-struct user_input {
-	const char *const key;
-	unsigned widget;
-};
+typedef struct UserInput {
+	WidgetKind widget_kind;
+	InputKind input_kind;
+	WidgetId id;
+	const char *name;
+	const char *input;
+} UserInput;
 
-extern const char *const widgetname[WIDGET_AMOUNT]; 
-extern GtkWidget *widgets[WIDGET_AMOUNT];
+extern GtkWidget **widgets;
 
-const char *get_ui_key(unsigned var, unsigned type);
-unsigned get_ui_widget(unsigned var, unsigned type);
-Map *get_user_input(void);
-void set_user_input(void);
+UserInput **get_user_input(void);
+void set_user_inputs(void);
 void update_user_interface(void);
 void validateUI(Validator *); 
 void validateData(Validator *);

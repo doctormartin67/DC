@@ -10,85 +10,43 @@ const char *const validMsg[ERR_AMOUNT] = {
 	[CELLERR] = "^[A-Z][A-Z]?[A-Z]?[1-9][0-9]*$"
 };
 
-const char *const widgetname[WIDGET_AMOUNT] = {
-	[SHEETNAME] = "sheetname", [KEYCELL] = "keycell", [W_DOC_LY] = "DOC",
-	[DR] = "DR", [AGECORR] = "agecorr", [INFL] = "infl",
-	[TRM_PERCDEF] = "TRM_PercDef", [DR113] = "DR113",
-	[INTERPRETERTEXT] = "interpretertext", [STANDARD] = "standard",
-	[W_ASSETS_LY] = "assets", [PUCTUC] = "PUCTUC",
-	[MAXPUCTUC] = "maxPUCTUC", [MAXERCONTR] = "maxERContr",
-	[EVALUATEDTH] = "evaluateDTH", [RUNCHOICE] = "runchoice",
-	[TESTCASEBOX] = "testcasebox", [TESTCASE] = "testcase",
-	[OPENDCFILE] = "openDCFile", [SAVEASDCFILE] = "saveasDCFile",
-	[OPENEXCELFILE] = "openExcelFile", [WINDOW] = "window",
-	[INTERPRETERWINDOW] = "interpreterwindow", [MSGERR] = "MsgErr",
-	[FILENAME] = "filename", [STARTSTOP] = "startstop"
+const char *const widget_names[] = {
+	[ID_SHEETNAME] = "sheetname",
+	[ID_KEYCELL] = "keycell",
+	[ID_DOC] = "DOC",
+	[ID_DR] = "DR",
+	[ID_AGECORR] = "agecorr",
+	[ID_INFL] = "infl",
+	[ID_TRM_PERCDEF] = "TRM_PercDef",
+	[ID_DR113] = "DR113",
+	[ID_INTERPRETERTEXT] = "interpretertext",
+	[ID_STANDARD] = "standard",
+	[ID_ASSETS] = "assets",
+	[ID_PUCTUC] = "PUCTUC",
+	[ID_MAXPUCTUC] = "maxPUCTUC",
+	[ID_MAXERCONTR] = "maxERContr",
+	[ID_EVALUATEDTH] = "evaluateDTH",
+	[ID_RUNCHOICE] = "runchoice",
+	[ID_TESTCASEBOX] = "testcasebox",
+	[ID_TESTCASE] = "testcase",
+	[ID_OPENDCFILE] = "openDCFile",
+	[ID_SAVEASDCFILE] = "saveasDCFile",
+	[ID_FILENAME] = "openExcelFile",
+	[ID_WINDOW] = "window",
+	[ID_INTERPRETERWINDOW] = "interpreterwindow",
+	[ID_MSGERR] = "MsgErr",
+	[ID_FILENAME_LABEL] = "filename",
+	[ID_STARTSTOP] = "startstop"
 };
 
-static const struct user_input ui_interpreter_variables[UI_AMOUNT] = {
-	[UI_SS] = {"Salary Scale", INTERPRETERTEXT},
-	[UI_TURNOVER] = {"Turnover", INTERPRETERTEXT},
-	[UI_RETX] = {"Retirement Probability", INTERPRETERTEXT},
-	[UI_NRA] = {"Normal Retirement Age", INTERPRETERTEXT},
-	[UI_ADMINCOST] = {"Administration Cost", INTERPRETERTEXT},
-	[UI_COSTRES] = {"Cost on Reserves", INTERPRETERTEXT},
-	[UI_COSTKO] = {"Cost on Lump Sum Life", INTERPRETERTEXT},
-	[UI_WD] = {"Profit Sharing for Mortality", INTERPRETERTEXT},
-	[UI_PREPOST] = {"Immediate or Due payments", INTERPRETERTEXT},
-	[UI_TERM] = {"Payment Frequency", INTERPRETERTEXT},
-	[UI_LTINS] = {"Life Tables Insurer", INTERPRETERTEXT},
-	[UI_LTTERM] = {"Life Tables After Termination", INTERPRETERTEXT},
-	[UI_CONTRA] = {"Employer Contribution", INTERPRETERTEXT},
-	[UI_CONTRC] = {"Employee Contribution", INTERPRETERTEXT}
-};
-
-static struct user_input ui_fixed_variables[UI_FIXED_AMOUNT] = {
-	[UI_SHEETNAME] = {"Sheet name", SHEETNAME},
-	[UI_DOC] = {"DOC", W_DOC_LY},
-	[UI_DR] = {"DR", DR},
-	[UI_AGECORR] = {"Age Correction", AGECORR},
-	[UI_INFL] = {"Inflation", INFL},
-	[UI_TRM_PERCDEF] = {"Termination percentage", TRM_PERCDEF},
-	[UI_DR113] = {"DR $113", DR113}
-};
-
-static const struct user_input ui_method_variables[COMBO_AMOUNT] = {
-	[COMBO_STANDARD] = {"Standard IAS/FAS", STANDARD},
-	[COMBO_ASSETS] = {"Assets", W_ASSETS_LY},
-	[COMBO_PUCTUC] = {"PUC/TUC", PUCTUC},
-	[COMBO_MAXPUCTUC] = {"max(PUC, TUC)", MAXPUCTUC},
-	[COMBO_MAXERCONTR] = {"max(NC, ER Contr)", MAXERCONTR},
-	[COMBO_EVALDTH] = {"Evaluate Death", EVALUATEDTH}
-};
-
-static const struct user_input ui_special_variables[SPECIAL_AMOUNT] = {
-	[SPECIAL_KEYCELL] = {"Key Cell", KEYCELL},
-	[SPECIAL_FILENAME] = {"File Name", FILENAME}
-};
-
-GtkWidget *widgets[WIDGET_AMOUNT];
+GtkWidget **widgets;
+static UserInput **user_input;
 static GtkBuilder *builder;
 
-static Map user_input;
-
-static GtkWidget *buildWidget(const char *);
-
-void userinterface()
+UserInput **get_user_input(void)
 {
-	gtk_init(0, 0);
-
-	builder = gtk_builder_new_from_file(GLADEFILE);
-
-	for (unsigned i = 0; i < WIDGET_AMOUNT; i++)
-		widgets[i] = buildWidget(widgetname[i]);
-
-	gtk_builder_connect_signals(builder, 0);
-	g_signal_connect(widgets[WINDOW], "destroy",
-			G_CALLBACK(gtk_main_quit), 0);
-
-	gtk_widget_show(widgets[WINDOW]);
-
-	gtk_main();
+	assert(user_input);
+	return user_input;
 }
 
 static GtkWidget *buildWidget(const char w[static 1])
@@ -98,174 +56,208 @@ static GtkWidget *buildWidget(const char w[static 1])
 	return widget;
 }
 
-const char *get_ui_key(unsigned var, unsigned type)
+static void init_window(void)
 {
-	const char *s = 0;
-	char *key = 0;
-	switch (type) {
-		case UI_INT:
-			assert(var < UI_AMOUNT);
-			s = ui_interpreter_variables[var].key;	
-			break;
-		case UI_FIXED:
-			assert(var < UI_FIXED_AMOUNT);
-			s = ui_fixed_variables[var].key;
-			break;
-		case UI_COMBO:
-			assert(var < COMBO_AMOUNT);
-			s = ui_method_variables[var].key;
-			break;
-		case UI_SPECIAL:
-			assert(var < SPECIAL_AMOUNT);
-			s = ui_special_variables[var].key;
-			break;
-		default :
-			die("should never reach here");
-	}
+	gtk_builder_connect_signals(builder, 0);
+	g_signal_connect(widgets[ID_WINDOW], "destroy",
+			G_CALLBACK(gtk_main_quit), 0);
 
-	assert(s);
-	key = strdup(s);
-	upper(key);
-	return key;
+	gtk_widget_show(widgets[ID_WINDOW]);
 }
 
-unsigned get_ui_widget(unsigned var, unsigned type)
+static void init_widgets(void)
 {
-	unsigned wgt = 0;
-	switch (type) {
-		case UI_INT:
-			assert(var < UI_AMOUNT);
-			wgt = ui_interpreter_variables[var].widget;	
-			break;
-		case UI_FIXED:
-			assert(var < UI_FIXED_AMOUNT);
-			wgt = ui_fixed_variables[var].widget;
-			break;
-		case UI_COMBO:
-			assert(var < COMBO_AMOUNT);
-			wgt = ui_method_variables[var].widget;
-			break;
-		default :
-			die("should never reach here");
-	}
+	builder = gtk_builder_new_from_file(GLADEFILE);
 
-	return wgt;
+	size_t num_widgets = sizeof(widget_names)/sizeof(widget_names[0]);
+	for (size_t i = 0; i < num_widgets; i++) {
+		buf_push(widgets, buildWidget(widget_names[i]));
+	}
 }
 
-Map *get_user_input(void)
+Arena ui_arena;
+static UserInput *new_user_input(WidgetKind widget_kind, InputKind input_kind,
+		WidgetId id, const char *name, const char *input)
 {
-	return &user_input;
+	UserInput *ui = arena_alloc(&ui_arena, sizeof(*ui));	
+	ui->widget_kind = widget_kind;
+	ui->input_kind = input_kind;
+	ui->id = id;
+	ui->name = name;
+	ui->input = input;
+	return ui;
 }
 
-void set_user_input(void)
+#define USER_INPUT_I(input, name) \
+	buf_push(user_input, new_user_input(WIDGET_INTERPRETER, INPUT_##input, \
+				ID_INTERPRETERTEXT, name, 0));
+#define USER_INPUT_E(i, name) \
+	buf_push(user_input, new_user_input(WIDGET_ENTRY, INPUT_##i, \
+				ID_##i, name, 0));
+#define USER_INPUT_C(i, name) \
+	buf_push(user_input, new_user_input(WIDGET_COMBO_BOX, INPUT_##i, \
+				ID_##i, name, 0));
+#define USER_INPUT_F(i, name) \
+	buf_push(user_input, new_user_input(WIDGET_FILE_CHOOSER, INPUT_##i, \
+				ID_##i, name, 0));
+
+/*
+ * these buf_pushes need to be in the same order as the enum InputKind!
+ */
+static void init_user_input(void)
 {
-	char *tmp = 0;
-	char *kc = 0;
-	const char *key = 0;
-	unsigned wgt = 0;
+	USER_INPUT_I(SS, "Salary Scale");
+	USER_INPUT_I(TURNOVER, "Turnover");
+	USER_INPUT_I(RETX, "Retirement Probability");
+	USER_INPUT_I(NRA, "Normal Retirement Age");
+	USER_INPUT_I(ADMINCOST, "Administration Cost");
+	USER_INPUT_I(COSTRES, "Cost on Reserves");
+	USER_INPUT_I(COSTKO, "Cost on Lump Sum Life");
+	USER_INPUT_I(WD, "Profit Sharing for Mortality");
+	USER_INPUT_I(PREPOST, "Immediate or Due payments");
+	USER_INPUT_I(TERM, "Payment Frequency");
+	USER_INPUT_I(LTINS, "Life Tables Insurer");
+	USER_INPUT_I(LTTERM, "Life Tables After Termination");
+	USER_INPUT_I(CONTRA, "Employer Contribution");
+	USER_INPUT_I(CONTRC, "Employee Contribution");
 
-	kc = strdup(gtk_entry_get_text(GTK_ENTRY(widgets[KEYCELL])));
-	upper(kc);
-	map_put_str(&user_input, get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL),
-	strdup(kc));
-	free(kc);
-	kc = 0;
+	USER_INPUT_E(SHEETNAME, "Sheet name");
+	USER_INPUT_E(DOC, "DOC");
+	USER_INPUT_E(DR, "DR");
+	USER_INPUT_E(AGECORR, "Age Correction");
+	USER_INPUT_E(INFL, "Inflation");
+	USER_INPUT_E(TRM_PERCDEF, "Termination percentage");
+	USER_INPUT_E(DR113, "DR $113");
 
-	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
-		key = get_ui_key(i, UI_FIXED);
-		wgt = get_ui_widget(i, UI_FIXED);
-		map_put_str(&user_input, key,
-				strdup(gtk_entry_get_text(GTK_ENTRY(widgets[wgt]))));
+	USER_INPUT_C(STANDARD, "Standard IAS/FAS");
+	USER_INPUT_C(ASSETS, "Assets");
+	USER_INPUT_C(PUCTUC, "PUC/TUC");
+	USER_INPUT_C(MAXPUCTUC, "max(PUC, TUC)");
+	USER_INPUT_C(MAXERCONTR, "max(NC, ER Contr)");
+	USER_INPUT_C(EVALUATEDTH, "Evaluate Death");
+
+	USER_INPUT_E(KEYCELL, "Key Cell");
+	USER_INPUT_F(FILENAME, "File Name");
+}
+
+#undef USER_INPUT_I
+#undef USER_INPUT_E
+#undef USER_INPUT_C
+#undef USER_INPUT_F
+
+static void init_interface(void)
+{
+	init_widgets();
+	init_user_input();
+	init_window();
+}
+
+void userinterface(void)
+{
+	gtk_init(0, 0);
+	init_interface();
+	gtk_main();
+}
+
+static const char *get_entry(WidgetId id)
+{
+	const char *input = gtk_entry_get_text(GTK_ENTRY(widgets[id]));
+	assert(input);
+	return arena_str_dup(&ui_arena, input);
+}
+
+static const char *get_combo(WidgetId id)
+{
+	char *buf = 0;
+	const char *input = 0;
+	buf_printf(buf, "%d", gtk_combo_box_get_active(GTK_COMBO_BOX(
+					widgets[id])));
+	input = arena_str_dup(&ui_arena, buf);
+	buf_free(buf);
+	assert(input);
+	return input;
+}
+
+static void set_user_input(UserInput *ui)
+{
+	switch (ui->widget_kind) {
+		case WIDGET_ENTRY:
+			ui->input = get_entry(ui->id);
+			break;
+		case WIDGET_COMBO_BOX:
+			ui->input = get_combo(ui->id);
+			break;
+		case WIDGET_FILE_CHOOSER:
+		case WIDGET_INTERPRETER:
+			// done in usersignalhandlers.c
+			break;
+		default:
+			assert(0);
 	}
+}
 
-	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
-		key = get_ui_key(i, UI_COMBO);
-		wgt = get_ui_widget(i, UI_COMBO);
-		buf_printf(tmp, "%d", gtk_combo_box_get_active(
-					GTK_COMBO_BOX(widgets[wgt])));
-		map_put_str(&user_input, key, strdup(tmp));
-		buf_free(tmp);
+void set_user_inputs(void)
+{
+	for (size_t i = 0; i < buf_len(user_input); i++) {
+		set_user_input(user_input[i]);
 	}
+}
+
+void set_user_interface_input(const UserInput *ui)
+{
+	WidgetId id = ui->id;
+	const char *input = ui->input;
+	switch (ui->widget_kind) {
+		case WIDGET_ENTRY:
+			gtk_entry_set_text(GTK_ENTRY(widgets[id]), input);
+			break;
+		case WIDGET_COMBO_BOX:
+			gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[id]),
+					atoi(input));
+			break;
+		case WIDGET_FILE_CHOOSER:
+			id = ID_FILENAME_LABEL;
+			gtk_label_set_text(GTK_LABEL(widgets[id]), input); 
+			break;
+		case WIDGET_INTERPRETER:
+			// done in usersignalhandlers.c
+			break;
+		default:
+			assert(0);
+	}
+	printf("%s: %s\n", ui->name, ui->input);
 }
 
 void update_user_interface(void)
 {
-	/* --- Data --- */
-	char *s = 0;
-	char *key = 0;
-	const char *value = 0;
-	unsigned wgt = 0;
-
-	key = strdup(get_ui_key(SPECIAL_FILENAME, UI_SPECIAL));
-	upper(key);
-	value = map_get_str(&user_input, key);
-	if (value) {
-		buf_printf(s, "File set to run:\n%s", value);
-		gtk_label_set_text(GTK_LABEL(widgets[FILENAME]), s); 
-		buf_free(s);
-	}
-
-	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
-		key = strdup(get_ui_key(i, UI_FIXED));
-		upper(key);
-		value = map_get_str(&user_input, key);
-		wgt = get_ui_widget(i, UI_FIXED);
-		if (value)
-			gtk_entry_set_text(GTK_ENTRY(widgets[wgt]), value);
-	}
-
-	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
-		key = strdup(get_ui_key(i, UI_COMBO));
-		upper(key);
-		value = map_get_str(&user_input, key);
-		wgt = get_ui_widget(i, UI_COMBO);
-		if (value)
-			gtk_combo_box_set_active(GTK_COMBO_BOX(widgets[wgt]),
-					atoi(value));
+	for (size_t i = 0; i < buf_len(user_input); i++) {
+		set_user_interface_input(user_input[i]);
 	}
 }
 
 void validateUI(Validator val[static 1])
 {
 	unsigned err = 0;
-	const char *key = 0;
 	const char *value = 0;
-	for (unsigned i = 0; i < UI_AMOUNT; i++) {
-		key = get_ui_key(i, UI_INT);
-		if (!map_get_str(&user_input, key)) {
-			updateValidation(val, ERROR, "%s undefined", key);
-			err++;
-		}
-	}
-	for (unsigned i = 0; i < UI_FIXED_AMOUNT; i++) {
-		key = get_ui_key(i, UI_FIXED);
-		if (!map_get_str(&user_input, key)) {
-			updateValidation(val, ERROR, "%s undefined", key);
-			err++;
-		}
-	}
-	for (unsigned i = 0; i < COMBO_AMOUNT; i++) {
-		key = get_ui_key(i, UI_COMBO);
-		if (!map_get_str(&user_input, key)) {
-			updateValidation(val, ERROR, "%s undefined", key);
+	for (size_t i = 0; i < buf_len(user_input); i++) {
+		if (!user_input[i]->input) {
+			updateValidation(val, ERROR,
+					"%s undefined", user_input[i]->name);
 			err++;
 		}
 	}
 	if (err) return;
 
-	key = get_ui_key(SPECIAL_KEYCELL, UI_SPECIAL);
-	value = map_get_str(&user_input, key);
 	size_t len = 0;
 	register unsigned colcnt = 0;
-	const char *kc = value;
+	const char *kc = user_input[INPUT_KEYCELL]->input;
 	const char *pt = 0;
 	char *day = 0, *month = 0, *year = 0;
 	const char *tc = 0;
 	struct date *tempDate = 0;
 
 	/* ----- Check File -----*/
-	if (!map_get_str(&user_input,
-				get_ui_key(SPECIAL_FILENAME, UI_SPECIAL))) {
+	if (!user_input[INPUT_FILENAME]->input) {
 		updateValidation(val, ERROR, "No file selected to run");
 	}
 
@@ -310,8 +302,7 @@ void validateUI(Validator val[static 1])
 				validMsg[CELLERR]);
 
 	/* ----- Check DOC -----*/
-	key = get_ui_key(UI_DOC, UI_FIXED);
-	value = map_get_str(&user_input, key);
+	value = user_input[INPUT_DOC]->input;
 	char temp[strlen(value) + 1];
 	snprintf(temp, sizeof(temp), "%s", value);
 
@@ -339,8 +330,7 @@ void validateUI(Validator val[static 1])
 	}
 
 	/* ----- Check DR -----*/
-	key = get_ui_key(UI_DR, UI_FIXED);
-	value = map_get_str(&user_input, key);
+	value = user_input[INPUT_DR]->input;
 	if (!isfloat(value)) {
 		updateValidation(val, ERROR, "DR [%s], "
 				"expected of the form %s",
@@ -348,8 +338,7 @@ void validateUI(Validator val[static 1])
 	}
 
 	/* ----- Check Age Correction -----*/
-	key = get_ui_key(UI_AGECORR, UI_FIXED);
-	value = map_get_str(&user_input, key);
+	value = user_input[INPUT_AGECORR]->input;
 	if (!isint(value)) {
 		updateValidation(val, ERROR, "Age Correction [%s], "
 				"expected of the form %s", 
@@ -357,8 +346,7 @@ void validateUI(Validator val[static 1])
 	}
 
 	/* ----- Check Inflation -----*/
-	key = get_ui_key(UI_INFL, UI_FIXED);
-	value = map_get_str(&user_input, key);
+	value = user_input[INPUT_INFL]->input;
 	if (!isfloat(value)) {
 		updateValidation(val, ERROR, "Inflation [%s], "
 				"expected of the form %s", 
@@ -366,8 +354,7 @@ void validateUI(Validator val[static 1])
 	}
 
 	/* ----- Check Termination percentage -----*/
-	key = get_ui_key(UI_TRM_PERCDEF, UI_FIXED);
-	value = map_get_str(&user_input, key);
+	value = user_input[INPUT_TRM_PERCDEF]->input;
 	if (!isfloat(value)) {
 		updateValidation(val, ERROR, "Termination % [%s] (usually 1), "
 				"expected of the form %s", 
@@ -375,8 +362,7 @@ void validateUI(Validator val[static 1])
 	}
 
 	/* ----- Check DR 113 -----*/
-	key = get_ui_key(UI_DR113, UI_FIXED);
-	value = map_get_str(&user_input, key);
+	value = user_input[INPUT_DR113]->input;
 	if (!isfloat(value)) {
 		updateValidation(val, WARNING, "DR $113 [%s], "
 				"expected of the form %s", 
@@ -384,7 +370,7 @@ void validateUI(Validator val[static 1])
 	}
 
 	/* ----- Check test case -----*/
-	tc = gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE]));
+	tc = gtk_entry_get_text(GTK_ENTRY(widgets[ID_TESTCASE]));
 	if (!isint(tc) || atoi(tc) < 1) {
 		updateValidation(val, ERROR, "test case [%s] is not valid",
 				tc);

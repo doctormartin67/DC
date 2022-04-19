@@ -35,13 +35,10 @@ const Database *get_database(void)
 static gpointer import_data(gpointer pl)
 {
 	(void)pl;
-	Map *user_input = get_user_input();
-	const char *file_name = map_get_str(user_input, get_ui_key(SPECIAL_FILENAME,
-				UI_SPECIAL));
-	const char *sheet_name = map_get_str(user_input, get_ui_key(UI_SHEETNAME,
-				UI_FIXED));
-	const char *cell = map_get_str(user_input, get_ui_key(SPECIAL_KEYCELL,
-				UI_SPECIAL));
+	UserInput *const *ui = get_user_input();
+	const char *file_name = ui[INPUT_FILENAME]->input;
+	const char *sheet_name = ui[INPUT_SHEETNAME]->input;
+	const char *cell = ui[INPUT_KEYCELL]->input;
 #if 0
 	struct gui_data gd = {"Importing data...", pl};
 	g_idle_add(update_gui, &gd);
@@ -78,9 +75,9 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 	if (run_state & NOT_RUNNING) {
 
 		run_state = RUNNING;
-		gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
+		gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 				"media-playback-stop", GTK_ICON_SIZE_BUTTON);
-		set_user_input();
+		set_user_inputs();
 		validatorLY.status = OK;
 		validateUI(&validatorLY); 
 		//validateData(&validatorLY, ht);
@@ -88,7 +85,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 		if (validatorLY.status != ERROR) {
 			choice = gtk_combo_box_text_get_active_text(
 					GTK_COMBO_BOX_TEXT(
-						widgets[RUNCHOICE]));
+						widgets[ID_RUNCHOICE]));
 			if (strcmp("Run one run", choice) == 0) {
 				g_thread_new("run", run, pl);
 			} else if (strcmp("Run test case", choice) == 0) {
@@ -99,7 +96,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 			g_free(choice);
 		} else {
 			MsgErr = setMsgbuf(&validatorLY);
-			dialog = GTK_DIALOG(widgets[MSGERR]);
+			dialog = GTK_DIALOG(widgets[ID_MSGERR]);
 
 			gtk_message_dialog_format_secondary_text(
 					GTK_MESSAGE_DIALOG(dialog), 
@@ -110,7 +107,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 			gtk_widget_hide(GTK_WIDGET(dialog));
 			run_state = NOT_RUNNING;
 			gtk_image_set_from_icon_name(
-					GTK_IMAGE(widgets[STARTSTOP]),
+					GTK_IMAGE(widgets[ID_STARTSTOP]),
 					"media-playback-start",
 					GTK_ICON_SIZE_BUTTON);
 		}
@@ -129,7 +126,7 @@ static gpointer run(gpointer pl)
 	g_idle_add(update_gui, &gd);
 #endif
 
-	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
+	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[ID_TESTCASE])));
 	assert(tc < db->num_records);
 	tc -= 1; // Index is one less than given test case
 
@@ -151,7 +148,7 @@ static gpointer run(gpointer pl)
 	print_test_case(cm + tc);
 
 	run_state = NOT_RUNNING;
-	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
+	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
 	free_garbage();
 	return 0;
@@ -168,7 +165,7 @@ static gpointer runtc(gpointer pl)
 	g_idle_add(update_gui, &gd);
 #endif
 
-	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[TESTCASE])));
+	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[ID_TESTCASE])));
 	assert(tc < db->num_records);
 	tc -= 1; // Index is one less than given test case
 	cm = cm + tc;
@@ -188,7 +185,7 @@ static gpointer runtc(gpointer pl)
 	print_test_case(cm);
 
 	run_state = NOT_RUNNING;
-	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
+	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
 	free_garbage();
 	return 0;
@@ -203,7 +200,7 @@ static gpointer stoprun(gpointer data)
 #endif
 	(void)data;
 	run_state = NOT_RUNNING;
-	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[STARTSTOP]),
+	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
 	return 0;
 }
