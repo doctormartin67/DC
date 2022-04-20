@@ -94,7 +94,6 @@ void set_user_inputs(void);
 void update_user_interface(void);
 void validateUI(Validator *); 
 void validateData(Validator *);
-void free_garbage(void);
 /* signal functions */
 void on_startstopbutton_clicked(GtkButton *, GtkWidget *);
 gboolean on_interpreterwindow_delete_event(GtkWidget *, GdkEvent *, gpointer);

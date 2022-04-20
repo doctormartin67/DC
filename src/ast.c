@@ -224,6 +224,13 @@ Stmt *new_stmt_for(SrcPos pos, Stmt *dim, Expr *cond, Stmt *next,
 	return s;
 }
 
+static SelectCasePattern *new_select_case_pattern(SelectCasePattern *patterns,
+	size_t num_patterns)
+{
+	SelectCasePattern *scp = AST_DUP(patterns);
+	return scp;
+}
+
 Stmt *new_stmt_select_case(SrcPos pos, Expr *expr, SelectCase *cases,
 		size_t num_cases)
 {
@@ -231,6 +238,12 @@ Stmt *new_stmt_select_case(SrcPos pos, Expr *expr, SelectCase *cases,
 	s->select_case_stmt.expr = expr;
 	s->select_case_stmt.cases = AST_DUP(cases);
 	s->select_case_stmt.num_cases = num_cases;
+	for (size_t i = 0; i < num_cases; i++) {
+		s->select_case_stmt.cases[i].patterns
+			= new_select_case_pattern(
+					cases[i].patterns,
+					cases[i].num_patterns);
+	}
 	return s;
 }
 

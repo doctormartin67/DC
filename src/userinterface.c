@@ -388,8 +388,3 @@ void validateData(Validator val[static 1])
 		//TODO
 	}
 }
-
-void free_garbage(void)
-{
-	dates_arena_free();
-}

@@ -1,0 +1,4 @@
+--memcheck:leak-check=full
+--show-leak-kinds=all
+--error-limit=no
+--suppressions=./GTK.supp

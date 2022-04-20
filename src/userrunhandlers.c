@@ -20,6 +20,11 @@ static gpointer runtc(gpointer pl);
 static gpointer stoprun(gpointer data);
 gboolean update_gui(gpointer data);
 
+static void free_run_garbage(void)
+{
+	dates_arena_free();
+}
+
 const Database *get_database(void)
 {
 	if (!db) {
@@ -150,7 +155,7 @@ static gpointer run(gpointer pl)
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
-	free_garbage();
+	free_run_garbage();
 	return 0;
 }
 
@@ -187,7 +192,7 @@ static gpointer runtc(gpointer pl)
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
-	free_garbage();
+	free_run_garbage();
 	return 0;
 }
 

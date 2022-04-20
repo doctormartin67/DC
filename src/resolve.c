@@ -686,6 +686,7 @@ static Operand resolve_expr_call_default(Operand func, Expr *expr, Sym *sym)
 		buf_push(args, arg.val.d);	
 	}
 	Val val = (Val){.d = sym->func(args, expr->call.num_args)};
+	buf_free(args);
 	return operand_const(func.type->func.ret, val);
 }
 

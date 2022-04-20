@@ -483,15 +483,20 @@ static Stmt *parse_stmt_select(SrcPos pos)
 	expect_keyword(case_keyword);
 	Expr *expr = parse_expr();
 	assert(EXPR_NAME == expr->kind);
+	SelectCase sc = (SelectCase){0};
 	SelectCase *cases = 0;
 	Stmt *stmt = 0;
 	while (!is_token_eof() && !is_a_keyword(end_keyword)) {
-		SelectCase sc = parse_stmt_select_case();
+		sc = parse_stmt_select_case();
 		buf_push(cases, sc);
 	}
 	expect_keyword(end_keyword);
 	expect_keyword(select_keyword);
 	stmt = new_stmt_select_case(pos, expr, cases, buf_len(cases));
+	for (size_t i = 0; i < buf_len(cases); i++) {
+		buf_free(cases[i].patterns);
+	}
+	buf_free(cases);
 	assert(stmt);
 	return stmt;
 }

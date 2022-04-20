@@ -15,59 +15,85 @@ static unsigned current_interpreter;
 
 static void set_interpreter_text(size_t i);
 
-void on_close_button_press_event(void)
+static void free_ui_garbage(void)
 {
 	reset_database();
+	arena_free(&ui_arena);
+	UserInput **ui = get_user_input();
+	buf_free(ui);;
+	buf_free(widgets);
+}
+
+void on_close_button_press_event(void)
+{
+	free_ui_garbage();
 	gtk_main_quit();
+}
+
+static void set_user_input(const char *name, const char *input)
+{
+	UserInput *const *ui = get_user_input();
+	for (size_t i = 0; i < buf_len(ui); i++) {
+		assert(ui[i]->name);
+		if (!strcmp(ui[i]->name, name)) {
+			ui[i]->input = arena_str_dup(&ui_arena, input);
+		}
+	}
+}
+
+static char *strdup_inside(const char *str, const char *left,
+		const char *right)
+{
+	char *str_new = 0;
+	char *end = 0;
+	assert(str);
+	assert(left);
+	assert(right);
+
+	if (0 == (str = strinside(str, left, right))) {
+		return 0;
+	}
+	
+	str_new = strdup(str);
+
+	end = strstr(str_new, right);
+	assert(0 != end);
+	*end = '\0';
+	return str_new;
 }
 
 static void read_user_input(const char *file_name)
 {
 	FILE *fp = fopen(file_name, "r");
 	if (!fp) die("Unable to read file [%s]", file_name);
-	size_t len = BUFSIZ;
-	char line[len];
-	char value[len];
+	char line[BUFSIZ];
 	char *key = 0;
-	char *keyend = 0;
-	char *pl = line;
-	char *pv = value;
 	long fppos = 0;
 
-	char *tmp = 0;
-	UserInput *const *ui = get_user_input();
+	while (0 != fgets(line, sizeof(line), fp)) {
+		if (0 == (key = strdup_inside(line, LHEADER, RHEADER))) {
+			continue;
+		}
+		char *buf = 0;
 
-	while (0 != fgets(line, len, fp)) {
-		if (0 == (key = strinside(line, LHEADER, RHEADER))) continue;
-		keyend = strstr(key, RHEADER);
-		assert(0 != keyend);
-		*keyend = '\0';
-		key = strdup(key);
-
-		while (0 != fgets(line, len, fp)) {
+		while (0 != fgets(line, sizeof(line), fp)) {
 			if (strstr(line, LHEADER)) break;
-			while (*pl && pv < value + len) *pv++ = *pl++;
-			pl = line;
+			buf_printf(buf, "%s", line);
 			if (-1 == (fppos = ftell(fp)))
 				die("Unable to find position");
 		}
 
-		if (pv > value)
-			*(pv - 1) = '\0';
-		else
-			*pv = '\0';
-
-		for (size_t i = 0; i < buf_len(ui); i++) {
-			tmp = strdup(ui[i]->name);
-			upper(tmp);
-			if (!strcmp(tmp, key)) {
-				ui[i]->input = arena_str_dup(&ui_arena,
-						strdup(value));
-			}
+		assert('\n' == *(buf + strlen(buf) - 1));
+		*(buf + strlen(buf) - 1) = '\0';
+		if ('\r' == *(buf + strlen(buf) - 2)) {
+			*(buf + strlen(buf) - 2) = '\0'; // windows garbage
 		}
 
-		pv = value;
+		set_user_input(key, buf);
+
 		fseek(fp, fppos, SEEK_SET);
+		buf_free(buf);
+		free(key);
 	}
 
 	if (0 != fclose(fp)) die("Unable to close file");
@@ -133,14 +159,26 @@ void on_saveDC_activate(GtkMenuItem *m)
 	printf("[%s] activated\n", gtk_menu_item_get_label(m));
 }
 
+static unsigned has_dc_ext(const char *str)
+{
+	size_t len = strlen(str);
+	if (len < 3) {
+		return 0;
+	}
+	str += len;
+	if ('c' == str[-1] && 'd' == str[-2] && '.' == str[-3]) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 /*
  * save .dc file as given name with the current user input values
  */
 void on_saveasDC_activate(GtkMenuItem *m)
 {
-	char tmp[BUFSIZ];
-	char *filename = 0;
-	char *p = 0;
+	gchar *filename = 0;
 	GtkDialog *dialog = 0;
 	GtkFileChooser *chooser = 0;
 	gint res = 0;
@@ -151,25 +189,21 @@ void on_saveasDC_activate(GtkMenuItem *m)
 	res = gtk_dialog_run(dialog); 
 
 	if (res == GTK_RESPONSE_ACCEPT) {
+		char *buf = 0;
 		chooser = GTK_FILE_CHOOSER(dialog);
-		p = filename = gtk_file_chooser_get_filename(chooser);
+		filename = gtk_file_chooser_get_filename(chooser);
 
-		if (0 == (p = strstr(p, ".dc"))) {
-			snprintf(tmp, sizeof(tmp), "%s.dc", filename);
-		} else {
-			while (*p != '\0') p++;
-			p -= 3;
-			if (strcmp(p, ".dc") == 0)
-				snprintf(tmp, sizeof(tmp), "%s", filename);
-			else
-				snprintf(tmp, sizeof(tmp), "%s.dc", filename);
+		buf_printf(buf, "%s", filename);
+		if (!has_dc_ext(filename)) {
+			buf_printf(buf, ".dc");
 		}
-		printf("selected file [%s] to save\n", tmp);
+		printf("selected file [%s] to save\n", buf);
 
-		write_user_input(tmp);
+		write_user_input(buf);
 
+		buf_free(buf);
 		g_free(filename);
-		p = filename = 0;
+		filename = 0;
 	} else {
 		printf("Cancelled [%s]\n", gtk_menu_item_get_label(m));
 	}
