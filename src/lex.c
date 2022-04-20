@@ -14,8 +14,7 @@ static const char *code;
 static const char *stream;
 static const char *line_start;
 
-#define KEYWORD(name) name##_keyword = str_intern(#name); \
-				       buf_push(keywords, name##_keyword)
+#define KEYWORD(name) name##_keyword = str_intern(#name);
 
 void init_keywords(void)
 {

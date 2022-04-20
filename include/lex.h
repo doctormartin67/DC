@@ -36,8 +36,6 @@ const char *last_keyword;
 const char *first_op_keyword;
 const char *last_op_keyword;
 
-const char **keywords;
-
 typedef enum TokenKind {
 	TOKEN_EOF,
 	TOKEN_COLON,

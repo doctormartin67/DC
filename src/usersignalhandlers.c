@@ -22,6 +22,7 @@ static void free_ui_garbage(void)
 	UserInput **ui = get_user_input();
 	buf_free(ui);;
 	buf_free(widgets);
+	intern_free();
 }
 
 void on_close_button_press_event(void)

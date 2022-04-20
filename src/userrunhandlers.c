@@ -155,6 +155,7 @@ static gpointer run(gpointer pl)
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
+	buf_free(cm);
 	free_run_garbage();
 	return 0;
 }
@@ -192,6 +193,7 @@ static gpointer runtc(gpointer pl)
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
+	buf_free(cm);
 	free_run_garbage();
 	return 0;
 }

@@ -26,12 +26,8 @@ void test_keywords(void)
 	init_keywords();
 	assert(is_keyword_name(first_keyword));
 	assert(is_keyword_name(last_keyword));
-	for (const char **it = keywords; it != buf_end(keywords); it++) {
-		assert(is_keyword_name(*it));
-	}
 	assert(!is_keyword_name(str_intern("foo")));
 	assert(str_intern("for") == for_keyword);
-	buf_free(keywords);
 }
 
 #define assert_token(x) assert(match_token(x))
