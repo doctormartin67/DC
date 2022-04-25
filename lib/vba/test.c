@@ -339,6 +339,8 @@ void test_select_case(void)
 	interpreter_free(interpreter);
 }
 
+#define EPS 0.01
+
 void test_resolve(void)
 {
 	const char *code[] = {
@@ -444,7 +446,7 @@ void test_resolve(void)
 		interpreter = new_interpreter(code[4], 0, i, 0, TYPE_DOUBLE);
 		result_double = interpret(interpreter).d;
 		interpreter_free(interpreter);
-		assert(result_double == 100 * pow(1.02, i));
+		assert(fabs(result_double - 100 * pow(1.02, i)) < EPS);
 	}
 	interpreter = new_interpreter("result = 1\n", 0, 0, 0, TYPE_INT);
 	assert(1 == interpret(interpreter).i);
@@ -466,7 +468,10 @@ int main(void)
 	test_lex();
 	test_expr();
 	test_parse();
-	test_resolve();
+	enum {N = 32};
+	for (int i = 0; i < N; i++) {
+		test_resolve();
+	}
 	test_code();
 	test_builtin_funcs();
 	test_select_case();

@@ -6,11 +6,11 @@ EXE = test
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror -pedantic -O0
+CFLAGS = -pg -Wall -Wextra -Werror -pedantic -O0
 INCLUDES = -I $(INCLUDE) `pkg-config --cflags libxml-2.0`
 LIBS = -lgeneral -lm -lexcel
 LDLIBS = $(LIBS) `xml2-config --libs`
-LDFLAGS = -L$(LIB)
+LDFLAGS = -L$(LIB) -p
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
@@ -27,6 +27,9 @@ CP = cp
 
 # ---targets---
 all: $(EXE)
+
+fast: CFLAGS = -pg -Wextra -Werror -pedantic -Ofast
+fast: all
 
 $(EXE): $(EXE).o libvba.a
 

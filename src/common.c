@@ -146,9 +146,11 @@ void map_free(Map *map)
 	map->cap = 0;
 }
 
+enum {INIT_MAP_SIZE = 1024};
+
 static void map_grow(Map *map, size_t new_cap)
 {
-	new_cap = CLAMP_MIN(new_cap, 16);
+	new_cap = CLAMP_MIN(new_cap, INIT_MAP_SIZE);
 	Map new_map = {
 		.keys = calloc(new_cap, sizeof(uint64_t)),
 		.vals = malloc(new_cap * sizeof(uint64_t)),

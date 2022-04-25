@@ -147,6 +147,7 @@ static gpointer run(gpointer pl)
 		gd.s = text;
 		g_idle_add(update_gui, &gd);
 #endif
+		printf("member %ld run\n", i);
 	}
 
 	print_results(db, cm);

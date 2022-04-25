@@ -10,13 +10,13 @@ ZLIB = zlib1g-dev
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror -pedantic
+CFLAGS = -pg -Wall -Wextra -Werror -pedantic -O0
 # THIS BELOW INCLUDRES AND LDLIBS ON XML CAN BE REMOVED
 INCLUDES = -I $(INCLUDE) `pkg-config --cflags gtk+-3.0` \
 	`pkg-config --cflags libxml-2.0`
 LIBS = -lvba -lgeneral -lexcel -lxlsxwriter -lm#lm is needed for actuarial
 LDLIBS = $(LIBS) `pkg-config --libs gtk+-3.0` `xml2-config --libs` -rdynamic
-LDFLAGS = -L$(LIB)
+LDFLAGS = -L$(LIB) -p
 
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
@@ -36,6 +36,9 @@ CP = cp
 
 # ---targets---
 all: DEPENDENCIES $(EXE)
+
+fast: CFLAGS = -pg -Wextra -Werror -pedantic -Ofast
+fast: all
 
 DEPENDENCIES:
 	$(call install_dependency, $(GTK))
