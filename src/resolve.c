@@ -111,7 +111,8 @@ static unsigned convert_operand(Operand *operand, Type *type);
 static unsigned sym_push_project(const char *name, Type *type,
 		unsigned eval_stmt, Typespec *typespec)
 {
-	if (sym_get(name)) {
+	Sym *sym = sym_get(name);
+	if (sym) {
 		return 0;
 	}
 	if (syms_end == syms + MAX_SYMS) {
@@ -136,14 +137,14 @@ static unsigned sym_push_project(const char *name, Type *type,
 		if (type_string == type) {
 			syms_end[-1].val.s = str_intern("");
 		}
-		add_user_sym(&syms_end[-1]);
 	}
 	return 1;
 }
 
 static unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 {
-	if (sym_get(name)) {
+	Sym *sym = sym_get(name);
+	if (sym) {
 		return 0;
 	}
 	if (syms_end == syms + MAX_SYMS) {
@@ -158,14 +159,14 @@ static unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 		if (type_string == type) {
 			syms_end[-1].val.s = str_intern("");
 		}
-		add_user_sym(&syms_end[-1]);
 	}
 	return 1;
 }
 
 unsigned sym_push_var(const char *name, Type *type, Val val)
 {
-	if (sym_get(name)) {
+	Sym *sym = sym_get(name);
+	if (sym) {
 		return 0;
 	}
 	if (syms_end == syms + MAX_SYMS) {
@@ -175,7 +176,7 @@ unsigned sym_push_var(const char *name, Type *type, Val val)
 		.name = str_intern(name),
 			.kind = SYM_DIM,
 			.type = type,
-			.val = val
+			.val = val,
 	};
 	return 1;
 }

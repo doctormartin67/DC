@@ -5,10 +5,10 @@ EXE = test
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -pg -Wall -Wextra -Werror -pedantic -O0
+CFLAGS = -pg -g -Wall -Wextra -Werror -pedantic
 INCLUDES = -I $(INCLUDE)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
-LDFLAGS = -p
+LDFLAGS = -pg
 
 # ---Object files---
 OBJS = common.o errorexit.o helperfunctions.o

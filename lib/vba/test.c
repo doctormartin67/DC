@@ -296,10 +296,9 @@ void test_code(void)
 		"result = 444 * pt\n"
 		"end select\n"
 		"sal = 2000\n";
-	Interpreter *interpreter = new_interpreter(code, 0, 0, 0, TYPE_DOUBLE);
-	result_double = interpret(interpreter).d;
+	build_interpreter(code, 0, 0, 0, TYPE_DOUBLE);
+	result_double = interpret().d;
 	assert(1027.56 < result_double && 1027.57 > result_double);
-	interpreter_free(interpreter);
 }
 
 void test_select_case(void)
@@ -332,11 +331,9 @@ void test_select_case(void)
 		;
 	init_stream(0, code);
 	clear_stream();
-	Interpreter *interpreter = 0;
-	interpreter = new_interpreter(code, 0, 0, 0, TYPE_DOUBLE);
-	result_double = interpret(interpreter).d;
+	build_interpreter(code, 0, 0, 0, TYPE_DOUBLE);
+	result_double = interpret().d;
 	assert(2 == result_double);
-	interpreter_free(interpreter);
 }
 
 #define EPS 0.01
@@ -422,45 +419,37 @@ void test_resolve(void)
 	double result_double = 0.0;
 	bool result_bool = false;
 	enum {N = 1024};
-	Interpreter *interpreter = 0;
 	for (int i = 0; i < N; i++) {
 		add_builtin_int("children", 3);
-		interpreter = new_interpreter(code[0], 0, 0, 0, TYPE_STRING);
-		result_str = interpret(interpreter).s;
-		interpreter_free(interpreter);
+		build_interpreter(code[0], 0, 0, 0, TYPE_STRING);
+		result_str = interpret().s;
 		assert(!strcmp(result_str, "hello3"));
 		add_builtin_double("age", 40);
-		interpreter = new_interpreter(code[1], 0, 0, 0, TYPE_INT);
-		result_int = interpret(interpreter).i;
-		interpreter_free(interpreter);
+		build_interpreter(code[1], 0, 0, 0, TYPE_INT);
+		result_int = interpret().i;
 		assert(47 == result_int);
-		interpreter = new_interpreter(code[2], 0, 0, 0, TYPE_DOUBLE);
-		result_double = interpret(interpreter).d;
-		interpreter_free(interpreter);
+		build_interpreter(code[2], 0, 0, 0, TYPE_DOUBLE);
+		result_double = interpret().d;
 		assert(-2.600001 < result_double && -2.599999 > result_double);
 		add_builtin_boolean("actcon", false);
-		interpreter = new_interpreter(code[3], 0, 0, 0, TYPE_BOOLEAN);
-		result_bool = interpret(interpreter).b;
-		interpreter_free(interpreter);
+		build_interpreter(code[3], 0, 0, 0, TYPE_BOOLEAN);
+		result_bool = interpret().b;
 		assert(true == result_bool);
-		interpreter = new_interpreter(code[4], 0, i, 0, TYPE_DOUBLE);
-		result_double = interpret(interpreter).d;
-		interpreter_free(interpreter);
+		build_interpreter(code[4], 0, i, 0, TYPE_DOUBLE);
+		result_double = interpret().d;
 		assert(fabs(result_double - 100 * pow(1.02, i)) < EPS);
 	}
-	interpreter = new_interpreter("result = 1\n", 0, 0, 0, TYPE_INT);
-	assert(1 == interpret(interpreter).i);
-	interpreter_free(interpreter);
+	build_interpreter("result = 1\n", 0, 0, 0, TYPE_INT);
+	assert(1 == interpret().i);
 }
 
 void test_builtin_funcs(void)
 {
 	double result_double = 0.0;
 	const char *code = "result = min(4, 3, 6, 10) + min(6,7) + max(0.5, 1)";
-	Interpreter *interpreter = new_interpreter(code, 0, 0, 0, TYPE_DOUBLE);
-	result_double = interpret(interpreter).d;
+	build_interpreter(code, 0, 0, 0, TYPE_DOUBLE);
+	result_double = interpret().d;
 	assert(10 == result_double);
-	interpreter_free(interpreter);
 }
 
 int main(void)

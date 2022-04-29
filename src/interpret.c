@@ -7,8 +7,7 @@
 #include "resolve.h"
 #include "helperfunctions.h"
 
-static Interpreter *interpreter;
-static Sym **user_defined_syms;
+static Interpreter interpreter;
 
 static Sym builtin_syms[MAX_SYMS];
 static Sym *builtin_syms_end = builtin_syms;
@@ -27,7 +26,7 @@ static void add_builtin_var(const char *name, Type *type, Val val)
 		.name = str_intern(name),
 			.kind = SYM_DIM,
 			.type = type,
-			.val = val
+			.val = val,
 	};
 }
 
@@ -70,16 +69,14 @@ void add_builtin_string(const char *name, const char *s)
 	add_builtin_var(name, type_string, (Val){.s = str_intern(s)});
 }
 
-static void init_interpreter(Interpreter *i)
+static void init_interpreter(void)
 {
 	init_keywords();
-	init_stream(0, i->code);
+	init_stream(0, interpreter.code);
 	init_builtin_types();
 	init_builtin_funcs();
 
-	interpreter = i;
-
-	switch (i->return_type) {
+	switch (interpreter.return_type) {
 		case TYPE_INT:
 			add_builtin_int(result, 0);
 			break;
@@ -108,68 +105,39 @@ static Sym *parse_interpreter(void)
 		assert(stmts[i]);
 	}
 	buf_free(stmts);
-	for (size_t i = 0; i < buf_len(user_defined_syms); i++) {
-		buf_push(interpreter->syms, *user_defined_syms[i]);
-		interpreter->num_syms++;
-	}
 	return sym_get(result);
 }
 
 static void clear_interpreter(void)
 {
-	interpreter = 0;
 	clear_stream();
 	builtin_syms_reset();
 	syms_reset();
-	buf_free(user_defined_syms);
 	ast_free();
 	clear_builtin_types();
 }
 
-Val interpret(Interpreter *i)
+Val interpret(void)
 {
-	init_interpreter(i);
+	init_interpreter();
 	Val val = parse_interpreter()->val;
 	clear_interpreter();
 	return val;
 }
 
-Interpreter *new_interpreter(const char *code, const Database *db,
+void build_interpreter(const char *code, const Database *db,
 		int project_years, size_t num_record, TypeKind return_type)
 {
-	Interpreter *i = jalloc(1, sizeof(*i));
-	i->code = code;
-	i->db = db;
-	i->project_years = project_years;
-	i->num_record = num_record;
-	i->return_type = return_type;
-	i->syms = 0;
-	i->num_syms = 0;
-	return i;
+	interpreter.code = code;
+	interpreter.db = db;
+	interpreter.project_years = project_years;
+	interpreter.num_record = num_record;
+	interpreter.return_type = return_type;
+	interpreter.syms = 0;
+	interpreter.num_syms = 0;
 }
 
 const Interpreter *get_interpreter(void)
 {
-	if (!interpreter) {
-		die("interpreter not set");
-	}
-	return interpreter;
-}
-
-void interpreter_free(Interpreter *i)
-{
-	if (!i) {
-		return;
-	}
-	buf_free(i->syms);
-	free(i);
-}
-
-void add_user_sym(Sym *sym)
-{
-	assert(sym);
-	if (!interpreter) {
-		die("interpreter not set");
-	}
-	buf_push(user_defined_syms, sym);
+	return &interpreter;
 }

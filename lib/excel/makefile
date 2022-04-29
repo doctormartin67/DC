@@ -7,11 +7,11 @@ PACKAGE = libxml2-dev
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -pg -Wall -Wextra -Werror -pedantic -O0
+CFLAGS = -pg -g -Wall -Wextra -Werror -pedantic
 INCLUDES = -I $(INCLUDE) `pkg-config --cflags libxml-2.0`
 LIBS = -lgeneral
 LDLIBS = $(LIBS) `xml2-config --libs`
-LDFLAGS = -L$(LIB) -p
+LDFLAGS = -L$(LIB) -pg
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
