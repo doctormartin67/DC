@@ -7,8 +7,8 @@
 #include "resolve.h"
 #include "excel.h"
 
-static Sym syms[MAX_SYMS];
-static Sym *syms_end = syms;
+extern Interpreter *interpreter;
+Arena sym_arena;
 
 static void print_sym_dim(Sym *sym)
 {
@@ -40,6 +40,7 @@ void print_sym(Sym *sym)
 	assert(sym);
 	switch (sym->kind) {
 		case SYM_TYPE:
+		case SYM_FUNC:
 			printf("%s\n", sym->name);
 			break;
 		case SYM_DIM:
@@ -52,57 +53,129 @@ void print_sym(Sym *sym)
 
 }
 
-void print_syms(void)
-{
-	printf("\nall symbols:\n");
-	printf("-------\n");
-	for (Sym *sym = syms; sym < syms_end; sym++) {
-		print_sym(sym);
+#define PRINT(t) \
+	printf(#t " syms:\n"); \
+	for (size_t i = 0; i < buf_len(ipr->t##_syms); i++) { \
+		print_sym(ipr->t##_syms[i]); \
 	}
-	printf("-------\n");
+
+void print_syms(const Interpreter *ipr)
+{
+	PRINT(local);
+	PRINT(builtin);
+	PRINT(builtin_type);
+	PRINT(builtin_func);
 }
 
-Sym *sym_get(const char *name)
+#undef PRINT
+
+#define RETURN(t) \
+	assert(interpreter); \
+	for (size_t i = 0; i < buf_len(interpreter->t##_syms); i++) { \
+		Sym *sym = interpreter->t##_syms[i]; \
+		if (sym->name == name) { \
+			return sym; \
+		} \
+	} \
+	return 0;
+
+
+static Sym *sym_get_local(const char *name)
 {
-	for (Sym *it = syms_end; it != syms; it--) {
-		Sym *sym = it - 1;
-		if (sym->name == str_intern(name)) {
-			return sym;
+	RETURN(local);
+}
+
+static Sym *sym_get_builtin(const char *name)
+{
+	RETURN(builtin);
+}
+
+static Sym *sym_get_type(const char *name)
+{
+	RETURN(builtin_type);
+}
+
+static Sym *sym_get_func(const char *name)
+{
+	RETURN(builtin_func);
+}
+
+#undef RETURN
+
+static Sym *sym_get(const char *name)
+{
+	Sym *sym = sym_get_local(name);
+	if (!sym) {
+		sym = sym_get_builtin(name);
+		if (!sym) {
+			sym = sym_get_type(name);
+			if (!sym) {
+				sym = sym_get_func(name);
+			}
+		} else {
+			interpreter->properties.has_builtins = 1;
 		}
 	}
-	return 0;
+	return sym;
+}
+
+static Sym *new_sym(const char *name, SymKind kind, Type *type)
+{
+	Sym *sym = arena_alloc(&sym_arena, sizeof(*sym));
+	sym->name = str_intern(name);
+	sym->kind = kind;
+	sym->type = type;
+	return sym;
+}
+
+static Sym *new_sym_func(const char *name, SymKind kind, Type *type,
+		double_func func)
+{
+	Sym *sym = arena_alloc(&sym_arena, sizeof(*sym));
+	sym->name = str_intern(name);
+	sym->kind = kind;
+	sym->func = func;
+	sym->type = type;
+	return sym;
+}
+
+static Sym *new_sym_project(const char *name, SymKind kind, Type *type,
+		double val)
+{
+	Sym *sym = arena_alloc(&sym_arena, sizeof(*sym));
+	sym->name = str_intern(name);
+	sym->is_project = 1;
+	sym->kind = kind;
+	sym->type = type;
+	sym->project.val = val;
+	return sym;
 }
 
 unsigned sym_push_type(const char *name, Type *type)
 {
-	if (sym_get(name)) {
+	if (!interpreter->properties.is_init) {
+		return 1;
+	}
+	if (sym_get_type(name)) {
 		return 0;
 	}
-	if (syms_end == syms + MAX_SYMS) {
-		fatal("Too many symbols");
-	}
-	*syms_end++ = (Sym){
-		.name = str_intern(name),
-			.kind = SYM_TYPE,
-			.type = type,
-	};
+	Sym *sym = new_sym(name, SYM_TYPE, type);
+	assert(interpreter);
+	buf_push(interpreter->builtin_type_syms, sym);
 	return 1;
 }
 
 unsigned sym_push_func(const char *name, Type *type, double_func func)
 {
-	if (sym_get(name)) {
+	if (!interpreter->properties.is_init) {
+		return 1;
+	}
+	if (sym_get_func(name)) {
 		return 0;
 	}
-	if (syms_end == syms + MAX_SYMS) {
-		fatal("Too many symbols");
-	}
-	*syms_end++ = (Sym){
-		.name = str_intern(name),
-			.kind = SYM_FUNC,
-			.func = func,
-			.type = type,
-	};
+	Sym *sym = new_sym_func(name, SYM_FUNC, type, func);
+	assert(interpreter);
+	buf_push(interpreter->builtin_func_syms, sym);
 	return 1;
 }
 
@@ -111,83 +184,44 @@ static unsigned convert_operand(Operand *operand, Type *type);
 static unsigned sym_push_project(const char *name, Type *type,
 		unsigned eval_stmt, Typespec *typespec)
 {
-	Sym *sym = sym_get(name);
-	if (sym) {
+	if (!interpreter->properties.is_init) {
+		return 1;
+	}
+	if (sym_get(name)) {
 		return 0;
 	}
-	if (syms_end == syms + MAX_SYMS) {
-		fatal("Too many symbols");
-	}
+	interpreter->properties.has_project = 1;
 	Operand operand = resolve_expr(typespec->project.expr);
-	if (!convert_operand(&operand, type_double)) { \
+	if (!convert_operand(&operand, type_double)) {
 		fatal("Projection type '%s' is not convertible to double",
 				type_name(operand.type->kind));
 	}
 
-	int project_years = get_interpreter()->project_years;
 	if (eval_stmt) {
-		*syms_end++ = (Sym){
-			.name = str_intern(name),
-				.is_project = 1,
-				.kind = SYM_DIM,
-				.type = type,
-				.project.years = project_years,
-				.project.val = operand.val.d,
-		};
-		if (type_string == type) {
-			syms_end[-1].val.s = str_intern("");
-		}
+		assert(interpreter);
+		Sym *sym = new_sym_project(name, SYM_DIM, type, operand.val.d);
+		buf_push(interpreter->local_syms, sym);
 	}
 	return 1;
 }
 
 static unsigned sym_push_dim(const char *name, Type *type, unsigned eval_stmt)
 {
-	Sym *sym = sym_get(name);
-	if (sym) {
-		return 0;
+	if (!interpreter->properties.is_init) {
+		return 1;
 	}
-	if (syms_end == syms + MAX_SYMS) {
-		fatal("Too many symbols");
+	if (sym_get(name)) {
+		return 0;
 	}
 	if (eval_stmt) {
-		*syms_end++ = (Sym){
-			.name = str_intern(name),
-				.kind = SYM_DIM,
-				.type = type,
-		};
+		Sym *sym = new_sym(name, SYM_DIM, type);
+		assert(interpreter);
 		if (type_string == type) {
-			syms_end[-1].val.s = str_intern("");
+			sym->val.s = str_intern("");
 		}
+		buf_push(interpreter->local_syms, sym);
 	}
 	return 1;
-}
-
-unsigned sym_push_var(const char *name, Type *type, Val val)
-{
-	Sym *sym = sym_get(name);
-	if (sym) {
-		return 0;
-	}
-	if (syms_end == syms + MAX_SYMS) {
-		fatal("Too many symbols");
-	}
-	*syms_end++ = (Sym){
-		.name = str_intern(name),
-			.kind = SYM_DIM,
-			.type = type,
-			.val = val,
-	};
-	return 1;
-}
-
-void syms_reset(void)
-{
-	for (Sym *it = syms_end; it != syms; it--) {
-		Sym *sym = it - 1;
-		*sym = (Sym){0};
-	}
-	syms_end = syms;
 }
 
 Operand operand_null;
@@ -716,7 +750,7 @@ static Operand resolve_expr_call(Expr *expr)
 
 static Operand resolve_expr_index(Expr *index, Type *type)
 {
-	const Interpreter *i = get_interpreter();
+	const Interpreter *i = interpreter;
 	if (!i->db) {
 		fatal_error(index->pos, "Database not set");
 	}
@@ -872,7 +906,6 @@ static void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 	assert(stmt->kind == STMT_ASSIGN);
 	assert(TOKEN_ASSIGN == stmt->assign.op);
 	Expr *left_expr = stmt->assign.left;
-	Sym *sym = sym_get(left_expr->name);
 	Operand left = resolve_expr(left_expr);
 	if (!left.is_lvalue) {
 		fatal_error(stmt->pos, "Cannot assign to non-lvalue");
@@ -887,10 +920,11 @@ static void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 
 	}
 	if (eval_stmt) {
+		Sym *sym = sym_get(left_expr->name);
 		if (sym->is_project) {
 			assert(is_floating_type(sym->type));
 			assert(is_floating_type(right.type));
-			int years = sym->project.years;
+			int years = interpreter->project_years;
 			double val = sym->project.val;
 			sym->val.d = right.val.d * pow(1 + val, years);
 		} else {

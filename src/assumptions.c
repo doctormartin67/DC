@@ -10,12 +10,26 @@ extern const Database *get_database(void);
 enum {VAR_INTERPRETER, VAR_FIXED, VAR_COMBO};
 static void set_methodology(void);
 
+// builtin vars
+static const char *infl;
+static const char *ndoe;
+static const char *age;
+static const char *sal;
+
 static void add_builtin_vars(const CurrentMember *cm, int k)
 {
-	add_builtin_double("infl", ass.infl);
-	add_builtin_double("ndoe", cm->proj[k].nDOE);
-	add_builtin_double("age", cm->proj[k].age);
-	add_builtin_double("sal", cm->proj[k].sal);
+	static unsigned interned;
+	if (!interned) {
+		infl = str_intern("infl");
+		ndoe = str_intern("ndoe");
+		age = str_intern("age");
+		sal = str_intern("sal");
+		interned = 1;
+	}
+	add_builtin_double(infl, ass.infl);
+	add_builtin_double(ndoe, cm->proj[k].nDOE);
+	add_builtin_double(age, cm->proj[k].age);
+	add_builtin_double(sal, cm->proj[k].sal);
 }
 
 static Val interpret_code(const CurrentMember *cm, int k, const char *code,
@@ -28,9 +42,7 @@ static Val interpret_code(const CurrentMember *cm, int k, const char *code,
 	const Database *db = get_database();
 	assert(db);
 	unsigned years = cm->proj[k].DOC->year - cm->proj[0].DOC->year;
-	Interpreter *i = new_interpreter(code, db, years, cm->id, return_type);
-	Val val = interpret(i);
-	interpreter_free(i);
+	Val val = interpret(code, db, years, cm->id, return_type);
 	return val;
 }
 

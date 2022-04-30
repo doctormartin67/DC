@@ -1,52 +1,69 @@
+#include <stdio.h>
 #include <assert.h>
 #include "interpret.h"
 #include "common.h"
 #include "lex.h"
-#include "parse.h"
 #include "type.h"
 #include "resolve.h"
 #include "helperfunctions.h"
 
-static Interpreter interpreter;
+Interpreter *interpreter;
 
-static Sym builtin_syms[MAX_SYMS];
-static Sym *builtin_syms_end = builtin_syms;
+static Sym **builtin_syms;
+static Map interpreters;
+extern Arena sym_arena;
 
 /*
  * every interpreter will have a 'result' variable to be returned
  */
 static const char *result = "result";
 
-static void add_builtin_var(const char *name, Type *type, Val val)
+static Interpreter *new_interpreter(const char *code, const Database *db,
+		int project_years, size_t num_record, TypeKind return_type)
 {
-	if (builtin_syms_end == builtin_syms + MAX_SYMS) {
-		fatal("Too many symbols");
-	}
-	*builtin_syms_end++ = (Sym){
-		.name = str_intern(name),
-			.kind = SYM_DIM,
-			.type = type,
-			.val = val,
-	};
+	Interpreter *i = jalloc(1, sizeof(*i));
+	i->code = code;
+	i->db = db;
+	i->project_years = project_years;
+	i->num_record = num_record;
+	i->return_type = return_type;
+	i->builtin_syms = builtin_syms;
+	i->properties.is_init = 1;
+	return i;
 }
 
-static void add_builtin_vars(void)
+static Sym *new_sym_builtin(const char *name, SymKind kind, Type *type,
+		Val val)
 {
-	for (Sym *it = builtin_syms_end; it != builtin_syms; it--) {
-		Sym *sym = it - 1;
-		if (!sym_push_var(sym->name, sym->type, sym->val)) {
-			fatal("Variable '%s' already added", sym->name);
+	Sym *sym = arena_alloc(&sym_arena, sizeof(*sym));
+	sym->name = name;
+	sym->kind = kind;
+	sym->type = type;
+	sym->val = val;
+	return sym;
+}
+
+static Sym *sym_get_builtin(const char *name)
+{
+	for (size_t i = 0; i < buf_len(builtin_syms); i++) {
+		Sym *sym = builtin_syms[i];
+		if (sym->name == name) {
+			return sym;
 		}
 	}
+	return 0;
 }
 
-static void builtin_syms_reset(void)
+static void add_builtin_var(const char *name, Type *type, Val val)
 {
-	for (Sym *it = builtin_syms_end; it != builtin_syms; it--) {
-		Sym *sym = it - 1;
-		*sym = (Sym){0};
+	Sym *sym = sym_get_builtin(name);
+	if (sym) {
+		sym->type = type;
+		sym->val = val;
+		return;
 	}
-	builtin_syms_end = builtin_syms;
+	sym = new_sym_builtin(name, SYM_DIM, type, val);
+	buf_push(builtin_syms, sym);
 }
 
 void add_builtin_int(const char *name, int i)
@@ -69,14 +86,9 @@ void add_builtin_string(const char *name, const char *s)
 	add_builtin_var(name, type_string, (Val){.s = str_intern(s)});
 }
 
-static void init_interpreter(void)
+static void add_builtin_result(void)
 {
-	init_keywords();
-	init_stream(0, interpreter.code);
-	init_builtin_types();
-	init_builtin_funcs();
-
-	switch (interpreter.return_type) {
+	switch (interpreter->return_type) {
 		case TYPE_INT:
 			add_builtin_int(result, 0);
 			break;
@@ -93,51 +105,70 @@ static void init_interpreter(void)
 			fatal("Unknown type for variable '%s'", result);
 			break;
 	}
-	add_builtin_vars();
 }
 
-static Sym *parse_interpreter(void)
+static void init_interpreter(void)
 {
-	Stmt **stmts = 0;
-	stmts = parse_stmts();
+	init_builtin_types();
+	init_builtin_funcs();
+}
+
+static void parse_interpreter(void)
+{
+	assert(interpreter);
+	init_keywords();
+	init_stream(0, interpreter->code);
+	add_builtin_result();
+	Stmt **stmts = interpreter->stmts;
+	if (!stmts) {
+		stmts = parse_stmts();
+		interpreter->stmts = stmts;
+	}
 	resolve_stmts(stmts);
 	for (size_t i = 0; i < buf_len(stmts); i++) {
 		assert(stmts[i]);
 	}
-	buf_free(stmts);
-	return sym_get(result);
 }
 
-static void clear_interpreter(void)
-{
-	clear_stream();
-	builtin_syms_reset();
-	syms_reset();
-	ast_free();
-	clear_builtin_types();
-}
-
-Val interpret(void)
-{
-	init_interpreter();
-	Val val = parse_interpreter()->val;
-	clear_interpreter();
-	return val;
-}
-
-void build_interpreter(const char *code, const Database *db,
+static void initial_parse(const char *code, const Database *db,
 		int project_years, size_t num_record, TypeKind return_type)
 {
-	interpreter.code = code;
-	interpreter.db = db;
-	interpreter.project_years = project_years;
-	interpreter.num_record = num_record;
-	interpreter.return_type = return_type;
-	interpreter.syms = 0;
-	interpreter.num_syms = 0;
+	Interpreter *i = new_interpreter(code, db, project_years,
+			num_record, return_type);
+	map_put(&interpreters, code, i);
+	assert(i);
+	interpreter = i;
+	init_interpreter();
+	parse_interpreter();
+	interpreter->result = sym_get_builtin(result)->val;
 }
 
-const Interpreter *get_interpreter(void)
+static void update_interpreter(const Database *db, int project_years,
+		size_t num_record, TypeKind return_type)
 {
-	return &interpreter;
+	interpreter->db = db;
+	interpreter->project_years = project_years;
+	interpreter->num_record = num_record;
+	interpreter->return_type = return_type;
+}
+
+Val interpret(const char *code, const Database *db, int project_years,
+		size_t num_record, TypeKind return_type)
+{
+	Interpreter *i = map_get(&interpreters, code);
+	if (!i) {
+		result = str_intern(result);
+		initial_parse(code, db, project_years, num_record,
+				return_type);
+	} else {
+		interpreter = i;
+		i->properties.is_init = 0;
+		if (i->properties.has_project || i->properties.has_builtins) {
+			update_interpreter(db, project_years, num_record,
+					return_type);
+			parse_interpreter();
+			interpreter->result = sym_get_builtin(result)->val;
+		}
+	}
+	return interpreter->result;
 }

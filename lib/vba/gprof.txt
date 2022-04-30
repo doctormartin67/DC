@@ -2,108 +2,195 @@ Flat profile:
 
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  us/call  us/call  name    
- 44.18      0.27     0.27 35523046     0.01     0.01  str_intern_range
- 10.84      0.33     0.07 10093736     0.01     0.02  next_token
-  6.67      0.37     0.04 34475599     0.00     0.00  is_token
-  6.67      0.41     0.04  4489739     0.01     0.04  parse_expr_unary
-  5.00      0.44     0.03  2752671     0.01     0.01  resolve_expected_expr
-  5.00      0.47     0.03  2031726     0.01     0.08  parse_stmt
-  3.33      0.49     0.02   655500     0.03     0.09  sym_push_type
-  3.33      0.51     0.02   163913     0.12     0.12  clear_stream
-  2.50      0.53     0.02  6324983     0.00     0.00  is_a_keyword
-  1.67      0.54     0.01  9667576     0.00     0.00  arena_alloc
-  1.67      0.55     0.01  3146058     0.00     0.01  parse_expr_mul
-  1.67      0.56     0.01  1671220     0.01     0.01  resolve_stmt
-  1.67      0.57     0.01  1048666     0.01     0.01  token_kind_name
-  1.67      0.58     0.01   262179     0.04     0.22  sym_push_var
-  0.83      0.58     0.01 29132837     0.00     0.00  str_intern
-  0.83      0.59     0.01 28117390     0.00     0.00  match_keyword
-  0.83      0.59     0.01 15173116     0.00     0.00  token_pos
-  0.83      0.60     0.01       58    86.23    86.25  expect_token
-  0.83      0.60     0.01                             token_info
-  0.00      0.60     0.00 17860563     0.00     0.00  token_kind
-  0.00      0.60     0.00  3473732     0.00     0.00  is_arithmetic_type
-  0.00      0.60     0.00  3473627     0.00     0.00  cast_operand
-  0.00      0.60     0.00  3211528     0.00     0.00  token_name
-  0.00      0.60     0.00  2523382     0.00     0.00  new_expr_name
-  0.00      0.60     0.00  2490626     0.00     0.00  parse_expr_cmp
-  0.00      0.60     0.00  2228480     0.00     0.01  parse_expr_or
-  0.00      0.60     0.00  2097374     0.00     0.00  buf__grow
-  0.00      0.60     0.00  1867945     0.00     0.00  is_string_type
-  0.00      0.60     0.00  1212538     0.00     0.00  new_stmt_assign
-  0.00      0.60     0.00  1212533     0.00     0.16  parse_simple_stmt
-  0.00      0.60     0.00  1212495     0.00     0.02  expect_keyword
-  0.00      0.60     0.00  1048729     0.00     0.00  new_expr_binary
-  0.00      0.60     0.00  1048666     0.00     0.00  resolve_expr_binary_op
-  0.00      0.60     0.00   720975     0.00     0.00  is_floating_type
-  0.00      0.60     0.00   688269     0.00     0.00  match_token
-  0.00      0.60     0.00   688207     0.00     0.00  is_integer_type
-  0.00      0.60     0.00   688140     0.00     0.00  new_typespec_name
-  0.00      0.60     0.00   688140     0.00     0.03  parse_type
-  0.00      0.60     0.00   688139     0.00     0.00  new_stmt_dim
-  0.00      0.60     0.00   688136     0.00     0.00  add_user_sym
-  0.00      0.60     0.00   655382     0.00     0.00  is_concatable
-  0.00      0.60     0.00   622753     0.00     0.00  is_token_eof
-  0.00      0.60     0.00   622630     0.00     0.00  scan_float
-  0.00      0.60     0.00   622630     0.00     0.00  token_float_val
-  0.00      0.60     0.00   622627     0.00     0.00  new_expr_float
-  0.00      0.60     0.00   622627     0.00     0.00  token_end
-  0.00      0.60     0.00   622627     0.00     0.00  token_start
-  0.00      0.60     0.00   557056     0.00     0.00  new_expr_boolean
-  0.00      0.60     0.00   393429     0.00     0.00  token_int_val
-  0.00      0.60     0.00   393427     0.00     0.00  new_expr_int
-  0.00      0.60     0.00   393243     0.00     0.00  token_str_val
-  0.00      0.60     0.00   393241     0.00     0.00  new_expr_str
-  0.00      0.60     0.00   360527     0.00     0.00  resolve_binary_arithmetic_op
-  0.00      0.60     0.00   327750     0.00     0.00  jalloc
-  0.00      0.60     0.00   327750     0.00     0.13  sym_push_func
-  0.00      0.60     0.00   294923     0.00     0.00  resolve_binary_string_op
-  0.00      0.60     0.00   262196     0.00     0.00  new_StmtBlock
-  0.00      0.60     0.00   262163     0.00     0.25  parse_stmt_block
-  0.00      0.60     0.00   262149     0.00     0.00  new_expr_unary
-  0.00      0.60     0.00   262144     0.00     0.00  is_scalar_type
-  0.00      0.60     0.00   262144     0.00     0.00  resolve_cond_expr
-  0.00      0.60     0.00   196608     0.00     0.00  buf__printf
-  0.00      0.60     0.00   163952     0.00     0.00  resolve_stmts
-  0.00      0.60     0.00   163914     0.00     0.00  init_stream
-  0.00      0.60     0.00   163877     0.00     0.00  init_keywords
-  0.00      0.60     0.00   163875     0.00     0.00  arena_free
-  0.00      0.60     0.00   163875     0.00     0.00  ast_free
-  0.00      0.60     0.00   163875     0.00     0.00  clear_builtin_types
-  0.00      0.60     0.00   163875     0.00     0.13  init_builtin_funcs
-  0.00      0.60     0.00   163875     0.00     0.27  init_builtin_types
-  0.00      0.60     0.00   163875     0.00     3.62  interpret
-  0.00      0.60     0.00   163875     0.00     0.00  new_interpreter
-  0.00      0.60     0.00   163875     0.00     2.30  parse_stmts
-  0.00      0.60     0.00   163875     0.00     0.14  sym_get
-  0.00      0.60     0.00   163875     0.00     0.00  syms_reset
-  0.00      0.60     0.00   163840     0.00     0.00  interpreter_free
-  0.00      0.60     0.00   131076     0.00     0.00  new_stmt_if
-  0.00      0.60     0.00    65538     0.00     0.00  new_typespec_project
-  0.00      0.60     0.00    65536     0.00     0.00  get_interpreter
-  0.00      0.60     0.00    32768     0.00     0.02  add_builtin_boolean
-  0.00      0.60     0.00    32768     0.00     0.02  add_builtin_double
-  0.00      0.60     0.00    32768     0.00     0.02  add_builtin_int
-  0.00      0.60     0.00       38     0.00     0.08  parse_select_case_pattern
-  0.00      0.60     0.00       23     0.00     0.00  new_expr_call
-  0.00      0.60     0.00       12     0.00     0.00  new_stmt_select_case
-  0.00      0.60     0.00       11     0.00     0.00  min
-  0.00      0.60     0.00       11     0.00     0.00  new_expr_paren
-  0.00      0.60     0.00        9     0.00     0.00  max
-  0.00      0.60     0.00        7     0.00     0.00  new_stmt_for
-  0.00      0.60     0.00        3     0.00     0.00  is_keyword_name
-  0.00      0.60     0.00        2     0.00     0.00  intern_arena_end
-  0.00      0.60     0.00        2     0.00     0.00  new_stmt_expr
-  0.00      0.60     0.00        1     0.00     0.00  arena_grow
-  0.00      0.60     0.00        1     0.00     0.00  new_expr
-  0.00      0.60     0.00        1     0.00     0.00  new_expr_index
-  0.00      0.60     0.00        1     0.00     0.00  new_stmt_do_until
-  0.00      0.60     0.00        1     0.00     0.00  new_stmt_do_until_loop
-  0.00      0.60     0.00        1     0.00     0.00  new_stmt_do_while
-  0.00      0.60     0.00        1     0.00     0.00  new_stmt_do_while_loop
-  0.00      0.60     0.00        1     0.00     0.00  new_stmt_while
-  0.00      0.60     0.00        1     0.00     0.05  test_keywords
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 12.00      0.03     0.03  4981104     0.00     0.00  resolve_expected_expr
+  8.00      0.05     0.02  1114282     0.00     0.00  sym_get_builtin
+  8.00      0.07     0.02   327760     0.00     0.00  eval_binary_op
+  4.00      0.08     0.01  3768578     0.00     0.00  resolve_expr
+  4.00      0.09     0.01  3604725     0.00     0.00  sym_get_local
+  4.00      0.10     0.01  2031697     0.00     0.00  resolve_stmt
+  4.00      0.11     0.01  1835152     0.00     0.00  operand_lvalue
+  4.00      0.12     0.01  1835152     0.00     0.00  resolve_name_operand
+  4.00      0.13     0.01  1212483     0.00     0.00  resolve_stmt_assign
+  4.00      0.14     0.01  1049396     0.00     0.00  str_intern_range
+  4.00      0.15     0.01  1015899     0.00     0.00  resolve_expr_binary_op
+  4.00      0.16     0.01   688241     0.00     0.00  sym_get_type
+  4.00      0.17     0.01   688208     0.00     0.00  is_floating_type
+  4.00      0.18     0.01   688136     0.00     0.00  resolve_typespec
+  4.00      0.19     0.01   557056     0.00     0.00  resolve_expr_boolean
+  4.00      0.20     0.01   524333     0.00     0.00  resolve_expr_float
+  4.00      0.21     0.01   393229     0.00     0.00  resolve_expr_string
+  4.00      0.22     0.01   262173     0.00     0.00  resolve_stmt_block
+  4.00      0.23     0.01   196608     0.00     0.00  buf__printf
+  4.00      0.24     0.01   163875     0.00     0.00  parse_interpreter
+  2.00      0.25     0.01  1015899     0.00     0.00  token_kind_name
+  2.00      0.25     0.01   164482     0.00     0.00  is_keyword_name
+  0.00      0.25     0.00  4391395     0.00     0.00  operand_const
+  0.00      0.25     0.00  3604725     0.00     0.00  sym_get
+  0.00      0.25     0.00  3408198     0.00     0.00  is_arithmetic_type
+  0.00      0.25     0.00  3375326     0.00     0.00  cast_operand
+  0.00      0.25     0.00  2556088     0.00     0.00  is_convertible
+  0.00      0.25     0.00  1835152     0.00     0.00  resolve_expr_name
+  0.00      0.25     0.00  1802411     0.00     0.00  is_string_type
+  0.00      0.25     0.00  1802374     0.00     0.00  convert_operand
+  0.00      0.25     0.00  1015880     0.00     0.00  resolve_expr_binary
+  0.00      0.25     0.00   884917     0.00     0.00  str_intern
+  0.00      0.25     0.00   753714     0.00     0.00  is_castable
+  0.00      0.25     0.00   688156     0.00     0.00  resolve_name
+  0.00      0.25     0.00   688136     0.00     0.00  resolve_stmt_dim
+  0.00      0.25     0.00   688136     0.00     0.00  resolve_typespec_name
+  0.00      0.25     0.00   655440     0.00     0.00  is_integer_type
+  0.00      0.25     0.00   655382     0.00     0.00  is_concatable
+  0.00      0.25     0.00   622600     0.00     0.00  sym_push_dim
+  0.00      0.25     0.00   426054     0.00     0.00  sym_get_builtin
+  0.00      0.25     0.00   393290     0.00     0.00  resolve_expr_int
+  0.00      0.25     0.00   327760     0.00     0.00  resolve_binary_arithmetic_op
+  0.00      0.25     0.00   327760     0.00     0.00  resolve_binary_op
+  0.00      0.25     0.00   327760     0.00     0.00  unify_operands
+  0.00      0.25     0.00   294992     0.00     0.00  eval_binary_op_d
+  0.00      0.25     0.00   294923     0.00     0.00  resolve_binary_string_op
+  0.00      0.25     0.00   262179     0.00     0.00  add_builtin_var
+  0.00      0.25     0.00   262144     0.00     0.00  eval_unary_op
+  0.00      0.25     0.00   262144     0.00     0.00  is_cond_operand
+  0.00      0.25     0.00   262144     0.00     0.00  is_scalar_type
+  0.00      0.25     0.00   262144     0.00     0.00  resolve_cond_expr
+  0.00      0.25     0.00   262144     0.00     0.00  resolve_expr_unary
+  0.00      0.25     0.00   262144     0.00     0.00  resolve_unary_op
+  0.00      0.25     0.00   165242     0.00     0.00  next_token
+  0.00      0.25     0.00   163961     0.00     0.00  resolve_stmts
+  0.00      0.25     0.00   163914     0.00     0.00  init_stream
+  0.00      0.25     0.00   163877     0.00     0.00  init_keywords
+  0.00      0.25     0.00   163875     0.00     0.00  add_builtin_result
+  0.00      0.25     0.00   163875     0.00     0.00  interpret
+  0.00      0.25     0.00   163875     0.00     0.00  map_get
+  0.00      0.25     0.00   163866     0.00     0.00  update_interpreter
+  0.00      0.25     0.00   163840     0.00     0.00  concat_operands
+  0.00      0.25     0.00   131072     0.00     0.00  resolve_stmt_if
+  0.00      0.25     0.00    98307     0.00     0.00  add_builtin_double
+  0.00      0.25     0.00    65568     0.00     0.00  add_builtin_int
+  0.00      0.25     0.00    65536     0.00     0.00  add_builtin_boolean
+  0.00      0.25     0.00    65536     0.00     0.00  promote_operand
+  0.00      0.25     0.00    65536     0.00     0.00  sym_push_project
+  0.00      0.25     0.00    32768     0.00     0.00  add_builtin_string
+  0.00      0.25     0.00    32768     0.00     0.00  eval_binary_op_i
+  0.00      0.25     0.00     8470     0.00     0.00  is_token
+  0.00      0.25     0.00     4000     0.00     0.00  is_a_keyword
+  0.00      0.25     0.00     2963     0.00     0.00  match_keyword
+  0.00      0.25     0.00     2331     0.00     0.00  token_kind
+  0.00      0.25     0.00     1809     0.00     0.00  token_pos
+  0.00      0.25     0.00     1305     0.00     0.00  arena_alloc
+  0.00      0.25     0.00     1057     0.00     0.00  ast_alloc
+  0.00      0.25     0.00      826     0.00     0.00  new_expr
+  0.00      0.25     0.00      611     0.00     0.00  is_unary_op
+  0.00      0.25     0.00      598     0.00     0.00  parse_expr_base
+  0.00      0.25     0.00      598     0.00     0.00  parse_expr_operand
+  0.00      0.25     0.00      598     0.00     0.00  parse_expr_unary
+  0.00      0.25     0.00      464     0.00     0.00  is_mul_op
+  0.00      0.25     0.00      395     0.00     0.00  is_add_op
+  0.00      0.25     0.00      395     0.00     0.00  parse_expr_mul
+  0.00      0.25     0.00      335     0.00     0.00  is_cmp_op
+  0.00      0.25     0.00      331     0.00     0.00  token_name
+  0.00      0.25     0.00      327     0.00     0.00  parse_expr_add
+  0.00      0.25     0.00      308     0.00     0.00  parse_expr_cmp
+  0.00      0.25     0.00      303     0.00     0.00  parse_expr_and
+  0.00      0.25     0.00      302     0.00     0.00  parse_expr_xor
+  0.00      0.25     0.00      293     0.00     0.00  parse_expr
+  0.00      0.25     0.00      293     0.00     0.00  parse_expr_or
+  0.00      0.25     0.00      292     0.00     0.00  new_expr_name
+  0.00      0.25     0.00      264     0.00     0.00  buf__grow
+  0.00      0.25     0.00      194     0.00     0.00  new_stmt
+  0.00      0.25     0.00      194     0.00     0.00  scan_int
+  0.00      0.25     0.00      194     0.00     0.00  token_int_val
+  0.00      0.25     0.00      192     0.00     0.00  new_expr_int
+  0.00      0.25     0.00      185     0.00     0.00  new_expr_binary
+  0.00      0.25     0.00      180     0.00     0.00  is_token_eof
+  0.00      0.25     0.00      180     0.00     0.00  parse_stmt
+  0.00      0.25     0.00      168     0.00     0.00  ast_dup
+  0.00      0.25     0.00      162     0.00     0.00  match_token
+  0.00      0.25     0.00      128     0.00     0.00  new_stmt_assign
+  0.00      0.25     0.00      123     0.00     0.00  is_assign_op
+  0.00      0.25     0.00      123     0.00     0.00  parse_simple_stmt
+  0.00      0.25     0.00      116     0.00     0.00  expect_keyword
+  0.00      0.25     0.00       87     0.00     0.00  sym_get_func
+  0.00      0.25     0.00       63     0.00     0.00  is_end_of_block
+  0.00      0.25     0.00       63     0.00     0.00  new_sym
+  0.00      0.25     0.00       60     0.00     0.00  new_StmtBlock
+  0.00      0.25     0.00       58     0.00     0.00  expect_token
+  0.00      0.25     0.00       57     0.00     0.00  scan_float
+  0.00      0.25     0.00       57     0.00     0.00  token_float_val
+  0.00      0.25     0.00       54     0.00     0.00  new_expr_float
+  0.00      0.25     0.00       54     0.00     0.00  token_end
+  0.00      0.25     0.00       54     0.00     0.00  token_start
+  0.00      0.25     0.00       39     0.00     0.00  clear_stream
+  0.00      0.25     0.00       39     0.00     0.00  scan_str
+  0.00      0.25     0.00       39     0.00     0.00  token_str_val
+  0.00      0.25     0.00       38     0.00     0.00  parse_select_case_pattern
+  0.00      0.25     0.00       37     0.00     0.00  new_expr_str
+  0.00      0.25     0.00       37     0.00     0.00  new_typespec
+  0.00      0.25     0.00       36     0.00     0.00  init_builtin_type
+  0.00      0.25     0.00       36     0.00     0.00  sym_push_type
+  0.00      0.25     0.00       33     0.00     0.00  new_select_case_pattern
+  0.00      0.25     0.00       33     0.00     0.00  new_typespec_name
+  0.00      0.25     0.00       33     0.00     0.00  parse_stmt_select_case
+  0.00      0.25     0.00       33     0.00     0.00  parse_type
+  0.00      0.25     0.00       33     0.00     0.00  parse_type_base
+  0.00      0.25     0.00       32     0.00     0.00  new_stmt_dim
+  0.00      0.25     0.00       32     0.00     0.00  parse_stmt_dim
+  0.00      0.25     0.00       32     0.00     7.81  test_resolve
+  0.00      0.25     0.00       27     0.00     0.00  parse_stmt_block
+  0.00      0.25     0.00       23     0.00     0.00  new_expr_call
+  0.00      0.25     0.00       23     0.00     0.00  resolve_select_case
+  0.00      0.25     0.00       20     0.00     0.00  resolve_expr_call
+  0.00      0.25     0.00       20     0.00     0.00  resolve_expr_call_default
+  0.00      0.25     0.00       19     0.00     0.00  resolve_select_case_pattern
+  0.00      0.25     0.00       18     0.00     0.00  init_builtin_func
+  0.00      0.25     0.00       18     0.00     0.00  jalloc
+  0.00      0.25     0.00       18     0.00     0.00  new_sym_func
+  0.00      0.25     0.00       18     0.00     0.00  sym_push_func
+  0.00      0.25     0.00       17     0.00     0.00  new_expr_boolean
+  0.00      0.25     0.00       13     0.00     0.00  new_expr_unary
+  0.00      0.25     0.00       12     0.00     0.00  new_stmt_select_case
+  0.00      0.25     0.00       12     0.00     0.00  parse_stmt_select
+  0.00      0.25     0.00       11     0.00     0.00  min
+  0.00      0.25     0.00       11     0.00     0.00  new_expr_paren
+  0.00      0.25     0.00        9     0.00     0.00  init_builtin_funcs
+  0.00      0.25     0.00        9     0.00     0.00  init_builtin_types
+  0.00      0.25     0.00        9     0.00     0.00  init_interpreter
+  0.00      0.25     0.00        9     0.00     0.00  init_type_double_func
+  0.00      0.25     0.00        9     0.00     0.00  initial_parse
+  0.00      0.25     0.00        9     0.00     0.00  map_put
+  0.00      0.25     0.00        9     0.00     0.00  max
+  0.00      0.25     0.00        9     0.00     0.00  new_interpreter
+  0.00      0.25     0.00        9     0.00     0.04  parse_stmts
+  0.00      0.25     0.00        8     0.00     0.00  new_stmt_if
+  0.00      0.25     0.00        8     0.00     0.00  parse_stmt_if
+  0.00      0.25     0.00        7     0.00     0.00  new_stmt_for
+  0.00      0.25     0.00        7     0.00     0.01  parse_stmt_for
+  0.00      0.25     0.00        6     0.00     0.00  resolve_stmt_select_case
+  0.00      0.25     0.00        4     0.00     0.00  new_sym_builtin
+  0.00      0.25     0.00        4     0.00     0.00  new_typespec_project
+  0.00      0.25     0.00        4     0.00     0.00  parse_stmt_do
+  0.00      0.25     0.00        2     0.00     0.00  intern_arena_end
+  0.00      0.25     0.00        2     0.00     0.00  new_stmt_expr
+  0.00      0.25     0.00        2     0.00     0.00  new_sym_project
+  0.00      0.25     0.00        1     0.00     0.00  arena_grow
+  0.00      0.25     0.00        1     0.00     0.00  intern_free
+  0.00      0.25     0.00        1     0.00     0.00  new_expr_index
+  0.00      0.25     0.00        1     0.00     0.00  new_stmt_do_until
+  0.00      0.25     0.00        1     0.00     0.00  new_stmt_do_until_loop
+  0.00      0.25     0.00        1     0.00     0.00  new_stmt_do_while
+  0.00      0.25     0.00        1     0.00     0.00  new_stmt_do_while_loop
+  0.00      0.25     0.00        1     0.00     0.00  new_stmt_while
+  0.00      0.25     0.00        1     0.00     0.00  parse_stmt_do_until_loop
+  0.00      0.25     0.00        1     0.00     0.00  parse_stmt_do_while_loop
+  0.00      0.25     0.00        1     0.00     0.00  parse_stmt_while
+  0.00      0.25     0.00        1     0.00     0.00  test_builtin_funcs
+  0.00      0.25     0.00        1     0.00     0.00  test_code
+  0.00      0.25     0.00        1     0.00     0.00  test_expr
+  0.00      0.25     0.00        1     0.00     0.00  test_keywords
+  0.00      0.25     0.00        1     0.00     0.01  test_lex
+  0.00      0.25     0.00        1     0.00     0.18  test_parse
+  0.00      0.25     0.00        1     0.00     0.00  test_select_case
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -141,797 +228,1349 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 1.67% of 0.60 seconds
+granularity: each sample hit covers 2 byte(s) for 4.00% of 0.25 seconds
 
 index % time    self  children    called     name
                                                  <spontaneous>
-[1]     99.2    0.00    0.60                 test_resolve [1]
-                0.00    0.59  163872/163875      interpret [2]
-                0.00    0.00   32768/32768       add_builtin_int [42]
-                0.00    0.00   32768/32768       add_builtin_double [41]
-                0.00    0.00   32768/32768       add_builtin_boolean [40]
-                0.00    0.00  163872/163875      new_interpreter [103]
-                0.00    0.00  163840/163840      interpreter_free [105]
------------------------------------------------
-                0.00    0.00       1/163875      test_code [57]
-                0.00    0.00       1/163875      test_select_case [55]
-                0.00    0.00       1/163875      test_builtin_funcs [56]
-                0.00    0.59  163872/163875      test_resolve [1]
-[2]     98.8    0.00    0.59  163875         interpret [2]
-                0.00    0.38  163875/163875      parse_stmts [3]
-                0.01    0.05  262179/262179      sym_push_var [14]
-                0.00    0.04  163875/163875      init_builtin_types [16]
-                0.00    0.02  163875/163875      sym_get [21]
-                0.00    0.02  163875/327750      sym_push_func [17]
-                0.00    0.02  163875/163875      init_builtin_funcs [23]
-                0.02    0.00  163875/163913      clear_stream [25]
-                0.01    0.01  163875/655500      sym_push_type [13]
-                0.00    0.00  196643/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00  163875/13174309     resolve_stmts <cycle 3> [98]
-                0.00    0.00  163875/10093736     next_token [8]
-                0.00    0.00  196643/29132837     str_intern [35]
-                0.00    0.00  163875/163877      init_keywords [61]
-                0.00    0.00  163875/163914      init_stream [99]
-                0.00    0.00  163875/163875      syms_reset [104]
-                0.00    0.00  163875/163875      clear_builtin_types [102]
-                0.00    0.00  163875/163875      ast_free [101]
-                0.00    0.00  163842/2097374     buf__grow [79]
------------------------------------------------
-                0.00    0.38  163875/163875      interpret [2]
-[3]     62.7    0.00    0.38  163875         parse_stmts [3]
-                0.03    0.21 1671220/1671253     parse_stmt <cycle 2> [11]
-                0.00    0.14  852010/1212533     parse_simple_stmt [9]
-                0.00    0.00 1835095/34475599     is_token [19]
-                0.00    0.00  852010/1212538     new_stmt_assign [38]
-                0.00    0.00  163875/2097374     buf__grow [79]
------------------------------------------------
-[4]     53.1    0.31    0.01 13174309+32376467 <cycle 3 as a whole> [4]
-                0.27    0.00 35523046             str_intern_range <cycle 3> [5]
-                0.03    0.01 2752671+2359501     resolve_expected_expr <cycle 3> [18]
-                0.01    0.00 1671220+360500      resolve_stmt <cycle 3> [28]
-                0.00    0.00  294923             resolve_binary_string_op <cycle 3> [52]
-                0.00    0.00 3473627             cast_operand <cycle 3> [54]
-                0.00    0.00 1048666             resolve_expr_binary_op <cycle 3> [81]
-                0.00    0.00  360527             resolve_binary_arithmetic_op <cycle 3> [93]
-                0.00    0.00  262144             resolve_cond_expr <cycle 3> [96]
-                0.00    0.00  163952             resolve_stmts <cycle 3> [98]
------------------------------------------------
-                               32768             cast_operand <cycle 3> [54]
-                              163840             resolve_binary_string_op <cycle 3> [52]
-                             5997216             resolve_expected_expr <cycle 3> [18]
-                             16318788             resolve_stmt <cycle 3> [28]
-                0.00    0.00       2/13174309     test_keywords [63]
-                0.00    0.00       3/13174309     test_lex [60]
-                0.00    0.00      26/13174309     init_keywords [61]
-                0.00    0.00   32768/13174309     add_builtin_int [42]
-                0.00    0.00   32768/13174309     add_builtin_boolean [40]
-                0.00    0.00   32768/13174309     add_builtin_double [41]
-                0.00    0.00  196643/13174309     interpret [2]
-                0.02    0.00  950315/13174309     sym_get [21]
-                0.04    0.00 1638750/13174309     sym_push_type [13]
-                0.04    0.00 1802625/13174309     sym_push_func [17]
-                0.04    0.00 1933557/13174309     sym_push_var [14]
-                0.15    0.01 6390209/13174309     next_token [8]
-[5]     44.2    0.27    0.00 35523046         str_intern_range <cycle 3> [5]
-                0.00    0.00       1/1           arena_grow [111]
-                                  77             resolve_stmts <cycle 3> [98]
------------------------------------------------
-[6]     40.1    0.05    0.19 3440959+8913944 <cycle 1 as a whole> [6]
-                0.04    0.15 4489739+262149      parse_expr_unary <cycle 1> [10]
-                0.01    0.01 3146058             parse_expr_mul <cycle 1> [24]
-                0.00    0.01 2228480             parse_expr_or <cycle 1> [27]
-                0.00    0.01 2490626             parse_expr_cmp <cycle 1> [29]
------------------------------------------------
-[7]     39.2    0.03    0.21 1671253+622636  <cycle 2 as a whole> [7]
-                0.03    0.14 2031726+39          parse_stmt <cycle 2> [11]
-                0.00    0.07  262163             parse_stmt_block <cycle 2> [12]
------------------------------------------------
-                0.00    0.00       1/10093736     test_select_case [55]
-                0.00    0.00       1/10093736     parse_expr_or <cycle 1> [27]
-                0.00    0.00       5/10093736     test_lex [60]
-                0.00    0.00       8/10093736     parse_select_case_pattern [58]
-                0.00    0.00       9/10093736     parse_stmt <cycle 2> [11]
-                0.00    0.00      33/10093736     test_parse [53]
-                0.00    0.00      58/10093736     expect_token [32]
-                0.00    0.00      79/10093736     match_token [59]
-                0.00    0.00  131137/10093736     parse_expr_mul <cycle 1> [24]
-                0.00    0.00  163875/10093736     interpret [2]
-                0.00    0.01  524358/10093736     parse_expr_cmp <cycle 1> [29]
-                0.00    0.01  688140/10093736     parse_type [22]
-                0.01    0.02 1212495/10093736     expect_keyword [20]
-                0.01    0.02 1212531/10093736     parse_simple_stmt [9]
-                0.01    0.03 1966184/10093736     match_keyword [15]
-                0.03    0.06 4194822/10093736     parse_expr_unary <cycle 1> [10]
-[8]     36.6    0.07    0.15 10093736         next_token [8]
-                0.15    0.01 6390209/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00  622630/622630      scan_float [87]
-                0.00    0.00  524323/2097374     buf__grow [79]
------------------------------------------------
-                0.00    0.00       8/1212533     test_parse [53]
-                0.00    0.00      43/1212533     parse_stmt <cycle 2> [11]
-                0.00    0.06  360472/1212533     parse_stmt_block <cycle 2> [12]
-                0.00    0.14  852010/1212533     parse_stmts [3]
-[9]     32.8    0.00    0.20 1212533         parse_simple_stmt [9]
-                0.02    0.07 1212533/3440959     parse_expr_unary <cycle 1> [10]
-                0.02    0.07 1212531/3440959     parse_expr_or <cycle 1> [27]
-                0.01    0.02 1212531/10093736     next_token [8]
-                0.00    0.00 1212533/15173116     token_pos [33]
-                0.00    0.00       2/2           new_stmt_expr [68]
-                0.00    0.00 3637595/17860563     token_kind [76]
------------------------------------------------
-                              262149             parse_expr_unary <cycle 1> [10]
-                             3277195             parse_expr_mul <cycle 1> [24]
-                0.00    0.00      11/3440959     parse_stmt <cycle 2> [11]
-                0.02    0.07 1212533/3440959     parse_simple_stmt [9]
-[10]    32.4    0.04    0.15 4489739+262149  parse_expr_unary <cycle 1> [10]
-                0.03    0.06 4194822/10093736     next_token [8]
-                0.04    0.00 31952324/34475599     is_token [19]
-                0.00    0.01 7897720/28117390     match_keyword [15]
-                0.01    0.00      58/58          expect_token [32]
-                0.00    0.00 9241627/15173116     token_pos [33]
-                0.00    0.00 2523382/2523382     new_expr_name [36]
-                0.00    0.00  622627/622627      new_expr_float [44]
-                0.00    0.00  557056/557056      new_expr_boolean [45]
-                0.00    0.00  393423/393427      new_expr_int [46]
-                0.00    0.00  393241/393241      new_expr_str [47]
-                0.00    0.00      23/23          new_expr_call [64]
-                0.00    0.00      10/11          new_expr_paren [65]
-                0.00    0.00      64/688269      match_token [59]
-                0.00    0.00 2523382/3211528     token_name [78]
-                0.00    0.00  622627/622627      token_start [90]
-                0.00    0.00  622627/622630      token_float_val [88]
-                0.00    0.00  622627/622627      token_end [89]
-                0.00    0.00  393423/393429      token_int_val [91]
-                0.00    0.00  393241/393243      token_str_val [92]
-                0.00    0.00  262149/17860563     token_kind [76]
-                0.00    0.00      23/2097374     buf__grow [79]
-                                  65             parse_expr_or <cycle 1> [27]
-                              262149             parse_expr_unary <cycle 1> [10]
------------------------------------------------
-                                  39             parse_stmt <cycle 2> [11]
-                              360473             parse_stmt_block <cycle 2> [12]
-                0.00    0.00      33/1671253     test_parse [53]
-                0.03    0.21 1671220/1671253     parse_stmts [3]
-[11]    28.1    0.03    0.14 2031726+39      parse_stmt <cycle 2> [11]
-                0.01    0.05  950307/3440959     parse_expr_or <cycle 1> [27]
-                0.00    0.03 1212495/1212495     expect_keyword [20]
-                0.00    0.02  688140/688140      parse_type [22]
-                0.00    0.02 11928512/28117390     match_keyword [15]
-                0.00    0.00  688139/688139      new_stmt_dim [37]
-                0.00    0.00 2031798/15173116     token_pos [33]
-                0.00    0.00  131076/131076      new_stmt_if [49]
-                0.00    0.00   65538/65538       new_typespec_project [51]
-                0.00    0.00      43/1212533     parse_simple_stmt [9]
-                0.00    0.00      38/38          parse_select_case_pattern [58]
-                0.00    0.00  688178/688269      match_token [59]
-                0.00    0.00      11/3440959     parse_expr_unary <cycle 1> [10]
-                0.00    0.00     168/6324983     is_a_keyword [26]
-                0.00    0.00       9/10093736     next_token [8]
-                0.00    0.00      12/12          new_stmt_select_case [62]
-                0.00    0.00      50/1212538     new_stmt_assign [38]
-                0.00    0.00      35/34475599     is_token [19]
-                0.00    0.00      33/262196      new_StmtBlock [48]
-                0.00    0.00      14/1048729     new_expr_binary [39]
-                0.00    0.00       7/7           new_stmt_for [66]
-                0.00    0.00       3/393427      new_expr_int [46]
-                0.00    0.00       2/262149      new_expr_unary [50]
-                0.00    0.00       1/1           new_stmt_while [75]
-                0.00    0.00       1/1           new_stmt_do_until_loop [72]
-                0.00    0.00       1/1           new_stmt_do_while_loop [74]
-                0.00    0.00       1/1           new_stmt_do_while [73]
-                0.00    0.00       1/1           new_stmt_do_until [71]
-                0.00    0.00  819286/2097374     buf__grow [79]
-                0.00    0.00     117/622753      is_token_eof [86]
-                0.00    0.00       3/3211528     token_name [78]
-                              262163             parse_stmt_block <cycle 2> [12]
-                                  39             parse_stmt <cycle 2> [11]
------------------------------------------------
-                              262163             parse_stmt <cycle 2> [11]
-[12]    11.1    0.00    0.07  262163         parse_stmt_block <cycle 2> [12]
-                0.00    0.06  360472/1212533     parse_simple_stmt [9]
-                0.01    0.00 3178755/6324983     is_a_keyword [26]
-                0.00    0.00  360472/1212538     new_stmt_assign [38]
-                0.00    0.00  262163/262196      new_StmtBlock [48]
-                0.00    0.00  262163/15173116     token_pos [33]
-                0.00    0.00  622636/622753      is_token_eof [86]
-                0.00    0.00  262163/2097374     buf__grow [79]
-                              360473             parse_stmt <cycle 2> [11]
------------------------------------------------
-                0.01    0.01  163875/655500      interpret [2]
-                0.02    0.03  491625/655500      init_builtin_types [16]
-[13]    10.0    0.02    0.04  655500         sym_push_type [13]
-                0.04    0.00 1638750/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00 1638750/29132837     str_intern [35]
------------------------------------------------
-                0.01    0.05  262179/262179      interpret [2]
-[14]     9.5    0.01    0.05  262179         sym_push_var [14]
-                0.04    0.00 1933557/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00 1933557/29132837     str_intern [35]
------------------------------------------------
-                0.00    0.00      68/28117390     parse_select_case_pattern [58]
-                0.00    0.00  688140/28117390     parse_type [22]
-                0.00    0.01 7602950/28117390     parse_expr_or <cycle 1> [27]
-                0.00    0.01 7897720/28117390     parse_expr_unary <cycle 1> [10]
-                0.00    0.02 11928512/28117390     parse_stmt <cycle 2> [11]
-[15]     8.0    0.01    0.04 28117390         match_keyword [15]
-                0.01    0.03 1966184/10093736     next_token [8]
------------------------------------------------
-                0.00    0.04  163875/163875      interpret [2]
-[16]     7.5    0.00    0.04  163875         init_builtin_types [16]
-                0.02    0.03  491625/655500      sym_push_type [13]
------------------------------------------------
-                0.00    0.02  163875/327750      interpret [2]
-                0.00    0.02  163875/327750      init_builtin_funcs [23]
-[17]     7.3    0.00    0.04  327750         sym_push_func [17]
-                0.04    0.00 1802625/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00 1802625/29132837     str_intern [35]
------------------------------------------------
-                             2359501             resolve_expected_expr <cycle 3> [18]
-                              262144             resolve_cond_expr <cycle 3> [96]
-                             2490527             resolve_stmt <cycle 3> [28]
-[18]     6.8    0.03    0.01 2752671+2359501 resolve_expected_expr <cycle 3> [18]
-                0.01    0.00 1048647/1048666     token_kind_name [31]
-                0.00    0.00 5997216/29132837     str_intern [35]
-                0.00    0.00  262144/262144      is_scalar_type [95]
-                0.00    0.00  262144/688207      is_integer_type [83]
-                0.00    0.00  262144/720975      is_floating_type [82]
-                0.00    0.00      30/3473732     is_arithmetic_type [77]
-                0.00    0.00      20/2097374     buf__grow [79]
-                0.00    0.00      11/11          min [107]
-                0.00    0.00       9/9           max [108]
-                             5997216             str_intern_range <cycle 3> [5]
-                             1048647             resolve_expr_binary_op <cycle 3> [81]
-                                  43             cast_operand <cycle 3> [54]
-                             2359501             resolve_expected_expr <cycle 3> [18]
------------------------------------------------
-                0.00    0.00       5/34475599     test_lex [60]
-                0.00    0.00      35/34475599     parse_stmt <cycle 2> [11]
-                0.00    0.00  688140/34475599     parse_type [22]
-                0.00    0.00 1835095/34475599     parse_stmts [3]
-                0.04    0.00 31952324/34475599     parse_expr_unary <cycle 1> [10]
-[19]     6.7    0.04    0.00 34475599         is_token [19]
------------------------------------------------
-                0.00    0.03 1212495/1212495     parse_stmt <cycle 2> [11]
-[20]     4.4    0.00    0.03 1212495         expect_keyword [20]
-                0.01    0.02 1212495/10093736     next_token [8]
------------------------------------------------
-                0.00    0.02  163875/163875      interpret [2]
-[21]     3.9    0.00    0.02  163875         sym_get [21]
-                0.02    0.00  950315/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00  950315/29132837     str_intern [35]
------------------------------------------------
-                0.00    0.02  688140/688140      parse_stmt <cycle 2> [11]
-[22]     3.8    0.00    0.02  688140         parse_type [22]
-                0.00    0.01  688140/10093736     next_token [8]
-                0.00    0.00   65538/3440959     parse_expr_or <cycle 1> [27]
-                0.00    0.00  688140/28117390     match_keyword [15]
-                0.00    0.00  688140/34475599     is_token [19]
-                0.00    0.00  688140/688140      new_typespec_name [43]
-                0.00    0.00 1376280/15173116     token_pos [33]
-                0.00    0.00  688140/3211528     token_name [78]
------------------------------------------------
-                0.00    0.02  163875/163875      interpret [2]
-[23]     3.7    0.00    0.02  163875         init_builtin_funcs [23]
-                0.00    0.02  163875/327750      sym_push_func [17]
-                0.00    0.00  163875/327750      jalloc [94]
------------------------------------------------
-                              131074             parse_expr_or <cycle 1> [27]
-                             3014984             parse_expr_cmp <cycle 1> [29]
-[24]     3.5    0.01    0.01 3146058         parse_expr_mul <cycle 1> [24]
-                0.01    0.00 3146060/6324983     is_a_keyword [26]
-                0.00    0.00  131137/10093736     next_token [8]
-                0.00    0.00  262147/262149      new_expr_unary [50]
-                0.00    0.00  131137/1048729     new_expr_binary [39]
-                0.00    0.00  131137/15173116     token_pos [33]
-                0.00    0.00       1/1           new_expr_index [70]
-                0.00    0.00 4063827/17860563     token_kind [76]
-                             3277195             parse_expr_unary <cycle 1> [10]
------------------------------------------------
-                0.00    0.00       1/163913      test_select_case [55]
-                0.00    0.00       4/163913      test_lex [60]
-                0.00    0.00      33/163913      test_parse [53]
-                0.02    0.00  163875/163913      interpret [2]
-[25]     3.3    0.02    0.00  163913         clear_stream [25]
------------------------------------------------
-                0.00    0.00     168/6324983     parse_stmt <cycle 2> [11]
-                0.01    0.00 3146060/6324983     parse_expr_mul <cycle 1> [24]
-                0.01    0.00 3178755/6324983     parse_stmt_block <cycle 2> [12]
-[26]     2.5    0.02    0.00 6324983         is_a_keyword [26]
------------------------------------------------
-                                  65             parse_expr_unary <cycle 1> [10]
-                0.00    0.00      39/3440959     parse_select_case_pattern [58]
-                0.00    0.00   65538/3440959     parse_type [22]
-                0.01    0.05  950307/3440959     parse_stmt <cycle 2> [11]
-                0.02    0.07 1212531/3440959     parse_simple_stmt [9]
-[27]     2.2    0.00    0.01 2228480         parse_expr_or <cycle 1> [27]
-                0.00    0.01 7602950/28117390     match_keyword [15]
-                0.00    0.00  393220/1048729     new_expr_binary [39]
-                0.00    0.00  393220/15173116     token_pos [33]
-                0.00    0.00       1/10093736     next_token [8]
-                0.00    0.00  393225/17860563     token_kind [76]
-                             2490626             parse_expr_cmp <cycle 1> [29]
-                              131074             parse_expr_mul <cycle 1> [24]
------------------------------------------------
-                              360500             resolve_stmt <cycle 3> [28]
-                             1671220             resolve_stmts <cycle 3> [98]
-[28]     2.1    0.01    0.00 1671220+360500  resolve_stmt <cycle 3> [28]
-                0.00    0.00 16318788/29132837     str_intern [35]
-                0.00    0.00      19/1048666     token_kind_name [31]
-                0.00    0.00  688136/688136      add_user_sym [84]
-                0.00    0.00  131108/3473732     is_arithmetic_type [77]
-                0.00    0.00  131072/720975      is_floating_type [82]
-                0.00    0.00   65536/65536       get_interpreter [106]
-                             16318788             str_intern_range <cycle 3> [5]
-                             2490527             resolve_expected_expr <cycle 3> [18]
-                             1278019             cast_operand <cycle 3> [54]
-                              262144             resolve_cond_expr <cycle 3> [96]
-                                  19             resolve_expr_binary_op <cycle 3> [81]
-                              360500             resolve_stmt <cycle 3> [28]
------------------------------------------------
-                             2490626             parse_expr_or <cycle 1> [27]
-[29]     2.0    0.00    0.01 2490626         parse_expr_cmp <cycle 1> [29]
-                0.00    0.01  524358/10093736     next_token [8]
-                0.00    0.00  524358/1048729     new_expr_binary [39]
-                0.00    0.00  524358/15173116     token_pos [33]
-                0.00    0.00 9503743/17860563     token_kind [76]
-                             3014984             parse_expr_mul <cycle 1> [24]
------------------------------------------------
-                0.00    0.00       1/9667576     new_expr [69]
-                0.00    0.00       1/9667576     new_expr_index [70]
-                0.00    0.00       1/9667576     new_stmt_while [75]
-                0.00    0.00       1/9667576     new_stmt_do_while [73]
-                0.00    0.00       1/9667576     new_stmt_do_until [71]
-                0.00    0.00       1/9667576     new_stmt_do_while_loop [74]
-                0.00    0.00       1/9667576     new_stmt_do_until_loop [72]
-                0.00    0.00       2/9667576     new_stmt_expr [68]
-                0.00    0.00       7/9667576     new_stmt_for [66]
-                0.00    0.00      11/9667576     new_expr_paren [65]
-                0.00    0.00      46/9667576     new_expr_call [64]
-                0.00    0.00      52/9667576     new_stmt_select_case [62]
-                0.00    0.00   65538/9667576     new_typespec_project [51]
-                0.00    0.00  262149/9667576     new_expr_unary [50]
-                0.00    0.00  262150/9667576     new_stmt_if [49]
-                0.00    0.00  262196/9667576     new_StmtBlock [48]
-                0.00    0.00  393241/9667576     new_expr_str [47]
-                0.00    0.00  393427/9667576     new_expr_int [46]
-                0.00    0.00  557056/9667576     new_expr_boolean [45]
-                0.00    0.00  622627/9667576     new_expr_float [44]
-                0.00    0.00  688140/9667576     new_typespec_name [43]
-                0.00    0.00 1048729/9667576     new_expr_binary [39]
-                0.00    0.00 1212538/9667576     new_stmt_assign [38]
-                0.00    0.00 1376278/9667576     new_stmt_dim [37]
-                0.00    0.00 2523382/9667576     new_expr_name [36]
-[30]     1.7    0.01    0.00 9667576         arena_alloc [30]
------------------------------------------------
-                0.00    0.00      19/1048666     resolve_stmt <cycle 3> [28]
-                0.01    0.00 1048647/1048666     resolve_expected_expr <cycle 3> [18]
-[31]     1.7    0.01    0.00 1048666         token_kind_name [31]
------------------------------------------------
-                0.01    0.00      58/58          parse_expr_unary <cycle 1> [10]
-[32]     0.8    0.01    0.00      58         expect_token [32]
-                0.00    0.00      58/10093736     next_token [8]
------------------------------------------------
-                0.00    0.00  131137/15173116     parse_expr_mul <cycle 1> [24]
-                0.00    0.00  262163/15173116     parse_stmt_block <cycle 2> [12]
-                0.00    0.00  393220/15173116     parse_expr_or <cycle 1> [27]
-                0.00    0.00  524358/15173116     parse_expr_cmp <cycle 1> [29]
-                0.00    0.00 1212533/15173116     parse_simple_stmt [9]
-                0.00    0.00 1376280/15173116     parse_type [22]
-                0.00    0.00 2031798/15173116     parse_stmt <cycle 2> [11]
-                0.00    0.00 9241627/15173116     parse_expr_unary <cycle 1> [10]
-[33]     0.8    0.01    0.00 15173116         token_pos [33]
------------------------------------------------
-                                                 <spontaneous>
-[34]     0.8    0.01    0.00                 token_info [34]
------------------------------------------------
-                0.00    0.00       2/29132837     test_keywords [63]
-                0.00    0.00       3/29132837     test_lex [60]
-                0.00    0.00      26/29132837     init_keywords [61]
-                0.00    0.00   32768/29132837     cast_operand <cycle 3> [54]
-                0.00    0.00   32768/29132837     add_builtin_int [42]
-                0.00    0.00   32768/29132837     add_builtin_boolean [40]
-                0.00    0.00   32768/29132837     add_builtin_double [41]
-                0.00    0.00  163840/29132837     resolve_binary_string_op <cycle 3> [52]
-                0.00    0.00  196643/29132837     interpret [2]
-                0.00    0.00  950315/29132837     sym_get [21]
-                0.00    0.00 1638750/29132837     sym_push_type [13]
-                0.00    0.00 1802625/29132837     sym_push_func [17]
-                0.00    0.00 1933557/29132837     sym_push_var [14]
-                0.00    0.00 5997216/29132837     resolve_expected_expr <cycle 3> [18]
-                0.00    0.00 16318788/29132837     resolve_stmt <cycle 3> [28]
-[35]     0.8    0.01    0.00 29132837         str_intern [35]
------------------------------------------------
-                0.00    0.00 2523382/2523382     parse_expr_unary <cycle 1> [10]
-[36]     0.4    0.00    0.00 2523382         new_expr_name [36]
-                0.00    0.00 2523382/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00  688139/688139      parse_stmt <cycle 2> [11]
-[37]     0.2    0.00    0.00  688139         new_stmt_dim [37]
-                0.00    0.00 1376278/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       6/1212538     test_parse [53]
-                0.00    0.00      50/1212538     parse_stmt <cycle 2> [11]
-                0.00    0.00  360472/1212538     parse_stmt_block <cycle 2> [12]
-                0.00    0.00  852010/1212538     parse_stmts [3]
-[38]     0.2    0.00    0.00 1212538         new_stmt_assign [38]
-                0.00    0.00 1212538/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00      14/1048729     parse_stmt <cycle 2> [11]
-                0.00    0.00  131137/1048729     parse_expr_mul <cycle 1> [24]
-                0.00    0.00  393220/1048729     parse_expr_or <cycle 1> [27]
-                0.00    0.00  524358/1048729     parse_expr_cmp <cycle 1> [29]
-[39]     0.2    0.00    0.00 1048729         new_expr_binary [39]
-                0.00    0.00 1048729/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00   32768/32768       test_resolve [1]
-[40]     0.1    0.00    0.00   32768         add_builtin_boolean [40]
-                0.00    0.00   32768/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00   32768/29132837     str_intern [35]
------------------------------------------------
-                0.00    0.00   32768/32768       test_resolve [1]
-[41]     0.1    0.00    0.00   32768         add_builtin_double [41]
-                0.00    0.00   32768/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00   32768/29132837     str_intern [35]
------------------------------------------------
-                0.00    0.00   32768/32768       test_resolve [1]
-[42]     0.1    0.00    0.00   32768         add_builtin_int [42]
-                0.00    0.00   32768/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00   32768/29132837     str_intern [35]
------------------------------------------------
-                0.00    0.00  688140/688140      parse_type [22]
-[43]     0.1    0.00    0.00  688140         new_typespec_name [43]
-                0.00    0.00  688140/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00  622627/622627      parse_expr_unary <cycle 1> [10]
-[44]     0.1    0.00    0.00  622627         new_expr_float [44]
-                0.00    0.00  622627/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00  557056/557056      parse_expr_unary <cycle 1> [10]
-[45]     0.1    0.00    0.00  557056         new_expr_boolean [45]
-                0.00    0.00  557056/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/393427      test_expr [67]
-                0.00    0.00       3/393427      parse_stmt <cycle 2> [11]
-                0.00    0.00  393423/393427      parse_expr_unary <cycle 1> [10]
-[46]     0.1    0.00    0.00  393427         new_expr_int [46]
-                0.00    0.00  393427/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00  393241/393241      parse_expr_unary <cycle 1> [10]
-[47]     0.1    0.00    0.00  393241         new_expr_str [47]
-                0.00    0.00  393241/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00      33/262196      parse_stmt <cycle 2> [11]
-                0.00    0.00  262163/262196      parse_stmt_block <cycle 2> [12]
-[48]     0.0    0.00    0.00  262196         new_StmtBlock [48]
-                0.00    0.00  262196/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00  131076/131076      parse_stmt <cycle 2> [11]
-[49]     0.0    0.00    0.00  131076         new_stmt_if [49]
-                0.00    0.00  262150/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       2/262149      parse_stmt <cycle 2> [11]
-                0.00    0.00  262147/262149      parse_expr_mul <cycle 1> [24]
-[50]     0.0    0.00    0.00  262149         new_expr_unary [50]
-                0.00    0.00  262149/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00   65538/65538       parse_stmt <cycle 2> [11]
-[51]     0.0    0.00    0.00   65538         new_typespec_project [51]
-                0.00    0.00   65538/9667576     arena_alloc [30]
------------------------------------------------
-                              294923             resolve_expr_binary_op <cycle 3> [81]
-[52]     0.0    0.00    0.00  294923         resolve_binary_string_op <cycle 3> [52]
-                0.00    0.00  163840/29132837     str_intern [35]
-                0.00    0.00  622614/655382      is_concatable [85]
-                0.00    0.00  163840/196608      buf__printf [97]
-                0.00    0.00   32768/3473732     is_arithmetic_type [77]
-                0.00    0.00   32768/1867945     is_string_type [80]
-                              589846             cast_operand <cycle 3> [54]
-                              163840             str_intern_range <cycle 3> [5]
------------------------------------------------
-                                                 <spontaneous>
-[53]     0.0    0.00    0.00                 test_parse [53]
-                0.00    0.00      33/1671253     parse_stmt <cycle 2> [11]
-                0.00    0.00      33/163913      clear_stream [25]
-                0.00    0.00       8/1212533     parse_simple_stmt [9]
-                0.00    0.00      33/10093736     next_token [8]
-                0.00    0.00       6/1212538     new_stmt_assign [38]
-                0.00    0.00      33/163914      init_stream [99]
------------------------------------------------
-                                  43             resolve_expected_expr <cycle 3> [18]
-                              262144             resolve_cond_expr <cycle 3> [96]
-                              524367             resolve_binary_arithmetic_op <cycle 3> [93]
-                              589846             resolve_binary_string_op <cycle 3> [52]
-                              819208             resolve_expr_binary_op <cycle 3> [81]
-                             1278019             resolve_stmt <cycle 3> [28]
-[54]     0.0    0.00    0.00 3473627         cast_operand <cycle 3> [54]
-                0.00    0.00   32768/29132837     str_intern [35]
-                0.00    0.00 1474660/3473732     is_arithmetic_type [77]
-                0.00    0.00   32768/1867945     is_string_type [80]
-                0.00    0.00   32768/655382      is_concatable [85]
-                0.00    0.00   32768/196608      buf__printf [97]
-                               32768             str_intern_range <cycle 3> [5]
------------------------------------------------
-                                                 <spontaneous>
-[55]     0.0    0.00    0.00                 test_select_case [55]
-                0.00    0.00       1/163875      interpret [2]
-                0.00    0.00       1/163913      clear_stream [25]
-                0.00    0.00       1/10093736     next_token [8]
-                0.00    0.00       1/163914      init_stream [99]
-                0.00    0.00       1/163875      new_interpreter [103]
------------------------------------------------
-                                                 <spontaneous>
-[56]     0.0    0.00    0.00                 test_builtin_funcs [56]
-                0.00    0.00       1/163875      interpret [2]
-                0.00    0.00       1/163875      new_interpreter [103]
------------------------------------------------
-                                                 <spontaneous>
-[57]     0.0    0.00    0.00                 test_code [57]
-                0.00    0.00       1/163875      interpret [2]
-                0.00    0.00       1/163875      new_interpreter [103]
------------------------------------------------
-                0.00    0.00      38/38          parse_stmt <cycle 2> [11]
-[58]     0.0    0.00    0.00      38         parse_select_case_pattern [58]
-                0.00    0.00      39/3440959     parse_expr_or <cycle 1> [27]
-                0.00    0.00       8/10093736     next_token [8]
-                0.00    0.00      68/28117390     match_keyword [15]
-                0.00    0.00      24/17860563     token_kind [76]
------------------------------------------------
-                0.00    0.00      27/688269      test_lex [60]
-                0.00    0.00      64/688269      parse_expr_unary <cycle 1> [10]
-                0.00    0.00  688178/688269      parse_stmt <cycle 2> [11]
-[59]     0.0    0.00    0.00  688269         match_token [59]
-                0.00    0.00      79/10093736     next_token [8]
------------------------------------------------
-                                                 <spontaneous>
-[60]     0.0    0.00    0.00                 test_lex [60]
-                0.00    0.00       4/163913      clear_stream [25]
-                0.00    0.00       5/10093736     next_token [8]
-                0.00    0.00       3/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00       1/1           test_keywords [63]
-                0.00    0.00       5/34475599     is_token [19]
-                0.00    0.00       3/29132837     str_intern [35]
-                0.00    0.00      27/688269      match_token [59]
-                0.00    0.00       1/163877      init_keywords [61]
-                0.00    0.00       6/393429      token_int_val [91]
-                0.00    0.00       5/163914      init_stream [99]
-                0.00    0.00       3/622630      token_float_val [88]
-                0.00    0.00       3/3211528     token_name [78]
-                0.00    0.00       2/393243      token_str_val [92]
------------------------------------------------
-                0.00    0.00       1/163877      test_keywords [63]
-                0.00    0.00       1/163877      test_lex [60]
-                0.00    0.00  163875/163877      interpret [2]
-[61]     0.0    0.00    0.00  163877         init_keywords [61]
-                0.00    0.00      26/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00      26/29132837     str_intern [35]
-                0.00    0.00       2/2           intern_arena_end [110]
------------------------------------------------
-                0.00    0.00      12/12          parse_stmt <cycle 2> [11]
-[62]     0.0    0.00    0.00      12         new_stmt_select_case [62]
-                0.00    0.00      52/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/1           test_lex [60]
-[63]     0.0    0.00    0.00       1         test_keywords [63]
-                0.00    0.00       2/13174309     str_intern_range <cycle 3> [5]
-                0.00    0.00       2/29132837     str_intern [35]
-                0.00    0.00       1/163877      init_keywords [61]
-                0.00    0.00       3/3           is_keyword_name [109]
------------------------------------------------
-                0.00    0.00      23/23          parse_expr_unary <cycle 1> [10]
-[64]     0.0    0.00    0.00      23         new_expr_call [64]
-                0.00    0.00      46/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/11          test_expr [67]
-                0.00    0.00      10/11          parse_expr_unary <cycle 1> [10]
-[65]     0.0    0.00    0.00      11         new_expr_paren [65]
-                0.00    0.00      11/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       7/7           parse_stmt <cycle 2> [11]
-[66]     0.0    0.00    0.00       7         new_stmt_for [66]
-                0.00    0.00       7/9667576     arena_alloc [30]
------------------------------------------------
-                                                 <spontaneous>
-[67]     0.0    0.00    0.00                 test_expr [67]
-                0.00    0.00       1/1           new_expr [69]
-                0.00    0.00       1/11          new_expr_paren [65]
-                0.00    0.00       1/393427      new_expr_int [46]
------------------------------------------------
-                0.00    0.00       2/2           parse_simple_stmt [9]
-[68]     0.0    0.00    0.00       2         new_stmt_expr [68]
-                0.00    0.00       2/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/1           test_expr [67]
-[69]     0.0    0.00    0.00       1         new_expr [69]
-                0.00    0.00       1/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/1           parse_expr_mul <cycle 1> [24]
-[70]     0.0    0.00    0.00       1         new_expr_index [70]
-                0.00    0.00       1/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/1           parse_stmt <cycle 2> [11]
-[71]     0.0    0.00    0.00       1         new_stmt_do_until [71]
-                0.00    0.00       1/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/1           parse_stmt <cycle 2> [11]
-[72]     0.0    0.00    0.00       1         new_stmt_do_until_loop [72]
-                0.00    0.00       1/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/1           parse_stmt <cycle 2> [11]
-[73]     0.0    0.00    0.00       1         new_stmt_do_while [73]
-                0.00    0.00       1/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/1           parse_stmt <cycle 2> [11]
-[74]     0.0    0.00    0.00       1         new_stmt_do_while_loop [74]
-                0.00    0.00       1/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00       1/1           parse_stmt <cycle 2> [11]
-[75]     0.0    0.00    0.00       1         new_stmt_while [75]
-                0.00    0.00       1/9667576     arena_alloc [30]
------------------------------------------------
-                0.00    0.00      24/17860563     parse_select_case_pattern [58]
-                0.00    0.00  262149/17860563     parse_expr_unary <cycle 1> [10]
-                0.00    0.00  393225/17860563     parse_expr_or <cycle 1> [27]
-                0.00    0.00 3637595/17860563     parse_simple_stmt [9]
-                0.00    0.00 4063827/17860563     parse_expr_mul <cycle 1> [24]
-                0.00    0.00 9503743/17860563     parse_expr_cmp <cycle 1> [29]
-[76]     0.0    0.00    0.00 17860563         token_kind [76]
------------------------------------------------
-                0.00    0.00      30/3473732     resolve_expected_expr <cycle 3> [18]
-                0.00    0.00   32768/3473732     resolve_binary_string_op <cycle 3> [52]
-                0.00    0.00   65536/3473732     resolve_binary_arithmetic_op <cycle 3> [93]
-                0.00    0.00  131108/3473732     resolve_stmt <cycle 3> [28]
-                0.00    0.00  262144/3473732     resolve_cond_expr <cycle 3> [96]
-                0.00    0.00 1474660/3473732     cast_operand <cycle 3> [54]
-                0.00    0.00 1507486/3473732     resolve_expr_binary_op <cycle 3> [81]
-[77]     0.0    0.00    0.00 3473732         is_arithmetic_type [77]
------------------------------------------------
-                0.00    0.00       3/3211528     test_lex [60]
-                0.00    0.00       3/3211528     parse_stmt <cycle 2> [11]
-                0.00    0.00  688140/3211528     parse_type [22]
-                0.00    0.00 2523382/3211528     parse_expr_unary <cycle 1> [10]
-[78]     0.0    0.00    0.00 3211528         token_name [78]
------------------------------------------------
-                0.00    0.00      20/2097374     resolve_expected_expr <cycle 3> [18]
-                0.00    0.00      23/2097374     parse_expr_unary <cycle 1> [10]
-                0.00    0.00  163842/2097374     interpret [2]
-                0.00    0.00  163842/2097374     add_user_sym [84]
-                0.00    0.00  163875/2097374     parse_stmts [3]
-                0.00    0.00  262163/2097374     parse_stmt_block <cycle 2> [12]
-                0.00    0.00  524323/2097374     next_token [8]
-                0.00    0.00  819286/2097374     parse_stmt <cycle 2> [11]
-[79]     0.0    0.00    0.00 2097374         buf__grow [79]
------------------------------------------------
-                0.00    0.00   32768/1867945     cast_operand <cycle 3> [54]
-                0.00    0.00   32768/1867945     resolve_binary_string_op <cycle 3> [52]
-                0.00    0.00 1802409/1867945     resolve_expr_binary_op <cycle 3> [81]
-[80]     0.0    0.00    0.00 1867945         is_string_type [80]
------------------------------------------------
-                                  19             resolve_stmt <cycle 3> [28]
-                             1048647             resolve_expected_expr <cycle 3> [18]
-[81]     0.0    0.00    0.00 1048666         resolve_expr_binary_op <cycle 3> [81]
-                0.00    0.00 1802409/1867945     is_string_type [80]
-                0.00    0.00 1507486/3473732     is_arithmetic_type [77]
-                              819208             cast_operand <cycle 3> [54]
-                              360527             resolve_binary_arithmetic_op <cycle 3> [93]
-                              294923             resolve_binary_string_op <cycle 3> [52]
------------------------------------------------
-                0.00    0.00  131072/720975      resolve_stmt <cycle 3> [28]
-                0.00    0.00  262144/720975      resolve_expected_expr <cycle 3> [18]
-                0.00    0.00  327759/720975      resolve_binary_arithmetic_op <cycle 3> [93]
-[82]     0.0    0.00    0.00  720975         is_floating_type [82]
------------------------------------------------
-                0.00    0.00  262144/688207      resolve_expected_expr <cycle 3> [18]
-                0.00    0.00  426063/688207      resolve_binary_arithmetic_op <cycle 3> [93]
-[83]     0.0    0.00    0.00  688207         is_integer_type [83]
------------------------------------------------
-                0.00    0.00  688136/688136      resolve_stmt <cycle 3> [28]
-[84]     0.0    0.00    0.00  688136         add_user_sym [84]
-                0.00    0.00  163842/2097374     buf__grow [79]
------------------------------------------------
-                0.00    0.00   32768/655382      cast_operand <cycle 3> [54]
-                0.00    0.00  622614/655382      resolve_binary_string_op <cycle 3> [52]
-[85]     0.0    0.00    0.00  655382         is_concatable [85]
------------------------------------------------
-                0.00    0.00     117/622753      parse_stmt <cycle 2> [11]
-                0.00    0.00  622636/622753      parse_stmt_block <cycle 2> [12]
-[86]     0.0    0.00    0.00  622753         is_token_eof [86]
------------------------------------------------
-                0.00    0.00  622630/622630      next_token [8]
-[87]     0.0    0.00    0.00  622630         scan_float [87]
------------------------------------------------
-                0.00    0.00       3/622630      test_lex [60]
-                0.00    0.00  622627/622630      parse_expr_unary <cycle 1> [10]
-[88]     0.0    0.00    0.00  622630         token_float_val [88]
------------------------------------------------
-                0.00    0.00  622627/622627      parse_expr_unary <cycle 1> [10]
-[89]     0.0    0.00    0.00  622627         token_end [89]
------------------------------------------------
-                0.00    0.00  622627/622627      parse_expr_unary <cycle 1> [10]
-[90]     0.0    0.00    0.00  622627         token_start [90]
------------------------------------------------
-                0.00    0.00       6/393429      test_lex [60]
-                0.00    0.00  393423/393429      parse_expr_unary <cycle 1> [10]
-[91]     0.0    0.00    0.00  393429         token_int_val [91]
------------------------------------------------
-                0.00    0.00       2/393243      test_lex [60]
-                0.00    0.00  393241/393243      parse_expr_unary <cycle 1> [10]
-[92]     0.0    0.00    0.00  393243         token_str_val [92]
------------------------------------------------
-                              360527             resolve_expr_binary_op <cycle 3> [81]
-[93]     0.0    0.00    0.00  360527         resolve_binary_arithmetic_op <cycle 3> [93]
-                0.00    0.00  426063/688207      is_integer_type [83]
-                0.00    0.00  327759/720975      is_floating_type [82]
-                0.00    0.00   65536/3473732     is_arithmetic_type [77]
-                              524367             cast_operand <cycle 3> [54]
------------------------------------------------
-                0.00    0.00  163875/327750      new_interpreter [103]
-                0.00    0.00  163875/327750      init_builtin_funcs [23]
-[94]     0.0    0.00    0.00  327750         jalloc [94]
------------------------------------------------
-                0.00    0.00  262144/262144      resolve_expected_expr <cycle 3> [18]
-[95]     0.0    0.00    0.00  262144         is_scalar_type [95]
------------------------------------------------
-                              262144             resolve_stmt <cycle 3> [28]
-[96]     0.0    0.00    0.00  262144         resolve_cond_expr <cycle 3> [96]
-                0.00    0.00  262144/3473732     is_arithmetic_type [77]
-                              262144             resolve_expected_expr <cycle 3> [18]
-                              262144             cast_operand <cycle 3> [54]
------------------------------------------------
-                0.00    0.00   32768/196608      cast_operand <cycle 3> [54]
-                0.00    0.00  163840/196608      resolve_binary_string_op <cycle 3> [52]
-[97]     0.0    0.00    0.00  196608         buf__printf [97]
------------------------------------------------
-                                  77             str_intern_range <cycle 3> [5]
-                0.00    0.00  163875/13174309     interpret [2]
-[98]     0.0    0.00    0.00  163952         resolve_stmts <cycle 3> [98]
-                             1671220             resolve_stmt <cycle 3> [28]
------------------------------------------------
-                0.00    0.00       1/163914      test_select_case [55]
-                0.00    0.00       5/163914      test_lex [60]
-                0.00    0.00      33/163914      test_parse [53]
-                0.00    0.00  163875/163914      interpret [2]
-[99]     0.0    0.00    0.00  163914         init_stream [99]
------------------------------------------------
-                0.00    0.00  163875/163875      ast_free [101]
-[100]    0.0    0.00    0.00  163875         arena_free [100]
------------------------------------------------
-                0.00    0.00  163875/163875      interpret [2]
-[101]    0.0    0.00    0.00  163875         ast_free [101]
-                0.00    0.00  163875/163875      arena_free [100]
------------------------------------------------
-                0.00    0.00  163875/163875      interpret [2]
-[102]    0.0    0.00    0.00  163875         clear_builtin_types [102]
------------------------------------------------
-                0.00    0.00       1/163875      test_code [57]
-                0.00    0.00       1/163875      test_select_case [55]
-                0.00    0.00       1/163875      test_builtin_funcs [56]
-                0.00    0.00  163872/163875      test_resolve [1]
-[103]    0.0    0.00    0.00  163875         new_interpreter [103]
-                0.00    0.00  163875/327750      jalloc [94]
------------------------------------------------
-                0.00    0.00  163875/163875      interpret [2]
-[104]    0.0    0.00    0.00  163875         syms_reset [104]
------------------------------------------------
-                0.00    0.00  163840/163840      test_resolve [1]
-[105]    0.0    0.00    0.00  163840         interpreter_free [105]
------------------------------------------------
-                0.00    0.00   65536/65536       resolve_stmt <cycle 3> [28]
-[106]    0.0    0.00    0.00   65536         get_interpreter [106]
------------------------------------------------
-                0.00    0.00      11/11          resolve_expected_expr <cycle 3> [18]
-[107]    0.0    0.00    0.00      11         min [107]
------------------------------------------------
-                0.00    0.00       9/9           resolve_expected_expr <cycle 3> [18]
-[108]    0.0    0.00    0.00       9         max [108]
------------------------------------------------
-                0.00    0.00       3/3           test_keywords [63]
-[109]    0.0    0.00    0.00       3         is_keyword_name [109]
------------------------------------------------
-                0.00    0.00       2/2           init_keywords [61]
-[110]    0.0    0.00    0.00       2         intern_arena_end [110]
------------------------------------------------
-                0.00    0.00       1/1           str_intern_range <cycle 3> [5]
-[111]    0.0    0.00    0.00       1         arena_grow [111]
+[1]    100.0    0.00    0.25                 main [1]
+                0.00    0.25      32/32          test_resolve [2]
+                0.00    0.00       1/1           test_parse [54]
+                0.00    0.00       1/1           test_lex [76]
+                0.00    0.00       1/1           test_select_case [87]
+                0.00    0.00       1/1           test_builtin_funcs [89]
+                0.00    0.00       1/1           test_code [90]
+                0.00    0.00       1/1           test_expr [192]
+                0.00    0.00       1/1           intern_free [185]
+-----------------------------------------------
+                0.00    0.25      32/32          main [1]
+[2]     99.9    0.00    0.25      32         test_resolve [2]
+                0.00    0.21  163872/163875      interpret [4]
+                0.00    0.01   32768/98307       add_builtin_double [14]
+                0.00    0.01   32768/65568       add_builtin_int [15]
+                0.00    0.01   32768/65536       add_builtin_boolean [16]
+-----------------------------------------------
+[3]     94.0    0.10    0.14  623404+23660300 <cycle 3 as a whole> [3]
+                0.03    0.06 4981104+8           resolve_expected_expr <cycle 3> [7]
+                0.00    0.02  327760             resolve_binary_arithmetic_op <cycle 3> [19]
+                0.01    0.01 1212483             resolve_stmt_assign <cycle 3> [21]
+                0.00    0.02  688136             resolve_stmt_dim <cycle 3> [23]
+                0.01    0.00 3768578             resolve_expr <cycle 3> [25]
+                0.01    0.00 2031697             resolve_stmt <cycle 3> [27]
+                0.01    0.00 1049396             str_intern_range <cycle 3> [29]
+                0.01    0.00 1015899             resolve_expr_binary_op <cycle 3> [30]
+                0.01    0.00  393229             resolve_expr_string <cycle 3> [35]
+                0.01    0.00  262173             resolve_stmt_block <cycle 3> [36]
+                0.00    0.01  163840             concat_operands <cycle 3> [38]
+                0.00    0.01 1015880             resolve_expr_binary <cycle 3> [43]
+                0.00    0.00  262144             resolve_expr_unary <cycle 3> [45]
+                0.00    0.00 3375326             cast_operand <cycle 3> [47]
+                0.00    0.00  622600             sym_push_dim <cycle 3> [94]
+                0.00    0.00      20             resolve_expr_call <cycle 3> [95]
+                0.00    0.00      19             resolve_select_case_pattern <cycle 3> [96]
+                0.00    0.00   65536             sym_push_project <cycle 3> [97]
+                0.00    0.00 1802374             convert_operand <cycle 3> [102]
+                0.00    0.00  327760             unify_operands <cycle 3> [109]
+                0.00    0.00  294923             resolve_binary_string_op <cycle 3> [111]
+                0.00    0.00  262144             resolve_cond_expr <cycle 3> [114]
+                0.00    0.00  163961             resolve_stmts <cycle 3> [115]
+                0.00    0.00  131072             resolve_stmt_if <cycle 3> [118]
+                0.00    0.00   65536             promote_operand <cycle 3> [119]
+                0.00    0.00      63             new_sym <cycle 3> [147]
+                0.00    0.00      23             resolve_select_case <cycle 3> [164]
+                0.00    0.00      20             resolve_expr_call_default <cycle 3> [165]
+                0.00    0.00       6             resolve_stmt_select_case <cycle 3> [178]
+                0.00    0.00       2             new_sym_project <cycle 3> [183]
+-----------------------------------------------
+                0.00    0.00       1/163875      test_code [90]
+                0.00    0.00       1/163875      test_select_case [87]
+                0.00    0.00       1/163875      test_builtin_funcs [89]
+                0.00    0.21  163872/163875      test_resolve [2]
+[4]     85.1    0.00    0.21  163875         interpret [4]
+                0.01    0.20  163866/163875      parse_interpreter [5]
+                0.00    0.00       9/9           initial_parse [60]
+                0.00    0.00       9/623404      str_intern_range <cycle 3> [29]
+                0.00    0.00  163875/163875      map_get [116]
+                0.00    0.00  163866/163866      update_interpreter [117]
+                0.00    0.00  163866/426054      sym_get_builtin [107]
+                0.00    0.00       9/884917      str_intern [103]
+-----------------------------------------------
+                0.00    0.00       9/163875      initial_parse [60]
+                0.01    0.20  163866/163875      interpret [4]
+[5]     85.1    0.01    0.20  163875         parse_interpreter [5]
+                0.00    0.07  163875/163875      add_builtin_result [8]
+                0.00    0.07  163875/163914      init_stream [10]
+                0.03    0.04  163875/623404      resolve_stmts <cycle 3> [115]
+                0.00    0.00       9/9           parse_stmts [51]
+                0.00    0.00  163875/163877      init_keywords [75]
+-----------------------------------------------
+                0.00    0.01   32768/262179      add_builtin_string [17]
+                0.00    0.02   65536/262179      add_builtin_boolean [16]
+                0.00    0.02   65568/262179      add_builtin_int [15]
+                0.00    0.04   98307/262179      add_builtin_double [14]
+[6]     39.5    0.00    0.10  262179         add_builtin_var [6]
+                0.04    0.06  262179/623404      str_intern_range <cycle 3> [29]
+                0.00    0.00  262179/884917      str_intern [103]
+                0.00    0.00  262179/426054      sym_get_builtin [107]
+                0.00    0.00       4/4           new_sym_builtin [179]
+                0.00    0.00       1/264         buf__grow [135]
+-----------------------------------------------
+                                   8             resolve_expected_expr <cycle 3> [7]
+                                  43             resolve_expr_call_default <cycle 3> [165]
+                             1212483             resolve_stmt_assign <cycle 3> [21]
+                             3768578             resolve_expr <cycle 3> [25]
+[7]     36.1    0.03    0.06 4981104+8       resolve_expected_expr <cycle 3> [7]
+                0.00    0.04 1835152/1835152     resolve_expr_name [11]
+                0.01    0.00  557056/557056      resolve_expr_boolean [33]
+                0.01    0.00  524333/524333      resolve_expr_float [34]
+                0.00    0.00  393290/393290      resolve_expr_int [108]
+                             1015880             resolve_expr_binary <cycle 3> [43]
+                              393229             resolve_expr_string <cycle 3> [35]
+                              262144             resolve_expr_unary <cycle 3> [45]
+                                  20             resolve_expr_call <cycle 3> [95]
+                                   8             resolve_expected_expr <cycle 3> [7]
+-----------------------------------------------
+                0.00    0.07  163875/163875      parse_interpreter [5]
+[8]     29.7    0.00    0.07  163875         add_builtin_result [8]
+                0.00    0.02   65539/98307       add_builtin_double [14]
+                0.00    0.02   32768/32768       add_builtin_string [17]
+                0.00    0.01   32800/65568       add_builtin_int [15]
+                0.00    0.01   32768/65536       add_builtin_boolean [16]
+-----------------------------------------------
+                0.00    0.00       3/165242      parse_stmt_for <cycle 2> [61]
+                0.00    0.00       6/165242      parse_stmt_select_case <cycle 2> [57]
+                0.00    0.00       8/165242      parse_select_case_pattern [59]
+                0.00    0.00      13/165242      parse_expr_unary <cycle 1> [85]
+                0.00    0.00      19/165242      parse_expr_cmp <cycle 1> [77]
+                0.00    0.00      33/165242      parse_type_base [74]
+                0.00    0.00      58/165242      expect_token [68]
+                0.00    0.00      68/165242      parse_expr_add <cycle 1> [65]
+                0.00    0.00      69/165242      parse_expr_mul <cycle 1> [64]
+                0.00    0.00      79/165242      match_token [62]
+                0.00    0.00     116/165242      expect_keyword [58]
+                0.00    0.00     121/165242      parse_simple_stmt [52]
+                0.00    0.00     164/165242      match_keyword [56]
+                0.00    0.00     571/165242      parse_expr_operand <cycle 1> [53]
+                0.00    0.07  163914/165242      init_stream [10]
+[9]     26.8    0.00    0.07  165242         next_token [9]
+                0.03    0.04  164479/623404      str_intern_range <cycle 3> [29]
+                0.01    0.00  164479/164482      is_keyword_name [42]
+                0.00    0.00     194/194         scan_int [137]
+                0.00    0.00      57/57          scan_float [149]
+                0.00    0.00      39/39          scan_str [155]
+-----------------------------------------------
+                0.00    0.00       1/163914      test_select_case [87]
+                0.00    0.00       5/163914      test_lex [76]
+                0.00    0.00      33/163914      test_parse [54]
+                0.00    0.07  163875/163914      parse_interpreter [5]
+[10]    26.6    0.00    0.07  163914         init_stream [10]
+                0.00    0.07  163914/165242      next_token [9]
+-----------------------------------------------
+                0.00    0.04 1835152/1835152     resolve_expected_expr <cycle 3> [7]
+[11]    16.1    0.00    0.04 1835152         resolve_expr_name [11]
+                0.01    0.03 1835152/1835152     resolve_name_operand [12]
+-----------------------------------------------
+                0.01    0.03 1835152/1835152     resolve_expr_name [11]
+[12]    16.1    0.01    0.03 1835152         resolve_name_operand [12]
+                0.00    0.02 1835152/3604725     sym_get [13]
+                0.01    0.00 1835152/1835152     operand_lvalue [28]
+-----------------------------------------------
+                0.00    0.00       2/3604725     sym_push_project <cycle 3> [97]
+                0.00    0.00      27/3604725     sym_push_dim <cycle 3> [94]
+                0.00    0.01  688156/3604725     resolve_name [39]
+                0.00    0.01 1081388/3604725     resolve_stmt_assign <cycle 3> [21]
+                0.00    0.02 1835152/3604725     resolve_name_operand [12]
+[13]    16.0    0.00    0.04 3604725         sym_get [13]
+                0.02    0.00 1114282/1114282     sym_get_builtin [22]
+                0.01    0.00 3604725/3604725     sym_get_local [26]
+                0.01    0.00  688205/688241      sym_get_type [31]
+                0.00    0.00      69/87          sym_get_func [145]
+-----------------------------------------------
+                0.00    0.01   32768/98307       test_resolve [2]
+                0.00    0.02   65539/98307       add_builtin_result [8]
+[14]    14.8    0.00    0.04   98307         add_builtin_double [14]
+                0.00    0.04   98307/262179      add_builtin_var [6]
+-----------------------------------------------
+                0.00    0.01   32768/65568       test_resolve [2]
+                0.00    0.01   32800/65568       add_builtin_result [8]
+[15]     9.9    0.00    0.02   65568         add_builtin_int [15]
+                0.00    0.02   65568/262179      add_builtin_var [6]
+-----------------------------------------------
+                0.00    0.01   32768/65536       test_resolve [2]
+                0.00    0.01   32768/65536       add_builtin_result [8]
+[16]     9.9    0.00    0.02   65536         add_builtin_boolean [16]
+                0.00    0.02   65536/262179      add_builtin_var [6]
+-----------------------------------------------
+                0.00    0.02   32768/32768       add_builtin_result [8]
+[17]     9.9    0.00    0.02   32768         add_builtin_string [17]
+                0.01    0.01   32768/623404      str_intern_range <cycle 3> [29]
+                0.00    0.01   32768/262179      add_builtin_var [6]
+                0.00    0.00   32768/884917      str_intern [103]
+-----------------------------------------------
+                0.02    0.00  327760/327760      resolve_binary_op [20]
+[18]     9.7    0.02    0.00  327760         eval_binary_op [18]
+                0.00    0.00  294992/688208      is_floating_type [32]
+                0.00    0.00  983280/4391395     operand_const [98]
+                0.00    0.00  327760/655440      is_integer_type [105]
+                0.00    0.00  294992/294992      eval_binary_op_d [110]
+                0.00    0.00   32768/32768       eval_binary_op_i [120]
+-----------------------------------------------
+                              327760             resolve_expr_binary_op <cycle 3> [30]
+[19]     9.7    0.00    0.02  327760         resolve_binary_arithmetic_op <cycle 3> [19]
+                0.00    0.02  327760/327760      resolve_binary_op [20]
+                              327760             unify_operands <cycle 3> [109]
+                              131072             cast_operand <cycle 3> [47]
+-----------------------------------------------
+                0.00    0.02  327760/327760      resolve_binary_arithmetic_op <cycle 3> [19]
+[20]     9.7    0.00    0.02  327760         resolve_binary_op [20]
+                0.02    0.00  327760/327760      eval_binary_op [18]
+                0.00    0.00  327760/4391395     operand_const [98]
+-----------------------------------------------
+                             1212483             resolve_stmt <cycle 3> [27]
+[21]     9.6    0.01    0.01 1212483         resolve_stmt_assign <cycle 3> [21]
+                0.00    0.01 1081388/3604725     sym_get [13]
+                0.00    0.00  131072/688208      is_floating_type [32]
+                             1212483             resolve_expr <cycle 3> [25]
+                             1212483             resolve_expected_expr <cycle 3> [7]
+                             1212483             convert_operand <cycle 3> [102]
+-----------------------------------------------
+                0.02    0.00 1114282/1114282     sym_get [13]
+[22]     8.0    0.02    0.00 1114282         sym_get_builtin [22]
+-----------------------------------------------
+                              688136             resolve_stmt <cycle 3> [27]
+[23]     7.1    0.00    0.02  688136         resolve_stmt_dim <cycle 3> [23]
+                0.01    0.01  688136/688136      resolve_typespec [24]
+                              622600             sym_push_dim <cycle 3> [94]
+                               65536             sym_push_project <cycle 3> [97]
+-----------------------------------------------
+                0.01    0.01  688136/688136      resolve_stmt_dim <cycle 3> [23]
+[24]     7.1    0.01    0.01  688136         resolve_typespec [24]
+                0.00    0.01  688136/688136      resolve_typespec_name [40]
+-----------------------------------------------
+                                   2             sym_push_project <cycle 3> [97]
+                                   6             resolve_stmt_select_case <cycle 3> [178]
+                                  19             resolve_select_case_pattern <cycle 3> [96]
+                                  20             resolve_expr_call <cycle 3> [95]
+                              262144             resolve_expr_unary <cycle 3> [45]
+                              262144             resolve_cond_expr <cycle 3> [114]
+                             1212483             resolve_stmt_assign <cycle 3> [21]
+                             2031760             resolve_expr_binary <cycle 3> [43]
+[25]     4.0    0.01    0.00 3768578         resolve_expr <cycle 3> [25]
+                             3768578             resolve_expected_expr <cycle 3> [7]
+-----------------------------------------------
+                0.01    0.00 3604725/3604725     sym_get [13]
+[26]     4.0    0.01    0.00 3604725         sym_get_local [26]
+-----------------------------------------------
+                              360477             resolve_stmt_block <cycle 3> [36]
+                             1671220             resolve_stmts <cycle 3> [115]
+[27]     4.0    0.01    0.00 2031697         resolve_stmt <cycle 3> [27]
+                             1212483             resolve_stmt_assign <cycle 3> [21]
+                              688136             resolve_stmt_dim <cycle 3> [23]
+                              131072             resolve_stmt_if <cycle 3> [118]
+                                   6             resolve_stmt_select_case <cycle 3> [178]
+-----------------------------------------------
+                0.01    0.00 1835152/1835152     resolve_name_operand [12]
+[28]     4.0    0.01    0.00 1835152         operand_lvalue [28]
+-----------------------------------------------
+                                   2             new_sym_project <cycle 3> [183]
+                                  10             sym_push_dim <cycle 3> [94]
+                                  63             new_sym <cycle 3> [147]
+                               32768             cast_operand <cycle 3> [47]
+                              163840             concat_operands <cycle 3> [38]
+                              393229             resolve_expr_string <cycle 3> [35]
+                0.00    0.00       2/623404      test_keywords [93]
+                0.00    0.00       3/623404      test_lex [76]
+                0.00    0.00       9/623404      interpret [4]
+                0.00    0.00      18/623404      new_sym_func [81]
+                0.00    0.00      26/623404      init_keywords [75]
+                0.01    0.01   32768/623404      add_builtin_string [17]
+                0.03    0.04  164479/623404      next_token [9]
+                0.04    0.06  262179/623404      add_builtin_var [6]
+[29]     4.0    0.01    0.00 1049396         str_intern_range <cycle 3> [29]
+                0.00    0.00       1/1           arena_grow [184]
+                                  77             resolve_stmts <cycle 3> [115]
+-----------------------------------------------
+                                  19             resolve_select_case_pattern <cycle 3> [96]
+                             1015880             resolve_expr_binary <cycle 3> [43]
+[30]     4.0    0.01    0.00 1015899         resolve_expr_binary_op <cycle 3> [30]
+                0.00    0.00 1736875/1802411     is_string_type [101]
+                0.00    0.00 1441952/3408198     is_arithmetic_type [99]
+                0.00    0.00  393216/4391395     operand_const [98]
+                              819208             cast_operand <cycle 3> [47]
+                              327760             resolve_binary_arithmetic_op <cycle 3> [19]
+                              294923             resolve_binary_string_op <cycle 3> [111]
+-----------------------------------------------
+                0.00    0.00      36/688241      sym_push_type [72]
+                0.01    0.00  688205/688241      sym_get [13]
+[31]     4.0    0.01    0.00  688241         sym_get_type [31]
+-----------------------------------------------
+                0.00    0.00  131072/688208      resolve_stmt_assign <cycle 3> [21]
+                0.00    0.00  262144/688208      eval_unary_op [44]
+                0.00    0.00  294992/688208      eval_binary_op [18]
+[32]     4.0    0.01    0.00  688208         is_floating_type [32]
+-----------------------------------------------
+                0.01    0.00  557056/557056      resolve_expected_expr <cycle 3> [7]
+[33]     4.0    0.01    0.00  557056         resolve_expr_boolean [33]
+                0.00    0.00  557056/4391395     operand_const [98]
+-----------------------------------------------
+                0.01    0.00  524333/524333      resolve_expected_expr <cycle 3> [7]
+[34]     4.0    0.01    0.00  524333         resolve_expr_float [34]
+                0.00    0.00  524333/4391395     operand_const [98]
+-----------------------------------------------
+                              393229             resolve_expected_expr <cycle 3> [7]
+[35]     4.0    0.01    0.00  393229         resolve_expr_string <cycle 3> [35]
+                0.00    0.00  393229/884917      str_intern [103]
+                0.00    0.00  393229/4391395     operand_const [98]
+                              393229             str_intern_range <cycle 3> [29]
+-----------------------------------------------
+                                   6             resolve_stmt_select_case <cycle 3> [178]
+                                  23             resolve_select_case <cycle 3> [164]
+                              262144             resolve_stmt_if <cycle 3> [118]
+[36]     4.0    0.01    0.00  262173         resolve_stmt_block <cycle 3> [36]
+                              360477             resolve_stmt <cycle 3> [27]
+-----------------------------------------------
+                0.00    0.00   32768/196608      cast_operand <cycle 3> [47]
+                0.01    0.00  163840/196608      concat_operands <cycle 3> [38]
+[37]     4.0    0.01    0.00  196608         buf__printf [37]
+-----------------------------------------------
+                              163840             resolve_binary_string_op <cycle 3> [111]
+[38]     3.3    0.00    0.01  163840         concat_operands <cycle 3> [38]
+                0.01    0.00  163840/196608      buf__printf [37]
+                0.00    0.00  163840/884917      str_intern [103]
+                0.00    0.00  163840/4391395     operand_const [98]
+                              163840             str_intern_range <cycle 3> [29]
+-----------------------------------------------
+                0.00    0.00      20/688156      resolve_expr_call <cycle 3> [95]
+                0.00    0.01  688136/688156      resolve_typespec_name [40]
+[39]     3.1    0.00    0.01  688156         resolve_name [39]
+                0.00    0.01  688156/3604725     sym_get [13]
+-----------------------------------------------
+                0.00    0.01  688136/688136      resolve_typespec [24]
+[40]     3.1    0.00    0.01  688136         resolve_typespec_name [40]
+                0.00    0.01  688136/688156      resolve_name [39]
+-----------------------------------------------
+                0.00    0.00      19/1015899     resolve_select_case_pattern <cycle 3> [96]
+                0.01    0.00 1015880/1015899     resolve_expr_binary <cycle 3> [43]
+[41]     2.0    0.01    0.00 1015899         token_kind_name [41]
+-----------------------------------------------
+                0.00    0.00       3/164482      test_keywords [93]
+                0.01    0.00  164479/164482      next_token [9]
+[42]     2.0    0.01    0.00  164482         is_keyword_name [42]
+-----------------------------------------------
+                             1015880             resolve_expected_expr <cycle 3> [7]
+[43]     2.0    0.00    0.01 1015880         resolve_expr_binary <cycle 3> [43]
+                0.01    0.00 1015880/1015899     token_kind_name [41]
+                             2031760             resolve_expr <cycle 3> [25]
+                             1015880             resolve_expr_binary_op <cycle 3> [30]
+-----------------------------------------------
+                0.00    0.00  262144/262144      resolve_unary_op [46]
+[44]     1.5    0.00    0.00  262144         eval_unary_op [44]
+                0.00    0.00  262144/688208      is_floating_type [32]
+                0.00    0.00  262144/4391395     operand_const [98]
+                0.00    0.00  262144/655440      is_integer_type [105]
+-----------------------------------------------
+                              262144             resolve_expected_expr <cycle 3> [7]
+[45]     1.5    0.00    0.00  262144         resolve_expr_unary <cycle 3> [45]
+                0.00    0.00  262144/262144      resolve_unary_op [46]
+                0.00    0.00  262144/262144      is_scalar_type [113]
+                              262144             resolve_expr <cycle 3> [25]
+-----------------------------------------------
+                0.00    0.00  262144/262144      resolve_expr_unary <cycle 3> [45]
+[46]     1.5    0.00    0.00  262144         resolve_unary_op [46]
+                0.00    0.00  262144/262144      eval_unary_op [44]
+                0.00    0.00  262144/4391395     operand_const [98]
+-----------------------------------------------
+                               65536             promote_operand <cycle 3> [119]
+                              131072             resolve_binary_arithmetic_op <cycle 3> [19]
+                              262144             resolve_cond_expr <cycle 3> [114]
+                              294992             unify_operands <cycle 3> [109]
+                              819208             resolve_expr_binary_op <cycle 3> [30]
+                             1802374             convert_operand <cycle 3> [102]
+[47]     0.7    0.00    0.00 3375326         cast_operand <cycle 3> [47]
+                0.00    0.00   32768/196608      buf__printf [37]
+                0.00    0.00  753714/753714      is_castable [104]
+                0.00    0.00   32768/884917      str_intern [103]
+                               32768             str_intern_range <cycle 3> [29]
+-----------------------------------------------
+[48]     0.2    0.00    0.00     105+169     <cycle 2 as a whole> [48]
+                0.00    0.00     180             parse_stmt <cycle 2> [49]
+                0.00    0.00      33             parse_stmt_select_case <cycle 2> [57]
+                0.00    0.00       7             parse_stmt_for <cycle 2> [61]
+                0.00    0.00       8             parse_stmt_if <cycle 2> [66]
+                0.00    0.00      12             parse_stmt_select <cycle 2> [67]
+                0.00    0.00       4             parse_stmt_do <cycle 2> [86]
+                0.00    0.00       1             parse_stmt_while <cycle 2> [88]
+                0.00    0.00       1             parse_stmt_do_while_loop <cycle 2> [92]
+                0.00    0.00       1             parse_stmt_do_until_loop <cycle 2> [91]
+                0.00    0.00      27             parse_stmt_block <cycle 2> [162]
+-----------------------------------------------
+                                  36             parse_stmt_block <cycle 2> [162]
+                                  39             parse_stmt_select_case <cycle 2> [57]
+                0.00    0.00      33/105         test_parse [54]
+                0.00    0.00      72/105         parse_stmts [51]
+[49]     0.2    0.00    0.00     180         parse_stmt <cycle 2> [49]
+                0.00    0.00     116/123         parse_simple_stmt [52]
+                0.00    0.00      32/32          parse_stmt_dim [55]
+                0.00    0.00     998/2963        match_keyword [56]
+                0.00    0.00     180/1809        token_pos [124]
+                                  12             parse_stmt_select <cycle 2> [67]
+                                   8             parse_stmt_if <cycle 2> [66]
+                                   7             parse_stmt_for <cycle 2> [61]
+                                   4             parse_stmt_do <cycle 2> [86]
+                                   1             parse_stmt_while <cycle 2> [88]
+-----------------------------------------------
+[50]     0.1    0.00    0.00     362+3653    <cycle 1 as a whole> [50]
+                0.00    0.00     598             parse_expr_operand <cycle 1> [53]
+                0.00    0.00     598             parse_expr_base <cycle 1> [63]
+                0.00    0.00     395             parse_expr_mul <cycle 1> [64]
+                0.00    0.00     327             parse_expr_add <cycle 1> [65]
+                0.00    0.00     308             parse_expr_cmp <cycle 1> [77]
+                0.00    0.00     303             parse_expr_and <cycle 1> [78]
+                0.00    0.00     302             parse_expr_xor <cycle 1> [79]
+                0.00    0.00     293             parse_expr_or <cycle 1> [84]
+                0.00    0.00     598+13          parse_expr_unary <cycle 1> [85]
+                0.00    0.00     293             parse_expr <cycle 1> [133]
+-----------------------------------------------
+                0.00    0.00       9/9           parse_interpreter [5]
+[51]     0.1    0.00    0.00       9         parse_stmts [51]
+                0.00    0.00      72/105         parse_stmt <cycle 2> [49]
+                0.00    0.00      81/8470        is_token [121]
+                0.00    0.00       9/264         buf__grow [135]
+-----------------------------------------------
+                0.00    0.00       7/123         parse_stmt_for <cycle 2> [61]
+                0.00    0.00     116/123         parse_stmt <cycle 2> [49]
+[52]     0.1    0.00    0.00     123         parse_simple_stmt [52]
+                0.00    0.00     123/362         parse_expr_unary <cycle 1> [85]
+                0.00    0.00     121/362         parse_expr <cycle 1> [133]
+                0.00    0.00     121/165242      next_token [9]
+                0.00    0.00     123/1809        token_pos [124]
+                0.00    0.00     123/123         is_assign_op [144]
+                0.00    0.00     121/2331        token_kind [123]
+                0.00    0.00     121/128         new_stmt_assign [143]
+                0.00    0.00       2/2           new_stmt_expr [182]
+-----------------------------------------------
+                                 598             parse_expr_base <cycle 1> [63]
+[53]     0.1    0.00    0.00     598         parse_expr_operand <cycle 1> [53]
+                0.00    0.00     571/165242      next_token [9]
+                0.00    0.00     811/2963        match_keyword [56]
+                0.00    0.00      10/58          expect_token [68]
+                0.00    0.00      10/162         match_token [62]
+                0.00    0.00    1632/8470        is_token [121]
+                0.00    0.00     598/1809        token_pos [124]
+                0.00    0.00     292/331         token_name [132]
+                0.00    0.00     292/292         new_expr_name [134]
+                0.00    0.00     188/194         token_int_val [138]
+                0.00    0.00     188/192         new_expr_int [139]
+                0.00    0.00      54/54          token_end [152]
+                0.00    0.00      54/54          token_start [153]
+                0.00    0.00      54/57          token_float_val [150]
+                0.00    0.00      54/54          new_expr_float [151]
+                0.00    0.00      37/39          token_str_val [156]
+                0.00    0.00      37/37          new_expr_str [157]
+                0.00    0.00      17/17          new_expr_boolean [167]
+                0.00    0.00      10/11          new_expr_paren [171]
+                                  10             parse_expr <cycle 1> [133]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[54]     0.1    0.00    0.00       1         test_parse [54]
+                0.00    0.00      33/105         parse_stmt <cycle 2> [49]
+                0.00    0.00      33/163914      init_stream [10]
+                0.00    0.00      33/39          clear_stream [154]
+-----------------------------------------------
+                0.00    0.00      32/32          parse_stmt <cycle 2> [49]
+[55]     0.0    0.00    0.00      32         parse_stmt_dim [55]
+                0.00    0.00      33/362         parse_expr <cycle 1> [133]
+                0.00    0.00      33/33          parse_type [70]
+                0.00    0.00      33/116         expect_keyword [58]
+                0.00    0.00      33/162         match_token [62]
+                0.00    0.00      32/264         buf__grow [135]
+                0.00    0.00      32/32          new_stmt_dim [161]
+-----------------------------------------------
+                0.00    0.00       1/2963        parse_stmt_do_while_loop <cycle 2> [92]
+                0.00    0.00       1/2963        parse_stmt_do_until_loop <cycle 2> [91]
+                0.00    0.00       7/2963        parse_stmt_for <cycle 2> [61]
+                0.00    0.00      10/2963        parse_stmt_do <cycle 2> [86]
+                0.00    0.00      22/2963        parse_stmt_if <cycle 2> [66]
+                0.00    0.00      33/2963        parse_type [70]
+                0.00    0.00      68/2963        parse_select_case_pattern [59]
+                0.00    0.00      99/2963        parse_stmt_select_case <cycle 2> [57]
+                0.00    0.00     302/2963        parse_expr_or <cycle 1> [84]
+                0.00    0.00     303/2963        parse_expr_xor <cycle 1> [79]
+                0.00    0.00     308/2963        parse_expr_and <cycle 1> [78]
+                0.00    0.00     811/2963        parse_expr_operand <cycle 1> [53]
+                0.00    0.00     998/2963        parse_stmt <cycle 2> [49]
+[56]     0.0    0.00    0.00    2963         match_keyword [56]
+                0.00    0.00     164/165242      next_token [9]
+                0.00    0.00    2963/4000        is_a_keyword [122]
+-----------------------------------------------
+                                  33             parse_stmt_select <cycle 2> [67]
+[57]     0.0    0.00    0.00      33         parse_stmt_select_case <cycle 2> [57]
+                0.00    0.00      38/38          parse_select_case_pattern [59]
+                0.00    0.00      38/162         match_token [62]
+                0.00    0.00       6/165242      next_token [9]
+                0.00    0.00      99/2963        match_keyword [56]
+                0.00    0.00     123/4000        is_a_keyword [122]
+                0.00    0.00      72/180         is_token_eof [141]
+                0.00    0.00      61/264         buf__grow [135]
+                0.00    0.00      33/1809        token_pos [124]
+                0.00    0.00      33/60          new_StmtBlock [148]
+                0.00    0.00      28/8470        is_token [121]
+                                  39             parse_stmt <cycle 2> [49]
+-----------------------------------------------
+                0.00    0.00       1/116         parse_stmt_while <cycle 2> [88]
+                0.00    0.00       2/116         parse_stmt_do <cycle 2> [86]
+                0.00    0.00      14/116         parse_stmt_for <cycle 2> [61]
+                0.00    0.00      30/116         parse_stmt_if <cycle 2> [66]
+                0.00    0.00      33/116         parse_stmt_dim [55]
+                0.00    0.00      36/116         parse_stmt_select <cycle 2> [67]
+[58]     0.0    0.00    0.00     116         expect_keyword [58]
+                0.00    0.00     116/165242      next_token [9]
+                0.00    0.00     116/4000        is_a_keyword [122]
+-----------------------------------------------
+                0.00    0.00      38/38          parse_stmt_select_case <cycle 2> [57]
+[59]     0.0    0.00    0.00      38         parse_select_case_pattern [59]
+                0.00    0.00      39/362         parse_expr <cycle 1> [133]
+                0.00    0.00       8/165242      next_token [9]
+                0.00    0.00      68/2963        match_keyword [56]
+                0.00    0.00       8/335         is_cmp_op [131]
+                0.00    0.00       8/2331        token_kind [123]
+-----------------------------------------------
+                0.00    0.00       9/9           interpret [4]
+[60]     0.0    0.00    0.00       9         initial_parse [60]
+                0.00    0.00       9/9           init_interpreter [69]
+                0.00    0.00       9/163875      parse_interpreter [5]
+                0.00    0.00       9/623404      resolve_stmts <cycle 3> [115]
+                0.00    0.00       9/9           new_interpreter [175]
+                0.00    0.00       9/9           map_put [173]
+                0.00    0.00       9/426054      sym_get_builtin [107]
+-----------------------------------------------
+                                   7             parse_stmt <cycle 2> [49]
+[61]     0.0    0.00    0.00       7         parse_stmt_for <cycle 2> [61]
+                0.00    0.00       7/123         parse_simple_stmt [52]
+                0.00    0.00      11/362         parse_expr_unary <cycle 1> [85]
+                0.00    0.00      14/116         expect_keyword [58]
+                0.00    0.00       3/165242      next_token [9]
+                0.00    0.00       7/2963        match_keyword [56]
+                0.00    0.00      14/185         new_expr_binary [140]
+                0.00    0.00       7/128         new_stmt_assign [143]
+                0.00    0.00       7/7           new_stmt_for [177]
+                0.00    0.00       7/8470        is_token [121]
+                0.00    0.00       3/192         new_expr_int [139]
+                0.00    0.00       3/331         token_name [132]
+                                   7             parse_stmt_block <cycle 2> [162]
+-----------------------------------------------
+                0.00    0.00      10/162         parse_expr_operand <cycle 1> [53]
+                0.00    0.00      27/162         test_lex [76]
+                0.00    0.00      33/162         parse_stmt_dim [55]
+                0.00    0.00      38/162         parse_stmt_select_case <cycle 2> [57]
+                0.00    0.00      54/162         parse_expr_base <cycle 1> [63]
+[62]     0.0    0.00    0.00     162         match_token [62]
+                0.00    0.00      79/165242      next_token [9]
+                0.00    0.00     162/8470        is_token [121]
+-----------------------------------------------
+                                 598             parse_expr_unary <cycle 1> [85]
+[63]     0.0    0.00    0.00     598         parse_expr_base <cycle 1> [63]
+                0.00    0.00      48/58          expect_token [68]
+                0.00    0.00      54/162         match_token [62]
+                0.00    0.00    1242/8470        is_token [121]
+                0.00    0.00     598/1809        token_pos [124]
+                0.00    0.00      23/264         buf__grow [135]
+                0.00    0.00      23/23          new_expr_call [163]
+                0.00    0.00       1/1           new_expr_index [186]
+                                 598             parse_expr_operand <cycle 1> [53]
+                                  55             parse_expr <cycle 1> [133]
+-----------------------------------------------
+                                 395             parse_expr_add <cycle 1> [65]
+[64]     0.0    0.00    0.00     395         parse_expr_mul <cycle 1> [64]
+                0.00    0.00      69/165242      next_token [9]
+                0.00    0.00     464/464         is_mul_op [129]
+                0.00    0.00      69/1809        token_pos [124]
+                0.00    0.00      69/2331        token_kind [123]
+                0.00    0.00      69/185         new_expr_binary [140]
+                0.00    0.00       1/4000        is_a_keyword [122]
+                                 464             parse_expr_unary <cycle 1> [85]
+-----------------------------------------------
+                                 327             parse_expr_cmp <cycle 1> [77]
+[65]     0.0    0.00    0.00     327         parse_expr_add <cycle 1> [65]
+                0.00    0.00      68/165242      next_token [9]
+                0.00    0.00     395/395         is_add_op [130]
+                0.00    0.00      68/1809        token_pos [124]
+                0.00    0.00      68/2331        token_kind [123]
+                0.00    0.00      68/185         new_expr_binary [140]
+                                 395             parse_expr_mul <cycle 1> [64]
+-----------------------------------------------
+                                   8             parse_stmt <cycle 2> [49]
+[66]     0.0    0.00    0.00       8         parse_stmt_if <cycle 2> [66]
+                0.00    0.00      14/362         parse_expr <cycle 1> [133]
+                0.00    0.00      30/116         expect_keyword [58]
+                0.00    0.00      22/2963        match_keyword [56]
+                0.00    0.00       8/8           new_stmt_if [176]
+                0.00    0.00       6/264         buf__grow [135]
+                                  15             parse_stmt_block <cycle 2> [162]
+-----------------------------------------------
+                                  12             parse_stmt <cycle 2> [49]
+[67]     0.0    0.00    0.00      12         parse_stmt_select <cycle 2> [67]
+                0.00    0.00      36/116         expect_keyword [58]
+                0.00    0.00      12/362         parse_expr <cycle 1> [133]
+                0.00    0.00      45/180         is_token_eof [141]
+                0.00    0.00      45/4000        is_a_keyword [122]
+                0.00    0.00      12/264         buf__grow [135]
+                0.00    0.00      12/12          new_stmt_select_case [169]
+                                  33             parse_stmt_select_case <cycle 2> [57]
+-----------------------------------------------
+                0.00    0.00      10/58          parse_expr_operand <cycle 1> [53]
+                0.00    0.00      48/58          parse_expr_base <cycle 1> [63]
+[68]     0.0    0.00    0.00      58         expect_token [68]
+                0.00    0.00      58/165242      next_token [9]
+                0.00    0.00      58/8470        is_token [121]
+-----------------------------------------------
+                0.00    0.00       9/9           initial_parse [60]
+[69]     0.0    0.00    0.00       9         init_interpreter [69]
+                0.00    0.00       9/9           init_builtin_types [73]
+                0.00    0.00       9/9           init_builtin_funcs [83]
+-----------------------------------------------
+                0.00    0.00      33/33          parse_stmt_dim [55]
+[70]     0.0    0.00    0.00      33         parse_type [70]
+                0.00    0.00      33/33          parse_type_base [74]
+                0.00    0.00       4/362         parse_expr <cycle 1> [133]
+                0.00    0.00      33/2963        match_keyword [56]
+                0.00    0.00      33/1809        token_pos [124]
+                0.00    0.00       4/4           new_typespec_project [180]
+-----------------------------------------------
+                0.00    0.00      36/36          init_builtin_types [73]
+[71]     0.0    0.00    0.00      36         init_builtin_type [71]
+                0.00    0.00      36/36          sym_push_type [72]
+-----------------------------------------------
+                0.00    0.00      36/36          init_builtin_type [71]
+[72]     0.0    0.00    0.00      36         sym_push_type [72]
+                0.00    0.00      36/623404      new_sym <cycle 3> [147]
+                0.00    0.00      36/688241      sym_get_type [31]
+                0.00    0.00       9/264         buf__grow [135]
+-----------------------------------------------
+                0.00    0.00       9/9           init_interpreter [69]
+[73]     0.0    0.00    0.00       9         init_builtin_types [73]
+                0.00    0.00      36/36          init_builtin_type [71]
+-----------------------------------------------
+                0.00    0.00      33/33          parse_type [70]
+[74]     0.0    0.00    0.00      33         parse_type_base [74]
+                0.00    0.00      33/165242      next_token [9]
+                0.00    0.00      33/1809        token_pos [124]
+                0.00    0.00      33/8470        is_token [121]
+                0.00    0.00      33/331         token_name [132]
+                0.00    0.00      33/33          new_typespec_name [160]
+-----------------------------------------------
+                0.00    0.00       1/163877      test_keywords [93]
+                0.00    0.00       1/163877      test_lex [76]
+                0.00    0.00  163875/163877      parse_interpreter [5]
+[75]     0.0    0.00    0.00  163877         init_keywords [75]
+                0.00    0.00      26/623404      str_intern_range <cycle 3> [29]
+                0.00    0.00      26/884917      str_intern [103]
+                0.00    0.00       2/2           intern_arena_end [181]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[76]     0.0    0.00    0.00       1         test_lex [76]
+                0.00    0.00      27/162         match_token [62]
+                0.00    0.00       5/163914      init_stream [10]
+                0.00    0.00       3/623404      str_intern_range <cycle 3> [29]
+                0.00    0.00       1/1           test_keywords [93]
+                0.00    0.00       1/163877      init_keywords [75]
+                0.00    0.00       6/194         token_int_val [138]
+                0.00    0.00       5/8470        is_token [121]
+                0.00    0.00       5/39          clear_stream [154]
+                0.00    0.00       3/57          token_float_val [150]
+                0.00    0.00       3/331         token_name [132]
+                0.00    0.00       3/884917      str_intern [103]
+                0.00    0.00       2/39          token_str_val [156]
+-----------------------------------------------
+                                 308             parse_expr_and <cycle 1> [78]
+[77]     0.0    0.00    0.00     308         parse_expr_cmp <cycle 1> [77]
+                0.00    0.00      19/165242      next_token [9]
+                0.00    0.00     327/335         is_cmp_op [131]
+                0.00    0.00      19/1809        token_pos [124]
+                0.00    0.00      19/2331        token_kind [123]
+                0.00    0.00      19/185         new_expr_binary [140]
+                                 327             parse_expr_add <cycle 1> [65]
+-----------------------------------------------
+                                 303             parse_expr_xor <cycle 1> [79]
+[78]     0.0    0.00    0.00     303         parse_expr_and <cycle 1> [78]
+                0.00    0.00     308/2963        match_keyword [56]
+                0.00    0.00       5/1809        token_pos [124]
+                0.00    0.00       5/185         new_expr_binary [140]
+                                 308             parse_expr_cmp <cycle 1> [77]
+-----------------------------------------------
+                                 302             parse_expr_or <cycle 1> [84]
+[79]     0.0    0.00    0.00     302         parse_expr_xor <cycle 1> [79]
+                0.00    0.00     303/2963        match_keyword [56]
+                0.00    0.00       1/1809        token_pos [124]
+                0.00    0.00       1/185         new_expr_binary [140]
+                                 303             parse_expr_and <cycle 1> [78]
+-----------------------------------------------
+                0.00    0.00      18/18          init_builtin_funcs [83]
+[80]     0.0    0.00    0.00      18         init_builtin_func [80]
+                0.00    0.00      18/18          sym_push_func [82]
+-----------------------------------------------
+                0.00    0.00      18/18          sym_push_func [82]
+[81]     0.0    0.00    0.00      18         new_sym_func [81]
+                0.00    0.00      18/623404      str_intern_range <cycle 3> [29]
+                0.00    0.00      18/1305        arena_alloc [125]
+                0.00    0.00      18/884917      str_intern [103]
+-----------------------------------------------
+                0.00    0.00      18/18          init_builtin_func [80]
+[82]     0.0    0.00    0.00      18         sym_push_func [82]
+                0.00    0.00      18/18          new_sym_func [81]
+                0.00    0.00      18/87          sym_get_func [145]
+                0.00    0.00       9/264         buf__grow [135]
+-----------------------------------------------
+                0.00    0.00       9/9           init_interpreter [69]
+[83]     0.0    0.00    0.00       9         init_builtin_funcs [83]
+                0.00    0.00      18/18          init_builtin_func [80]
+                0.00    0.00       9/9           init_type_double_func [172]
+-----------------------------------------------
+                                 293             parse_expr <cycle 1> [133]
+[84]     0.0    0.00    0.00     293         parse_expr_or <cycle 1> [84]
+                0.00    0.00     302/2963        match_keyword [56]
+                0.00    0.00       9/1809        token_pos [124]
+                0.00    0.00       9/185         new_expr_binary [140]
+                                 302             parse_expr_xor <cycle 1> [79]
+-----------------------------------------------
+                                  13             parse_expr_unary <cycle 1> [85]
+                                 464             parse_expr_mul <cycle 1> [64]
+                0.00    0.00      11/362         parse_stmt_for <cycle 2> [61]
+                0.00    0.00     123/362         parse_simple_stmt [52]
+[85]     0.0    0.00    0.00     598+13      parse_expr_unary <cycle 1> [85]
+                0.00    0.00      13/165242      next_token [9]
+                0.00    0.00     611/611         is_unary_op [128]
+                0.00    0.00      13/1809        token_pos [124]
+                0.00    0.00      13/2331        token_kind [123]
+                0.00    0.00      13/13          new_expr_unary [168]
+                                 598             parse_expr_base <cycle 1> [63]
+                                  13             parse_expr_unary <cycle 1> [85]
+-----------------------------------------------
+                                   4             parse_stmt <cycle 2> [49]
+[86]     0.0    0.00    0.00       4         parse_stmt_do <cycle 2> [86]
+                0.00    0.00       2/362         parse_expr <cycle 1> [133]
+                0.00    0.00       2/116         expect_keyword [58]
+                0.00    0.00      10/2963        match_keyword [56]
+                0.00    0.00       1/1           new_stmt_do_while [189]
+                0.00    0.00       1/1           new_stmt_do_until [187]
+                                   2             parse_stmt_block <cycle 2> [162]
+                                   1             parse_stmt_do_until_loop <cycle 2> [91]
+                                   1             parse_stmt_do_while_loop <cycle 2> [92]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[87]     0.0    0.00    0.00       1         test_select_case [87]
+                0.00    0.00       1/163875      interpret [4]
+                0.00    0.00       1/163914      init_stream [10]
+                0.00    0.00       1/39          clear_stream [154]
+-----------------------------------------------
+                                   1             parse_stmt <cycle 2> [49]
+[88]     0.0    0.00    0.00       1         parse_stmt_while <cycle 2> [88]
+                0.00    0.00       1/362         parse_expr <cycle 1> [133]
+                0.00    0.00       1/116         expect_keyword [58]
+                0.00    0.00       1/1           new_stmt_while [191]
+                                   1             parse_stmt_block <cycle 2> [162]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[89]     0.0    0.00    0.00       1         test_builtin_funcs [89]
+                0.00    0.00       1/163875      interpret [4]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[90]     0.0    0.00    0.00       1         test_code [90]
+                0.00    0.00       1/163875      interpret [4]
+-----------------------------------------------
+                                   1             parse_stmt_do <cycle 2> [86]
+[91]     0.0    0.00    0.00       1         parse_stmt_do_until_loop <cycle 2> [91]
+                0.00    0.00       1/362         parse_expr <cycle 1> [133]
+                0.00    0.00       1/2963        match_keyword [56]
+                0.00    0.00       1/1           new_stmt_do_until_loop [188]
+                                   1             parse_stmt_block <cycle 2> [162]
+-----------------------------------------------
+                                   1             parse_stmt_do <cycle 2> [86]
+[92]     0.0    0.00    0.00       1         parse_stmt_do_while_loop <cycle 2> [92]
+                0.00    0.00       1/362         parse_expr <cycle 1> [133]
+                0.00    0.00       1/2963        match_keyword [56]
+                0.00    0.00       1/1           new_stmt_do_while_loop [190]
+                                   1             parse_stmt_block <cycle 2> [162]
+-----------------------------------------------
+                0.00    0.00       1/1           test_lex [76]
+[93]     0.0    0.00    0.00       1         test_keywords [93]
+                0.00    0.00       2/623404      str_intern_range <cycle 3> [29]
+                0.00    0.00       3/164482      is_keyword_name [42]
+                0.00    0.00       1/163877      init_keywords [75]
+                0.00    0.00       2/884917      str_intern [103]
+-----------------------------------------------
+                              622600             resolve_stmt_dim <cycle 3> [23]
+[94]     0.0    0.00    0.00  622600         sym_push_dim <cycle 3> [94]
+                0.00    0.00      27/3604725     sym_get [13]
+                0.00    0.00      10/884917      str_intern [103]
+                0.00    0.00       6/264         buf__grow [135]
+                                  27             new_sym <cycle 3> [147]
+                                  10             str_intern_range <cycle 3> [29]
+-----------------------------------------------
+                                  20             resolve_expected_expr <cycle 3> [7]
+[95]     0.0    0.00    0.00      20         resolve_expr_call <cycle 3> [95]
+                0.00    0.00      20/688156      resolve_name [39]
+                                  20             resolve_expr <cycle 3> [25]
+                                  20             resolve_expr_call_default <cycle 3> [165]
+-----------------------------------------------
+                                  19             resolve_select_case <cycle 3> [164]
+[96]     0.0    0.00    0.00      19         resolve_select_case_pattern <cycle 3> [96]
+                0.00    0.00      19/1015899     token_kind_name [41]
+                                  19             resolve_expr <cycle 3> [25]
+                                  19             resolve_expr_binary_op <cycle 3> [30]
+-----------------------------------------------
+                               65536             resolve_stmt_dim <cycle 3> [23]
+[97]     0.0    0.00    0.00   65536         sym_push_project <cycle 3> [97]
+                0.00    0.00       2/3604725     sym_get [13]
+                0.00    0.00       1/264         buf__grow [135]
+                                   2             resolve_expr <cycle 3> [25]
+                                   2             convert_operand <cycle 3> [102]
+                                   2             new_sym_project <cycle 3> [183]
+-----------------------------------------------
+                0.00    0.00      20/4391395     resolve_expr_call_default <cycle 3> [165]
+                0.00    0.00  131083/4391395     resolve_binary_string_op <cycle 3> [111]
+                0.00    0.00  163840/4391395     concat_operands <cycle 3> [38]
+                0.00    0.00  262144/4391395     eval_unary_op [44]
+                0.00    0.00  262144/4391395     resolve_unary_op [46]
+                0.00    0.00  327760/4391395     resolve_binary_op [20]
+                0.00    0.00  393216/4391395     resolve_expr_binary_op <cycle 3> [30]
+                0.00    0.00  393229/4391395     resolve_expr_string <cycle 3> [35]
+                0.00    0.00  393290/4391395     resolve_expr_int [108]
+                0.00    0.00  524333/4391395     resolve_expr_float [34]
+                0.00    0.00  557056/4391395     resolve_expr_boolean [33]
+                0.00    0.00  983280/4391395     eval_binary_op [18]
+[98]     0.0    0.00    0.00 4391395         operand_const [98]
+-----------------------------------------------
+                0.00    0.00   65536/3408198     unify_operands <cycle 3> [109]
+                0.00    0.00  262144/3408198     is_cond_operand [112]
+                0.00    0.00 1441952/3408198     resolve_expr_binary_op <cycle 3> [30]
+                0.00    0.00 1638566/3408198     is_convertible [100]
+[99]     0.0    0.00    0.00 3408198         is_arithmetic_type [99]
+-----------------------------------------------
+                0.00    0.00  753714/2556088     is_castable [104]
+                0.00    0.00 1802374/2556088     convert_operand <cycle 3> [102]
+[100]    0.0    0.00    0.00 2556088         is_convertible [100]
+                0.00    0.00 1638566/3408198     is_arithmetic_type [99]
+                0.00    0.00   65536/1802411     is_string_type [101]
+                0.00    0.00   65536/655382      is_concatable [106]
+-----------------------------------------------
+                0.00    0.00   65536/1802411     is_convertible [100]
+                0.00    0.00 1736875/1802411     resolve_expr_binary_op <cycle 3> [30]
+[101]    0.0    0.00    0.00 1802411         is_string_type [101]
+-----------------------------------------------
+                                   2             sym_push_project <cycle 3> [97]
+                                  43             resolve_expr_call_default <cycle 3> [165]
+                              589846             resolve_binary_string_op <cycle 3> [111]
+                             1212483             resolve_stmt_assign <cycle 3> [21]
+[102]    0.0    0.00    0.00 1802374         convert_operand <cycle 3> [102]
+                0.00    0.00 1802374/2556088     is_convertible [100]
+                             1802374             cast_operand <cycle 3> [47]
+-----------------------------------------------
+                0.00    0.00       2/884917      test_keywords [93]
+                0.00    0.00       2/884917      new_sym_project <cycle 3> [183]
+                0.00    0.00       3/884917      test_lex [76]
+                0.00    0.00       9/884917      interpret [4]
+                0.00    0.00      10/884917      sym_push_dim <cycle 3> [94]
+                0.00    0.00      18/884917      new_sym_func [81]
+                0.00    0.00      26/884917      init_keywords [75]
+                0.00    0.00      63/884917      new_sym <cycle 3> [147]
+                0.00    0.00   32768/884917      add_builtin_string [17]
+                0.00    0.00   32768/884917      cast_operand <cycle 3> [47]
+                0.00    0.00  163840/884917      concat_operands <cycle 3> [38]
+                0.00    0.00  262179/884917      add_builtin_var [6]
+                0.00    0.00  393229/884917      resolve_expr_string <cycle 3> [35]
+[103]    0.0    0.00    0.00  884917         str_intern [103]
+-----------------------------------------------
+                0.00    0.00  753714/753714      cast_operand <cycle 3> [47]
+[104]    0.0    0.00    0.00  753714         is_castable [104]
+                0.00    0.00  753714/2556088     is_convertible [100]
+-----------------------------------------------
+                0.00    0.00   65536/655440      unify_operands <cycle 3> [109]
+                0.00    0.00  262144/655440      eval_unary_op [44]
+                0.00    0.00  327760/655440      eval_binary_op [18]
+[105]    0.0    0.00    0.00  655440         is_integer_type [105]
+-----------------------------------------------
+                0.00    0.00   65536/655382      is_convertible [100]
+                0.00    0.00  589846/655382      resolve_binary_string_op <cycle 3> [111]
+[106]    0.0    0.00    0.00  655382         is_concatable [106]
+-----------------------------------------------
+                0.00    0.00       9/426054      initial_parse [60]
+                0.00    0.00  163866/426054      interpret [4]
+                0.00    0.00  262179/426054      add_builtin_var [6]
+[107]    0.0    0.00    0.00  426054         sym_get_builtin [107]
+-----------------------------------------------
+                0.00    0.00  393290/393290      resolve_expected_expr <cycle 3> [7]
+[108]    0.0    0.00    0.00  393290         resolve_expr_int [108]
+                0.00    0.00  393290/4391395     operand_const [98]
+-----------------------------------------------
+                              327760             resolve_binary_arithmetic_op <cycle 3> [19]
+[109]    0.0    0.00    0.00  327760         unify_operands <cycle 3> [109]
+                0.00    0.00   65536/3408198     is_arithmetic_type [99]
+                0.00    0.00   65536/655440      is_integer_type [105]
+                              294992             cast_operand <cycle 3> [47]
+                               65536             promote_operand <cycle 3> [119]
+-----------------------------------------------
+                0.00    0.00  294992/294992      eval_binary_op [18]
+[110]    0.0    0.00    0.00  294992         eval_binary_op_d [110]
+-----------------------------------------------
+                              294923             resolve_expr_binary_op <cycle 3> [30]
+[111]    0.0    0.00    0.00  294923         resolve_binary_string_op <cycle 3> [111]
+                0.00    0.00  589846/655382      is_concatable [106]
+                0.00    0.00  131083/4391395     operand_const [98]
+                              589846             convert_operand <cycle 3> [102]
+                              163840             concat_operands <cycle 3> [38]
+-----------------------------------------------
+                0.00    0.00  262144/262144      resolve_cond_expr <cycle 3> [114]
+[112]    0.0    0.00    0.00  262144         is_cond_operand [112]
+                0.00    0.00  262144/3408198     is_arithmetic_type [99]
+-----------------------------------------------
+                0.00    0.00  262144/262144      resolve_expr_unary <cycle 3> [45]
+[113]    0.0    0.00    0.00  262144         is_scalar_type [113]
+-----------------------------------------------
+                              262144             resolve_stmt_if <cycle 3> [118]
+[114]    0.0    0.00    0.00  262144         resolve_cond_expr <cycle 3> [114]
+                0.00    0.00  262144/262144      is_cond_operand [112]
+                              262144             resolve_expr <cycle 3> [25]
+                              262144             cast_operand <cycle 3> [47]
+-----------------------------------------------
+                                  77             str_intern_range <cycle 3> [29]
+                0.00    0.00       9/623404      initial_parse [60]
+                0.03    0.04  163875/623404      parse_interpreter [5]
+[115]    0.0    0.00    0.00  163961         resolve_stmts <cycle 3> [115]
+                             1671220             resolve_stmt <cycle 3> [27]
+-----------------------------------------------
+                0.00    0.00  163875/163875      interpret [4]
+[116]    0.0    0.00    0.00  163875         map_get [116]
+-----------------------------------------------
+                0.00    0.00  163866/163866      interpret [4]
+[117]    0.0    0.00    0.00  163866         update_interpreter [117]
+-----------------------------------------------
+                              131072             resolve_stmt <cycle 3> [27]
+[118]    0.0    0.00    0.00  131072         resolve_stmt_if <cycle 3> [118]
+                              262144             resolve_cond_expr <cycle 3> [114]
+                              262144             resolve_stmt_block <cycle 3> [36]
+-----------------------------------------------
+                               65536             unify_operands <cycle 3> [109]
+[119]    0.0    0.00    0.00   65536         promote_operand <cycle 3> [119]
+                               65536             cast_operand <cycle 3> [47]
+-----------------------------------------------
+                0.00    0.00   32768/32768       eval_binary_op [18]
+[120]    0.0    0.00    0.00   32768         eval_binary_op_i [120]
+-----------------------------------------------
+                0.00    0.00       5/8470        test_lex [76]
+                0.00    0.00       7/8470        parse_stmt_for <cycle 2> [61]
+                0.00    0.00      28/8470        parse_stmt_select_case <cycle 2> [57]
+                0.00    0.00      33/8470        parse_type_base [74]
+                0.00    0.00      58/8470        expect_token [68]
+                0.00    0.00      81/8470        parse_stmts [51]
+                0.00    0.00     162/8470        match_token [62]
+                0.00    0.00    1222/8470        is_unary_op [128]
+                0.00    0.00    1242/8470        parse_expr_base <cycle 1> [63]
+                0.00    0.00    1632/8470        parse_expr_operand <cycle 1> [53]
+                0.00    0.00    4000/8470        is_a_keyword [122]
+[121]    0.0    0.00    0.00    8470         is_token [121]
+-----------------------------------------------
+                0.00    0.00       1/4000        parse_expr_mul <cycle 1> [64]
+                0.00    0.00      45/4000        parse_stmt_select <cycle 2> [67]
+                0.00    0.00     116/4000        expect_keyword [58]
+                0.00    0.00     123/4000        parse_stmt_select_case <cycle 2> [57]
+                0.00    0.00     356/4000        is_end_of_block [146]
+                0.00    0.00     396/4000        is_mul_op [129]
+                0.00    0.00    2963/4000        match_keyword [56]
+[122]    0.0    0.00    0.00    4000         is_a_keyword [122]
+                0.00    0.00    4000/8470        is_token [121]
+-----------------------------------------------
+                0.00    0.00       8/2331        parse_select_case_pattern [59]
+                0.00    0.00      13/2331        parse_expr_unary <cycle 1> [85]
+                0.00    0.00      19/2331        parse_expr_cmp <cycle 1> [77]
+                0.00    0.00      68/2331        parse_expr_add <cycle 1> [65]
+                0.00    0.00      69/2331        parse_expr_mul <cycle 1> [64]
+                0.00    0.00     121/2331        parse_simple_stmt [52]
+                0.00    0.00     244/2331        is_assign_op [144]
+                0.00    0.00     482/2331        is_add_op [130]
+                0.00    0.00     619/2331        is_mul_op [129]
+                0.00    0.00     688/2331        is_cmp_op [131]
+[123]    0.0    0.00    0.00    2331         token_kind [123]
+-----------------------------------------------
+                0.00    0.00       1/1809        parse_expr_xor <cycle 1> [79]
+                0.00    0.00       5/1809        parse_expr_and <cycle 1> [78]
+                0.00    0.00       9/1809        parse_expr_or <cycle 1> [84]
+                0.00    0.00      13/1809        parse_expr_unary <cycle 1> [85]
+                0.00    0.00      19/1809        parse_expr_cmp <cycle 1> [77]
+                0.00    0.00      27/1809        parse_stmt_block <cycle 2> [162]
+                0.00    0.00      33/1809        parse_type_base [74]
+                0.00    0.00      33/1809        parse_type [70]
+                0.00    0.00      33/1809        parse_stmt_select_case <cycle 2> [57]
+                0.00    0.00      68/1809        parse_expr_add <cycle 1> [65]
+                0.00    0.00      69/1809        parse_expr_mul <cycle 1> [64]
+                0.00    0.00     123/1809        parse_simple_stmt [52]
+                0.00    0.00     180/1809        parse_stmt <cycle 2> [49]
+                0.00    0.00     598/1809        parse_expr_operand <cycle 1> [53]
+                0.00    0.00     598/1809        parse_expr_base <cycle 1> [63]
+[124]    0.0    0.00    0.00    1809         token_pos [124]
+-----------------------------------------------
+                0.00    0.00       2/1305        new_sym_project <cycle 3> [183]
+                0.00    0.00       4/1305        new_sym_builtin [179]
+                0.00    0.00      18/1305        new_sym_func [81]
+                0.00    0.00      63/1305        new_sym <cycle 3> [147]
+                0.00    0.00     161/1305        ast_dup [142]
+                0.00    0.00    1057/1305        ast_alloc [126]
+[125]    0.0    0.00    0.00    1305         arena_alloc [125]
+-----------------------------------------------
+                0.00    0.00      37/1057        new_typespec [158]
+                0.00    0.00     194/1057        new_stmt [136]
+                0.00    0.00     826/1057        new_expr [127]
+[126]    0.0    0.00    0.00    1057         ast_alloc [126]
+                0.00    0.00    1057/1305        arena_alloc [125]
+-----------------------------------------------
+                0.00    0.00       1/826         test_expr [192]
+                0.00    0.00       1/826         new_expr_index [186]
+                0.00    0.00      11/826         new_expr_paren [171]
+                0.00    0.00      13/826         new_expr_unary [168]
+                0.00    0.00      17/826         new_expr_boolean [167]
+                0.00    0.00      23/826         new_expr_call [163]
+                0.00    0.00      37/826         new_expr_str [157]
+                0.00    0.00      54/826         new_expr_float [151]
+                0.00    0.00     185/826         new_expr_binary [140]
+                0.00    0.00     192/826         new_expr_int [139]
+                0.00    0.00     292/826         new_expr_name [134]
+[127]    0.0    0.00    0.00     826         new_expr [127]
+                0.00    0.00     826/1057        ast_alloc [126]
+-----------------------------------------------
+                0.00    0.00     611/611         parse_expr_unary <cycle 1> [85]
+[128]    0.0    0.00    0.00     611         is_unary_op [128]
+                0.00    0.00    1222/8470        is_token [121]
+-----------------------------------------------
+                0.00    0.00     464/464         parse_expr_mul <cycle 1> [64]
+[129]    0.0    0.00    0.00     464         is_mul_op [129]
+                0.00    0.00     619/2331        token_kind [123]
+                0.00    0.00     396/4000        is_a_keyword [122]
+-----------------------------------------------
+                0.00    0.00     395/395         parse_expr_add <cycle 1> [65]
+[130]    0.0    0.00    0.00     395         is_add_op [130]
+                0.00    0.00     482/2331        token_kind [123]
+-----------------------------------------------
+                0.00    0.00       8/335         parse_select_case_pattern [59]
+                0.00    0.00     327/335         parse_expr_cmp <cycle 1> [77]
+[131]    0.0    0.00    0.00     335         is_cmp_op [131]
+                0.00    0.00     688/2331        token_kind [123]
+-----------------------------------------------
+                0.00    0.00       3/331         test_lex [76]
+                0.00    0.00       3/331         parse_stmt_for <cycle 2> [61]
+                0.00    0.00      33/331         parse_type_base [74]
+                0.00    0.00     292/331         parse_expr_operand <cycle 1> [53]
+[132]    0.0    0.00    0.00     331         token_name [132]
+-----------------------------------------------
+                                  10             parse_expr_operand <cycle 1> [53]
+                                  55             parse_expr_base <cycle 1> [63]
+                0.00    0.00       1/362         parse_stmt_while <cycle 2> [88]
+                0.00    0.00       1/362         parse_stmt_do_while_loop <cycle 2> [92]
+                0.00    0.00       1/362         parse_stmt_do_until_loop <cycle 2> [91]
+                0.00    0.00       2/362         parse_stmt_do <cycle 2> [86]
+                0.00    0.00       4/362         parse_type [70]
+                0.00    0.00      12/362         parse_stmt_select <cycle 2> [67]
+                0.00    0.00      14/362         parse_stmt_if <cycle 2> [66]
+                0.00    0.00      33/362         parse_stmt_dim [55]
+                0.00    0.00      39/362         parse_select_case_pattern [59]
+                0.00    0.00     121/362         parse_simple_stmt [52]
+[133]    0.0    0.00    0.00     293         parse_expr <cycle 1> [133]
+                                 293             parse_expr_or <cycle 1> [84]
+-----------------------------------------------
+                0.00    0.00     292/292         parse_expr_operand <cycle 1> [53]
+[134]    0.0    0.00    0.00     292         new_expr_name [134]
+                0.00    0.00     292/826         new_expr [127]
+-----------------------------------------------
+                0.00    0.00       1/264         add_builtin_var [6]
+                0.00    0.00       1/264         sym_push_project <cycle 3> [97]
+                0.00    0.00       6/264         parse_stmt_if <cycle 2> [66]
+                0.00    0.00       6/264         sym_push_dim <cycle 3> [94]
+                0.00    0.00       9/264         parse_stmts [51]
+                0.00    0.00       9/264         sym_push_type [72]
+                0.00    0.00       9/264         sym_push_func [82]
+                0.00    0.00      12/264         parse_stmt_select <cycle 2> [67]
+                0.00    0.00      20/264         resolve_expr_call_default <cycle 3> [165]
+                0.00    0.00      23/264         parse_expr_base <cycle 1> [63]
+                0.00    0.00      27/264         parse_stmt_block <cycle 2> [162]
+                0.00    0.00      32/264         parse_stmt_dim [55]
+                0.00    0.00      48/264         scan_str [155]
+                0.00    0.00      61/264         parse_stmt_select_case <cycle 2> [57]
+[135]    0.0    0.00    0.00     264         buf__grow [135]
+-----------------------------------------------
+                0.00    0.00       1/194         new_stmt_while [191]
+                0.00    0.00       1/194         new_stmt_do_while [189]
+                0.00    0.00       1/194         new_stmt_do_until [187]
+                0.00    0.00       1/194         new_stmt_do_while_loop [190]
+                0.00    0.00       1/194         new_stmt_do_until_loop [188]
+                0.00    0.00       2/194         new_stmt_expr [182]
+                0.00    0.00       7/194         new_stmt_for [177]
+                0.00    0.00       8/194         new_stmt_if [176]
+                0.00    0.00      12/194         new_stmt_select_case [169]
+                0.00    0.00      32/194         new_stmt_dim [161]
+                0.00    0.00     128/194         new_stmt_assign [143]
+[136]    0.0    0.00    0.00     194         new_stmt [136]
+                0.00    0.00     194/1057        ast_alloc [126]
+-----------------------------------------------
+                0.00    0.00     194/194         next_token [9]
+[137]    0.0    0.00    0.00     194         scan_int [137]
+-----------------------------------------------
+                0.00    0.00       6/194         test_lex [76]
+                0.00    0.00     188/194         parse_expr_operand <cycle 1> [53]
+[138]    0.0    0.00    0.00     194         token_int_val [138]
+-----------------------------------------------
+                0.00    0.00       1/192         test_expr [192]
+                0.00    0.00       3/192         parse_stmt_for <cycle 2> [61]
+                0.00    0.00     188/192         parse_expr_operand <cycle 1> [53]
+[139]    0.0    0.00    0.00     192         new_expr_int [139]
+                0.00    0.00     192/826         new_expr [127]
+-----------------------------------------------
+                0.00    0.00       1/185         parse_expr_xor <cycle 1> [79]
+                0.00    0.00       5/185         parse_expr_and <cycle 1> [78]
+                0.00    0.00       9/185         parse_expr_or <cycle 1> [84]
+                0.00    0.00      14/185         parse_stmt_for <cycle 2> [61]
+                0.00    0.00      19/185         parse_expr_cmp <cycle 1> [77]
+                0.00    0.00      68/185         parse_expr_add <cycle 1> [65]
+                0.00    0.00      69/185         parse_expr_mul <cycle 1> [64]
+[140]    0.0    0.00    0.00     185         new_expr_binary [140]
+                0.00    0.00     185/826         new_expr [127]
+-----------------------------------------------
+                0.00    0.00      45/180         parse_stmt_select <cycle 2> [67]
+                0.00    0.00      63/180         parse_stmt_block <cycle 2> [162]
+                0.00    0.00      72/180         parse_stmt_select_case <cycle 2> [57]
+[141]    0.0    0.00    0.00     180         is_token_eof [141]
+-----------------------------------------------
+                0.00    0.00       8/168         new_stmt_if [176]
+                0.00    0.00      12/168         new_stmt_select_case [169]
+                0.00    0.00      23/168         new_expr_call [163]
+                0.00    0.00      32/168         new_stmt_dim [161]
+                0.00    0.00      33/168         new_select_case_pattern [159]
+                0.00    0.00      60/168         new_StmtBlock [148]
+[142]    0.0    0.00    0.00     168         ast_dup [142]
+                0.00    0.00     161/1305        arena_alloc [125]
+-----------------------------------------------
+                0.00    0.00       7/128         parse_stmt_for <cycle 2> [61]
+                0.00    0.00     121/128         parse_simple_stmt [52]
+[143]    0.0    0.00    0.00     128         new_stmt_assign [143]
+                0.00    0.00     128/194         new_stmt [136]
+-----------------------------------------------
+                0.00    0.00     123/123         parse_simple_stmt [52]
+[144]    0.0    0.00    0.00     123         is_assign_op [144]
+                0.00    0.00     244/2331        token_kind [123]
+-----------------------------------------------
+                0.00    0.00      18/87          sym_push_func [82]
+                0.00    0.00      69/87          sym_get [13]
+[145]    0.0    0.00    0.00      87         sym_get_func [145]
+-----------------------------------------------
+                0.00    0.00      63/63          parse_stmt_block <cycle 2> [162]
+[146]    0.0    0.00    0.00      63         is_end_of_block [146]
+                0.00    0.00     356/4000        is_a_keyword [122]
+-----------------------------------------------
+                                  27             sym_push_dim <cycle 3> [94]
+                0.00    0.00      36/623404      sym_push_type [72]
+[147]    0.0    0.00    0.00      63         new_sym <cycle 3> [147]
+                0.00    0.00      63/1305        arena_alloc [125]
+                0.00    0.00      63/884917      str_intern [103]
+                                  63             str_intern_range <cycle 3> [29]
+-----------------------------------------------
+                0.00    0.00      27/60          parse_stmt_block <cycle 2> [162]
+                0.00    0.00      33/60          parse_stmt_select_case <cycle 2> [57]
+[148]    0.0    0.00    0.00      60         new_StmtBlock [148]
+                0.00    0.00      60/168         ast_dup [142]
+-----------------------------------------------
+                0.00    0.00      57/57          next_token [9]
+[149]    0.0    0.00    0.00      57         scan_float [149]
+-----------------------------------------------
+                0.00    0.00       3/57          test_lex [76]
+                0.00    0.00      54/57          parse_expr_operand <cycle 1> [53]
+[150]    0.0    0.00    0.00      57         token_float_val [150]
+-----------------------------------------------
+                0.00    0.00      54/54          parse_expr_operand <cycle 1> [53]
+[151]    0.0    0.00    0.00      54         new_expr_float [151]
+                0.00    0.00      54/826         new_expr [127]
+-----------------------------------------------
+                0.00    0.00      54/54          parse_expr_operand <cycle 1> [53]
+[152]    0.0    0.00    0.00      54         token_end [152]
+-----------------------------------------------
+                0.00    0.00      54/54          parse_expr_operand <cycle 1> [53]
+[153]    0.0    0.00    0.00      54         token_start [153]
+-----------------------------------------------
+                0.00    0.00       1/39          test_select_case [87]
+                0.00    0.00       5/39          test_lex [76]
+                0.00    0.00      33/39          test_parse [54]
+[154]    0.0    0.00    0.00      39         clear_stream [154]
+-----------------------------------------------
+                0.00    0.00      39/39          next_token [9]
+[155]    0.0    0.00    0.00      39         scan_str [155]
+                0.00    0.00      48/264         buf__grow [135]
+-----------------------------------------------
+                0.00    0.00       2/39          test_lex [76]
+                0.00    0.00      37/39          parse_expr_operand <cycle 1> [53]
+[156]    0.0    0.00    0.00      39         token_str_val [156]
+-----------------------------------------------
+                0.00    0.00      37/37          parse_expr_operand <cycle 1> [53]
+[157]    0.0    0.00    0.00      37         new_expr_str [157]
+                0.00    0.00      37/826         new_expr [127]
+-----------------------------------------------
+                0.00    0.00       4/37          new_typespec_project [180]
+                0.00    0.00      33/37          new_typespec_name [160]
+[158]    0.0    0.00    0.00      37         new_typespec [158]
+                0.00    0.00      37/1057        ast_alloc [126]
+-----------------------------------------------
+                0.00    0.00      33/33          new_stmt_select_case [169]
+[159]    0.0    0.00    0.00      33         new_select_case_pattern [159]
+                0.00    0.00      33/168         ast_dup [142]
+-----------------------------------------------
+                0.00    0.00      33/33          parse_type_base [74]
+[160]    0.0    0.00    0.00      33         new_typespec_name [160]
+                0.00    0.00      33/37          new_typespec [158]
+-----------------------------------------------
+                0.00    0.00      32/32          parse_stmt_dim [55]
+[161]    0.0    0.00    0.00      32         new_stmt_dim [161]
+                0.00    0.00      32/194         new_stmt [136]
+                0.00    0.00      32/168         ast_dup [142]
+-----------------------------------------------
+                                   1             parse_stmt_while <cycle 2> [88]
+                                   1             parse_stmt_do_while_loop <cycle 2> [92]
+                                   1             parse_stmt_do_until_loop <cycle 2> [91]
+                                   2             parse_stmt_do <cycle 2> [86]
+                                   7             parse_stmt_for <cycle 2> [61]
+                                  15             parse_stmt_if <cycle 2> [66]
+[162]    0.0    0.00    0.00      27         parse_stmt_block <cycle 2> [162]
+                0.00    0.00      63/180         is_token_eof [141]
+                0.00    0.00      63/63          is_end_of_block [146]
+                0.00    0.00      27/1809        token_pos [124]
+                0.00    0.00      27/264         buf__grow [135]
+                0.00    0.00      27/60          new_StmtBlock [148]
+                                  36             parse_stmt <cycle 2> [49]
+-----------------------------------------------
+                0.00    0.00      23/23          parse_expr_base <cycle 1> [63]
+[163]    0.0    0.00    0.00      23         new_expr_call [163]
+                0.00    0.00      23/826         new_expr [127]
+                0.00    0.00      23/168         ast_dup [142]
+-----------------------------------------------
+                                  23             resolve_stmt_select_case <cycle 3> [178]
+[164]    0.0    0.00    0.00      23         resolve_select_case <cycle 3> [164]
+                                  23             resolve_stmt_block <cycle 3> [36]
+                                  19             resolve_select_case_pattern <cycle 3> [96]
+-----------------------------------------------
+                                  20             resolve_expr_call <cycle 3> [95]
+[165]    0.0    0.00    0.00      20         resolve_expr_call_default <cycle 3> [165]
+                0.00    0.00      20/264         buf__grow [135]
+                0.00    0.00      20/4391395     operand_const [98]
+                0.00    0.00      11/11          min [170]
+                0.00    0.00       9/9           max [174]
+                                  43             resolve_expected_expr <cycle 3> [7]
+                                  43             convert_operand <cycle 3> [102]
+-----------------------------------------------
+                0.00    0.00       9/18          new_interpreter [175]
+                0.00    0.00       9/18          init_type_double_func [172]
+[166]    0.0    0.00    0.00      18         jalloc [166]
+-----------------------------------------------
+                0.00    0.00      17/17          parse_expr_operand <cycle 1> [53]
+[167]    0.0    0.00    0.00      17         new_expr_boolean [167]
+                0.00    0.00      17/826         new_expr [127]
+-----------------------------------------------
+                0.00    0.00      13/13          parse_expr_unary <cycle 1> [85]
+[168]    0.0    0.00    0.00      13         new_expr_unary [168]
+                0.00    0.00      13/826         new_expr [127]
+-----------------------------------------------
+                0.00    0.00      12/12          parse_stmt_select <cycle 2> [67]
+[169]    0.0    0.00    0.00      12         new_stmt_select_case [169]
+                0.00    0.00      33/33          new_select_case_pattern [159]
+                0.00    0.00      12/194         new_stmt [136]
+                0.00    0.00      12/168         ast_dup [142]
+-----------------------------------------------
+                0.00    0.00      11/11          resolve_expr_call_default <cycle 3> [165]
+[170]    0.0    0.00    0.00      11         min [170]
+-----------------------------------------------
+                0.00    0.00       1/11          test_expr [192]
+                0.00    0.00      10/11          parse_expr_operand <cycle 1> [53]
+[171]    0.0    0.00    0.00      11         new_expr_paren [171]
+                0.00    0.00      11/826         new_expr [127]
+-----------------------------------------------
+                0.00    0.00       9/9           init_builtin_funcs [83]
+[172]    0.0    0.00    0.00       9         init_type_double_func [172]
+                0.00    0.00       9/18          jalloc [166]
+-----------------------------------------------
+                0.00    0.00       9/9           initial_parse [60]
+[173]    0.0    0.00    0.00       9         map_put [173]
+-----------------------------------------------
+                0.00    0.00       9/9           resolve_expr_call_default <cycle 3> [165]
+[174]    0.0    0.00    0.00       9         max [174]
+-----------------------------------------------
+                0.00    0.00       9/9           initial_parse [60]
+[175]    0.0    0.00    0.00       9         new_interpreter [175]
+                0.00    0.00       9/18          jalloc [166]
+-----------------------------------------------
+                0.00    0.00       8/8           parse_stmt_if <cycle 2> [66]
+[176]    0.0    0.00    0.00       8         new_stmt_if [176]
+                0.00    0.00       8/194         new_stmt [136]
+                0.00    0.00       8/168         ast_dup [142]
+-----------------------------------------------
+                0.00    0.00       7/7           parse_stmt_for <cycle 2> [61]
+[177]    0.0    0.00    0.00       7         new_stmt_for [177]
+                0.00    0.00       7/194         new_stmt [136]
+-----------------------------------------------
+                                   6             resolve_stmt <cycle 3> [27]
+[178]    0.0    0.00    0.00       6         resolve_stmt_select_case <cycle 3> [178]
+                                  23             resolve_select_case <cycle 3> [164]
+                                   6             resolve_expr <cycle 3> [25]
+                                   6             resolve_stmt_block <cycle 3> [36]
+-----------------------------------------------
+                0.00    0.00       4/4           add_builtin_var [6]
+[179]    0.0    0.00    0.00       4         new_sym_builtin [179]
+                0.00    0.00       4/1305        arena_alloc [125]
+-----------------------------------------------
+                0.00    0.00       4/4           parse_type [70]
+[180]    0.0    0.00    0.00       4         new_typespec_project [180]
+                0.00    0.00       4/37          new_typespec [158]
+-----------------------------------------------
+                0.00    0.00       2/2           init_keywords [75]
+[181]    0.0    0.00    0.00       2         intern_arena_end [181]
+-----------------------------------------------
+                0.00    0.00       2/2           parse_simple_stmt [52]
+[182]    0.0    0.00    0.00       2         new_stmt_expr [182]
+                0.00    0.00       2/194         new_stmt [136]
+-----------------------------------------------
+                                   2             sym_push_project <cycle 3> [97]
+[183]    0.0    0.00    0.00       2         new_sym_project <cycle 3> [183]
+                0.00    0.00       2/1305        arena_alloc [125]
+                0.00    0.00       2/884917      str_intern [103]
+                                   2             str_intern_range <cycle 3> [29]
+-----------------------------------------------
+                0.00    0.00       1/1           str_intern_range <cycle 3> [29]
+[184]    0.0    0.00    0.00       1         arena_grow [184]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[185]    0.0    0.00    0.00       1         intern_free [185]
+-----------------------------------------------
+                0.00    0.00       1/1           parse_expr_base <cycle 1> [63]
+[186]    0.0    0.00    0.00       1         new_expr_index [186]
+                0.00    0.00       1/826         new_expr [127]
+-----------------------------------------------
+                0.00    0.00       1/1           parse_stmt_do <cycle 2> [86]
+[187]    0.0    0.00    0.00       1         new_stmt_do_until [187]
+                0.00    0.00       1/194         new_stmt [136]
+-----------------------------------------------
+                0.00    0.00       1/1           parse_stmt_do_until_loop <cycle 2> [91]
+[188]    0.0    0.00    0.00       1         new_stmt_do_until_loop [188]
+                0.00    0.00       1/194         new_stmt [136]
+-----------------------------------------------
+                0.00    0.00       1/1           parse_stmt_do <cycle 2> [86]
+[189]    0.0    0.00    0.00       1         new_stmt_do_while [189]
+                0.00    0.00       1/194         new_stmt [136]
+-----------------------------------------------
+                0.00    0.00       1/1           parse_stmt_do_while_loop <cycle 2> [92]
+[190]    0.0    0.00    0.00       1         new_stmt_do_while_loop [190]
+                0.00    0.00       1/194         new_stmt [136]
+-----------------------------------------------
+                0.00    0.00       1/1           parse_stmt_while <cycle 2> [88]
+[191]    0.0    0.00    0.00       1         new_stmt_while [191]
+                0.00    0.00       1/194         new_stmt [136]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[192]    0.0    0.00    0.00       1         test_expr [192]
+                0.00    0.00       1/826         new_expr [127]
+                0.00    0.00       1/11          new_expr_paren [171]
+                0.00    0.00       1/192         new_expr_int [139]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -1024,38 +1663,67 @@ notice and this notice are preserved.
 
 Index by function name
 
-  [40] add_builtin_boolean    [59] match_token             [9] parse_simple_stmt
-  [41] add_builtin_double    [108] max                    [11] parse_stmt
-  [42] add_builtin_int       [107] min                    [12] parse_stmt_block
-  [84] add_user_sym           [48] new_StmtBlock           [3] parse_stmts
-  [30] arena_alloc            [69] new_expr               [22] parse_type
- [100] arena_free             [39] new_expr_binary        [93] resolve_binary_arithmetic_op
- [111] arena_grow             [45] new_expr_boolean       [52] resolve_binary_string_op
- [101] ast_free               [64] new_expr_call          [96] resolve_cond_expr
-  [79] buf__grow              [44] new_expr_float         [18] resolve_expected_expr
-  [97] buf__printf            [70] new_expr_index         [81] resolve_expr_binary_op
-  [54] cast_operand           [46] new_expr_int           [28] resolve_stmt
- [102] clear_builtin_types    [36] new_expr_name          [98] resolve_stmts
-  [25] clear_stream           [65] new_expr_paren         [87] scan_float
-  [20] expect_keyword         [47] new_expr_str           [35] str_intern
-  [32] expect_token           [50] new_expr_unary          [5] str_intern_range
- [106] get_interpreter       [103] new_interpreter        [21] sym_get
-  [23] init_builtin_funcs     [38] new_stmt_assign        [17] sym_push_func
-  [16] init_builtin_types     [37] new_stmt_dim           [13] sym_push_type
-  [61] init_keywords          [71] new_stmt_do_until      [14] sym_push_var
-  [99] init_stream            [72] new_stmt_do_until_loop [104] syms_reset
- [110] intern_arena_end       [73] new_stmt_do_while      [63] test_keywords
-   [2] interpret              [74] new_stmt_do_while_loop [89] token_end
- [105] interpreter_free       [68] new_stmt_expr          [88] token_float_val
-  [26] is_a_keyword           [66] new_stmt_for           [34] token_info
-  [77] is_arithmetic_type     [49] new_stmt_if            [91] token_int_val
-  [85] is_concatable          [62] new_stmt_select_case   [76] token_kind
-  [82] is_floating_type       [75] new_stmt_while         [31] token_kind_name
-  [83] is_integer_type        [43] new_typespec_name      [78] token_name
- [109] is_keyword_name        [51] new_typespec_project   [33] token_pos
-  [95] is_scalar_type          [8] next_token             [90] token_start
-  [80] is_string_type         [29] parse_expr_cmp         [92] token_str_val
-  [19] is_token               [24] parse_expr_mul          [6] <cycle 1>
-  [86] is_token_eof           [27] parse_expr_or           [7] <cycle 2>
-  [94] jalloc                 [10] parse_expr_unary        [4] <cycle 3>
-  [15] match_keyword          [58] parse_select_case_pattern
+  [16] add_builtin_boolean   [163] new_expr_call           [7] resolve_expected_expr (resolve.c)
+  [14] add_builtin_double    [151] new_expr_float         [25] resolve_expr (resolve.c)
+  [15] add_builtin_int       [186] new_expr_index         [43] resolve_expr_binary (resolve.c)
+   [8] add_builtin_result (interpret.c) [139] new_expr_int [30] resolve_expr_binary_op (resolve.c)
+  [17] add_builtin_string    [134] new_expr_name          [33] resolve_expr_boolean (resolve.c)
+   [6] add_builtin_var (interpret.c) [171] new_expr_paren [95] resolve_expr_call (resolve.c)
+ [125] arena_alloc           [157] new_expr_str          [165] resolve_expr_call_default (resolve.c)
+ [184] arena_grow            [168] new_expr_unary         [34] resolve_expr_float (resolve.c)
+ [126] ast_alloc (ast.c)     [175] new_interpreter (interpret.c) [108] resolve_expr_int (resolve.c)
+ [142] ast_dup (ast.c)       [159] new_select_case_pattern (ast.c) [11] resolve_expr_name (resolve.c)
+ [135] buf__grow             [136] new_stmt (ast.c)       [35] resolve_expr_string (resolve.c)
+  [37] buf__printf           [143] new_stmt_assign        [45] resolve_expr_unary (resolve.c)
+  [47] cast_operand (resolve.c) [161] new_stmt_dim        [39] resolve_name (resolve.c)
+ [154] clear_stream          [187] new_stmt_do_until      [12] resolve_name_operand (resolve.c)
+  [38] concat_operands (resolve.c) [188] new_stmt_do_until_loop [164] resolve_select_case (resolve.c)
+ [102] convert_operand (resolve.c) [189] new_stmt_do_while [96] resolve_select_case_pattern (resolve.c)
+  [18] eval_binary_op (resolve.c) [190] new_stmt_do_while_loop [27] resolve_stmt (resolve.c)
+ [110] eval_binary_op_d (resolve.c) [182] new_stmt_expr   [21] resolve_stmt_assign (resolve.c)
+ [120] eval_binary_op_i (resolve.c) [177] new_stmt_for    [36] resolve_stmt_block (resolve.c)
+  [44] eval_unary_op (resolve.c) [176] new_stmt_if        [23] resolve_stmt_dim (resolve.c)
+  [58] expect_keyword        [169] new_stmt_select_case  [118] resolve_stmt_if (resolve.c)
+  [68] expect_token          [191] new_stmt_while        [178] resolve_stmt_select_case (resolve.c)
+  [80] init_builtin_func (type.c) [147] new_sym (resolve.c) [115] resolve_stmts
+  [83] init_builtin_funcs    [179] new_sym_builtin (interpret.c) [24] resolve_typespec (resolve.c)
+  [71] init_builtin_type (type.c) [81] new_sym_func (resolve.c) [40] resolve_typespec_name (resolve.c)
+  [73] init_builtin_types    [183] new_sym_project (resolve.c) [46] resolve_unary_op (resolve.c)
+  [69] init_interpreter (interpret.c) [158] new_typespec (ast.c) [149] scan_float (lex.c)
+  [75] init_keywords         [160] new_typespec_name     [137] scan_int (lex.c)
+  [10] init_stream           [180] new_typespec_project  [155] scan_str (lex.c)
+ [172] init_type_double_func (type.c) [9] next_token     [103] str_intern
+  [60] initial_parse (interpret.c) [98] operand_const (resolve.c) [29] str_intern_range
+ [181] intern_arena_end       [28] operand_lvalue (resolve.c) [13] sym_get (resolve.c)
+ [185] intern_free           [133] parse_expr            [107] sym_get_builtin (interpret.c)
+   [4] interpret              [65] parse_expr_add (parse.c) [22] sym_get_builtin (resolve.c)
+ [122] is_a_keyword           [78] parse_expr_and (parse.c) [145] sym_get_func (resolve.c)
+ [130] is_add_op (parse.c)    [63] parse_expr_base (parse.c) [26] sym_get_local (resolve.c)
+  [99] is_arithmetic_type     [77] parse_expr_cmp (parse.c) [31] sym_get_type (resolve.c)
+ [144] is_assign_op (parse.c) [64] parse_expr_mul (parse.c) [94] sym_push_dim (resolve.c)
+ [104] is_castable (resolve.c) [53] parse_expr_operand (parse.c) [82] sym_push_func
+ [131] is_cmp_op (parse.c)    [84] parse_expr_or (parse.c) [97] sym_push_project (resolve.c)
+ [106] is_concatable          [85] parse_expr_unary (parse.c) [72] sym_push_type
+ [112] is_cond_operand (resolve.c) [79] parse_expr_xor (parse.c) [89] test_builtin_funcs
+ [100] is_convertible (resolve.c) [5] parse_interpreter (interpret.c) [90] test_code
+ [146] is_end_of_block (parse.c) [59] parse_select_case_pattern (parse.c) [192] test_expr
+  [32] is_floating_type       [52] parse_simple_stmt (parse.c) [93] test_keywords
+ [105] is_integer_type        [49] parse_stmt             [76] test_lex
+  [42] is_keyword_name       [162] parse_stmt_block (parse.c) [54] test_parse
+ [129] is_mul_op (parse.c)    [55] parse_stmt_dim (parse.c) [2] test_resolve
+ [113] is_scalar_type         [86] parse_stmt_do (parse.c) [87] test_select_case
+ [101] is_string_type         [91] parse_stmt_do_until_loop (parse.c) [152] token_end
+ [121] is_token               [92] parse_stmt_do_while_loop (parse.c) [150] token_float_val
+ [141] is_token_eof           [61] parse_stmt_for (parse.c) [138] token_int_val
+ [128] is_unary_op (parse.c)  [66] parse_stmt_if (parse.c) [123] token_kind
+ [166] jalloc                 [67] parse_stmt_select (parse.c) [41] token_kind_name
+ [116] map_get                [57] parse_stmt_select_case (parse.c) [132] token_name
+ [173] map_put                [88] parse_stmt_while (parse.c) [124] token_pos
+  [56] match_keyword          [51] parse_stmts           [153] token_start
+  [62] match_token            [70] parse_type            [156] token_str_val
+ [174] max (type.c)           [74] parse_type_base (parse.c) [109] unify_operands (resolve.c)
+ [170] min (type.c)          [119] promote_operand (resolve.c) [117] update_interpreter (interpret.c)
+ [148] new_StmtBlock          [19] resolve_binary_arithmetic_op (resolve.c) [50] <cycle 1>
+ [127] new_expr               [20] resolve_binary_op (resolve.c) [48] <cycle 2>
+ [140] new_expr_binary       [111] resolve_binary_string_op (resolve.c) [3] <cycle 3>
+ [167] new_expr_boolean      [114] resolve_cond_expr (resolve.c)

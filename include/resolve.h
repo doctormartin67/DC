@@ -29,7 +29,6 @@ typedef struct Sym {
 		Type *type;
 		Val val;
 		struct {
-			int years;
 			double val;
 		} project;
 	};
@@ -46,11 +45,9 @@ enum {
 	MAX_SYMS = 1024
 };
 
-Sym *sym_get(const char *name);
 unsigned sym_push_var(const char *name, Type *type, Val val);
 void syms_reset(void);
 void resolve_stmts(Stmt **stmts);
 void print_sym(Sym *sym);
-void print_syms(void);
 
 #endif
