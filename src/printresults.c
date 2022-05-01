@@ -1063,20 +1063,20 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 		/* DBO RET PUC PAR */
 		fassets = (ass.method & PAR113 ? assetsPAR113 : assetsPAR115);
 		worksheet_write_number(ws, row+1, col+index++, 
-				MAX2(DBORETPUCPAR, fassets), 0);
+				MAX(DBORETPUCPAR, fassets), 0);
 		/* SC ER PUC PAR */
 		worksheet_write_number(ws, row+1, col+index++, 
-				MAX2(0.0, NCRETPUCPAR + ICNCRETPUCPAR
+				MAX(0.0, NCRETPUCPAR + ICNCRETPUCPAR
 					- ExpEEContr), 0);
 		/* DBO RET TUC PAR */
 		worksheet_write_number(ws, row+1, col+index++, 
-				MAX2(DBORETTUCPAR, fassets), 0);
+				MAX(DBORETTUCPAR, fassets), 0);
 		/* SC ER TUC PAR */
 		er = (ass.method & mmaxERContr ?
 				ExpERContr * (1 - tff.admincost)
 				/ (1 + ass.taxes) : 0.0);
 		worksheet_write_number(ws, row+1, col+index++, 
-				MAX2(er, NCRETTUCPAR + ICNCRETTUCPAR
+				MAX(er, NCRETTUCPAR + ICNCRETTUCPAR
 					- ExpEEContr), 0);
 		/* DBO RET PUC RES */
 
@@ -1093,7 +1093,7 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 					ART24TOT) + DBODTHRiskPART, 0);
 		/* SC ER PUC RES */
 		worksheet_write_number(ws, row+1, col+index++, 
-				MAX2(0.0, NCRETPUCRES + ICNCRETPUCRES
+				MAX(0.0, NCRETPUCRES + ICNCRETPUCRES
 					+ NCDTHRESPART + ICNCDTHRESPART)
 				- ExpEEContr + NCDTHRiskPART + ICNCDTHRiskPART
 				, 0);
@@ -1103,7 +1103,7 @@ unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
 					ART24TOT) + DBODTHRiskPART, 0);
 		/* SC ER TUC RES */
 		worksheet_write_number(ws, row+1, col+index++, 
-				MAX2(er, NCRETTUCRES + ICNCRETTUCRES
+				MAX(er, NCRETTUCRES + ICNCRETTUCRES
 					+ NCDTHRESPART + ICNCDTHRESPART - ExpEEContr)
 				+ NCDTHRiskPART + ICNCDTHRiskPART, 0);
 		row++;

@@ -102,7 +102,7 @@ static void add_builtin_result(void)
 			add_builtin_string(result, "");
 			break;
 		default:
-			fatal("Unknown type for variable '%s'", result);
+			die("Unknown type for variable '%s'", result);
 			break;
 	}
 }

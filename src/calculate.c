@@ -482,8 +482,9 @@ double calc_lump_sum(unsigned tariff, double X10,
 					axcost, Ax1, X10, tff.MIXEDPS,
 					tff.costKO);
 			break;
-		default :
-			die("%d is not a valid tariff.", tariff);
+		default:
+			assert(0);
+			break;
 	}
 
 	return value;
@@ -540,7 +541,8 @@ double calc_res(unsigned tariff, double X10, double cap, double prem,
 				- prem * (1 - tff.admincost) * ax;
 			break;
 		default:
-			die("%d is not a valid tariff.", tariff);
+			assert(0);
+			break;
 	}
 
 	return value;
@@ -560,8 +562,8 @@ static double get_assets(unsigned assets, unsigned def_imm, double res,
 			a = res;
 			break;
 		default:
-			die("should be deferred or immediate, "
-					"got something unknown");
+			assert(0);
+			break;
 	}
 
 	switch (assets) {
@@ -594,16 +596,19 @@ static double get_dbo(unsigned method, unsigned ASSETS,
 			liab = art24[TUC];
 			break;
 		default:
-			die("Unknown method");
+			assert(0);
+			break;
 	}
 
 	switch (ASSETS) {
-		case PAR113 :
-		case PAR115 :
+		case PAR113:
+		case PAR115:
 			return MAX(liab, assets);
 			break;
-		case MATHRES : return liab;
-		default: die("unknown assets = %d", ASSETS);
+		case MATHRES: return liab;
+		default: 
+			       assert(0);
+			       break;
 	}
 	return liab;
 }
@@ -618,7 +623,7 @@ static double get_nc(unsigned method, struct factor f,
 		case TUC:
 			return (art24[TUCPS_1] - art24[TUC]);
 		default:
-			die("method = %d", method);
+			assert(0);
 			return 0.0;
 	}
 }

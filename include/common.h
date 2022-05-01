@@ -79,7 +79,6 @@ typedef union Val {
 	const char *s;
 } Val;
 
-void fatal(const char *fmt, ...);
 void *buf__grow(const void *buf, size_t new_len, size_t elem_size);
 char *buf__printf(char *buf, const char *fmt, ...);
 void arena_grow(Arena *arena, size_t min_size);

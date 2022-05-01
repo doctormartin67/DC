@@ -50,7 +50,7 @@ const char *type_name(TypeKind kind)
 		case TYPE_STRING:
 			return type_names[kind];
 		default:
-			fatal("Unknown type");
+			assert(0);
 			return 0;
 	}
 }

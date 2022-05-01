@@ -193,7 +193,7 @@ static unsigned sym_push_project(const char *name, Type *type,
 	interpreter->properties.has_project = 1;
 	Operand operand = resolve_expr(typespec->project.expr);
 	if (!convert_operand(&operand, type_double)) {
-		fatal("Projection type '%s' is not convertible to double",
+		die("Projection type '%s' is not convertible to double",
 				type_name(operand.type->kind));
 	}
 
@@ -366,7 +366,7 @@ static Sym *resolve_name(const char *name)
 {
 	Sym *sym = sym_get(name);
 	if (!sym) {
-		fatal("Non-existent name '%s'", name);
+		die("Non-existent name '%s'", name);
 		return 0;
 	}
 	return sym;
@@ -376,7 +376,7 @@ static Type *resolve_typespec_name(const char *name)
 {
 	Sym *sym = resolve_name(name);
 	if (sym->kind != SYM_TYPE) {
-		fatal("%s must denote a type", name);
+		die("%s must denote a type", name);
 		return 0;
 	}
 	return sym->type;
@@ -694,7 +694,7 @@ static Operand resolve_expr_binary_op(TokenKind op, const char *op_name,
 		case TOKEN_AND:
 			return resolve_binary_string_op(pos, op, left, right);
 		default:
-			fatal("'%s' not implemented yet", op_name);
+			die("'%s' not implemented yet", op_name);
 			break;
 	}
 	assert(0);

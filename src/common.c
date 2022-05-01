@@ -5,17 +5,6 @@
 #include <assert.h>
 #include "common.h"
 
-void fatal(const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	printf("FATAL: ");
-	vprintf(fmt, args);
-	printf("\n");
-	va_end(args);
-	exit(1);
-}
-
 void *buf__grow(const void *buf, size_t new_len, size_t elem_size)
 {
 	assert(buf_cap(buf) <= (SIZE_MAX - 1)/2);
