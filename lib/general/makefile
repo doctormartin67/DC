@@ -8,7 +8,7 @@ CC = gcc
 CFLAGS = -pg -g -Wall -Wextra -Werror -pedantic
 INCLUDES = -I $(INCLUDE)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
-LDFLAGS = -pg
+LDFLAGS =
 
 # ---Object files---
 OBJS = common.o errorexit.o helperfunctions.o
@@ -25,7 +25,7 @@ CP = cp
 # ---targets---
 all: $(EXE)
 
-fast: CFLAGS = -pg -Wextra -Werror -pedantic -Ofast -DNDEBUG
+fast: CFLAGS = -Wextra -Werror -pedantic -Ofast
 fast: all
 
 $(EXE): $(EXE).o libgeneral.a

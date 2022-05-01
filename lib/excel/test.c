@@ -187,9 +187,12 @@ int main(int argc, char *argv[])
 	} else {
 		assert(1 == argc);
 	}
-	test_excel(file_name);
-	test_database(file_name);
-	test_nextrow();
+	enum {N = 64};
+	for (unsigned i = 0; i < N; i++) {
+		test_excel(file_name);
+		test_database(file_name);
+		test_nextrow();
+	}
 	return 0;
 }
 

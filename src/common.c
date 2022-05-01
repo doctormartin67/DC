@@ -142,6 +142,8 @@ void map_free(Map *map)
 {
 	free(map->keys);
 	free(map->vals);
+	map->keys = 0;
+	map->vals = 0;
 	map->len = 0;
 	map->cap = 0;
 }

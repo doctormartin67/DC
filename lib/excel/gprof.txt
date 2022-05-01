@@ -2,30 +2,32 @@ Flat profile:
 
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  ms/call  ms/call  name    
- 50.03      0.03     0.03   260873     0.00     0.00  open_database
- 50.03      0.06     0.03        6     5.00     5.00  parse_cells
-  0.00      0.06     0.00   276633     0.00     0.00  map_put_str
-  0.00      0.06     0.00   219851     0.00     0.00  arena_alloc
-  0.00      0.06     0.00    57301     0.00     0.00  map_get_str
-  0.00      0.06     0.00    57288     0.00     0.00  cell_content
-  0.00      0.06     0.00    57280     0.00     0.00  nextcol
-  0.00      0.06     0.00     9734     0.00     0.00  buf__printf
-  0.00      0.06     0.00     9730     0.00     0.00  arena_str_dup
-  0.00      0.06     0.00     6287     0.00     0.00  open_xml_from_excel
-  0.00      0.06     0.00      333     0.00     0.00  jalloc
-  0.00      0.06     0.00      325     0.00     0.00  map_free
-  0.00      0.06     0.00      324     0.00     0.00  nextrow
-  0.00      0.06     0.00      319     0.00     0.00  parse_record
-  0.00      0.06     0.00       29     0.00     0.00  cast_content
-  0.00      0.06     0.00       13     0.00     0.00  buf__grow
-  0.00      0.06     0.00        4     0.00     0.00  record_double
-  0.00      0.06     0.00        4     0.00     0.00  record_int
-  0.00      0.06     0.00        4     0.00     0.00  record_string
-  0.00      0.06     0.00        2     0.00     0.00  arena_free
-  0.00      0.06     0.00        2     0.00     0.00  extract_excel
-  0.00      0.06     0.00        2     0.00     0.00  open_excel
-  0.00      0.06     0.00        1     0.00     0.00  record_boolean
+ time   seconds   seconds    calls  us/call  us/call  name    
+100.05      0.01     0.01      384    26.06    26.06  parse_cells
+  0.00      0.01     0.00    12288     0.00     0.00  map_get_uint64_from_uint64
+  0.00      0.01     0.00     8576     0.00     0.00  map_put_str
+  0.00      0.01     0.00     7104     0.00     0.00  arena_alloc
+  0.00      0.01     0.00     4224     0.00     0.00  map_get_str
+  0.00      0.01     0.00     3968     0.00     0.00  buf__grow
+  0.00      0.01     0.00     3456     0.00     0.00  cell_content
+  0.00      0.01     0.00     3328     0.00     0.00  arena_str_dup
+  0.00      0.01     0.00     3328     0.00     0.00  buf__printf
+  0.00      0.01     0.00     2816     0.00     0.00  nextcol
+  0.00      0.01     0.00     1920     0.00     0.00  cast_content
+  0.00      0.01     0.00     1536     0.00     0.00  jalloc
+  0.00      0.01     0.00      960     0.00     0.00  map_free
+  0.00      0.01     0.00      896     0.00     0.00  nextrow
+  0.00      0.01     0.00      768     0.00     0.00  open_xml_from_excel
+  0.00      0.01     0.00      576     0.00     0.00  parse_record
+  0.00      0.01     0.00      256     0.00     0.00  record_double
+  0.00      0.01     0.00      256     0.00     0.00  record_int
+  0.00      0.01     0.00      256     0.00     0.00  record_string
+  0.00      0.01     0.00      192     0.00     0.00  arena_free
+  0.00      0.01     0.00      192     0.00     0.00  extract_excel
+  0.00      0.01     0.00      192     0.00    52.11  open_excel
+  0.00      0.01     0.00      128     0.00    52.11  open_database
+  0.00      0.01     0.00       64     0.00     0.00  close_database
+  0.00      0.01     0.00       64     0.00     0.00  close_excel
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -63,164 +65,177 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 16.66% of 0.06 seconds
+granularity: each sample hit covers 2 byte(s) for 99.95% of 0.01 seconds
 
 index % time    self  children    called     name
-[1]    100.0    0.06    0.00       2+261198  <cycle 1 as a whole> [1]
-                0.03    0.00  260873+276992      open_database <cycle 1> [2]
-                0.03    0.00       6             parse_cells <cycle 1> [3]
-                0.00    0.00     319             parse_record <cycle 1> [17]
-                0.00    0.00       2             open_excel <cycle 1> [25]
+                0.01    0.00     384/384         open_excel [2]
+[1]    100.0    0.01    0.00     384         parse_cells [1]
+                0.00    0.00    6272/7104        arena_alloc [8]
+                0.00    0.00    6272/12288       map_get_uint64_from_uint64 [6]
+                0.00    0.00    6272/8576        map_put_str [7]
+                0.00    0.00    3136/3328        buf__printf [13]
+                0.00    0.00    3136/3328        arena_str_dup [12]
+                0.00    0.00     384/768         open_xml_from_excel [19]
 -----------------------------------------------
-                              276992             open_database <cycle 1> [2]
-                               41340             parse_record <cycle 1> [17]
-                              219532             parse_cells <cycle 1> [3]
-                0.03    0.00       1/2           test_database [4]
-[2]     50.0    0.03    0.00  260873+276992  open_database <cycle 1> [2]
-                0.00    0.00     319/324         nextrow [16]
-                0.00    0.00     180/57301       map_get_str [8]
-                0.00    0.00     180/57288       cell_content [9]
-                0.00    0.00     179/57280       nextcol [10]
-                0.00    0.00      12/9734        buf__printf [11]
-                0.00    0.00      12/9730        arena_str_dup [12]
-                0.00    0.00      11/13          buf__grow [19]
-                0.00    0.00       1/219851      arena_alloc [7]
-                                 319             parse_record <cycle 1> [17]
-                                   1             open_excel <cycle 1> [25]
-                              276992             open_database <cycle 1> [2]
+                0.00    0.00      64/192         test_excel [5]
+                0.00    0.01     128/192         open_database [3]
+[2]    100.0    0.00    0.01     192         open_excel [2]
+                0.01    0.00     384/384         parse_cells [1]
+                0.00    0.00    1152/1920        cast_content [15]
+                0.00    0.00     960/1536        jalloc [16]
+                0.00    0.00     384/768         open_xml_from_excel [19]
+                0.00    0.00     192/192         extract_excel [25]
+                0.00    0.00     192/3968        buf__grow [10]
 -----------------------------------------------
-                                   6             open_excel <cycle 1> [25]
-[3]     50.0    0.03    0.00       6         parse_cells <cycle 1> [3]
-                0.00    0.00  219532/219851      arena_alloc [7]
-                0.00    0.00  219532/276633      map_put_str [6]
-                0.00    0.00    9722/9734        buf__printf [11]
-                0.00    0.00    9718/9730        arena_str_dup [12]
-                0.00    0.00    6285/6287        open_xml_from_excel [13]
-                              219532             open_database <cycle 1> [2]
------------------------------------------------
-                                                 <spontaneous>
-[4]     50.0    0.00    0.03                 test_database [4]
-                0.03    0.00       1/2           open_database <cycle 1> [2]
-                0.00    0.00       4/4           record_int [21]
-                0.00    0.00       4/4           record_double [20]
-                0.00    0.00       4/4           record_string [22]
-                0.00    0.00       1/1           record_boolean [26]
+                0.00    0.01     128/128         test_database [4]
+[3]     66.7    0.00    0.01     128         open_database [3]
+                0.00    0.01     128/192         open_excel [2]
+                0.00    0.00     640/12288       map_get_uint64_from_uint64 [6]
+                0.00    0.00     640/4224        map_get_str [9]
+                0.00    0.00     640/3456        cell_content [11]
+                0.00    0.00     576/896         nextrow [18]
+                0.00    0.00     576/576         parse_record [20]
+                0.00    0.00     512/2816        nextcol [14]
+                0.00    0.00     256/3968        buf__grow [10]
+                0.00    0.00     192/3328        buf__printf [13]
+                0.00    0.00     192/3328        arena_str_dup [12]
+                0.00    0.00     128/7104        arena_alloc [8]
 -----------------------------------------------
                                                  <spontaneous>
-[5]     50.0    0.00    0.03                 test_excel [5]
-                0.03    0.00       1/2           open_excel <cycle 1> [25]
-                0.00    0.00       7/57301       map_get_str [8]
-                0.00    0.00       7/57288       cell_content [9]
+[4]     66.7    0.00    0.01                 test_database [4]
+                0.00    0.01     128/128         open_database [3]
+                0.00    0.00     256/256         record_int [22]
+                0.00    0.00     256/256         record_double [21]
+                0.00    0.00     256/256         record_string [23]
+                0.00    0.00      64/64          close_excel [27]
+                0.00    0.00      64/64          close_database [26]
 -----------------------------------------------
-                0.00    0.00   57101/276633      parse_record <cycle 1> [17]
-                0.00    0.00  219532/276633      parse_cells <cycle 1> [3]
-[6]      0.0    0.00    0.00  276633         map_put_str [6]
+                                                 <spontaneous>
+[5]     33.3    0.00    0.00                 test_excel [5]
+                0.00    0.00      64/192         open_excel [2]
+                0.00    0.00     512/12288       map_get_uint64_from_uint64 [6]
+                0.00    0.00     512/4224        map_get_str [9]
+                0.00    0.00     512/3456        cell_content [11]
 -----------------------------------------------
-                0.00    0.00       1/219851      open_database <cycle 1> [2]
-                0.00    0.00     318/219851      parse_record <cycle 1> [17]
-                0.00    0.00  219532/219851      parse_cells <cycle 1> [3]
-[7]      0.0    0.00    0.00  219851         arena_alloc [7]
+                0.00    0.00     256/12288       record_int [22]
+                0.00    0.00     256/12288       record_double [21]
+                0.00    0.00     256/12288       record_string [23]
+                0.00    0.00     512/12288       test_excel [5]
+                0.00    0.00     640/12288       open_database [3]
+                0.00    0.00    4096/12288       parse_record [20]
+                0.00    0.00    6272/12288       parse_cells [1]
+[6]      0.0    0.00    0.00   12288         map_get_uint64_from_uint64 [6]
 -----------------------------------------------
-                0.00    0.00       1/57301       record_boolean [26]
-                0.00    0.00       4/57301       record_int [21]
-                0.00    0.00       4/57301       record_double [20]
-                0.00    0.00       4/57301       record_string [22]
-                0.00    0.00       7/57301       test_excel [5]
-                0.00    0.00     180/57301       open_database <cycle 1> [2]
-                0.00    0.00   57101/57301       parse_record <cycle 1> [17]
-[8]      0.0    0.00    0.00   57301         map_get_str [8]
+                0.00    0.00    2304/8576        parse_record [20]
+                0.00    0.00    6272/8576        parse_cells [1]
+[7]      0.0    0.00    0.00    8576         map_put_str [7]
 -----------------------------------------------
-                0.00    0.00       7/57288       test_excel [5]
-                0.00    0.00     180/57288       open_database <cycle 1> [2]
-                0.00    0.00   57101/57288       parse_record <cycle 1> [17]
-[9]      0.0    0.00    0.00   57288         cell_content [9]
+                0.00    0.00     128/7104        open_database [3]
+                0.00    0.00     256/7104        cast_content [15]
+                0.00    0.00     448/7104        parse_record [20]
+                0.00    0.00    6272/7104        parse_cells [1]
+[8]      0.0    0.00    0.00    7104         arena_alloc [8]
+                0.00    0.00     192/3968        buf__grow [10]
 -----------------------------------------------
-                0.00    0.00     179/57280       open_database <cycle 1> [2]
-                0.00    0.00   57101/57280       parse_record <cycle 1> [17]
-[10]     0.0    0.00    0.00   57280         nextcol [10]
+                0.00    0.00     256/4224        record_int [22]
+                0.00    0.00     256/4224        record_double [21]
+                0.00    0.00     256/4224        record_string [23]
+                0.00    0.00     512/4224        test_excel [5]
+                0.00    0.00     640/4224        open_database [3]
+                0.00    0.00    2304/4224        parse_record [20]
+[9]      0.0    0.00    0.00    4224         map_get_str [9]
 -----------------------------------------------
-                0.00    0.00      12/9734        open_database <cycle 1> [2]
-                0.00    0.00    9722/9734        parse_cells <cycle 1> [3]
-[11]     0.0    0.00    0.00    9734         buf__printf [11]
+                0.00    0.00     192/3968        open_excel [2]
+                0.00    0.00     192/3968        arena_alloc [8]
+                0.00    0.00     256/3968        open_database [3]
+                0.00    0.00    3328/3968        buf__printf [13]
+[10]     0.0    0.00    0.00    3968         buf__grow [10]
 -----------------------------------------------
-                0.00    0.00      12/9730        open_database <cycle 1> [2]
-                0.00    0.00    9718/9730        parse_cells <cycle 1> [3]
-[12]     0.0    0.00    0.00    9730         arena_str_dup [12]
+                0.00    0.00     512/3456        test_excel [5]
+                0.00    0.00     640/3456        open_database [3]
+                0.00    0.00    2304/3456        parse_record [20]
+[11]     0.0    0.00    0.00    3456         cell_content [11]
 -----------------------------------------------
-                0.00    0.00       2/6287        open_excel <cycle 1> [25]
-                0.00    0.00    6285/6287        parse_cells <cycle 1> [3]
-[13]     0.0    0.00    0.00    6287         open_xml_from_excel [13]
+                0.00    0.00     192/3328        open_database [3]
+                0.00    0.00    3136/3328        parse_cells [1]
+[12]     0.0    0.00    0.00    3328         arena_str_dup [12]
 -----------------------------------------------
-                0.00    0.00      14/333         open_excel <cycle 1> [25]
-                0.00    0.00     319/333         parse_record <cycle 1> [17]
-[14]     0.0    0.00    0.00     333         jalloc [14]
+                0.00    0.00     192/3328        open_database [3]
+                0.00    0.00    3136/3328        parse_cells [1]
+[13]     0.0    0.00    0.00    3328         buf__printf [13]
+                0.00    0.00    3328/3968        buf__grow [10]
 -----------------------------------------------
-                0.00    0.00       1/325         parse_record <cycle 1> [17]
-                0.00    0.00       6/325         close_excel [33]
-                0.00    0.00     318/325         close_database [32]
-[15]     0.0    0.00    0.00     325         map_free [15]
+                0.00    0.00     512/2816        open_database [3]
+                0.00    0.00    2304/2816        parse_record [20]
+[14]     0.0    0.00    0.00    2816         nextcol [14]
 -----------------------------------------------
-                0.00    0.00       5/324         test_nextrow [58]
-                0.00    0.00     319/324         open_database <cycle 1> [2]
-[16]     0.0    0.00    0.00     324         nextrow [16]
+                0.00    0.00     256/1920        record_int [22]
+                0.00    0.00     256/1920        record_double [21]
+                0.00    0.00     256/1920        record_string [23]
+                0.00    0.00    1152/1920        open_excel [2]
+[15]     0.0    0.00    0.00    1920         cast_content [15]
+                0.00    0.00     256/7104        arena_alloc [8]
 -----------------------------------------------
-                                 319             open_database <cycle 1> [2]
-[17]     0.0    0.00    0.00     319         parse_record <cycle 1> [17]
-                0.00    0.00   57101/57301       map_get_str [8]
-                0.00    0.00   57101/57288       cell_content [9]
-                0.00    0.00   57101/276633      map_put_str [6]
-                0.00    0.00   57101/57280       nextcol [10]
-                0.00    0.00     319/333         jalloc [14]
-                0.00    0.00     318/219851      arena_alloc [7]
-                0.00    0.00       1/325         map_free [15]
-                               41340             open_database <cycle 1> [2]
+                0.00    0.00     576/1536        parse_record [20]
+                0.00    0.00     960/1536        open_excel [2]
+[16]     0.0    0.00    0.00    1536         jalloc [16]
 -----------------------------------------------
-                0.00    0.00       1/29          record_boolean [26]
-                0.00    0.00       4/29          record_int [21]
-                0.00    0.00       4/29          record_double [20]
-                0.00    0.00       4/29          record_string [22]
-                0.00    0.00      16/29          open_excel <cycle 1> [25]
-[18]     0.0    0.00    0.00      29         cast_content [18]
+                0.00    0.00     128/960         parse_record [20]
+                0.00    0.00     384/960         close_excel [27]
+                0.00    0.00     448/960         close_database [26]
+[17]     0.0    0.00    0.00     960         map_free [17]
 -----------------------------------------------
-                0.00    0.00       2/13          open_excel <cycle 1> [25]
-                0.00    0.00      11/13          open_database <cycle 1> [2]
-[19]     0.0    0.00    0.00      13         buf__grow [19]
+                0.00    0.00     320/896         test_nextrow [58]
+                0.00    0.00     576/896         open_database [3]
+[18]     0.0    0.00    0.00     896         nextrow [18]
 -----------------------------------------------
-                0.00    0.00       4/4           test_database [4]
-[20]     0.0    0.00    0.00       4         record_double [20]
-                0.00    0.00       4/57301       map_get_str [8]
-                0.00    0.00       4/29          cast_content [18]
+                0.00    0.00     384/768         parse_cells [1]
+                0.00    0.00     384/768         open_excel [2]
+[19]     0.0    0.00    0.00     768         open_xml_from_excel [19]
 -----------------------------------------------
-                0.00    0.00       4/4           test_database [4]
-[21]     0.0    0.00    0.00       4         record_int [21]
-                0.00    0.00       4/57301       map_get_str [8]
-                0.00    0.00       4/29          cast_content [18]
+                0.00    0.00     576/576         open_database [3]
+[20]     0.0    0.00    0.00     576         parse_record [20]
+                0.00    0.00    4096/12288       map_get_uint64_from_uint64 [6]
+                0.00    0.00    2304/4224        map_get_str [9]
+                0.00    0.00    2304/3456        cell_content [11]
+                0.00    0.00    2304/8576        map_put_str [7]
+                0.00    0.00    2304/2816        nextcol [14]
+                0.00    0.00     576/1536        jalloc [16]
+                0.00    0.00     448/7104        arena_alloc [8]
+                0.00    0.00     128/960         map_free [17]
 -----------------------------------------------
-                0.00    0.00       4/4           test_database [4]
-[22]     0.0    0.00    0.00       4         record_string [22]
-                0.00    0.00       4/57301       map_get_str [8]
-                0.00    0.00       4/29          cast_content [18]
+                0.00    0.00     256/256         test_database [4]
+[21]     0.0    0.00    0.00     256         record_double [21]
+                0.00    0.00     256/12288       map_get_uint64_from_uint64 [6]
+                0.00    0.00     256/4224        map_get_str [9]
+                0.00    0.00     256/1920        cast_content [15]
 -----------------------------------------------
-                0.00    0.00       2/2           close_excel [33]
-[23]     0.0    0.00    0.00       2         arena_free [23]
+                0.00    0.00     256/256         test_database [4]
+[22]     0.0    0.00    0.00     256         record_int [22]
+                0.00    0.00     256/12288       map_get_uint64_from_uint64 [6]
+                0.00    0.00     256/4224        map_get_str [9]
+                0.00    0.00     256/1920        cast_content [15]
 -----------------------------------------------
-                0.00    0.00       2/2           open_excel <cycle 1> [25]
-[24]     0.0    0.00    0.00       2         extract_excel [24]
+                0.00    0.00     256/256         test_database [4]
+[23]     0.0    0.00    0.00     256         record_string [23]
+                0.00    0.00     256/12288       map_get_uint64_from_uint64 [6]
+                0.00    0.00     256/4224        map_get_str [9]
+                0.00    0.00     256/1920        cast_content [15]
 -----------------------------------------------
-                                   1             open_database <cycle 1> [2]
-                0.03    0.00       1/2           test_excel [5]
-[25]     0.0    0.00    0.00       2         open_excel <cycle 1> [25]
-                0.00    0.00      16/29          cast_content [18]
-                0.00    0.00      14/333         jalloc [14]
-                0.00    0.00       2/2           extract_excel [24]
-                0.00    0.00       2/6287        open_xml_from_excel [13]
-                0.00    0.00       2/13          buf__grow [19]
-                                   6             parse_cells <cycle 1> [3]
+                0.00    0.00     192/192         close_excel [27]
+[24]     0.0    0.00    0.00     192         arena_free [24]
 -----------------------------------------------
-                0.00    0.00       1/1           test_database [4]
-[26]     0.0    0.00    0.00       1         record_boolean [26]
-                0.00    0.00       1/57301       map_get_str [8]
-                0.00    0.00       1/29          cast_content [18]
+                0.00    0.00     192/192         open_excel [2]
+[25]     0.0    0.00    0.00     192         extract_excel [25]
+-----------------------------------------------
+                0.00    0.00      64/64          test_database [4]
+[26]     0.0    0.00    0.00      64         close_database [26]
+                0.00    0.00     448/960         map_free [17]
+-----------------------------------------------
+                0.00    0.00      64/64          test_database [4]
+[27]     0.0    0.00    0.00      64         close_excel [27]
+                0.00    0.00     384/960         map_free [17]
+                0.00    0.00     192/192         arena_free [24]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -313,11 +328,12 @@ notice and this notice are preserved.
 
 Index by function name
 
-   [7] arena_alloc            [14] jalloc                 [13] open_xml_from_excel
-  [23] arena_free             [15] map_free                [3] parse_cells
-  [12] arena_str_dup           [8] map_get_str            [17] parse_record
-  [19] buf__grow               [6] map_put_str            [26] record_boolean
-  [11] buf__printf            [10] nextcol                [20] record_double
-  [18] cast_content           [16] nextrow                [21] record_int
-   [9] cell_content            [2] open_database          [22] record_string
-  [24] extract_excel          [25] open_excel              [1] <cycle 1>
+   [8] arena_alloc            [25] extract_excel           [2] open_excel
+  [24] arena_free             [16] jalloc                 [19] open_xml_from_excel
+  [12] arena_str_dup          [17] map_free                [1] parse_cells
+  [10] buf__grow               [9] map_get_str            [20] parse_record
+  [13] buf__printf             [6] map_get_uint64_from_uint64 [21] record_double
+  [15] cast_content            [7] map_put_str            [22] record_int
+  [11] cell_content           [14] nextcol                [23] record_string
+  [26] close_database         [18] nextrow
+  [27] close_excel             [3] open_database

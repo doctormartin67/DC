@@ -10,7 +10,7 @@ CFLAGS = -pg -g -Wall -Wextra -Werror -pedantic
 INCLUDES = -I $(INCLUDE) `pkg-config --cflags libxml-2.0`
 LIBS = -lgeneral -lm -lexcel
 LDLIBS = $(LIBS) `xml2-config --libs`
-LDFLAGS = -L$(LIB) -pg
+LDFLAGS = -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
@@ -28,7 +28,7 @@ CP = cp
 # ---targets---
 all: $(EXE)
 
-fast: CFLAGS = -pg -Wextra -Werror -pedantic -Ofast
+fast: CFLAGS = -Wextra -Werror -pedantic -Ofast
 fast: all
 
 $(EXE): $(EXE).o libvba.a

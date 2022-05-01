@@ -1,32 +1,670 @@
-==29539== Memcheck, a memory error detector
-==29539== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==29539== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
-==29539== Command: ./main
-==29539== Parent PID: 2432
-==29539== 
-==29539== 
-==29539== HEAP SUMMARY:
-==29539==     in use at exit: 163,874,852 bytes in 127,218 blocks
-==29539==   total heap usage: 52,535,217 allocs, 52,407,999 frees, 94,527,326,127 bytes allocated
-==29539== 
-==29539== 151,666,720 bytes in 2 blocks are possibly lost in loss record 24,936 of 24,936
-==29539==    at 0x48416C6: realloc (vg_replace_malloc.c:1437)
-==29539==    by 0x133CC1: buf__grow (common.c:28)
-==29539==    by 0x114BF6: create_members (DCProgram.c:195)
-==29539==    by 0x121492: runtc (userrunhandlers.c:166)
-==29539==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
-==29539==    by 0x60FA608: start_thread (pthread_create.c:477)
-==29539==    by 0x5732162: clone (clone.S:95)
-==29539== 
-==29539== LEAK SUMMARY:
-==29539==    definitely lost: 0 bytes in 0 blocks
-==29539==    indirectly lost: 0 bytes in 0 blocks
-==29539==      possibly lost: 151,666,720 bytes in 2 blocks
-==29539==    still reachable: 0 bytes in 0 blocks
-==29539==                       of which reachable via heuristic:
-==29539==                         length64           : 13,728 bytes in 201 blocks
-==29539==                         newarray           : 2,528 bytes in 78 blocks
-==29539==         suppressed: 10,211,580 bytes in 113,453 blocks
-==29539== 
-==29539== For lists of detected and suppressed errors, rerun with: -s
-==29539== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 113 from 113)
+==31013== Memcheck, a memory error detector
+==31013== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==31013== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==31013== Command: ./main
+==31013== Parent PID: 2431
+==31013== 
+==31013== Thread 5 run:
+==31013== Conditional jump or move depends on uninitialised value(s)
+==31013==    at 0x1302E4: resolve_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x130FA2: resolve_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A414: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 
+==31013== Process terminating with default action of signal 6 (SIGABRT)
+==31013==    at 0x565603B: raise (raise.c:51)
+==31013==    by 0x5635858: abort (abort.c:79)
+==31013==    by 0x5635728: __assert_fail_base.cold (assert.c:92)
+==31013==    by 0x5647005: __assert_fail (assert.c:101)
+==31013==    by 0x1305A1: resolve_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x130FA2: resolve_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A414: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013== 
+==31013== HEAP SUMMARY:
+==31013==     in use at exit: 105,965,575 bytes in 128,393 blocks
+==31013==   total heap usage: 3,645,761 allocs, 3,517,368 frees, 406,526,065 bytes allocated
+==31013== 
+==31013== Thread 1:
+==31013== 5 bytes in 1 blocks are possibly lost in loss record 207 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x56B23BE: strdup (strdup.c:42)
+==31013==    by 0x134F67: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 16 bytes in 1 blocks are possibly lost in loss record 3,428 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x1336AA: jalloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134E94: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 32 bytes in 1 blocks are still reachable in loss record 8,467 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x56DD17B: __wcsmbs_load_conv (wcsmbsload.c:168)
+==31013==    by 0x56DDA9B: get_gconv_fcts (wcsmbsload.h:74)
+==31013==    by 0x56DDA9B: __mbsrtowcs_l (mbsrtowcs_l.c:57)
+==31013==    by 0x56FF0DA: fnmatch@@GLIBC_2.2.5 (fnmatch.c:350)
+==31013==    by 0x5DE1972: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5D6C915: g_content_type_guess (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5DD6216: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5DD7D60: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5DD5039: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5D0AA2F: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5D51C61: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x53AC373: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013== 
+==31013== 32 bytes in 1 blocks are possibly lost in loss record 8,640 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x1336AA: jalloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134F7B: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 32 bytes in 1 blocks are possibly lost in loss record 8,641 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x1336AA: jalloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134FA6: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 32 bytes in 1 blocks are possibly lost in loss record 8,642 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x1336AA: jalloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x1357DE: parse_record (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135D84: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 32 bytes in 1 blocks are possibly lost in loss record 8,643 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12B294: next_token (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BD07: parse_expr_cmp (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BDE2: parse_expr_or (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12CC4D: parse_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12DBCB: parse_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A3FE: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013== 
+==31013== 32 bytes in 1 blocks are possibly lost in loss record 8,644 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12B294: next_token (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12B7D8: match_token (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12D510: parse_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12DBCB: parse_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A3FE: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013== 
+==31013== 48 bytes in 1 blocks are still reachable in loss record 11,331 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x1336AA: jalloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BC26: init_builtin_funcs (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6CF: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 64 bytes in 2 blocks are possibly lost in loss record 13,447 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12B294: next_token (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12B806: expect_token (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12C761: parse_expr_unary (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12C892: parse_expr_mul (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BCA2: parse_expr_cmp (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BDE2: parse_expr_or (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12CA7D: parse_simple_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12DBCB: parse_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A3FE: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013== 
+==31013== 104 bytes in 1 blocks are still reachable in loss record 17,996 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x1336AA: jalloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A683: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,635 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x13257E: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x11E967: new_user_input (userinterface.c:82)
+==31013==    by 0x11EA87: init_user_input (userinterface.c:109)
+==31013==    by 0x120228: init_interface (userinterface.c:151)
+==31013==    by 0x12024C: userinterface (userinterface.c:158)
+==31013==    by 0x10FF9F: main (main.c:18)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,636 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x13501C: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,637 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x13257E: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134401: parse_cells (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134FBA: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,639 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x13257E: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x132BF0: str_intern_range (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112D8B: add_builtin_vars (assumptions.c:23)
+==31013==    by 0x112EC6: interpret_code (assumptions.c:41)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,640 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x13257E: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A288: add_builtin_var (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112DF0: add_builtin_vars (assumptions.c:29)
+==31013==    by 0x112EC6: interpret_code (assumptions.c:41)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,641 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A2D9: add_builtin_var (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112DF0: add_builtin_vars (assumptions.c:29)
+==31013==    by 0x112EC6: interpret_code (assumptions.c:41)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,642 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x130DFE: sym_push_type (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BBCD: init_builtin_types (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6CA: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,643 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x130F36: sym_push_func (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BC70: init_builtin_funcs (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6CF: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,644 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12DBF0: parse_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A3FE: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,645 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x13257E: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x131361: new_expr_name (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12C7CA: parse_expr_unary (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12C892: parse_expr_mul (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BCA2: parse_expr_cmp (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BDE2: parse_expr_or (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12D318: parse_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12DBCB: parse_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A3FE: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,646 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12B4F6: next_token (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12B806: expect_token (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12C761: parse_expr_unary (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12C892: parse_expr_mul (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BCA2: parse_expr_cmp (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BDE2: parse_expr_or (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12CA7D: parse_simple_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12DBCB: parse_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A3FE: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013== 
+==31013== 144 bytes in 1 blocks are possibly lost in loss record 19,647 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x1303DE: resolve_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x130FA2: resolve_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A414: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013== 
+==31013== 192 bytes in 6 blocks are possibly lost in loss record 20,977 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x13215F: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12B294: next_token (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12B711: match_keyword (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12D22B: parse_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12DBCB: parse_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A3FE: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013== 
+==31013== 208 bytes in 1 blocks are still reachable in loss record 21,044 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x5642AA6: __gconv_lookup_cache (gconv_cache.c:366)
+==31013==    by 0x5638CB5: __gconv_find_transform (gconv_db.c:733)
+==31013==    by 0x56DD29D: __wcsmbs_getfct (wcsmbsload.c:92)
+==31013==    by 0x56DD29D: __wcsmbs_load_conv (wcsmbsload.c:186)
+==31013==    by 0x56DDA9B: get_gconv_fcts (wcsmbsload.h:74)
+==31013==    by 0x56DDA9B: __mbsrtowcs_l (mbsrtowcs_l.c:57)
+==31013==    by 0x56FF0DA: fnmatch@@GLIBC_2.2.5 (fnmatch.c:350)
+==31013==    by 0x5DE1972: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5D6C915: g_content_type_guess (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5DD6216: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5DD7D60: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5DD5039: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5D0AA2F: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013== 
+==31013== 208 bytes in 1 blocks are still reachable in loss record 21,045 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x56429DE: __gconv_lookup_cache (gconv_cache.c:366)
+==31013==    by 0x5638CB5: __gconv_find_transform (gconv_db.c:733)
+==31013==    by 0x56DD2E1: __wcsmbs_getfct (wcsmbsload.c:92)
+==31013==    by 0x56DD2E1: __wcsmbs_load_conv (wcsmbsload.c:189)
+==31013==    by 0x56DDA9B: get_gconv_fcts (wcsmbsload.h:74)
+==31013==    by 0x56DDA9B: __mbsrtowcs_l (mbsrtowcs_l.c:57)
+==31013==    by 0x56FF0DA: fnmatch@@GLIBC_2.2.5 (fnmatch.c:350)
+==31013==    by 0x5DE1972: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5D6C915: g_content_type_guess (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5DD6216: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5DD7D60: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5DD5039: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013==    by 0x5D0AA2F: ??? (in /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.6)
+==31013== 
+==31013== 271 bytes in 1 blocks are still reachable in loss record 21,685 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x56435F7: new_composite_name (setlocale.c:170)
+==31013==    by 0x5643C35: setlocale (setlocale.c:437)
+==31013==    by 0x5643C35: setlocale (setlocale.c:217)
+==31013==    by 0x134AEA: parse_cells (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134FBA: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 272 bytes in 1 blocks are possibly lost in loss record 21,694 of 25,134
+==31013==    at 0x48416C6: realloc (vg_replace_malloc.c:1437)
+==31013==    by 0x13213D: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x11E8D0: init_widgets (userinterface.c:74)
+==31013==    by 0x120223: init_interface (userinterface.c:150)
+==31013==    by 0x12024C: userinterface (userinterface.c:158)
+==31013==    by 0x10FF9F: main (main.c:18)
+==31013== 
+==31013== 272 bytes in 1 blocks are possibly lost in loss record 21,695 of 25,134
+==31013==    at 0x48416C6: realloc (vg_replace_malloc.c:1437)
+==31013==    by 0x13213D: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x11F7AB: init_user_input (userinterface.c:126)
+==31013==    by 0x120228: init_interface (userinterface.c:151)
+==31013==    by 0x12024C: userinterface (userinterface.c:158)
+==31013==    by 0x10FF9F: main (main.c:18)
+==31013== 
+==31013== 2,064 bytes in 1 blocks are possibly lost in loss record 24,589 of 25,134
+==31013==    at 0x48416C6: realloc (vg_replace_malloc.c:1437)
+==31013==    by 0x13213D: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135BF1: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 4,112 bytes in 1 blocks are possibly lost in loss record 24,828 of 25,134
+==31013==    at 0x48416C6: realloc (vg_replace_malloc.c:1437)
+==31013==    by 0x13213D: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135DEE: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 8,192 bytes in 1 blocks are still reachable in loss record 24,988 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x131F1A: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135831: parse_record (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135DCF: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 8,192 bytes in 1 blocks are still reachable in loss record 24,989 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x131F09: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x132C24: str_intern_range (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112D8B: add_builtin_vars (assumptions.c:23)
+==31013==    by 0x112EC6: interpret_code (assumptions.c:41)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 8,192 bytes in 1 blocks are still reachable in loss record 24,990 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x131F1A: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x132C24: str_intern_range (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112D8B: add_builtin_vars (assumptions.c:23)
+==31013==    by 0x112EC6: interpret_code (assumptions.c:41)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 8,192 bytes in 1 blocks are still reachable in loss record 24,991 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x131F09: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6BE: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 8,192 bytes in 1 blocks are still reachable in loss record 24,992 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x131F1A: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6BE: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 8,192 bytes in 1 blocks are possibly lost in loss record 24,993 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x131F09: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135831: parse_record (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135D84: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 8,192 bytes in 1 blocks are possibly lost in loss record 24,994 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x131F1A: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135831: parse_record (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135D84: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 10,144 bytes in 317 blocks are possibly lost in loss record 25,013 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x1336AA: jalloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x1357DE: parse_record (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135DCF: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 16,384 bytes in 2 blocks are still reachable in loss record 25,055 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x131F09: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135831: parse_record (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135DCF: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 1,048,576 bytes in 1 blocks are still reachable in loss record 25,123 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x132507: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x132BF0: str_intern_range (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112D8B: add_builtin_vars (assumptions.c:23)
+==31013==    by 0x112EC6: interpret_code (assumptions.c:41)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 1,048,576 bytes in 1 blocks are possibly lost in loss record 25,124 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x132507: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x11E967: new_user_input (userinterface.c:82)
+==31013==    by 0x11EA87: init_user_input (userinterface.c:109)
+==31013==    by 0x120228: init_interface (userinterface.c:151)
+==31013==    by 0x12024C: userinterface (userinterface.c:158)
+==31013==    by 0x10FF9F: main (main.c:18)
+==31013== 
+==31013== 1,048,576 bytes in 1 blocks are possibly lost in loss record 25,126 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x132507: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x133B91: cast_content (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135490: record_double (in /home/doctormartin67/Coding/main)
+==31013==    by 0x113FED: get_gen_amount (DCProgram.c:48)
+==31013==    by 0x11410C: set_generations (DCProgram.c:66)
+==31013==    by 0x11453C: set_projections (DCProgram.c:120)
+==31013==    by 0x114A86: create_member (DCProgram.c:169)
+==31013==    by 0x114DD5: create_members (DCProgram.c:195)
+==31013==    by 0x1213E1: run (userrunhandlers.c:127)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013== 
+==31013== 1,048,576 bytes in 1 blocks are possibly lost in loss record 25,127 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x132507: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A288: add_builtin_var (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112DF0: add_builtin_vars (assumptions.c:29)
+==31013==    by 0x112EC6: interpret_code (assumptions.c:41)
+==31013==    by 0x1136D1: calcA (assumptions.c:153)
+==31013==    by 0x111B87: init_cm (main.c:216)
+==31013==    by 0x1102B9: runmember (main.c:59)
+==31013==    by 0x1214DB: run (userrunhandlers.c:143)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 1,048,576 bytes in 1 blocks are possibly lost in loss record 25,128 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x132507: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x131361: new_expr_name (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12C7CA: parse_expr_unary (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12C892: parse_expr_mul (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BCA2: parse_expr_cmp (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12BDE2: parse_expr_or (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12D318: parse_stmt (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12DBCB: parse_stmts (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A3FE: parse_interpreter (in /home/doctormartin67/Coding/main)
+==31013==    by 0x12A6D4: interpret (in /home/doctormartin67/Coding/main)
+==31013==    by 0x112F49: interpret_code (assumptions.c:45)
+==31013== 
+==31013== 2,097,152 bytes in 1 blocks are possibly lost in loss record 25,129 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x131F09: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x1346ED: parse_cells (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134FBA: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 2,097,152 bytes in 1 blocks are possibly lost in loss record 25,130 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x131F1A: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x1346ED: parse_cells (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134FBA: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 2,097,152 bytes in 2 blocks are possibly lost in loss record 25,131 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x132507: arena_alloc (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134401: parse_cells (in /home/doctormartin67/Coding/main)
+==31013==    by 0x134FBA: open_excel (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135A5C: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 2,580,480 bytes in 315 blocks are possibly lost in loss record 25,132 of 25,134
+==31013==    at 0x484147B: calloc (vg_replace_malloc.c:1328)
+==31013==    by 0x131F09: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135831: parse_record (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135DCF: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 2,588,672 bytes in 316 blocks are possibly lost in loss record 25,133 of 25,134
+==31013==    at 0x483C855: malloc (vg_replace_malloc.c:381)
+==31013==    by 0x131F1A: map_put_uint64_from_uint64.part.0 (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135831: parse_record (in /home/doctormartin67/Coding/main)
+==31013==    by 0x135DCF: open_database (in /home/doctormartin67/Coding/main)
+==31013==    by 0x120F5D: import_data (userrunhandlers.c:51)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== 75,833,360 bytes in 1 blocks are possibly lost in loss record 25,134 of 25,134
+==31013==    at 0x48416C6: realloc (vg_replace_malloc.c:1437)
+==31013==    by 0x13213D: buf__grow (in /home/doctormartin67/Coding/main)
+==31013==    by 0x114D96: create_members (DCProgram.c:195)
+==31013==    by 0x1213E1: run (userrunhandlers.c:127)
+==31013==    by 0x53ABAD0: ??? (in /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.6)
+==31013==    by 0x60FA608: start_thread (pthread_create.c:477)
+==31013==    by 0x5732162: clone (clone.S:95)
+==31013== 
+==31013== LEAK SUMMARY:
+==31013==    definitely lost: 0 bytes in 0 blocks
+==31013==    indirectly lost: 0 bytes in 0 blocks
+==31013==      possibly lost: 91,523,685 bytes in 990 blocks
+==31013==    still reachable: 1,106,791 bytes in 14 blocks
+==31013==                       of which reachable via heuristic:
+==31013==                         length64           : 13,728 bytes in 201 blocks
+==31013==                         newarray           : 2,528 bytes in 78 blocks
+==31013==         suppressed: 11,342,619 bytes in 113,666 blocks
+==31013== 
+==31013== Use --track-origins=yes to see where uninitialised values come from
+==31013== For lists of detected and suppressed errors, rerun with: -s
+==31013== ERROR SUMMARY: 39 errors from 39 contexts (suppressed: 133 from 133)

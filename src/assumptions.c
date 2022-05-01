@@ -7,7 +7,6 @@
 #include "resolve.h"
 
 extern const Database *get_database(void);
-enum {VAR_INTERPRETER, VAR_FIXED, VAR_COMBO};
 static void set_methodology(void);
 
 // builtin vars

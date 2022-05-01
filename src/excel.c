@@ -235,10 +235,11 @@ static char *parse_attr(xmlAttrPtr attr, const char *attr_name)
 {
 	assert(attr);
 	char *content = 0;
+	const xmlChar *xml_name = xml_cast(attr_name);
 	int len = strlen(attr_name);
 	while (attr && 	
 			(xmlStrlen(attr->name) != len
-			 || xmlStrncmp(attr->name, xml_cast(attr_name), len)))
+			 || xmlStrncmp(attr->name, xml_name, len)))
 	{
 		attr = attr->next;
 	}
@@ -263,9 +264,10 @@ enum fatality {
 static xmlAttrPtr find_attr(xmlAttrPtr attr, const char *name)
 {
 	int len = strlen(name);
+	const xmlChar *xml_name = xml_cast(name);
 	while (attr &&
 			(xmlStrlen(attr->name) != len
-			 || xmlStrncmp(attr->name, xml_cast(name), len)))
+			 || xmlStrncmp(attr->name, xml_name, len)))
 	{
 		attr = attr->next;
 	}
@@ -276,9 +278,10 @@ static xmlNodePtr find_node(xmlNodePtr node, const char *name,
 		enum fatality fat)
 {
 	int len = strlen(name);
+	const xmlChar *xml_name = xml_cast(name);
 	while (node &&
 			(xmlStrlen(node->name) != len
-			 || xmlStrncmp(node->name, xml_cast(name), len)))
+			 || xmlStrncmp(node->name, xml_name, len)))
 	{
 		node = node->next;
 	}
@@ -291,8 +294,9 @@ static xmlNodePtr find_node(xmlNodePtr node, const char *name,
 #define PARSE(n, n_name) \
 	assert(sheet); \
 	int len = strlen(n_name); \
+	const xmlChar *xml_name = xml_cast(n_name); \
 	for (xmlNodePtr n = node; n; n = n->next) { \
-		assert(!xmlStrncmp(n->name, xml_cast(n_name), len)); \
+		assert(!xmlStrncmp(n->name, xml_name, len)); \
 		parse_##n(sheet, n); \
 	}
 
@@ -300,11 +304,12 @@ static char *parse_shared_strings_concat(xmlNodePtr it)
 {
 	xmlNodePtr node = find_node(it->children, "r", FATAL);
 	char *buf = 0;
+	const xmlChar *text = xml_cast("text");
 	for (xmlNodePtr it = node; it; it = it->next) {
 		xmlNodePtr tmp = find_node(it->children, "t", FATAL);
 		assert(tmp->children);
 		assert(tmp->children->name);
-		assert(!xmlStrcmp(tmp->children->name, xml_cast("text")));
+		assert(!xmlStrcmp(tmp->children->name, text));
 		assert(tmp->children->content);
 		buf_printf(buf, "%s", str_cast(tmp->children->content));
 	}
@@ -327,11 +332,15 @@ static char *parse_shared_strings_value(xmlNodePtr it)
 	return buf;
 }
 
-static Content parse_shared_strings(ContentKind kind, const char *value,
-		Sheet *sheet)
+/*
+ * This is used so that parse_shared_strings doesnt have to open and close
+ * it each time the function is called. it is created in parse_sheets and then
+ * destroyed afterwards
+ */
+static xmlDocPtr sharedStrings;
+static Content parse_shared_strings(ContentKind kind, const char *value)
 {
-	xmlDocPtr sharedStrings = open_xml_from_excel(
-			sheet->excel_name, "sharedStrings");
+	assert(sharedStrings);
 	Content content = (Content){0};
 	content.kind = kind;
 	char *buf = 0;
@@ -340,16 +349,16 @@ static Content parse_shared_strings(ContentKind kind, const char *value,
 	long index = strtol(value, &end, 0);
 	assert('\0' == *end);
 	assert(!(index < 0));
+	const xmlChar *si = xml_cast("si");
 	for (xmlNodePtr it = sharedStrings->children->children; it;
 			it = it->next)
 	{
-		assert(!xmlStrcmp(it->name, xml_cast("si")));
+		assert(!xmlStrcmp(it->name, si));
 		if (i++ == index) {
 			buf = parse_shared_strings_value(it);
 			break;
 		}
 	}
-	xmlFreeDoc(sharedStrings);
 	assert(buf);
 	content.val.s = arena_str_dup(&content_arena, buf);
 	buf_free(buf);
@@ -419,7 +428,7 @@ static Content parse_content(Sheet *sheet, const xmlChar *type,
 	const char *value_str = str_cast(value->content);
 
 	if (!xmlStrcmp(type, xml_cast("s"))) {
-		content = parse_shared_strings(CONTENT_STRING, value_str, sheet);
+		content = parse_shared_strings(CONTENT_STRING, value_str);
 		assert(CONTENT_STRING == content.kind);
 	} else if (!xmlStrcmp(type, xml_cast("str"))) {
 		content = parse_string(CONTENT_STRING, value_str);
@@ -536,6 +545,7 @@ static Sheet *parse_sheet(const char *file_name, xmlNodePtr node,
 
 static Sheet **parse_sheets(const char *file_name, const char *sheet_name)
 {
+	sharedStrings = open_xml_from_excel(file_name, "sharedStrings");
 	xmlDocPtr workbook = open_xml_from_excel(file_name, "workbook");
 	assert(workbook);
 	Sheet **sheets = 0;
@@ -552,6 +562,7 @@ static Sheet **parse_sheets(const char *file_name, const char *sheet_name)
 		}
 		free(curr_sheet_name);
 	}
+	xmlFreeDoc(sharedStrings);
 	xmlFreeDoc(workbook);
 	return sheets;
 }

@@ -2,16 +2,40 @@ Flat profile:
 
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  ns/call  ns/call  name    
- 71.54      0.05     0.05  1048575    47.76    47.76  test_helperfunctions
- 28.61      0.07     0.02  1048575    19.10    19.10  map_get
-  0.00      0.07     0.00  1048575     0.00     0.00  map_put
-  0.00      0.07     0.00        7     0.00     0.00  buf__grow
-  0.00      0.07     0.00        2     0.00     0.00  arena_alloc
-  0.00      0.07     0.00        2     0.00     0.00  buf__printf
-  0.00      0.07     0.00        1     0.00     0.00  arena_str_dup
-  0.00      0.07     0.00        1     0.00     0.00  map_free
-  0.00      0.07     0.00        1     0.00     0.00  replace
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 51.41      0.38     0.38  8386568     0.00     0.00  map_put_uint64_from_uint64
+ 40.58      0.68     0.30  4194332     0.00     0.00  map_get_uint64_from_uint64
+  4.06      0.71     0.03       52     0.58     0.58  map_grow
+  2.71      0.73     0.02  4194300     0.00     0.00  map_get
+  1.35      0.74     0.01 12580896     0.00     0.00  hash_uint64
+  0.00      0.74     0.00  4194300     0.00     0.00  map_put
+  0.00      0.74     0.00       60     0.00     0.00  map_free
+  0.00      0.74     0.00       44     0.00     0.00  buf__grow
+  0.00      0.74     0.00       32     0.00     0.00  hash_bytes
+  0.00      0.74     0.00       32     0.00     0.00  map_get_from_uint64
+  0.00      0.74     0.00       32     0.00     0.00  str_intern
+  0.00      0.74     0.00       32     0.00     0.00  str_intern_range
+  0.00      0.74     0.00       24     0.00     0.00  arena_alloc
+  0.00      0.74     0.00       12     0.00     0.00  map_put_from_uint64
+  0.00      0.74     0.00        8     0.00     0.00  DIRexists
+  0.00      0.74     0.00        8     0.00     0.00  arena_free
+  0.00      0.74     0.00        8     0.00     0.00  arena_grow
+  0.00      0.74     0.00        8     0.00     0.00  buf__printf
+  0.00      0.74     0.00        8     0.00     0.00  sum
+  0.00      0.74     0.00        4     0.00     0.00  arena_str_dup
+  0.00      0.74     0.00        4     0.00     0.00  intern_free
+  0.00      0.74     0.00        4     0.00     0.00  jalloc
+  0.00      0.74     0.00        4     0.00     0.00  replace
+  0.00      0.74     0.00        4     0.00     0.00  strinside
+  0.00      0.74     0.00        4     0.00     0.00  test_DIRexists
+  0.00      0.74     0.00        4     0.00     0.00  test_arena
+  0.00      0.74     0.00        4     0.00     0.00  test_buf
+  0.00      0.74     0.00        4     0.00     0.00  test_helperfunctions
+  0.00      0.74     0.00        4     0.00   185.20  test_map
+  0.00      0.74     0.00        4     0.00     0.00  test_replace
+  0.00      0.74     0.00        4     0.00     0.00  test_str_intern
+  0.00      0.74     0.00        4     0.00     0.00  test_strinside
+  0.00      0.74     0.00        4     0.00     0.00  test_sum
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -49,44 +73,169 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 14.26% of 0.07 seconds
+granularity: each sample hit covers 2 byte(s) for 1.35% of 0.74 seconds
 
 index % time    self  children    called     name
                                                  <spontaneous>
-[1]    100.0    0.00    0.07                 test_map [1]
-                0.05    0.00 1048575/1048575     test_helperfunctions [2]
-                0.02    0.00 1048575/1048575     map_get [3]
-                0.00    0.00 1048575/1048575     map_put [4]
-                0.00    0.00       1/1           map_free [9]
+[1]    100.0    0.00    0.74                 main [1]
+                0.00    0.74       4/4           test_map [2]
+                0.00    0.00       4/4           test_str_intern [12]
+                0.00    0.00       4/4           test_arena [30]
+                0.00    0.00       4/4           test_buf [31]
+                0.00    0.00       4/4           test_helperfunctions [32]
 -----------------------------------------------
-                             1048064             test_helperfunctions [2]
-                0.05    0.00 1048575/1048575     test_map [1]
-[2]     71.4    0.05    0.00 1048575+1048064 test_helperfunctions [2]
-                             1048064             test_helperfunctions [2]
+                0.00    0.74       4/4           main [1]
+[2]    100.0    0.00    0.74       4         test_map [2]
+                0.00    0.42 4194300/4194300     map_put [4]
+                0.02    0.30 4194300/4194300     map_get [6]
+                0.00    0.00       4/60          map_free [15]
 -----------------------------------------------
-                0.02    0.00 1048575/1048575     test_map [1]
-[3]     28.6    0.02    0.00 1048575         map_get [3]
+[3]     56.3    0.41    0.01 4194312+4192308 <cycle 1 as a whole> [3]
+                0.38    0.01 8386568             map_put_uint64_from_uint64 <cycle 1> [5]
+                0.03    0.00      52             map_grow <cycle 1> [8]
 -----------------------------------------------
-                0.00    0.00 1048575/1048575     test_map [1]
-[4]      0.0    0.00    0.00 1048575         map_put [4]
+                0.00    0.42 4194300/4194300     test_map [2]
+[4]     56.3    0.00    0.42 4194300         map_put [4]
+                0.41    0.01 4194300/4194312     map_put_uint64_from_uint64 <cycle 1> [5]
 -----------------------------------------------
-                0.00    0.00       7/7           test_buf [41]
-[5]      0.0    0.00    0.00       7         buf__grow [5]
+                             4192256             map_grow <cycle 1> [8]
+                0.00    0.00      12/4194312     map_put_from_uint64 [14]
+                0.41    0.01 4194300/4194312     map_put [4]
+[5]     52.3    0.38    0.01 8386568         map_put_uint64_from_uint64 <cycle 1> [5]
+                0.01    0.00 8386568/12580896     hash_uint64 [9]
+                                  52             map_grow <cycle 1> [8]
 -----------------------------------------------
-                0.00    0.00       2/2           test_arena [40]
-[6]      0.0    0.00    0.00       2         arena_alloc [6]
+                0.02    0.30 4194300/4194300     test_map [2]
+[6]     43.7    0.02    0.30 4194300         map_get [6]
+                0.30    0.00 4194300/4194332     map_get_uint64_from_uint64 [7]
 -----------------------------------------------
-                0.00    0.00       2/2           test_buf [41]
-[7]      0.0    0.00    0.00       2         buf__printf [7]
+                0.00    0.00      32/4194332     map_get_from_uint64 [13]
+                0.30    0.00 4194300/4194332     map_get [6]
+[7]     41.0    0.30    0.00 4194332         map_get_uint64_from_uint64 [7]
+                0.00    0.00 4194328/12580896     hash_uint64 [9]
 -----------------------------------------------
-                0.00    0.00       1/1           test_arena [40]
-[8]      0.0    0.00    0.00       1         arena_str_dup [8]
+                                  52             map_put_uint64_from_uint64 <cycle 1> [5]
+[8]      4.1    0.03    0.00      52         map_grow <cycle 1> [8]
+                0.00    0.00      52/60          map_free [15]
+                             4192256             map_put_uint64_from_uint64 <cycle 1> [5]
 -----------------------------------------------
-                0.00    0.00       1/1           test_map [1]
-[9]      0.0    0.00    0.00       1         map_free [9]
+                0.00    0.00 4194328/12580896     map_get_uint64_from_uint64 [7]
+                0.01    0.00 8386568/12580896     map_put_uint64_from_uint64 <cycle 1> [5]
+[9]      1.4    0.01    0.00 12580896         hash_uint64 [9]
 -----------------------------------------------
-                0.00    0.00       1/1           test_replace [42]
-[10]     0.0    0.00    0.00       1         replace [10]
+                0.00    0.00      32/32          test_str_intern [12]
+[10]     0.0    0.00    0.00      32         str_intern [10]
+                0.00    0.00      32/32          str_intern_range [11]
+-----------------------------------------------
+                0.00    0.00      32/32          str_intern [10]
+[11]     0.0    0.00    0.00      32         str_intern_range [11]
+                0.00    0.00      32/32          map_get_from_uint64 [13]
+                0.00    0.00      12/12          map_put_from_uint64 [14]
+                0.00    0.00      32/32          hash_bytes [17]
+                0.00    0.00      12/24          arena_alloc [18]
+-----------------------------------------------
+                0.00    0.00       4/4           main [1]
+[12]     0.0    0.00    0.00       4         test_str_intern [12]
+                0.00    0.00      32/32          str_intern [10]
+                0.00    0.00       4/4           intern_free [25]
+-----------------------------------------------
+                0.00    0.00      32/32          str_intern_range [11]
+[13]     0.0    0.00    0.00      32         map_get_from_uint64 [13]
+                0.00    0.00      32/4194332     map_get_uint64_from_uint64 [7]
+-----------------------------------------------
+                0.00    0.00      12/12          str_intern_range [11]
+[14]     0.0    0.00    0.00      12         map_put_from_uint64 [14]
+                0.00    0.00      12/4194312     map_put_uint64_from_uint64 <cycle 1> [5]
+-----------------------------------------------
+                0.00    0.00       4/60          test_map [2]
+                0.00    0.00       4/60          intern_free [25]
+                0.00    0.00      52/60          map_grow <cycle 1> [8]
+[15]     0.0    0.00    0.00      60         map_free [15]
+-----------------------------------------------
+                0.00    0.00       8/44          buf__printf [22]
+                0.00    0.00       8/44          arena_grow [21]
+                0.00    0.00      28/44          test_buf [31]
+[16]     0.0    0.00    0.00      44         buf__grow [16]
+-----------------------------------------------
+                0.00    0.00      32/32          str_intern_range [11]
+[17]     0.0    0.00    0.00      32         hash_bytes [17]
+-----------------------------------------------
+                0.00    0.00       4/24          arena_str_dup [24]
+                0.00    0.00       8/24          test_arena [30]
+                0.00    0.00      12/24          str_intern_range [11]
+[18]     0.0    0.00    0.00      24         arena_alloc [18]
+                0.00    0.00       8/8           arena_grow [21]
+-----------------------------------------------
+                0.00    0.00       8/8           test_DIRexists [29]
+[19]     0.0    0.00    0.00       8         DIRexists [19]
+-----------------------------------------------
+                0.00    0.00       4/8           test_arena [30]
+                0.00    0.00       4/8           intern_free [25]
+[20]     0.0    0.00    0.00       8         arena_free [20]
+-----------------------------------------------
+                0.00    0.00       8/8           arena_alloc [18]
+[21]     0.0    0.00    0.00       8         arena_grow [21]
+                0.00    0.00       8/44          buf__grow [16]
+-----------------------------------------------
+                0.00    0.00       8/8           test_buf [31]
+[22]     0.0    0.00    0.00       8         buf__printf [22]
+                0.00    0.00       8/44          buf__grow [16]
+-----------------------------------------------
+                0.00    0.00       8/8           test_sum [35]
+[23]     0.0    0.00    0.00       8         sum [23]
+-----------------------------------------------
+                0.00    0.00       4/4           test_arena [30]
+[24]     0.0    0.00    0.00       4         arena_str_dup [24]
+                0.00    0.00       4/24          arena_alloc [18]
+-----------------------------------------------
+                0.00    0.00       4/4           test_str_intern [12]
+[25]     0.0    0.00    0.00       4         intern_free [25]
+                0.00    0.00       4/60          map_free [15]
+                0.00    0.00       4/8           arena_free [20]
+-----------------------------------------------
+                0.00    0.00       4/4           replace [27]
+[26]     0.0    0.00    0.00       4         jalloc [26]
+-----------------------------------------------
+                0.00    0.00       4/4           test_replace [33]
+[27]     0.0    0.00    0.00       4         replace [27]
+                0.00    0.00       4/4           jalloc [26]
+-----------------------------------------------
+                0.00    0.00       4/4           test_strinside [34]
+[28]     0.0    0.00    0.00       4         strinside [28]
+-----------------------------------------------
+                0.00    0.00       4/4           test_helperfunctions [32]
+[29]     0.0    0.00    0.00       4         test_DIRexists [29]
+                0.00    0.00       8/8           DIRexists [19]
+-----------------------------------------------
+                0.00    0.00       4/4           main [1]
+[30]     0.0    0.00    0.00       4         test_arena [30]
+                0.00    0.00       8/24          arena_alloc [18]
+                0.00    0.00       4/4           arena_str_dup [24]
+                0.00    0.00       4/8           arena_free [20]
+-----------------------------------------------
+                0.00    0.00       4/4           main [1]
+[31]     0.0    0.00    0.00       4         test_buf [31]
+                0.00    0.00      28/44          buf__grow [16]
+                0.00    0.00       8/8           buf__printf [22]
+-----------------------------------------------
+                0.00    0.00       4/4           main [1]
+[32]     0.0    0.00    0.00       4         test_helperfunctions [32]
+                0.00    0.00       4/4           test_DIRexists [29]
+                0.00    0.00       4/4           test_replace [33]
+                0.00    0.00       4/4           test_sum [35]
+                0.00    0.00       4/4           test_strinside [34]
+-----------------------------------------------
+                0.00    0.00       4/4           test_helperfunctions [32]
+[33]     0.0    0.00    0.00       4         test_replace [33]
+                0.00    0.00       4/4           replace [27]
+-----------------------------------------------
+                0.00    0.00       4/4           test_helperfunctions [32]
+[34]     0.0    0.00    0.00       4         test_strinside [34]
+                0.00    0.00       4/4           strinside [28]
+-----------------------------------------------
+                0.00    0.00       4/4           test_helperfunctions [32]
+[35]     0.0    0.00    0.00       4         test_sum [35]
+                0.00    0.00       8/8           sum [23]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -179,6 +328,15 @@ notice and this notice are preserved.
 
 Index by function name
 
-   [6] arena_alloc             [7] buf__printf             [4] map_put
-   [8] arena_str_dup           [9] map_free               [10] replace
-   [5] buf__grow               [3] map_get                 [2] test_helperfunctions
+  [19] DIRexists               [6] map_get                [29] test_DIRexists
+  [18] arena_alloc            [13] map_get_from_uint64 (common.c) [30] test_arena
+  [20] arena_free              [7] map_get_uint64_from_uint64 (common.c) [31] test_buf
+  [21] arena_grow              [8] map_grow (common.c)    [32] test_helperfunctions
+  [24] arena_str_dup           [4] map_put                 [2] test_map
+  [16] buf__grow              [14] map_put_from_uint64 (common.c) [33] test_replace
+  [22] buf__printf             [5] map_put_uint64_from_uint64 (common.c) [12] test_str_intern
+  [17] hash_bytes (common.c)  [27] replace                [34] test_strinside
+   [9] hash_uint64 (common.c) [10] str_intern             [35] test_sum
+  [25] intern_free            [11] str_intern_range        [3] <cycle 1>
+  [26] jalloc                 [28] strinside
+  [15] map_free               [23] sum
