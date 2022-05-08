@@ -5,7 +5,7 @@ EXE = test
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -pg -g -Wall -Wextra -Werror -pedantic
+CFLAGS = -g -Wall -Wextra -Werror -pedantic
 INCLUDES = -I $(INCLUDE)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 LDFLAGS =
@@ -25,7 +25,7 @@ CP = cp
 # ---targets---
 all: $(EXE)
 
-fast: CFLAGS = -Wextra -Werror -pedantic -Ofast
+fast: CFLAGS = -g -Wextra -Werror -pedantic -Ofast
 fast: all
 
 $(EXE): $(EXE).o libgeneral.a

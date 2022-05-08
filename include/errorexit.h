@@ -23,8 +23,6 @@
 
 void die(const char *restrict format, ...)
 	__attribute__ ((format (printf, 1, 2)));
-void errExitEN(int errnum, const char *restrict format, ...)
-	__attribute__ ((format (printf, 2, 3)));
 
 #define ERREXIT(F, ...) die("%s:" STRGY(__LINE__) ": " F, \
 		__func__, __VA_ARGS__);

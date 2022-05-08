@@ -37,7 +37,7 @@ CP = cp
 # ---targets---
 all: DEPENDENCIES $(EXE)
 
-fast: CFLAGS = -Wextra -Werror -pedantic -Ofast
+fast: CFLAGS = -g -Wextra -Werror -pedantic -Ofast
 fast: all
 
 DEPENDENCIES:

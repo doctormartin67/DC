@@ -127,23 +127,20 @@ void warning(SrcPos pos, const char *fmt, ...)
 	va_end(args);
 }
 
-void error(SrcPos pos, const char *fmt, ...)
+void syntax_error(SrcPos pos, const char *fmt, ...)
 {
 	if (pos.name == 0) {
 		pos = pos_builtin;
 	}
+	char buf[BUFSIZ];
 	va_list args;
 	va_start(args, fmt);
-	printf("---------------\n");
-	printf("Code:\n");
-	printf("---------------\n");
-	printf("%s\n", code);
-	printf("---------------\n");
-	printf("---------------\n");
-	printf("%s(%d): error: ", pos.name, pos.line);
-	vprintf(fmt, args);
-	printf("\n");
+	vsnprintf(buf, sizeof(buf), fmt, args);
+	buf_printf(error.str, "syntax error at: %s(%d)\n", pos.name, pos.line);
+	buf_printf(error.str, "%s", buf);
 	va_end(args);
+	error.is_error = 1;
+	longjmp(error.buf, 1);
 }
 
 const char *token_info(void)
@@ -423,10 +420,10 @@ unsigned expect_keyword(const char *name)
 		return 1;
 	} else {
 		if (TOKEN_EOF == token.kind) {
-			fatal_error_here("Expected keyword '%s', but reached "
+			error_here("Expected keyword '%s', but reached "
 					"end of file", name);
 		} else {
-			fatal_error_here("Expected keyword '%s', got '%s'",
+			error_here("Expected keyword '%s', got '%s'",
 					name, token.name);
 		}
 		return 0;
@@ -449,7 +446,7 @@ unsigned expect_token(TokenKind kind)
 		next_token();
 		return 1;
 	} else {
-		fatal_error_here("Expected token %s, got %s",
+		error_here("Expected token %s, got %s",
 				token_kind_name(kind), token_info());
 		return 0;
 	}

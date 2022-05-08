@@ -193,7 +193,8 @@ static unsigned sym_push_project(const char *name, Type *type,
 	interpreter->properties.has_project = 1;
 	Operand operand = resolve_expr(typespec->project.expr);
 	if (!convert_operand(&operand, type_double)) {
-		die("Projection type '%s' is not convertible to double",
+		syntax_error(typespec->pos, "Projection type '%s' is not "
+				"convertible to double",
 				type_name(operand.type->kind));
 	}
 
@@ -362,35 +363,35 @@ static void unify_operands(Operand *left, Operand *right)
 	assert(left->type == right->type);
 }
 
-static Sym *resolve_name(const char *name)
+static Sym *resolve_name(SrcPos pos, const char *name)
 {
 	Sym *sym = sym_get(name);
 	if (!sym) {
-		die("Non-existent name '%s'", name);
+		syntax_error(pos, "Non-existent name '%s'", name);
 		return 0;
 	}
 	return sym;
 }
 
-static Type *resolve_typespec_name(const char *name)
+static Type *resolve_typespec_name(SrcPos pos, const char *name)
 {
-	Sym *sym = resolve_name(name);
+	Sym *sym = resolve_name(pos, name);
 	if (sym->kind != SYM_TYPE) {
-		die("%s must denote a type", name);
+		syntax_error(pos, "%s must denote a type", name);
 		return 0;
 	}
 	return sym->type;
 }
 
-static Type *resolve_typespec(Typespec *typespec)
+static Type *resolve_typespec(SrcPos pos, Typespec *typespec)
 {
 	assert(typespec);
 	Type *type = 0;
 	if (TYPESPEC_PROJECT == typespec->kind) {
-		type = resolve_typespec_name(typespec->base->name);
+		type = resolve_typespec_name(pos, typespec->base->name);
 	} else {
 		assert(TYPESPEC_NAME == typespec->kind);
-		type = resolve_typespec_name(typespec->name);
+		type = resolve_typespec_name(pos, typespec->name);
 	}
 	assert(type);
 	return type;
@@ -527,7 +528,7 @@ static Operand resolve_name_operand(SrcPos pos, const char *name)
 {
 	Sym *sym = sym_get(name);
 	if (!sym) {
-		fatal_error(pos, "Undeclared variable '%s'", name);
+		syntax_error(pos, "Undeclared variable '%s'", name);
 	}
 	if (sym->kind == SYM_DIM) {
 		Operand operand = operand_lvalue(sym->type);
@@ -537,7 +538,7 @@ static Operand resolve_name_operand(SrcPos pos, const char *name)
 		Operand operand = operand_lvalue(sym->type);
 		return operand;
 	} else {
-		fatal_error(pos, "%s must be a declared variable", name);
+		syntax_error(pos, "%s must be a declared variable", name);
 		return operand_null;
 	}
 }
@@ -566,7 +567,7 @@ static Operand resolve_expr_unary(Expr *expr)
 		case TOKEN_ADD:
 		case TOKEN_SUB:
 			if (!is_scalar_type(type)) {
-				fatal_error(expr->pos, "Can only use unary "
+				syntax_error(expr->pos, "Can only use unary "
 						"'%s' with scalar types",
 						token_kind_name(
 							expr->unary.op));
@@ -608,7 +609,7 @@ static Operand concat_operands(Operand left, Operand right)
 
 #define CONVERT(operand) \
 	if (!convert_operand(&operand, type_string)) { \
-		fatal_error(pos, "Type mismatch, expected '%s', got '%s'", \
+		syntax_error(pos, "Type mismatch, expected '%s', got '%s'", \
 				type_name(TYPE_STRING), \
 				type_name(operand.type->kind)); \
 	}
@@ -617,7 +618,7 @@ static Operand resolve_binary_string_op(SrcPos pos, TokenKind op, Operand left,
 		Operand right)
 {
 	if (!(is_concatable(left.type) && is_concatable(right.type))) {
-		fatal_error(pos, "Both operands of '%s' must have "
+		syntax_error(pos, "Both operands of '%s' must have "
 				"string or scalar types", token_kind_name(op));
 	}
 	CONVERT(left);
@@ -634,7 +635,7 @@ static Operand resolve_binary_string_op(SrcPos pos, TokenKind op, Operand left,
 		case TOKEN_GTEQ:
 		case TOKEN_SUB:
 		case TOKEN_MOD:
-			fatal_error(pos, "Both operands of '%s' must have "
+			syntax_error(pos, "Both operands of '%s' must have "
 					"scalar types", token_kind_name(op));
 			break;
 		case TOKEN_ASSIGN:
@@ -700,7 +701,6 @@ static Operand resolve_expr_binary_op(TokenKind op, const char *op_name,
 	assert(0);
 	return (Operand){0};
 }
-#undef FATAL_ERROR
 
 static Operand resolve_expr_call_default(Operand func, Expr *expr, Sym *sym)
 {
@@ -712,7 +712,7 @@ static Operand resolve_expr_call_default(Operand func, Expr *expr, Sym *sym)
 		Operand arg = resolve_expected_expr(expr->call.args[i],
 				param_type);
 		if (!convert_operand(&arg, param_type)) {
-			fatal_error(expr->call.args[i]->pos, "Invalid type in "
+			syntax_error(expr->call.args[i]->pos, "Invalid type in "
 					"function call argument. Expected %s, "
 					"got %s", type_name(param_type->kind),
 					type_name(arg.type->kind));
@@ -728,17 +728,17 @@ static Operand resolve_expr_call_default(Operand func, Expr *expr, Sym *sym)
 static Operand resolve_expr_call(Expr *expr)
 {
 	assert(expr->kind == EXPR_CALL);
-	Sym *sym = resolve_name(expr->call.expr->name);
+	Sym *sym = resolve_name(expr->pos, expr->call.expr->name);
 	Operand func = resolve_expr(expr->call.expr);
 	if (func.type->kind != TYPE_FUNC) {
-		fatal_error(expr->pos, "Cannot call non-function value");
+		syntax_error(expr->pos, "Cannot call non-function value");
 	}
 	size_t num_params = func.type->func.num_params;
 	if (expr->call.num_args < num_params) {
-		fatal_error(expr->pos, "Function call with too few arguments");
+		syntax_error(expr->pos, "Function call with too few arguments");
 	}
 	if (expr->call.num_args > num_params && !func.type->func.has_varargs) {
-		fatal_error(expr->pos, "Function call with too many arguments");
+		syntax_error(expr->pos, "Function call with too many arguments");
 	}
 	return resolve_expr_call_default(func, expr, sym);
 }
@@ -752,7 +752,7 @@ static Operand resolve_expr_index(Expr *index, Type *type)
 {
 	const Interpreter *i = interpreter;
 	if (!i->db) {
-		fatal_error(index->pos, "Database not set");
+		syntax_error(index->pos, "Database not set");
 	}
 	const Database *db = i->db;
 	size_t num_record = i->num_record;
@@ -817,7 +817,7 @@ static Operand resolve_expr_int(Expr *expr)
 	Operand operand = operand_const(type_int, (Val){.i = val});
 	unsigned overflow = val > INT_MAX;
 	if (overflow) {
-		fatal_error(expr->pos, "Integer literal overflow");
+		syntax_error(expr->pos, "Integer literal overflow");
 	}
 	return operand;
 }
@@ -880,11 +880,11 @@ static Operand resolve_cond_expr(Expr *expr)
 {
 	Operand cond = resolve_expr(expr);
 	if (!is_cond_operand(cond)) {
-		fatal_error(expr->pos, "Conditional expression must have "
+		syntax_error(expr->pos, "Conditional expression must have "
 				"arithmetic type");
 	}
 	if (!cast_operand(&cond, type_boolean)) {
-		fatal_error(expr->pos, "Invalid type in condition. "
+		syntax_error(expr->pos, "Invalid type in condition. "
 				"Expected '%s', got '%s'",
 				type_name(TYPE_BOOLEAN),
 				type_name(cond.type->kind));
@@ -908,12 +908,12 @@ static void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 	Expr *left_expr = stmt->assign.left;
 	Operand left = resolve_expr(left_expr);
 	if (!left.is_lvalue) {
-		fatal_error(stmt->pos, "Cannot assign to non-lvalue");
+		syntax_error(stmt->pos, "Cannot assign to non-lvalue");
 	}
 	Expr *right_expr = stmt->assign.right;
 	Operand right = resolve_expected_expr(right_expr, left.type);
 	if (!convert_operand(&right, left.type)) {
-		fatal_error(stmt->pos, "Invalid type in assignment. "
+		syntax_error(stmt->pos, "Invalid type in assignment. "
 				"Expected '%s', got '%s'",
 				type_name(left.type->kind),
 				type_name(right.type->kind));
@@ -942,17 +942,17 @@ static void resolve_stmt_dim(Stmt *stmt, unsigned eval_stmt)
 	for (size_t i = 0; i < stmt->dim_stmt.num_dims; i++) {
 		name = stmt->dim_stmt.dims[i].name;
 		typespec = stmt->dim_stmt.dims[i].type;
-		type = resolve_typespec(typespec);
+		type = resolve_typespec(stmt->pos, typespec);
 		assert(type);
 		if (TYPESPEC_NAME == typespec->kind) {
 			if (!sym_push_dim(name, type, eval_stmt)) {
-				fatal_error(stmt->pos, "variable '%s' declared"
+				syntax_error(stmt->pos, "variable '%s' declared"
 						" multiple times", name);
 			}
 		} else if (TYPESPEC_PROJECT == typespec->kind) {
 			if (!sym_push_project(name, type, eval_stmt, typespec))
 			{
-				fatal_error(stmt->pos, "variable '%s' declared"
+				syntax_error(stmt->pos, "variable '%s' declared"
 						" multiple times", name);
 			}
 
@@ -973,7 +973,7 @@ static void resolve_stmt_for(Stmt *stmt, unsigned eval_stmt)
 	resolve_stmt(stmt->for_stmt.next, false);
 	step = resolve_expr(stmt->for_stmt.step);
 	if (!convert_operand(&step, type_double)) {
-		fatal_error(stmt->pos, "Step value in for loop not a scalar "
+		syntax_error(stmt->pos, "Step value in for loop not a scalar "
 				"type");
 	}
 	if (step.val.d < 0.0) {

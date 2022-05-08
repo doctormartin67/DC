@@ -443,6 +443,21 @@ void test_builtin_funcs(void)
 	assert(10 == result_double);
 }
 
+void test_error(void)
+{
+	const char *code = 
+		"dim str as string\n"
+		"select case str\n"
+		"case is =5\n"
+		"result = str\n"
+		"end select";
+	const char *result_str = 0;
+	result_str = interpret(code, 0, 0, 0, TYPE_STRING).s;
+	if (error.is_error) {
+		die("error in interpreter unresolved");
+	}
+}
+
 int main(void)
 {
 	test_lex();
@@ -455,6 +470,7 @@ int main(void)
 	test_code();
 	test_builtin_funcs();
 	test_select_case();
+	test_error();
 	intern_free();
 	return 0;
 }

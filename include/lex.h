@@ -2,6 +2,7 @@
 #define LEX_H_
 
 #include <stdlib.h>
+#include <setjmp.h>
 
 const char *dim_keyword;
 const char *as_keyword;
@@ -103,11 +104,15 @@ typedef struct Token {
 	};
 } Token;
 
+struct error {
+	jmp_buf buf;
+	char *str;
+	unsigned is_error;
+} error;
+
 void init_keywords(void);
 unsigned is_keyword_name(const char *name);
 const char *token_kind_name(TokenKind kind);
-void warning(SrcPos pos, const char *fmt, ...);
-void error(SrcPos pos, const char *fmt, ...);
 void next_token(void);
 void init_stream(const char *name, const char *buf);
 void clear_stream(void);
@@ -129,10 +134,8 @@ const char *token_end(void);
 const char *token_info(void);
 
 void warning(SrcPos pos, const char *fmt, ...);
-void error(SrcPos pos, const char *fmt, ...);
-#define fatal_error(...) (error(__VA_ARGS__), exit(1))
-#define error_here(...) (error(token_pos(), __VA_ARGS__))
-#define warning_here(...) (error(token_pos(), __VA_ARGS__))
-#define fatal_error_here(...) (error_here(__VA_ARGS__), exit(1))
+void syntax_error(SrcPos pos, const char *fmt, ...);
+#define error_here(...) (syntax_error(token_pos(), __VA_ARGS__))
+#define warning_here(...) (syntax_error(token_pos(), __VA_ARGS__))
 
 #endif

@@ -18,7 +18,7 @@ static Typespec *parse_type_base(void)
 		expect_token(TOKEN_RPAREN);
 		return type;
 	} else {
-		fatal_error_here("Unexpected token %s in type", token_info());
+		error_here("Unexpected token %s in type", token_info());
 		return 0;
 	}
 }
@@ -68,7 +68,7 @@ static Expr *parse_expr_operand(void)
 		expect_token(TOKEN_RPAREN);
 		return new_expr_paren(pos, expr);
 	} else {
-		fatal_error_here("Unexpected token %s in expression", token_info());
+		error_here("Unexpected token %s in expression", token_info());
 		return 0;
 	}
 }
@@ -272,7 +272,7 @@ static Stmt *parse_stmt_do_while_loop(SrcPos pos)
 	Expr *cond = parse_expr();
 	StmtBlock block = parse_stmt_block();
 	if (!match_keyword(loop_keyword)) {
-		fatal_error_here("Expected 'loop' after 'do while' block");
+		error_here("Expected 'loop' after 'do while' block");
 		return 0;
 	}
 	Stmt *stmt = new_stmt_do_while_loop(pos, cond, block);
@@ -285,7 +285,7 @@ static Stmt *parse_stmt_do_until_loop(SrcPos pos)
 	Expr *cond = parse_expr();
 	StmtBlock block = parse_stmt_block();
 	if (!match_keyword(loop_keyword)) {
-		fatal_error_here("Expected 'loop' after 'do until' block");
+		error_here("Expected 'loop' after 'do until' block");
 		return 0;
 	}
 	Stmt *stmt = new_stmt_do_until_loop(pos, cond, block);
@@ -313,7 +313,7 @@ static Stmt *parse_stmt_do(SrcPos pos)
 			stmt = new_stmt_do_until(pos, parse_expr(), block);
 			assert(STMT_DO_UNTIL == stmt->kind);
 		} else {
-			fatal_error_here("Expected 'loop' then 'while'"
+			error_here("Expected 'loop' then 'while'"
 					"or 'until after 'do' block");
 			return 0;
 		}
@@ -365,7 +365,7 @@ static Stmt *parse_simple_stmt(void)
 	} else {
 		stmt = new_stmt_expr(pos, expr);
 		if (EXPR_NAME == expr->kind) {
-			fatal_error_here("Unknown name '%s'", expr->name);
+			error_here("Unknown name '%s'", expr->name);
 		}
 		assert(EXPR_CALL == expr->kind);
 	}
@@ -417,7 +417,10 @@ static SelectCasePattern parse_select_case_pattern(void) {
 	Expr *start = 0;
 	Expr *end = 0;
 	if (match_keyword(is_keyword)) {
-		assert(is_cmp_op());	
+		if (!is_cmp_op()) {
+			error_here("expected comparison operator "
+					"after 'case is'");
+		}
 		scp.kind = PATTERN_IS;
 		scp.is_pattern.op = token_kind();
 		next_token();

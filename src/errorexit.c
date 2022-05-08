@@ -7,11 +7,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-static void outputError(int useErr, int err, int flushStdout,
-		const char * restrict format, va_list ap);
-void die(const char *restrict format, ...);
-void errExitEN(int errnum, const char *restrict format, ...);
-
 static void outputError(int useErr, int err, int flushStdout, 
 		const char *restrict format, va_list ap)
 {
@@ -38,18 +33,6 @@ _Noreturn void die(const char *restrict format, ...)
 
 	va_start(arglist, format);
 	outputError(1, errno, 1, format, arglist);
-	va_end(arglist);
-
-	exit(EXIT_FAILURE);
-}
-
-/* same as errExit but used when diagnosing Pthreads */
-_Noreturn void errExitEN(int errnum, const char *restrict format, ...)
-{
-	va_list arglist;
-
-	va_start(arglist, format);
-	outputError(1, errnum, 1, format, arglist);
 	va_end(arglist);
 
 	exit(EXIT_FAILURE);

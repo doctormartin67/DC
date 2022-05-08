@@ -16,7 +16,7 @@ extern Arena sym_arena;
 /*
  * every interpreter will have a 'result' variable to be returned
  */
-static const char *result = "result";
+static const char *result; 
 
 static Interpreter *new_interpreter(const char *code, const Database *db,
 		int project_years, size_t num_record, TypeKind return_type)
@@ -88,6 +88,11 @@ void add_builtin_string(const char *name, const char *s)
 
 static void add_builtin_result(void)
 {
+	static unsigned interned;
+	if (!interned) {
+		result = str_intern("result");
+		interned = 1;
+	}
 	switch (interpreter->return_type) {
 		case TYPE_INT:
 			add_builtin_int(result, 0);
@@ -121,10 +126,24 @@ static void parse_interpreter(void)
 	add_builtin_result();
 	Stmt **stmts = interpreter->stmts;
 	if (!stmts) {
-		stmts = parse_stmts();
-		interpreter->stmts = stmts;
+		if (setjmp(error.buf)) {
+			printf("error in parser found:\n");
+			printf("%s\n", error.str);
+			stmts = 0;
+			interpreter->stmts = stmts;
+			return;
+		} else {
+			stmts = parse_stmts();
+			interpreter->stmts = stmts;
+		}
 	}
-	resolve_stmts(stmts);
+	if (setjmp(error.buf)) {
+		printf("error in resolver found:\n");
+		printf("%s\n", error.str);
+		return;
+	} else {
+		resolve_stmts(stmts);
+	}
 	for (size_t i = 0; i < buf_len(stmts); i++) {
 		assert(stmts[i]);
 	}
@@ -157,7 +176,6 @@ Val interpret(const char *code, const Database *db, int project_years,
 {
 	Interpreter *i = map_get(&interpreters, code);
 	if (!i) {
-		result = str_intern(result);
 		initial_parse(code, db, project_years, num_record,
 				return_type);
 	} else {

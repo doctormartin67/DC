@@ -28,7 +28,7 @@ CP = cp
 # ---targets---
 all: $(EXE)
 
-fast: CFLAGS = -Wextra -Werror -pedantic -Ofast
+fast: CFLAGS = -g -Wextra -Werror -pedantic -Ofast
 fast: all
 
 $(EXE): $(EXE).o libvba.a

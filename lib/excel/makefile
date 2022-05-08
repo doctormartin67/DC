@@ -29,7 +29,7 @@ CP = cp
 # ---targets---
 all: $(PACKAGE) $(EXE)
 
-fast: CFLAGS = -Wextra -Werror -pedantic -Ofast
+fast: CFLAGS = -g -Wextra -Werror -pedantic -Ofast
 fast: all
 
 $(PACKAGE):
