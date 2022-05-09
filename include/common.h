@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#define TODO(x)
-//#define TODO(x) printf("TODO\n")
+#include <stdlib.h>
 
 /*
  * one of the most useful tricks in C ever invented.

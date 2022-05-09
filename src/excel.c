@@ -594,6 +594,9 @@ static void free_sheets(Sheet **sheets)
 
 void close_excel(Excel *excel)
 {
+	if (!excel) {
+		return;
+	}
 	free_sheets(excel->sheets);
 	arena_free(&content_arena);
 	free(excel);

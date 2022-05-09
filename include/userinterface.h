@@ -92,8 +92,7 @@ extern GtkWidget **widgets;
 UserInput **get_user_input(void);
 void set_user_inputs(void);
 void update_user_interface(void);
-void validateUI(Validator *); 
-void validateData(Validator *);
+void validate_UI(void); 
 /* signal functions */
 void on_startstopbutton_clicked(GtkButton *, GtkWidget *);
 gboolean on_interpreterwindow_delete_event(GtkWidget *, GdkEvent *, gpointer);

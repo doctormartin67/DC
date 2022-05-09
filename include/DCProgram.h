@@ -278,8 +278,8 @@ Tariff tff; // Tariff structure
 
 //---Data Functions---
 CurrentMember *create_members(const Database *db);
-void validateColumns(void);
-void validateInput(DataColumn dc, const CurrentMember *cm, const char *key,
+void validate_columns(void);
+void validate_input(DataColumn dc, const CurrentMember *cm, const char *key,
 		const char *input);
 
 #endif

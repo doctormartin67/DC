@@ -3,12 +3,7 @@
 #include "helperfunctions.h"
 #include "errorexit.h"
 
-const char *const validMsg[ERR_AMOUNT] = {
-	[DATEERR] = "[dd/mm/yyyy]", 
-	[FLOATERR] = "^[+-]?[0-9]+\\.?[0-9]*$", 
-	[AGECORRERR] = "^[+-]?[0-9][0-9]?$", 
-	[CELLERR] = "^[A-Z][A-Z]?[A-Z]?[1-9][0-9]*$"
-};
+const Database *get_database(void);
 
 const char *const widget_names[] = {
 	[ID_SHEETNAME] = "sheetname",
@@ -235,14 +230,18 @@ void update_user_interface(void)
 	}
 }
 
-void validateUI(Validator val[static 1])
+#define ERROR(s, name) \
+		validate_emit_error("input '%s' invalid for '%s'", s, name);
+
+
+void validate_UI(void)
 {
 	unsigned err = 0;
 	const char *value = 0;
 	for (size_t i = 0; i < buf_len(user_input); i++) {
 		if (!user_input[i]->input) {
-			updateValidation(val, ERROR,
-					"%s undefined", user_input[i]->name);
+			validate_emit_error("%s undefined",
+					user_input[i]->name);
 			err++;
 		}
 	}
@@ -256,18 +255,20 @@ void validateUI(Validator val[static 1])
 	const char *tc = 0;
 	struct date *tempDate = 0;
 
+	/* ----- Check database -----*/
+	if (!get_database()) {
+		validate_emit_error("database has not been imported");
+	}
 	/* ----- Check File -----*/
 	if (!user_input[INPUT_FILENAME]->input) {
-		updateValidation(val, ERROR, "No file selected to run");
+		validate_emit_error("No file selected to run");
 	}
 
 	/* ----- Check keycell -----*/
 	len = strlen(kc);
 
 	if (kc[0] < 'A' || kc[0] > 'Z') {
-		updateValidation(val, ERROR, "KEY cell [%s], "
-				"expected of the form %s", 
-				kc, validMsg[CELLERR]);
+		ERROR(kc, "KEY cell");
 	} else if (len > 1) {
 		pt = kc + 1;
 		colcnt++;
@@ -278,28 +279,21 @@ void validateUI(Validator val[static 1])
 		}
 
 		if (colcnt > 3) {
-			updateValidation(val, ERROR, "KEY cell [%s], "
-					"expected of the form %s", kc,
-					validMsg[CELLERR]);
+			ERROR(kc, "KEY cell");
 		}
 
 		if ('\0' == *pt) {
-			updateValidation(val, ERROR, "KEY cell [%s], "
-					"expected of the form %s", kc,
-					validMsg[CELLERR]);
+			ERROR(kc, "KEY cell");
 		}
 
 		while (isdigit(*pt)) pt++;
 
 		if ('\0' != *pt) {
-			updateValidation(val, ERROR, "KEY cell [%s], "
-					"expected of the form %s", kc,
-					validMsg[CELLERR]);
+			ERROR(kc, "KEY cell");
 		}
-	} else if (1 == len)
-		updateValidation(val, ERROR, "KEY cell [%s], "
-				"expected of the form %s", kc,
-				validMsg[CELLERR]);
+	} else if (1 == len) {
+		ERROR(kc, "KEY cell");
+	}
 
 	/* ----- Check DOC -----*/
 	value = user_input[INPUT_DOC]->input;
@@ -311,80 +305,53 @@ void validateUI(Validator val[static 1])
 	year = strtok(0, "");
 
 	if (0 == day || 0 == month || 0 == year) {
-		updateValidation(val, ERROR, "DOC [%s], "
-				"expected of the form %s",
-				value, validMsg[DATEERR]);
+		ERROR(value, "DOC");
 	} else {
 		if (!isint(day) || !isint(month) || !isint(year)) {
-			updateValidation(val, ERROR, "DOC [%s], expected of "
-					"the form %s", 
-					value, validMsg[DATEERR]);
+			ERROR(value, "DOC");
 		}
 
 		tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
 		if (0 == tempDate) {
-			updateValidation(val, ERROR, "DOC [%s], "
-					"expected of the form %s", 
-					value, validMsg[DATEERR]);
+			ERROR(value, "DOC");
 		}
 	}
 
 	/* ----- Check DR -----*/
 	value = user_input[INPUT_DR]->input;
 	if (!isfloat(value)) {
-		updateValidation(val, ERROR, "DR [%s], "
-				"expected of the form %s",
-				value, validMsg[FLOATERR]);
+		ERROR(value, "DR");
 	}
 
 	/* ----- Check Age Correction -----*/
 	value = user_input[INPUT_AGECORR]->input;
 	if (!isint(value)) {
-		updateValidation(val, ERROR, "Age Correction [%s], "
-				"expected of the form %s", 
-				value, validMsg[AGECORRERR]);
+		ERROR(value, "Age Correction");
 	}
 
 	/* ----- Check Inflation -----*/
 	value = user_input[INPUT_INFL]->input;
 	if (!isfloat(value)) {
-		updateValidation(val, ERROR, "Inflation [%s], "
-				"expected of the form %s", 
-				value, validMsg[FLOATERR]);
+		ERROR(value, "Inflation");
 	}
 
 	/* ----- Check Termination percentage -----*/
 	value = user_input[INPUT_TRM_PERCDEF]->input;
 	if (!isfloat(value)) {
-		updateValidation(val, ERROR, "Termination % [%s] (usually 1), "
-				"expected of the form %s", 
-				value, validMsg[FLOATERR]);
+		ERROR(value, "Termination");
 	}
 
 	/* ----- Check DR 113 -----*/
 	value = user_input[INPUT_DR113]->input;
 	if (!isfloat(value)) {
-		updateValidation(val, WARNING, "DR $113 [%s], "
-				"expected of the form %s", 
-				value, validMsg[FLOATERR]);
+		ERROR(value, "DR $113");
 	}
 
 	/* ----- Check test case -----*/
 	tc = gtk_entry_get_text(GTK_ENTRY(widgets[ID_TESTCASE]));
 	if (!isint(tc) || atoi(tc) < 1) {
-		updateValidation(val, ERROR, "test case [%s] is not valid",
-				tc);
+		ERROR(tc, "test case");
 	}
 }
 
-/*
- * This is a helper function that will create a temporary DataSet to validate
- * the data, at which point it is instantly freed. The Validator val is
- * updated in the process
- */
-void validateData(Validator val[static 1])
-{
-	if (val->status == OK) {
-		//TODO
-	}
-}
+#undef ERROR

@@ -25,8 +25,6 @@ const char *const inscomb[INSCOMB_AMOUNT] = {
 
 static int colmissing[KEYS_AMOUNT];
 
-static Validator *val;
-
 static double get_gen_amount(const Database *db, size_t num_member,
 		DataColumn dc, size_t EREE, size_t gen)
 {
@@ -125,6 +123,7 @@ static void set_projections(const Database *db, size_t num_member,
 
 static CurrentMember create_member(const Database *db, size_t num_member)
 {
+	assert(db);
 	CurrentMember cm = (CurrentMember){0};
 
 	cm.id = num_member;
@@ -318,94 +317,28 @@ double gen_sum_art24(const struct art24 *a24, size_t method)
 	return sum;
 }
 
-/* 
- * All missing columns are set to a WARNING,
- * then the important ones are set to ERROR
- */
-void validateColumns(void)
+#define ERROR(str, col) \
+	if (colmissing[col]) { \
+		validate_emit_error("Column [%s] missing, %s", \
+				colnames[col], str); \
+	}
+
+void validate_columns(void)
 {
-	unsigned cnt = 0;
-
-	for (unsigned i = 0; i < KEYS_AMOUNT; i++)
-		if (colmissing[i])
-			updateValidation(val, WARNING, "Column [%s] missing, "
-					"all values set to 0", colnames[i]);
-
-	if (colmissing[STATUS]) {
-		updateValidation(val, ERROR, "Column [%s] missing, (ACT/DEF)",
-				colnames[STATUS]);
-		cnt++;
+	for (unsigned i = 0; i < KEYS_AMOUNT; i++) {
+		ERROR("", i);
 	}
-
-	if (colmissing[SEX]) {
-		updateValidation(val, ERROR, "Column [%s] missing, (1/2)",
-				colnames[SEX]);
-		cnt++;
-	}
-
-	if (colmissing[DOB]) {
-		updateValidation(val, ERROR, "Column [%s] missing, "
-				"(Date of birth)", colnames[DOB]);
-		cnt++;
-	}
-
-	if (colmissing[DOS]) {
-		updateValidation(val, ERROR, "Column [%s] missing, "
-				"(Date of situation)", colnames[DOS]);
-		cnt++;
-	}
-
-	if (colmissing[DOA]) {
-		updateValidation(val, ERROR, "Column [%s] missing, "
-				"(Date of affiliation)", colnames[DOA]);
-		cnt++;
-	}
-
-	if (colmissing[DOR]) {
-		updateValidation(val, ERROR, "Column [%s] missing, "
-				"(Date of retirement)", colnames[DOR]);
-		cnt++;
-	}
-
-	if (colmissing[SAL]) {
-		updateValidation(val, ERROR, "Column [%s] missing, (salary)",
-				colnames[SAL]);
-		cnt++;
-	}
-
-	if (colmissing[PT]) {
-		updateValidation(val, ERROR, "Column [%s] missing, "
-				"(part time)", colnames[PT]);
-		cnt++;
-	}
-
-	if (colmissing[NORMRA]) {
-		updateValidation(val, ERROR, "Column [%s] missing, "
-				"(normal retirement age)", colnames[NORMRA]);
-		cnt++;
-	}
-
-	if (colmissing[TARIEF]) {
-		updateValidation(val, ERROR, "Column [%s] missing, "
-				"(UKMS/UKZT/MIXED/UKMT)", colnames[TARIEF]);
-		cnt++;
-	}
-
-	if (colmissing[RES]) {
-		updateValidation(val, ERROR, "One or more of the generational "
-				"columns for [%s] are missing", colnames[RES]);
-		cnt++;
-	}
-
-	/* after 10 missing columns an error message in included with a suggestion that the 
-	   wrong cell was chosen */
-	if (cnt > 10)
-		updateValidation(val, ERROR, "\nMany columns missing, "
-				"possible reasons:\n"
-				"- incorrect cell chosen under the "
-				"\"Data\" section\n"
-				"- there is an empty column name in the data, "
-				"the search for columns will end there");
+	ERROR("(ACT/DEF)", STATUS);
+	ERROR("(1/2)", SEX);
+	ERROR("(Date of birth)", DOB);
+	ERROR("(Date of situation)", DOS);
+	ERROR("(Date of affiliation)", DOA);
+	ERROR("(Date of retirement)", DOR);
+	ERROR("(salary)", SAL);
+	ERROR("(part time)", PT);
+	ERROR("(normal retirement age)", NORMRA);
+	ERROR("(UKMS/UKZT/MIXED/UKMT)", TARIEF);
+	ERROR("", RES);
 }
 
 /* 
@@ -413,7 +346,7 @@ void validateColumns(void)
  * because not all of them will be used in the program, I chose the most
  * important ones to check, the others are the responsibility of the user
  */
-void validateInput(DataColumn dc, const CurrentMember cm[static 1],
+void validate_input(DataColumn dc, const CurrentMember cm[static 1],
 		const char key[static 1], const char input[static 1])
 {
 	const DataColumn floats[] = {
@@ -464,26 +397,25 @@ void validateInput(DataColumn dc, const CurrentMember cm[static 1],
 	}
 
 	if (nofloat & update)
-		updateValidation(val, ERROR, "Member [%d][%s] has [%s = %s], "
-				"expected of the form %s", cm->id, cm->key,
-				key, input, validMsg[FLOATERR]);
+		validate_emit_error("Member [%d][%s] has invalid input "
+				"[%s = %s], ", cm->id, cm->key, key, input);
 	if (neg & update)
-		updateValidation(val, WARNING, "Member [%d][%s] has a negative"
+		validate_emit_error("Member [%d][%s] has a negative"
 				" %s [%s]", cm->id, cm->key, key, input);
 	if (invaliddate & update)
-		updateValidation(val, ERROR, "Member [%d][%s] has invalid date"
+		validate_emit_error("Member [%d][%s] has invalid date"
 				" [%s = %s]", cm->id, cm->key, key, input); 
 
 	if (invalidstatus & update)
-		updateValidation(val, ERROR, "Member [%d][%s] has invalid "
+		validate_emit_error("Member [%d][%s] has invalid "
 				"status [%s = %s], expected ACT or DEF", 
 				cm->id, cm->key, key, input); 
 	if (invalidsex & update)
-		updateValidation(val, ERROR, "Member [%d][%s] has invalid "
+		validate_emit_error("Member [%d][%s] has invalid "
 				"gender [%s = %s], expected 1(male) or "
 				"2(female)", cm->id, cm->key, key, input); 
 	if (invalidPT & update)
-		updateValidation(val, WARNING, "Member [%d][%s] has [%s = %s],"
+		validate_emit_error("Member [%d][%s] has [%s = %s],"
 				"expected between 0 and 1", cm->id, cm->key,
 				key, input); 
 }

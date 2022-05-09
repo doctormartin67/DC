@@ -27,9 +27,6 @@ static void free_run_garbage(void)
 
 const Database *get_database(void)
 {
-	if (!db) {
-		die("Database has not been set");
-	}
 	return db;
 }
 
@@ -37,20 +34,30 @@ const Database *get_database(void)
  * TODO: this function needs to make checks before proceeding with the
  * import. currently it just aborts if an error occurs
  */
-static gpointer import_data(gpointer pl)
+static void import_data(gpointer pl)
 {
 	(void)pl;
 	UserInput *const *ui = get_user_input();
+	assert(ui);
 	const char *file_name = ui[INPUT_FILENAME]->input;
 	const char *sheet_name = ui[INPUT_SHEETNAME]->input;
 	const char *cell = ui[INPUT_KEYCELL]->input;
-#if 0
-	struct gui_data gd = {"Importing data...", pl};
-	g_idle_add(update_gui, &gd);
-#endif
-	db = open_database(file_name, sheet_name, cell);
-	gtk_label_set_text(GTK_LABEL(pl), "Import complete.");
-	return 0;
+	if (!file_name) {
+		gtk_label_set_text(GTK_LABEL(pl),
+				"No file selected\n"
+				"Import failed.");
+	} else if (!sheet_name) {
+		gtk_label_set_text(GTK_LABEL(pl),
+				"No sheet selected\n"
+				"Import failed.");
+	} else if (!cell) {
+		gtk_label_set_text(GTK_LABEL(pl),
+				"No cell selected\n"
+				"Import failed.");
+	} else {
+		db = open_database(file_name, sheet_name, cell);
+		gtk_label_set_text(GTK_LABEL(pl), "Import complete.");
+	}
 }
 
 void reset_database(void)
@@ -65,15 +72,14 @@ void on_import_data_clicked(GtkButton *b, GtkWidget *label)
 {
 	assert(label);
 	printf("[%s] pressed\n", gtk_button_get_label(b));
+	set_user_inputs();
 	reset_database();
-	g_thread_new("import_data", import_data, label);
+	import_data(label);
 }
 
 void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 {
 	printf("[%s] pressed\n", gtk_button_get_label(b));
-	Validator validatorLY = (Validator) {0};
-	char *MsgErr = 0;
 	gchar *choice = 0;
 	GtkDialog *dialog = 0;
 
@@ -83,11 +89,10 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 		gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 				"media-playback-stop", GTK_ICON_SIZE_BUTTON);
 		set_user_inputs();
-		validatorLY.status = OK;
-		validateUI(&validatorLY); 
-		//validateData(&validatorLY, ht);
 
-		if (validatorLY.status != ERROR) {
+		validate_UI();
+
+		if (validate_passed()) {
 			choice = gtk_combo_box_text_get_active_text(
 					GTK_COMBO_BOX_TEXT(
 						widgets[ID_RUNCHOICE]));
@@ -100,12 +105,11 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 
 			g_free(choice);
 		} else {
-			MsgErr = setMsgbuf(&validatorLY);
 			dialog = GTK_DIALOG(widgets[ID_MSGERR]);
 
 			gtk_message_dialog_format_secondary_text(
 					GTK_MESSAGE_DIALOG(dialog), 
-					"%s", MsgErr);
+					"%s", validate_error());
 
 			gtk_widget_show(GTK_WIDGET(dialog));
 			gtk_dialog_run(dialog); 
@@ -115,6 +119,7 @@ void on_startstopbutton_clicked(GtkButton *b, GtkWidget *pl)
 					GTK_IMAGE(widgets[ID_STARTSTOP]),
 					"media-playback-start",
 					GTK_ICON_SIZE_BUTTON);
+			validate_reset();
 		}
 	} else {
 		run_state = INTERRUPTED;

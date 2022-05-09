@@ -296,7 +296,6 @@ repeat:
 			if (isdigit(stream[1])) {
 				scan_float();
 			} else {
-				TODO(token.kind = TOKEN_DOT);
 				stream++;
 			}
 			break;
