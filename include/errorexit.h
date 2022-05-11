@@ -24,8 +24,8 @@
 void die(const char *restrict format, ...)
 	__attribute__ ((format (printf, 1, 2)));
 
-#define ERREXIT(F, ...) die("%s:" STRGY(__LINE__) ": " F, \
-		__func__, __VA_ARGS__);
+#define ERREXIT(F, ...) die("%s:%s:" STRGY(__LINE__) ": " F, \
+		__FILE__, __func__, __VA_ARGS__);
 #define die(...) ERREXIT(SING_ARGS(__VA_ARGS__) "%.0d", \
 		PLURAL_ARGS(__VA_ARGS__))
 

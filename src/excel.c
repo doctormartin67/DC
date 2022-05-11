@@ -576,7 +576,7 @@ Excel *open_excel(const char *file_name, const char *sheet_name)
 	file->sheets = parse_sheets(file->name, sheet_name);
 	if (!file->sheets) {
 		assert(sheet_name);
-		die("No sheet '%s' found in file '%s'", sheet_name, file_name);
+		return 0;
 	}
 	return file;
 }
@@ -736,71 +736,39 @@ static Content *record_content(const Database *db, size_t num_record,
 	return map_get_str(db->records[num_record]->data, title);
 }
 
-static unsigned is_title(const Database *db, const char *title)
+static Val record(ContentKind kind, const Database *db, size_t num_record,
+		const char *title)
 {
-	for (size_t i = 0; i < buf_len(db->titles); i++) {
-		if (!strcmp(title, db->titles[i])) {
-			return 1;	
-		}
+	assert(db);
+	assert(title);
+	Content *content = record_content(db, num_record, title);
+	if (!content) {
+		content = default_content(kind);
 	}
-	return 0;
+	cast_content(content, kind);
+	assert(kind == content->kind);
+	return content->val;
 }
 
 bool record_boolean(const Database *db, size_t num_record, const char *title)
 {
-	if (!is_title(db, title)) {
-		die("Could not find title '%s' in the database", title);
-	}
-	Content *content = record_content(db, num_record, title);
-	if (!content) {
-		content = default_content(CONTENT_BOOLEAN);
-	}
-	cast_content(content, CONTENT_BOOLEAN);
-	assert(CONTENT_BOOLEAN == content->kind);
-	return content->val.b;
+	return record(CONTENT_BOOLEAN, db, num_record, title).b;
 }
 
 int record_int(const Database *db, size_t num_record, const char *title)
 {
-	if (!is_title(db, title)) {
-		die("Could not find title '%s' in the database", title);
-	}
-	Content *content = record_content(db, num_record, title);
-	if (!content) {
-		content = default_content(CONTENT_BOOLEAN);
-	}
-	cast_content(content, CONTENT_INT);
-	assert(CONTENT_INT == content->kind);
-	return content->val.i;
+	return record(CONTENT_INT, db, num_record, title).i;
 }
 
 double record_double(const Database *db, size_t num_record, const char *title)
 {
-	if (!is_title(db, title)) {
-		die("Could not find title '%s' in the database", title);
-	}
-	Content *content = record_content(db, num_record, title);
-	if (!content) {
-		content = default_content(CONTENT_BOOLEAN);
-	}
-	cast_content(content, CONTENT_DOUBLE);
-	assert(CONTENT_DOUBLE == content->kind);
-	return content->val.d;
+	return record(CONTENT_DOUBLE, db, num_record, title).d;
 }
 
 const char *record_string(const Database *db, size_t num_record,
 		const char *title)
 {
-	if (!is_title(db, title)) {
-		die("Could not find title '%s' in the database", title);
-	}
-	Content *content = record_content(db, num_record, title);
-	if (!content) {
-		content = default_content(CONTENT_BOOLEAN);
-	}
-	cast_content(content, CONTENT_STRING);
-	assert(CONTENT_STRING == content->kind);
-	return content->val.s;
+	return record(CONTENT_STRING, db, num_record, title).s;
 }
 
 Content *cell_content(Excel *excel, const char *sheet_name, const char *cell)
@@ -1010,13 +978,16 @@ static Database *parse_database(Excel *excel, const char *sheet_name,
 /*
  * a Database will start at the upper left and the titles of the Database
  * will be to the right of this cell (cell included) and the records of the
- * Database will be downwards
+ * Database will be downwards. 
+ * return 0 if error occurred opening excel
  */
 Database *open_database(const char *file_name, const char *sheet_name,
 		const char *cell)
 {
 	Excel *excel = open_excel(file_name, sheet_name);
-	assert(excel);
+	if (!excel) {
+		return 0;
+	}
 	Database *db = parse_database(excel, sheet_name, cell);
 	assert(db);
 	return db;
@@ -1033,6 +1004,9 @@ static void close_records(Record **records)
 
 void close_database(Database *db)
 {
+	if (!db) {
+		return;		
+	}
 	buf_free(db->titles);
 	close_records(db->records);
 	close_excel(db->excel);

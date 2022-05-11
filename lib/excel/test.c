@@ -43,6 +43,7 @@ void test_excel(const char *file_name)
 	if (!file_name) {
 		file_name = "example.xlsx";
 		Excel *file = open_excel(file_name, 0);
+		assert(file);
 		Content *content = 0;
 		assert_int("Sheet1", "E5", 2);
 		assert_null("Sheet1", "J10");
@@ -122,6 +123,7 @@ void test_database(const char *file_name)
 
 		sheet_name = "Sheet2";
 		db = open_database(file_name, sheet_name, "D12");
+		assert(db);
 		close_database(db);
 	} else {
 		const char *sheet_name = "Data";

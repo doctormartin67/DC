@@ -56,7 +56,17 @@ static void import_data(gpointer pl)
 				"Import failed.");
 	} else {
 		db = open_database(file_name, sheet_name, cell);
-		gtk_label_set_text(GTK_LABEL(pl), "Import complete.");
+		if (!db) {
+			char *buf = 0;
+			buf_printf(buf, "Import failed. Check if sheet '%s'"
+					" exists.\n" "If it does, it may also "
+					"be due to no database in cell %s.",
+					sheet_name, cell);
+			gtk_label_set_text(GTK_LABEL(pl), buf);
+			buf_free(buf);
+		} else {
+			gtk_label_set_text(GTK_LABEL(pl), "Import complete.");
+		}
 	}
 }
 
