@@ -18,10 +18,12 @@ extern Arena sym_arena;
  */
 static const char *result; 
 
-static Interpreter *new_interpreter(const char *code, const Database *db,
-		int project_years, size_t num_record, TypeKind return_type)
+static Interpreter *new_interpreter(const char *name, const char *code,
+		const Database *db, int project_years, size_t num_record,
+		TypeKind return_type)
 {
 	Interpreter *i = jalloc(1, sizeof(*i));
+	i->name = name;
 	i->code = code;
 	i->db = db;
 	i->project_years = project_years;
@@ -122,7 +124,7 @@ static void parse_interpreter(void)
 {
 	assert(interpreter);
 	init_keywords();
-	init_stream(0, interpreter->code);
+	init_stream(interpreter->name, interpreter->code);
 	add_builtin_result();
 	Stmt **stmts = interpreter->stmts;
 	if (!stmts) {
@@ -149,10 +151,11 @@ static void parse_interpreter(void)
 	}
 }
 
-static void initial_parse(const char *code, const Database *db,
-		int project_years, size_t num_record, TypeKind return_type)
+static void initial_parse(const char *name, const char *code,
+		const Database *db, int project_years, size_t num_record,
+		TypeKind return_type)
 {
-	Interpreter *i = new_interpreter(code, db, project_years,
+	Interpreter *i = new_interpreter(name, code, db, project_years,
 			num_record, return_type);
 	map_put(&interpreters, code, i);
 	assert(i);
@@ -171,12 +174,12 @@ static void update_interpreter(const Database *db, int project_years,
 	interpreter->return_type = return_type;
 }
 
-Val interpret(const char *code, const Database *db, int project_years,
-		size_t num_record, TypeKind return_type)
+Val interpret(const char *name, const char *code, const Database *db,
+		int project_years, size_t num_record, TypeKind return_type)
 {
 	Interpreter *i = map_get(&interpreters, code);
 	if (!i) {
-		initial_parse(code, db, project_years, num_record,
+		initial_parse(name, code, db, project_years, num_record,
 				return_type);
 	} else {
 		interpreter = i;

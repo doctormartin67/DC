@@ -147,8 +147,8 @@ static gpointer run(gpointer pl)
 #endif
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[ID_TESTCASE])));
-	assert(tc < db->num_records);
 	tc -= 1; // Index is one less than given test case
+	assert(tc < db->num_records);
 
 	setassumptions();
 	for (size_t i = 0; i < db->num_records; i++) {
@@ -180,7 +180,8 @@ static gpointer runtc(gpointer pl)
 {
 	(void)pl;
 	unsigned tc = 0;
-	CurrentMember *cm = create_members(db);
+	CurrentMember *members = create_members(db);
+	CurrentMember *cm = 0;
 	char text[BUFSIZ];
 	struct gui_data gd = {"Preparing data...", pl};
 #if 0
@@ -188,15 +189,16 @@ static gpointer runtc(gpointer pl)
 #endif
 
 	tc = atoi(gtk_entry_get_text(GTK_ENTRY(widgets[ID_TESTCASE])));
-	assert(tc < db->num_records);
 	tc -= 1; // Index is one less than given test case
-	cm = cm + tc;
+	assert(tc < db->num_records);
+	cm = members + tc;
 
 	printf("testcase: %s chosen\n", cm->key);
 	if (run_state & INTERRUPTED) {
 		return stoprun(&gd);
 	}
 	setassumptions();
+	assert(cm);
 	runmember(cm);
 	snprintf(text, sizeof(text), "%s [%u] has been run", cm->key, tc + 1);
 #if 0
@@ -209,7 +211,7 @@ static gpointer runtc(gpointer pl)
 	run_state = NOT_RUNNING;
 	gtk_image_set_from_icon_name(GTK_IMAGE(widgets[ID_STARTSTOP]),
 			"media-playback-start", GTK_ICON_SIZE_BUTTON);
-	buf_free(cm);
+	buf_free(members);
 	free_run_garbage();
 	return 0;
 }

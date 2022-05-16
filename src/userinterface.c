@@ -233,125 +233,142 @@ void update_user_interface(void)
 #define ERROR(s, name) \
 		validate_emit_error("input '%s' invalid for '%s'", s, name);
 
-
-void validate_UI(void)
+static void validate_keycell(void)
 {
-	unsigned err = 0;
-	const char *value = 0;
-	for (size_t i = 0; i < buf_len(user_input); i++) {
-		if (!user_input[i]->input) {
-			validate_emit_error("%s undefined",
-					user_input[i]->name);
-			err++;
-		}
-	}
-	if (err) return;
 
+	unsigned num_cols = 0;
 	size_t len = 0;
-	register unsigned colcnt = 0;
 	const char *kc = user_input[INPUT_KEYCELL]->input;
 	const char *pt = 0;
-	char *day = 0, *month = 0, *year = 0;
-	const char *tc = 0;
-	struct date *tempDate = 0;
-
-	/* ----- Check database -----*/
-	if (!get_database()) {
-		validate_emit_error("database has not been imported");
-	}
-	/* ----- Check File -----*/
-	if (!user_input[INPUT_FILENAME]->input) {
-		validate_emit_error("No file selected to run");
-	}
-
-	/* ----- Check keycell -----*/
+	assert(kc);
 	len = strlen(kc);
 
 	if (kc[0] < 'A' || kc[0] > 'Z') {
-		ERROR(kc, "KEY cell");
+		ERROR(kc, "Data cell");
 	} else if (len > 1) {
 		pt = kc + 1;
-		colcnt++;
+		num_cols++;
 
 		while (!isdigit(*pt)) {
 			pt++;
-			colcnt++;
+			num_cols++;
 		}
 
-		if (colcnt > 3) {
-			ERROR(kc, "KEY cell");
+		if (num_cols > 3) {
+			ERROR(kc, "Data cell");
 		}
 
 		if ('\0' == *pt) {
-			ERROR(kc, "KEY cell");
+			ERROR(kc, "Data cell");
 		}
 
 		while (isdigit(*pt)) pt++;
 
 		if ('\0' != *pt) {
-			ERROR(kc, "KEY cell");
+			ERROR(kc, "Data cell");
 		}
 	} else if (1 == len) {
-		ERROR(kc, "KEY cell");
+		ERROR(kc, "Data cell");
 	}
+}
 
-	/* ----- Check DOC -----*/
-	value = user_input[INPUT_DOC]->input;
-	char temp[strlen(value) + 1];
-	snprintf(temp, sizeof(temp), "%s", value);
+static void validate_date(const char *name, InputKind kind)
+{
+	const char *value = 0;
+	char *day = 0, *month = 0, *year = 0;
+	char *buf = 0;
+	struct date *tmp_date = 0;
 
-	day = strtok(temp, "/");
+	value = user_input[kind]->input;
+	assert(value);
+	buf_printf(buf, "%s", value);
+
+	day = strtok(buf, "/");
 	month = strtok(0, "/");
 	year = strtok(0, "");
 
 	if (0 == day || 0 == month || 0 == year) {
-		ERROR(value, "DOC");
+		ERROR(value, name);
 	} else {
 		if (!isint(day) || !isint(month) || !isint(year)) {
-			ERROR(value, "DOC");
+			ERROR(value, name);
 		}
 
-		tempDate = newDate(0, atoi(year), atoi(month), atoi(day));
-		if (0 == tempDate) {
-			ERROR(value, "DOC");
+		tmp_date = newDate(0, atoi(year), atoi(month), atoi(day));
+		if (0 == tmp_date) {
+			ERROR(value, name);
 		}
 	}
+	buf_free(buf);
+}
 
-	/* ----- Check DR -----*/
-	value = user_input[INPUT_DR]->input;
-	if (!isfloat(value)) {
-		ERROR(value, "DR");
+#define VALIDATE(kind, type, name) \
+	value = user_input[kind]->input; \
+	if (!is##type(value)) { \
+		ERROR(value, name); \
 	}
 
-	/* ----- Check Age Correction -----*/
-	value = user_input[INPUT_AGECORR]->input;
-	if (!isint(value)) {
-		ERROR(value, "Age Correction");
+static unsigned validate_input_set(void)
+{
+	for (size_t i = 0; i < buf_len(user_input); i++) {
+		if (!user_input[i]->input) {
+			validate_emit_error("%s undefined",
+					user_input[i]->name);
+		}
 	}
-
-	/* ----- Check Inflation -----*/
-	value = user_input[INPUT_INFL]->input;
-	if (!isfloat(value)) {
-		ERROR(value, "Inflation");
-	}
-
-	/* ----- Check Termination percentage -----*/
-	value = user_input[INPUT_TRM_PERCDEF]->input;
-	if (!isfloat(value)) {
-		ERROR(value, "Termination");
-	}
-
-	/* ----- Check DR 113 -----*/
-	value = user_input[INPUT_DR113]->input;
-	if (!isfloat(value)) {
-		ERROR(value, "DR $113");
-	}
-
-	/* ----- Check test case -----*/
-	tc = gtk_entry_get_text(GTK_ENTRY(widgets[ID_TESTCASE]));
-	if (!isint(tc) || atoi(tc) < 1) {
-		ERROR(tc, "test case");
+	if (validate_passed()) {
+		return 1;
+	} else {
+		return 0;
 	}
 }
 
+static void validate_test_case(void)
+{
+	const char *test_case = 0;
+	int tc = 0;
+	test_case = gtk_entry_get_text(GTK_ENTRY(widgets[ID_TESTCASE]));
+
+	tc = atoi(test_case);
+	if (!isint(test_case) || tc < 1) {
+		ERROR(test_case, "test case");
+	}
+
+	const Database *db = get_database();
+	if (db && isint(test_case) && !(tc < 1)) {
+		if ((size_t)tc > db->num_records) {
+			validate_emit_error("test case '%d' is larger than the "
+					"amount of records '%d' found in the "
+					"database.", tc, db->num_records);
+		}
+	}
+}
+
+void validate_UI(void)
+{
+	if (!validate_input_set()) {
+		return;
+	}
+
+	if (!get_database()) {
+		validate_emit_error("database has not been imported");
+	}
+
+	if (!user_input[INPUT_FILENAME]->input) {
+		validate_emit_error("No file selected to run");
+	}
+
+	validate_keycell();
+	validate_date("DOC", INPUT_DOC);
+	validate_test_case();
+
+	const char *value = 0;
+	VALIDATE(INPUT_DR, float, "DR");
+	VALIDATE(INPUT_INFL, float, "Inflation");
+	VALIDATE(INPUT_AGECORR, int, "Age Correction");
+	VALIDATE(INPUT_TRM_PERCDEF, float, "Termination");
+	VALIDATE(INPUT_DR113, float, "DR $113");
+}
+
 #undef ERROR
+#undef VALIDATE

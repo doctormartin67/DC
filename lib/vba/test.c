@@ -296,7 +296,7 @@ void test_code(void)
 		"result = 444 * pt\n"
 		"end select\n"
 		"sal = 2000\n";
-	result_double = interpret(code, 0, 0, 0, TYPE_DOUBLE).d;
+	result_double = interpret(0, code, 0, 0, 0, TYPE_DOUBLE).d;
 	assert(1027.56 < result_double && 1027.57 > result_double);
 }
 
@@ -330,7 +330,7 @@ void test_select_case(void)
 		;
 	init_stream(0, code);
 	clear_stream();
-	result_double = interpret(code, 0, 0, 0, TYPE_DOUBLE).d;
+	result_double = interpret(0, code, 0, 0, 0, TYPE_DOUBLE).d;
 	assert(2 == result_double);
 }
 
@@ -419,27 +419,27 @@ void test_resolve(void)
 	enum {N = 1024};
 	for (int i = 0; i < N; i++) {
 		add_builtin_int(str_intern("children"), 3);
-		result_str = interpret(code[0], 0, 0, 0, TYPE_STRING).s;
+		result_str = interpret(0, code[0], 0, 0, 0, TYPE_STRING).s;
 		assert(!strcmp(result_str, "hello3"));
 		add_builtin_double(str_intern("age"), 40);
-		result_int = interpret(code[1], 0, 0, 0, TYPE_INT).i;
+		result_int = interpret(0, code[1], 0, 0, 0, TYPE_INT).i;
 		assert(47 == result_int);
-		result_double = interpret(code[2], 0, 0, 0, TYPE_DOUBLE).d;
+		result_double = interpret(0, code[2], 0, 0, 0, TYPE_DOUBLE).d;
 		assert(-2.600001 < result_double && -2.599999 > result_double);
 		add_builtin_boolean(str_intern("actcon"), false);
-		result_bool = interpret(code[3], 0, 0, 0, TYPE_BOOLEAN).b;
+		result_bool = interpret(0, code[3], 0, 0, 0, TYPE_BOOLEAN).b;
 		assert(true == result_bool);
-		result_double = interpret(code[4], 0, i, 0, TYPE_DOUBLE).d;
+		result_double = interpret(0, code[4], 0, i, 0, TYPE_DOUBLE).d;
 		assert(fabs(result_double - 100 * pow(1.02, i)) < EPS);
 	}
-	assert(1 == interpret("result = 1\n", 0, 0, 0, TYPE_INT).i);
+	assert(1 == interpret(0, "result = 1\n", 0, 0, 0, TYPE_INT).i);
 }
 
 void test_builtin_funcs(void)
 {
 	double result_double = 0.0;
 	const char *code = "result = min(4, 3, 6, 10) + min(6,7) + max(0.5, 1)";
-	result_double = interpret(code, 0, 0, 0, TYPE_DOUBLE).d;
+	result_double = interpret(0, code, 0, 0, 0, TYPE_DOUBLE).d;
 	assert(10 == result_double);
 }
 
@@ -452,7 +452,7 @@ void test_error(void)
 		"result = str\n"
 		"end select";
 	const char *result_str = 0;
-	result_str = interpret(code, 0, 0, 0, TYPE_STRING).s;
+	result_str = interpret(0, code, 0, 0, 0, TYPE_STRING).s;
 	if (error.is_error) {
 		die("error in interpreter unresolved");
 	}

@@ -136,8 +136,9 @@ void syntax_error(SrcPos pos, const char *fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, args);
-	buf_printf(error.str, "syntax error at: %s(%d)\n", pos.name, pos.line);
-	buf_printf(error.str, "%s", buf);
+	buf_printf(error.str, "SYNTAX ERROR:\n");
+	buf_printf(error.str, "%s, line %d\n", pos.name, pos.line);
+	buf_printf(error.str, "Error message: %s", buf);
 	va_end(args);
 	error.is_error = 1;
 	longjmp(error.buf, 1);

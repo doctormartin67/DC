@@ -7,6 +7,7 @@
 #include "excel.h"
 
 typedef struct Interpreter {
+	const char *name;
 	const char *code;
 	const Database *db;
 	int project_years;
@@ -25,7 +26,7 @@ typedef struct Interpreter {
 	} properties;
 } Interpreter;
 
-Val interpret(const char *code, const Database *db,
+Val interpret(const char *name, const char *code, const Database *db,
 		int project_years, size_t num_record, TypeKind return_type);
 const Interpreter *get_interpreter(void);
 void interpreter_free(Interpreter *i);
