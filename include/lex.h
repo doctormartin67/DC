@@ -2,7 +2,6 @@
 #define LEX_H_
 
 #include <stdlib.h>
-#include <setjmp.h>
 
 const char *dim_keyword;
 const char *as_keyword;
@@ -103,12 +102,6 @@ typedef struct Token {
 		const char *name;
 	};
 } Token;
-
-struct error {
-	jmp_buf buf;
-	char *str;
-	unsigned is_error;
-} error;
 
 void init_keywords(void);
 unsigned is_keyword_name(const char *name);

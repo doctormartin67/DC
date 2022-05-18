@@ -17,6 +17,7 @@
 #include "parse.h"
 #include "resolve.h"
 #include "interpret.h"
+#include "errorjump.h"
 
 #define PRINT_TEST_PARSE 0
 #define PRINT_TEST_RESOLVE 0

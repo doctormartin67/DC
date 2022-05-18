@@ -2,6 +2,9 @@
 #include "userinterface.h"
 #include "helperfunctions.h"
 #include "errorexit.h"
+#include "errorjump.h"
+#include "type.h"
+#include "interpret.h"
 
 const Database *get_database(void);
 
@@ -220,7 +223,6 @@ void set_user_interface_input(const UserInput *ui)
 		default:
 			assert(0);
 	}
-	printf("%s: %s\n", ui->name, ui->input);
 }
 
 void update_user_interface(void)
@@ -344,6 +346,30 @@ static void validate_test_case(void)
 	}
 }
 
+static void validate_interpreters(void)
+{
+	assert(!error.is_error);
+	for (size_t i = 0; i < buf_len(user_input); i++) {
+		if (WIDGET_INTERPRETER != user_input[i]->widget_kind) {
+			continue;
+		}
+		const char *name = user_input[i]->name;
+		const char *code = user_input[i]->input;
+		const Database *db = get_database();
+		assert(name);
+		assert(code);
+		assert(db);
+		unsigned years = 0;
+		TypeKind return_type = TYPE_DOUBLE;
+		(void)interpret(name, code, db, years, 1, return_type);
+		if (error.is_error) {
+			validate_emit_error("%s", error.str);
+		}
+	}
+	reset_error();
+	assert(!error.is_error);
+}
+
 void validate_UI(void)
 {
 	if (!validate_input_set()) {
@@ -352,15 +378,18 @@ void validate_UI(void)
 
 	if (!get_database()) {
 		validate_emit_error("database has not been imported");
+		return;
 	}
 
 	if (!user_input[INPUT_FILENAME]->input) {
 		validate_emit_error("No file selected to run");
+		return;
 	}
 
 	validate_keycell();
 	validate_date("DOC", INPUT_DOC);
 	validate_test_case();
+	validate_interpreters();
 
 	const char *value = 0;
 	VALIDATE(INPUT_DR, float, "DR");

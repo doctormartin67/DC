@@ -53,6 +53,7 @@ typedef struct {
 
 Assumptions ass;
 
+void init_builtin_vars(void);
 void setassumptions(void);
 void set_tariffs(const CurrentMember *cm);
 void setparameters(const CurrentMember *cm, int k);

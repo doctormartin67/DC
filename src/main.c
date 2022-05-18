@@ -6,17 +6,91 @@
 #include "errorexit.h"
 #include "assumptions.h"
 
-void userinterface();
-void runmember(CurrentMember cm[static 1]);
-static void init_cm(CurrentMember *);
-static struct date *getDOC(const CurrentMember cm[static 1], int k);
-static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
-		int k);
-int main(void)
+extern void userinterface();
+extern void runmember(CurrentMember cm[static 1]);
+
+static void init_cm(CurrentMember cm[static 1])
 {
-	makeLifeTables();
-	userinterface();
-	return 0;
+	struct date *doc = 0;
+	const struct date *dob = cm->DOB;
+	const struct date *doe = cm->DOE;
+	const struct date *doa = cm->DOA;
+	double *prem = 0;
+
+	assert(cm);
+
+	//-  Dates and age  -
+	cm->proj[0].DOC = Datedup(cm->DOS);
+	cm->proj[1].DOC = Datedup(ass.DOC);
+	doc = cm->proj[0].DOC;
+	cm->proj[0].age = calcyears(dob, doc, 1);
+	cm->proj[0].nDOE = calcyears(doe, doc, (1 == doe->day ? 0 : 1));
+	cm->proj[0].nDOA = calcyears(doa, doc, (1 == doa->day ? 0 : 1));
+
+	cm->proj[1].factor.kPx = 1;
+
+	if (UKMS == cm->tariff) {
+		cm->proj[0].death_res
+			= gen_sum(cm->proj[0].gens, ER, RES, PUC) 
+			+ gen_sum(cm->proj[0].gens, EE, RES, PUC) 
+			+ gen_sum(cm->proj[0].gens, ER, RESPS, PUC) 
+			+ gen_sum(cm->proj[0].gens, EE, RESPS, PUC);
+	} else {
+		cm->proj[0].death_res = 0.0;
+	}
+
+	cm->proj[0].death_risk = calcDTH(cm, 0); 
+
+	//-  Premium  -
+	for (size_t l = 0; l < EREE_AMOUNT; l++) {
+		prem = &cm->proj[0].gens[MAXGEN - 1].premium[l];
+		*prem = (l == ER ? calcA(cm, 0) : calcC(cm, 0));
+		for (size_t j = 0; j < MAXGEN-1; j++) {
+			*prem = MAX(0.0, *prem
+					- cm->proj[0].gens[j].premium[l]);
+		}
+	}
+
+	set_tariffs(cm);
+}
+
+static struct date *getDOC(const CurrentMember cm[static 1], int k)
+{
+	unsigned month_k = cm->proj[k].DOC->month;
+	unsigned year_k = cm->proj[k].DOC->year;
+	struct date *d = 0, *Ndate = 0, *docdate = 0;
+
+	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
+	docdate = newDate(0, year_k + 1, month_k, 1);
+
+	if (0 == Ndate || 0 == docdate) die("invalid date");
+
+	d = MINDATE3(Ndate, docdate, cm->DOR);
+
+	if (d == cm->DOR)
+		d = Datedup(cm->DOR);
+
+	return d;
+}
+
+static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
+		int k)
+{
+	unsigned addyear = 0;
+	struct date *d = 0, *Ndate = 0, *docdate = 0;
+
+	unsigned month_1 = cm->proj[1].DOC->month;
+	unsigned month_k = cm->proj[k].DOC->month;
+	unsigned year_k = cm->proj[k].DOC->year;
+	addyear = (month_k >= month_1) ? 1 : 0;
+	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
+	docdate = newDate(0, year_k + addyear, month_1, 1);
+
+	if (0 == Ndate || 0 == docdate) die("invalid date");
+
+	d = MINDATE2(Ndate, docdate);
+
+	return d;
 }
 
 static void prolongate(struct projection *p)
@@ -180,84 +254,10 @@ void runmember(CurrentMember cm[static 1])
 	}     
 }
 
-static void init_cm(CurrentMember cm[static 1])
+int main(void)
 {
-	struct date *doc = 0;
-	const struct date *dob = cm->DOB;
-	const struct date *doe = cm->DOE;
-	const struct date *doa = cm->DOA;
-	double *prem = 0;
-
-	//-  Dates and age  -
-	cm->proj[0].DOC = Datedup(cm->DOS);
-	cm->proj[1].DOC = Datedup(ass.DOC);
-	doc = cm->proj[0].DOC;
-	cm->proj[0].age = calcyears(dob, doc, 1);
-	cm->proj[0].nDOE = calcyears(doe, doc, (1 == doe->day ? 0 : 1));
-	cm->proj[0].nDOA = calcyears(doa, doc, (1 == doa->day ? 0 : 1));
-
-	cm->proj[1].factor.kPx = 1;
-
-	if (UKMS == cm->tariff) {
-		cm->proj[0].death_res
-			= gen_sum(cm->proj[0].gens, ER, RES, PUC) 
-			+ gen_sum(cm->proj[0].gens, EE, RES, PUC) 
-			+ gen_sum(cm->proj[0].gens, ER, RESPS, PUC) 
-			+ gen_sum(cm->proj[0].gens, EE, RESPS, PUC);
-	} else {
-		cm->proj[0].death_res = 0.0;
-	}
-
-	cm->proj[0].death_risk = calcDTH(cm, 0); 
-
-	//-  Premium  -
-	for (size_t l = 0; l < EREE_AMOUNT; l++) {
-		prem = &cm->proj[0].gens[MAXGEN - 1].premium[l];
-		*prem = (l == ER ? calcA(cm, 0) : calcC(cm, 0));
-		for (size_t j = 0; j < MAXGEN-1; j++) {
-			*prem = MAX(0.0, *prem
-					- cm->proj[0].gens[j].premium[l]);
-		}
-	}
-
-	set_tariffs(cm);
-}
-
-static struct date *getDOC(const CurrentMember cm[static 1], int k)
-{
-	unsigned month_k = cm->proj[k].DOC->month;
-	unsigned year_k = cm->proj[k].DOC->year;
-	struct date *d = 0, *Ndate = 0, *docdate = 0;
-
-	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
-	docdate = newDate(0, year_k + 1, month_k, 1);
-
-	if (0 == Ndate || 0 == docdate) die("invalid date");
-
-	d = MINDATE3(Ndate, docdate, cm->DOR);
-
-	if (d == cm->DOR)
-		d = Datedup(cm->DOR);
-
-	return d;
-}
-
-static struct date *getDOC_prolongation(const CurrentMember cm[static 1],
-		int k)
-{
-	unsigned addyear = 0;
-	struct date *d = 0, *Ndate = 0, *docdate = 0;
-
-	unsigned month_1 = cm->proj[1].DOC->month;
-	unsigned month_k = cm->proj[k].DOC->month;
-	unsigned year_k = cm->proj[k].DOC->year;
-	addyear = (month_k >= month_1) ? 1 : 0;
-	Ndate = newDate(0, cm->DOB->year + NRA(cm, k), cm->DOB->month + 1, 1);
-	docdate = newDate(0, year_k + addyear, month_1, 1);
-
-	if (0 == Ndate || 0 == docdate) die("invalid date");
-
-	d = MINDATE2(Ndate, docdate);
-
-	return d;
+	makeLifeTables();
+	init_builtin_vars();
+	userinterface();
+	return 0;
 }

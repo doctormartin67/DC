@@ -7,7 +7,6 @@
 #include "resolve.h"
 
 extern const Database *get_database(void);
-static void set_methodology(void);
 
 // builtin vars
 static const char *infl;
@@ -15,16 +14,20 @@ static const char *ndoe;
 static const char *age;
 static const char *sal;
 
+void init_builtin_vars(void)
+{
+	infl = str_intern("infl");
+	ndoe = str_intern("ndoe");
+	age = str_intern("age");
+	sal = str_intern("sal");
+	add_builtin_double(infl, 0.0);
+	add_builtin_double(ndoe, 0.0);
+	add_builtin_double(age, 0.0);
+	add_builtin_double(sal, 0.0);
+}
+
 static void add_builtin_vars(const CurrentMember *cm, int k)
 {
-	static unsigned interned;
-	if (!interned) {
-		infl = str_intern("infl");
-		ndoe = str_intern("ndoe");
-		age = str_intern("age");
-		sal = str_intern("sal");
-		interned = 1;
-	}
 	add_builtin_double(infl, ass.infl);
 	add_builtin_double(ndoe, cm->proj[k].nDOE);
 	add_builtin_double(age, cm->proj[k].age);
@@ -59,6 +62,28 @@ static const char *get_name(InputKind kind)
 	return s;
 }
 
+static void set_methodology(void)
+{
+	if (atoi(get_input(INPUT_STANDARD))) ass.method += mIAS;
+	if (PAR115 == atoi(get_input(INPUT_ASSETS)))
+		ass.method += mPAR115;
+	if (RES == atoi(get_input(INPUT_ASSETS)))
+		ass.method += mRES;
+	if (TUC == atoi(get_input(INPUT_PUCTUC)))
+		ass.method += mTUC;
+	if (atoi(get_input(INPUT_MAXPUCTUC)))
+		ass.method += mmaxPUCTUC;
+	if (atoi(get_input(INPUT_MAXERCONTR)))
+		ass.method += mmaxERContr;
+	if (atoi(get_input(INPUT_EVALUATEDTH))) ass.method += mDTH;
+
+	if (ass.method & mIAS)
+		ass.taxes = 0.0886 + 0.044;
+	else
+		ass.taxes = 0;
+
+}
+
 void setassumptions(void)
 {
 	char *temp = 0;
@@ -90,28 +115,6 @@ void setassumptions(void)
 
 	set_methodology();
 	buf_free(temp);
-}
-
-static void set_methodology(void)
-{
-	if (atoi(get_input(INPUT_STANDARD))) ass.method += mIAS;
-	if (PAR115 == atoi(get_input(INPUT_ASSETS)))
-		ass.method += mPAR115;
-	if (RES == atoi(get_input(INPUT_ASSETS)))
-		ass.method += mRES;
-	if (TUC == atoi(get_input(INPUT_PUCTUC)))
-		ass.method += mTUC;
-	if (atoi(get_input(INPUT_MAXPUCTUC)))
-		ass.method += mmaxPUCTUC;
-	if (atoi(get_input(INPUT_MAXERCONTR)))
-		ass.method += mmaxERContr;
-	if (atoi(get_input(INPUT_EVALUATEDTH))) ass.method += mDTH;
-
-	if (ass.method & mIAS)
-		ass.taxes = 0.0886 + 0.044;
-	else
-		ass.taxes = 0;
-
 }
 
 void set_tariffs(const CurrentMember cm[static 1])

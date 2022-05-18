@@ -112,8 +112,6 @@ static Sym *sym_get(const char *name)
 			if (!sym) {
 				sym = sym_get_func(name);
 			}
-		} else {
-			interpreter->properties.has_builtins = 1;
 		}
 	}
 	return sym;

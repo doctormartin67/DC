@@ -2,10 +2,10 @@
 #include <assert.h>
 #include "interpret.h"
 #include "common.h"
-#include "lex.h"
 #include "type.h"
 #include "resolve.h"
 #include "helperfunctions.h"
+#include "errorjump.h"
 
 Interpreter *interpreter;
 
@@ -29,7 +29,6 @@ static Interpreter *new_interpreter(const char *name, const char *code,
 	i->project_years = project_years;
 	i->num_record = num_record;
 	i->return_type = return_type;
-	i->builtin_syms = builtin_syms;
 	i->properties.is_init = 1;
 	return i;
 }
@@ -118,6 +117,9 @@ static void init_interpreter(void)
 {
 	init_builtin_types();
 	init_builtin_funcs();
+	add_builtin_result();
+	assert(builtin_syms);
+	interpreter->builtin_syms = builtin_syms;
 }
 
 static void parse_interpreter(void)
@@ -125,7 +127,9 @@ static void parse_interpreter(void)
 	assert(interpreter);
 	init_keywords();
 	init_stream(interpreter->name, interpreter->code);
+
 	add_builtin_result();
+
 	Stmt **stmts = interpreter->stmts;
 	if (!stmts) {
 		if (setjmp(error.buf)) {
@@ -184,7 +188,7 @@ Val interpret(const char *name, const char *code, const Database *db,
 	} else {
 		interpreter = i;
 		i->properties.is_init = 0;
-		if (i->properties.has_project || i->properties.has_builtins) {
+		if (i->properties.has_project) {
 			update_interpreter(db, project_years, num_record,
 					return_type);
 			parse_interpreter();
