@@ -1,6 +1,7 @@
 #ifndef USERINTERFACE
 #define USERINTERFACE
 
+#include "type.h"
 #include "DCProgram.h"
 #define GLADEFILE "glade/DCProgram.glade"
 
@@ -85,6 +86,7 @@ typedef struct UserInput {
 	WidgetId id;
 	const char *name;
 	const char *input;
+	TypeKind return_type;
 } UserInput;
 
 extern GtkWidget **widgets;

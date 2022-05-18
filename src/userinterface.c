@@ -75,7 +75,8 @@ static void init_widgets(void)
 
 Arena ui_arena;
 static UserInput *new_user_input(WidgetKind widget_kind, InputKind input_kind,
-		WidgetId id, const char *name, const char *input)
+		WidgetId id, const char *name, const char *input,
+		TypeKind return_type)
 {
 	UserInput *ui = arena_alloc(&ui_arena, sizeof(*ui));	
 	ui->widget_kind = widget_kind;
@@ -83,59 +84,60 @@ static UserInput *new_user_input(WidgetKind widget_kind, InputKind input_kind,
 	ui->id = id;
 	ui->name = name;
 	ui->input = input;
+	ui->return_type = return_type;
 	return ui;
 }
 
-#define USER_INPUT_I(input, name) \
+#define USER_INPUT_I(input, name, kind) \
 	buf_push(user_input, new_user_input(WIDGET_INTERPRETER, INPUT_##input, \
-				ID_INTERPRETERTEXT, name, 0));
-#define USER_INPUT_E(i, name) \
+				ID_INTERPRETERTEXT, name, 0, kind));
+#define USER_INPUT_E(i, name, kind) \
 	buf_push(user_input, new_user_input(WIDGET_ENTRY, INPUT_##i, \
-				ID_##i, name, 0));
-#define USER_INPUT_C(i, name) \
+				ID_##i, name, 0, kind));
+#define USER_INPUT_C(i, name, kind) \
 	buf_push(user_input, new_user_input(WIDGET_COMBO_BOX, INPUT_##i, \
-				ID_##i, name, 0));
-#define USER_INPUT_F(i, name) \
+				ID_##i, name, 0, kind));
+#define USER_INPUT_F(i, name, kind) \
 	buf_push(user_input, new_user_input(WIDGET_FILE_CHOOSER, INPUT_##i, \
-				ID_##i, name, 0));
+				ID_##i, name, 0, kind));
 
 /*
  * these buf_pushes need to be in the same order as the enum InputKind!
  */
 static void init_user_input(void)
 {
-	USER_INPUT_I(SS, "Salary Scale");
-	USER_INPUT_I(TURNOVER, "Turnover");
-	USER_INPUT_I(RETX, "Retirement Probability");
-	USER_INPUT_I(NRA, "Normal Retirement Age");
-	USER_INPUT_I(ADMINCOST, "Administration Cost");
-	USER_INPUT_I(COSTRES, "Cost on Reserves");
-	USER_INPUT_I(COSTKO, "Cost on Lump Sum Life");
-	USER_INPUT_I(WD, "Profit Sharing for Mortality");
-	USER_INPUT_I(PREPOST, "Immediate or Due payments");
-	USER_INPUT_I(TERM, "Payment Frequency");
-	USER_INPUT_I(LTINS, "Life Tables Insurer");
-	USER_INPUT_I(LTTERM, "Life Tables After Termination");
-	USER_INPUT_I(CONTRA, "Employer Contribution");
-	USER_INPUT_I(CONTRC, "Employee Contribution");
+	USER_INPUT_I(SS, "Salary Scale", TYPE_DOUBLE);
+	USER_INPUT_I(TURNOVER, "Turnover", TYPE_DOUBLE);
+	USER_INPUT_I(RETX, "Retirement Probability", TYPE_DOUBLE);
+	USER_INPUT_I(NRA, "Normal Retirement Age", TYPE_DOUBLE);
+	USER_INPUT_I(ADMINCOST, "Administration Cost", TYPE_DOUBLE);
+	USER_INPUT_I(COSTRES, "Cost on Reserves", TYPE_DOUBLE);
+	USER_INPUT_I(COSTKO, "Cost on Lump Sum Life", TYPE_DOUBLE);
+	USER_INPUT_I(WD, "Profit Sharing for Mortality", TYPE_DOUBLE);
+	USER_INPUT_I(PREPOST, "Immediate or Due payments", TYPE_DOUBLE);
+	USER_INPUT_I(TERM, "Payment Frequency", TYPE_DOUBLE);
+	USER_INPUT_I(LTINS, "Life Tables Insurer", TYPE_STRING);
+	USER_INPUT_I(LTTERM, "Life Tables After Termination", TYPE_STRING);
+	USER_INPUT_I(CONTRA, "Employer Contribution", TYPE_DOUBLE);
+	USER_INPUT_I(CONTRC, "Employee Contribution", TYPE_DOUBLE);
 
-	USER_INPUT_E(SHEETNAME, "Sheet name");
-	USER_INPUT_E(DOC, "DOC");
-	USER_INPUT_E(DR, "DR");
-	USER_INPUT_E(AGECORR, "Age Correction");
-	USER_INPUT_E(INFL, "Inflation");
-	USER_INPUT_E(TRM_PERCDEF, "Termination percentage");
-	USER_INPUT_E(DR113, "DR $113");
+	USER_INPUT_E(SHEETNAME, "Sheet name", TYPE_STRING);
+	USER_INPUT_E(DOC, "DOC", TYPE_STRING);
+	USER_INPUT_E(DR, "DR", TYPE_DOUBLE);
+	USER_INPUT_E(AGECORR, "Age Correction", TYPE_DOUBLE);
+	USER_INPUT_E(INFL, "Inflation", TYPE_DOUBLE);
+	USER_INPUT_E(TRM_PERCDEF, "Termination percentage", TYPE_DOUBLE);
+	USER_INPUT_E(DR113, "DR $113", TYPE_DOUBLE);
 
-	USER_INPUT_C(STANDARD, "Standard IAS/FAS");
-	USER_INPUT_C(ASSETS, "Assets");
-	USER_INPUT_C(PUCTUC, "PUC/TUC");
-	USER_INPUT_C(MAXPUCTUC, "max(PUC, TUC)");
-	USER_INPUT_C(MAXERCONTR, "max(NC, ER Contr)");
-	USER_INPUT_C(EVALUATEDTH, "Evaluate Death");
+	USER_INPUT_C(STANDARD, "Standard IAS/FAS", TYPE_STRING);
+	USER_INPUT_C(ASSETS, "Assets", TYPE_STRING);
+	USER_INPUT_C(PUCTUC, "PUC/TUC", TYPE_STRING);
+	USER_INPUT_C(MAXPUCTUC, "max(PUC, TUC)", TYPE_BOOLEAN);
+	USER_INPUT_C(MAXERCONTR, "max(NC, ER Contr)", TYPE_BOOLEAN);
+	USER_INPUT_C(EVALUATEDTH, "Evaluate Death", TYPE_BOOLEAN);
 
-	USER_INPUT_E(KEYCELL, "Key Cell");
-	USER_INPUT_F(FILENAME, "File Name");
+	USER_INPUT_E(KEYCELL, "Key Cell", TYPE_STRING);
+	USER_INPUT_F(FILENAME, "File Name", TYPE_STRING);
 }
 
 #undef USER_INPUT_I
@@ -233,7 +235,7 @@ void update_user_interface(void)
 }
 
 #define ERROR(s, name) \
-		validate_emit_error("input '%s' invalid for '%s'", s, name);
+	validate_emit_error("input '%s' invalid for '%s'", s, name);
 
 static void validate_keycell(void)
 {
@@ -360,11 +362,11 @@ static void validate_interpreters(void)
 		assert(code);
 		assert(db);
 		unsigned years = 0;
-		TypeKind return_type = TYPE_DOUBLE;
+		TypeKind return_type = user_input[i]->return_type;
 		(void)interpret(name, code, db, years, 1, return_type);
-		if (error.is_error) {
-			validate_emit_error("%s", error.str);
-		}
+	}
+	if (error.is_error) {
+		validate_emit_error("%s", error.str);
 	}
 	reset_error();
 	assert(!error.is_error);

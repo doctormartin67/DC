@@ -5,6 +5,7 @@
 #include "lifetables.h"
 #include "interpret.h"
 #include "resolve.h"
+#include "errorjump.h"
 
 extern const Database *get_database(void);
 
@@ -45,6 +46,7 @@ static Val interpret_code(const CurrentMember *cm, int k, const char *code,
 	assert(db);
 	unsigned years = cm->proj[k].DOC->year - cm->proj[0].DOC->year;
 	Val val = interpret(name, code, db, years, cm->id, return_type);
+	assert(!error.is_error);
 	return val;
 }
 
@@ -60,6 +62,12 @@ static const char *get_name(InputKind kind)
 	UserInput *const *user_input = get_user_input();
 	const char *s = user_input[kind]->name;
 	return s;
+}
+
+static TypeKind get_return_type(InputKind kind)
+{
+	UserInput *const *user_input = get_user_input();
+	return user_input[kind]->return_type;
 }
 
 static void set_methodology(void)
@@ -117,24 +125,25 @@ void setassumptions(void)
 	buf_free(temp);
 }
 
+static Val get_tariff(const CurrentMember *cm, InputKind kind)
+{
+	const char *code = get_input(kind);
+	const char *name = get_name(kind);
+	TypeKind return_type = get_return_type(kind);
+	return interpret_code(cm, 0, code, name, return_type);
+}
+
 void set_tariffs(const CurrentMember cm[static 1])
 {
 	unsigned ltins = 0;
 	unsigned ltterm = 0;
-	const char *code = get_input(INPUT_ADMINCOST);
-	const char *name = get_name(INPUT_ADMINCOST);
-	tff.admincost = interpret_code(cm, 0, code, name, TYPE_DOUBLE).d;
-	code = get_input(INPUT_COSTRES);
-	tff.costRES = interpret_code(cm, 0, code, name, TYPE_DOUBLE).d;
-	code = get_input(INPUT_COSTKO);
-	tff.costKO = interpret_code(cm, 0, code, name, TYPE_DOUBLE).d;
-	code = get_input(INPUT_WD);
-	tff.WDDTH = interpret_code(cm, 0, code, name, TYPE_DOUBLE).d;
+	tff.admincost = get_tariff(cm, INPUT_ADMINCOST).d;
+	tff.costRES = get_tariff(cm, INPUT_COSTRES).d;
+	tff.costKO = get_tariff(cm, INPUT_COSTKO).d;
+	tff.WDDTH = get_tariff(cm, INPUT_WD).d;
 	tff.MIXEDPS = 1;
-	code = get_input(INPUT_PREPOST);
-	tff.prepost = interpret_code(cm, 0, code, name, TYPE_DOUBLE).d;
-	code = get_input(INPUT_TERM);
-	tff.term = interpret_code(cm, 0, code, name, TYPE_DOUBLE).d;
+	tff.prepost = get_tariff(cm, INPUT_PREPOST).d;
+	tff.term = get_tariff(cm, INPUT_TERM).d;
 	ltins = 0; // TODO
 	ltterm = 0; // TODO
 	for (int l = 0; l < EREE_AMOUNT; l++) {
@@ -155,21 +164,24 @@ double salaryscale(const CurrentMember cm[static 1], int k)
 {
 	const char *code = get_input(INPUT_SS);
 	const char *name = get_name(INPUT_SS);
-	return ass.infl + interpret_code(cm, k, code, name, TYPE_DOUBLE).d;
+	TypeKind return_type = get_return_type(INPUT_SS);
+	return ass.infl + interpret_code(cm, k, code, name, return_type).d;
 }
 
 double calcA(const CurrentMember cm[static 1], int k)
 {
 	const char *code = get_input(INPUT_CONTRA);
 	const char *name = get_name(INPUT_CONTRA);
-	return interpret_code(cm, k, code, name, TYPE_DOUBLE).d;
+	TypeKind return_type = get_return_type(INPUT_CONTRA);
+	return interpret_code(cm, k, code, name, return_type).d;
 }
 
 double calcC(const CurrentMember cm[static 1], int k)
 {
 	const char *code = get_input(INPUT_CONTRC);
 	const char *name = get_name(INPUT_CONTRC);
-	return interpret_code(cm, k, code, name, TYPE_DOUBLE).d;
+	TypeKind return_type = get_return_type(INPUT_CONTRC);
+	return interpret_code(cm, k, code, name, return_type).d;
 }
 
 double calcDTH(const CurrentMember cm[static 1], int k)
@@ -181,19 +193,22 @@ double NRA(const CurrentMember cm[static 1], int k)
 {
 	const char *code = get_input(INPUT_NRA);
 	const char *name = get_name(INPUT_NRA);
-	return interpret_code(cm, k, code, name, TYPE_DOUBLE).d;
+	TypeKind return_type = get_return_type(INPUT_NRA);
+	return interpret_code(cm, k, code, name, return_type).d;
 }
 
 double wxdef(const CurrentMember cm[static 1], int k)
 {
 	const char *code = get_input(INPUT_TURNOVER);
 	const char *name = get_name(INPUT_TURNOVER);
-	return interpret_code(cm, k, code, name, TYPE_DOUBLE).d;
+	TypeKind return_type = get_return_type(INPUT_TURNOVER);
+	return interpret_code(cm, k, code, name, return_type).d;
 }
 
 double retx(const CurrentMember cm[static 1], int k)
 {
 	const char *code = get_input(INPUT_RETX);
 	const char *name = get_name(INPUT_RETX);
-	return interpret_code(cm, k, code, name, TYPE_DOUBLE).d;
+	TypeKind return_type = get_return_type(INPUT_RETX);
+	return interpret_code(cm, k, code, name, return_type).d;
 }
