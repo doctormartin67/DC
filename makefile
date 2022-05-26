@@ -10,7 +10,7 @@ ZLIB = zlib1g-dev
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror -pedantic -O0
+CFLAGS = -g -Wall -Wextra -Werror -pedantic
 # THIS BELOW INCLUDRES AND LDLIBS ON XML CAN BE REMOVED
 INCLUDES = -I $(INCLUDE) `pkg-config --cflags gtk+-3.0` \
 	`pkg-config --cflags libxml-2.0`
