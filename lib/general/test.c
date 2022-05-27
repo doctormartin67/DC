@@ -65,7 +65,7 @@ void test_arena(void)
 
 void test_map(void) {
 	Map map = {0};
-	enum { N = 1024 * 1024};
+	enum { N = 1024 * 1024 * 16};
 	for (size_t i = 1; i < N; i++) {
 		map_put(&map, (void *)i, (void *)(i+1));
 	}

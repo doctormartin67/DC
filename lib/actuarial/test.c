@@ -1,13 +1,18 @@
 #include <stdio.h> // printf()
 #include <assert.h>
+#include <math.h> // pow()
 #include "common.h"
-#include "act_funcs.h"
+#include "actfuncs.h"
+
+#define EPS 0.000001
+#define ABS(x) (x) < 0 ? -(x) : (x)
+
+enum {N = 1024 * 1024};
 
 const char *path = "/home/doctormartin67/Coding/tables/tables/";
 
 static void test_life_tables(void)
 {
-	enum {N = 1024 * 1024 * 32};
 	const char *table = 0;
 	char *buf = 0;
 	buf_printf(buf, "%s%s", path, "LXMR");
@@ -30,8 +35,57 @@ static void test_life_tables(void)
 	buf_free(buf);
 }
 
+static void test_npx(void)
+{
+	double nPx = 0.0;
+	const char *table = 0;
+	char *buf = 0;
+	buf_printf(buf, "%s%s", path, "LXMR");
+	table = str_intern(buf);
+	for (unsigned i = 0; i < N; i++) {
+		nPx = npx(table, i%110, (i+1)%110, 0);
+		nPx = npx(table, i%110, (i+1)%110, -3);
+		nPx = npx(table, i%107, (i+1)%107, 3);
+		assert(1 == npx(table, 40, 40, 0));
+		assert(0 == npx(table, 0, 130, 0));
+		assert(ABS(nPx - (double)lx(table, (i+1)%107 + 3)
+				/ lx(table, i%107 + 3)) < EPS);
+	}
+}
+
+static void test_nEx(void)
+{
+	double nex = 0.0;
+	double ageX = 0.0;
+	double ageXn = 0.0;
+	const char *table = 0;
+	char *buf = 0;
+	buf_printf(buf, "%s%s", path, "LXFK'");
+	table = str_intern(buf);
+	for (unsigned i = 0; i < N; i++) {
+		ageX = i%110;
+		ageXn = (i+1)%110;
+		nex = nEx(table, 0.0, 0.0, ageX, ageXn, -3);
+		assert(ABS(nex - npx(table, ageX, ageXn, -3)) < EPS);
+		nex = nEx(table, 0.01, 0.0, ageX, ageXn, -3);
+		assert(ABS(nex - npx(table, ageX, ageXn, -3)
+					* pow(1 + 0.01, ageX - ageXn)) < EPS);
+		nex = nEx(table, 0.012, 0.001, ageX, ageXn, -3);
+		assert(ABS(nex - npx(table, ageX, ageXn, -3)
+					* pow((1 + 0.012) / (1 + 0.001),
+						ageX - ageXn)) < EPS);
+	}
+}
+
+static void test_axn(void)
+{
+}
+
 int main(void)
 {
 	test_life_tables();
+	test_npx();
+	test_nEx();
+	test_axn();
 	return 0;
 }

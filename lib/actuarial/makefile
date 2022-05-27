@@ -6,15 +6,15 @@ EXE = test
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror -pedantic
+CFLAGS = -pg -g -Wall -Wextra -Werror -pedantic
 INCLUDES = -I $(INCLUDE)
-LIBS = -lgeneral
+LIBS = -lgeneral -lm
 LDLIBS = $(LIBS)
-LDFLAGS = -L$(LIB)
+LDFLAGS = -pg -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
-OBJS = act_funcs.o 
+OBJS = actfuncs.o 
 .DELETE_ON_ERROR: $(OBJS)
 
 # ---vpath---

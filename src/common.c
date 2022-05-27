@@ -86,6 +86,7 @@ void arena_free(Arena *arena)
 	arena->ptr = arena->end = 0;
 }
 
+static uint64_t hash_uint64(uint64_t x) __attribute__ ((const));
 static uint64_t hash_uint64(uint64_t x)
 {
 	x *= 0xff51afd7ed558ccd;
@@ -93,6 +94,8 @@ static uint64_t hash_uint64(uint64_t x)
 	return x;
 }
 
+static uint64_t hash_bytes(const void *ptr, size_t len)
+	__attribute__ ((const));
 static uint64_t hash_bytes(const void *ptr, size_t len)
 {
 	uint64_t x = 0xcbf29ce484222325;
