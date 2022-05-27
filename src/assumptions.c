@@ -135,8 +135,8 @@ static Val get_tariff(const CurrentMember *cm, InputKind kind)
 
 void set_tariffs(const CurrentMember cm[static 1])
 {
-	unsigned ltins = 0;
-	unsigned ltterm = 0;
+	const char *ltins = 0;
+	const char *ltterm = 0;
 	tff.admincost = get_tariff(cm, INPUT_ADMINCOST).d;
 	tff.costRES = get_tariff(cm, INPUT_COSTRES).d;
 	tff.costKO = get_tariff(cm, INPUT_COSTKO).d;
@@ -144,17 +144,17 @@ void set_tariffs(const CurrentMember cm[static 1])
 	tff.MIXEDPS = 1;
 	tff.prepost = get_tariff(cm, INPUT_PREPOST).d;
 	tff.term = get_tariff(cm, INPUT_TERM).d;
-	ltins = 0; // TODO
-	ltterm = 0; // TODO
+	ltins = get_tariff(cm, INPUT_LTINS).s;
+	ltterm = get_tariff(cm, INPUT_LTTERM).s;
 	for (int l = 0; l < EREE_AMOUNT; l++) {
 		for (int j = 0; j < MAXGEN; j++) {
-			tff.ltINS[l][j].lt = ltins;
-			tff.ltAfterTRM[l][j].lt = ltterm;
+			tff.ltINS[l][j].table = ltins;
+			tff.ltAfterTRM[l][j].table = ltterm;
 			tff.ltINS[l][j].i = cm->TAUX[l][j];
 			tff.ltAfterTRM[l][j].i = cm->TAUX[l][j];
 		}
-		tff.ltProlong[l].lt = tff.ltINS[l][0].lt;
-		tff.ltProlongAfterTRM[l].lt = tff.ltAfterTRM[l][0].lt;
+		tff.ltProlong[l].table = tff.ltINS[l][0].table;
+		tff.ltProlongAfterTRM[l].table = tff.ltAfterTRM[l][0].table;
 		tff.ltProlong[l].i = tff.ltINS[l][MAXGEN-1].i;
 		tff.ltProlongAfterTRM[l].i = tff.ltAfterTRM[l][MAXGEN-1].i;
 	}

@@ -3,124 +3,82 @@ Flat profile:
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
  time   seconds   seconds    calls  ms/call  ms/call  name    
- 11.84      0.45     0.45   651264     0.00     0.00  calc_lump_sum
-  9.74      0.82     0.37 106976520     0.00     0.00  resolve_binary_string_op
-  9.21      1.17     0.35 19753714     0.00     0.00  resolve_expected_expr
-  8.42      1.49     0.32                             resolve_expr_binary_op
-  6.84      1.75     0.26   160771     0.00     0.00  arena_str_dup
-  5.79      1.97     0.22 49379822     0.00     0.00  parse_stmt_block
-  5.00      2.16     0.19                             map_put
-  4.21      2.32     0.16 75314595     0.00     0.00  map_get
-  3.95      2.47     0.15 71910828     0.00     0.00  update_EBP_ret
-  3.42      2.60     0.13       48     2.71    13.52  resolve_stmt
-  2.63      2.70     0.10 63332612     0.00     0.00  map_put_str
-  2.63      2.80     0.10 52761304     0.00     0.00  parse_stmt
-  2.63      2.90     0.10                             map_get_str
-  2.37      2.99     0.09 59908730     0.00     0.00  add_builtin_var
-  2.11      3.07     0.08 18632682     0.00     0.00  cast_operand
-  1.84      3.14     0.07                             error
-  1.58      3.20     0.06 11981746     0.00     0.00  parse_interpreter
-  1.45      3.26     0.06 97722936     0.00     0.00  token_start
-  1.32      3.31     0.05    20352     0.00     0.06  calcC
-  1.32      3.36     0.05                             update_EBP
-  1.05      3.40     0.04    20352     0.00     0.00  calc_res
-  1.05      3.44     0.04 39710322     0.00     0.00  token_int_val
-  0.79      3.47     0.03 18632682     0.00     0.00  token_name
-  0.79      3.50     0.03 23053287     0.00     0.00  arena_alloc
-  0.79      3.53     0.03 11981795     0.00     0.00  printresults
-  0.79      3.56     0.03  8466432     0.00     0.00  update_art24
-  0.79      3.59     0.03  2444958     0.00     0.00  resolve_binary_arithmetic_op
-  0.79      3.62     0.03       28     1.07     1.55  print_gen_kind
-  0.53      3.64     0.02 21077640     0.00     0.00  interpret
-  0.53      3.66     0.02 19937754     0.00     0.00  token_kind
-  0.53      3.68     0.02 11986298     0.00     0.00  next_token
-  0.53      3.70     0.02        2    10.00    98.84  parse_cells
-  0.53      3.72     0.02                             init_keywords
-  0.26      3.73     0.01 11982318     0.00     0.00  warning
-  0.26      3.74     0.01  2010960     0.00     0.00  expect_keyword
-  0.26      3.75     0.01   184022     0.00     0.00  retx
-  0.26      3.76     0.01        1    10.00    10.00  extract_excel
-  0.26      3.77     0.01                             get_redcap_mixed_ukmt
-  0.26      3.78     0.01                             is_token_eof
-  0.26      3.79     0.01                             set_ic_nc_ret
-  0.26      3.80     0.01                             sym_get
-  0.13      3.80     0.01                             token_pos
-  0.00      3.80     0.00 11981747     0.00     0.00  run
-  0.00      3.80     0.00 11981746     0.00     0.00  print_syms
-  0.00      3.80     0.00 11776318     0.00     0.00  calcA
-  0.00      3.80     0.00  4889916     0.00     0.00  token_float_val
-  0.00      3.80     0.00  3854517     0.00     0.00  new_stmt_expr
-  0.00      3.80     0.00  1674432     0.00     0.00  is_token
-  0.00      3.80     0.00   825210     0.00     0.00  open_xml_from_excel
-  0.00      3.80     0.00   756183     0.00     0.00  create_member
-  0.00      3.80     0.00   651264     0.00     0.00  get_redcap_ukms_ukzt
-  0.00      3.80     0.00   651264     0.00     0.00  get_res_tuc
-  0.00      3.80     0.00   492582     0.00     0.00  close_excel
-  0.00      3.80     0.00   351683     0.00     0.00  buf__printf
-  0.00      3.80     0.00   329766     0.00     0.00  record_boolean
-  0.00      3.80     0.00   275634     0.00     0.00  new_stmt_select_case
-  0.00      3.80     0.00   214272     0.00     0.00  updateValidation
-  0.00      3.80     0.00   163134     0.00     0.00  salaryscale
-  0.00      3.80     0.00   101760     0.00     0.00  update_res_lump_sums
-  0.00      3.80     0.00    71550     0.00     0.00  setdate
-  0.00      3.80     0.00    61056     0.00     0.00  gen_sum
-  0.00      3.80     0.00    57281     0.00     0.00  record_int
-  0.00      3.80     0.00    57280     0.00     0.00  jalloc
-  0.00      3.80     0.00    31164     0.00     0.00  getDOC
-  0.00      3.80     0.00    21243     0.00     0.00  wxdef
-  0.00      3.80     0.00    20352     0.00     0.00  NRA
-  0.00      3.80     0.00    20352     0.00     0.00  get_art24_act_res
-  0.00      3.80     0.00    20352     0.00     0.00  setMsgbuf
-  0.00      3.80     0.00    20352     0.00     0.00  set_tariffs
-  0.00      3.80     0.00    20352     0.00     0.00  update_premiums
-  0.00      3.80     0.00    17615     0.00     0.00  validateInput
-  0.00      3.80     0.00     9222     0.00     0.00  getDOC_prolongation
-  0.00      3.80     0.00     2862     0.00     0.00  open_excel
-  0.00      3.80     0.00     2842     0.00     0.00  replace
-  0.00      3.80     0.00     1909     0.00     0.00  interpret_code.constprop.0
-  0.00      3.80     0.00     1163     0.00     0.00  init_stream
-  0.00      3.80     0.00      636     0.00     0.00  strinside
-  0.00      3.80     0.00      346     0.00     0.00  isintc
-  0.00      3.80     0.00      323     0.00     0.00  arena_grow
-  0.00      3.80     0.00      321     0.00     0.31  cell_content
-  0.00      3.80     0.00      319     0.00     0.00  newDate
-  0.00      3.80     0.00      319     0.00     0.00  record_double
-  0.00      3.80     0.00      318     0.00     5.31  runmember
-  0.00      3.80     0.00      318     0.00     0.00  setassumptions
-  0.00      3.80     0.00      259     0.00     0.00  parse_expr_or
-  0.00      3.80     0.00      222     0.00     0.00  parse_expr_unary
-  0.00      3.80     0.00      193     0.00     0.00  clear_stream
-  0.00      3.80     0.00      144     0.00     0.00  new_typespec_project
-  0.00      3.80     0.00      133     0.00     0.00  is_integer_type
-  0.00      3.80     0.00      133     0.00     0.00  min
-  0.00      3.80     0.00       87     0.00     0.00  new_expr_float
-  0.00      3.80     0.00       58     0.00     0.00  is_keyword_name
-  0.00      3.80     0.00       58     0.00     0.00  new_StmtBlock
-  0.00      3.80     0.00       56     0.00     0.00  parse_select_case_pattern
-  0.00      3.80     0.00       48     0.00     0.00  makeLifeTable
-  0.00      3.80     0.00       40     0.00     0.00  sym_push_type
-  0.00      3.80     0.00       39     0.00     0.00  new_stmt_do_while_loop
-  0.00      3.80     0.00       29     0.00     0.00  isfloatc
-  0.00      3.80     0.00       28     0.00     0.00  resolve_stmts
-  0.00      3.80     0.00       24     0.00     0.00  print_sym
-  0.00      3.80     0.00       19     0.00     0.00  new_typespec_name
-  0.00      3.80     0.00       18     0.00     0.00  new_expr
-  0.00      3.80     0.00       12     0.00    40.57  max
-  0.00      3.80     0.00       12     0.00     0.00  token_str_val
-  0.00      3.80     0.00       10     0.00     0.00  sym_push_func
-  0.00      3.80     0.00        8     0.00     0.00  new_stmt_do_until_loop
-  0.00      3.80     0.00        7     0.00     0.00  new_stmt_do_while
-  0.00      3.80     0.00        6     0.00     0.00  nextcol
-  0.00      3.80     0.00        4     0.00     0.00  new_expr_boolean
-  0.00      3.80     0.00        2     0.00     0.00  new_expr_str
-  0.00      3.80     0.00        2     0.00     0.00  userinterface
-  0.00      3.80     0.00        1     0.00     0.00  arena_free
-  0.00      3.80     0.00        1     0.00     0.00  cast_content
-  0.00      3.80     0.00        1     0.00     0.00  fatal
-  0.00      3.80     0.00        1     0.00     0.00  on_startstopbutton_clicked
-  0.00      3.80     0.00        1     0.00    20.09  print_proj_kind
-  0.00      3.80     0.00        1     0.00     1.55  printtc
-  0.00      3.80     0.00        1     0.00     0.00  set_user_inputs
+ 34.97      1.50     1.50                             axn
+ 17.83      2.27     0.77                             map_get
+ 14.57      2.89     0.63                             resolve_expected_expr
+  4.90      3.10     0.21                             map_get_uint64_from_uint64
+  2.80      3.22     0.12                             resolve_expr_binary_op
+  2.80      3.34     0.12                             sym_get
+  2.56      3.45     0.11                             add_builtin_var
+  2.10      3.54     0.09                             resolve_binary_arithmetic_op
+  1.86      3.62     0.08                             map_get_str
+  1.40      3.68     0.06                             buf__grow
+  1.17      3.73     0.05                             interpret
+  1.17      3.78     0.05                             nEx
+  1.17      3.83     0.05                             resolve_stmt
+  1.05      3.88     0.05                             resolve_binary_string_op
+  0.93      3.92     0.04 11982700     0.00     0.00  runmember
+  0.93      3.96     0.04                             is_integer_type
+  0.82      3.99     0.04                             map_free
+  0.70      4.02     0.03 35947195     0.00     0.00  get_user_input
+  0.70      4.05     0.03   651264     0.00     0.00  get_redcap_ukms_ukzt
+  0.70      4.08     0.03        1    30.00    30.00  print_database
+  0.70      4.11     0.03                             str_intern_range
+  0.47      4.13     0.02 11592514     0.00     0.00  NRA
+  0.47      4.15     0.02        1    20.00    20.00  reset_error
+  0.47      4.17     0.02                             is_arithmetic_type
+  0.47      4.19     0.02                             is_string_type
+  0.23      4.20     0.01 11982398     0.00     0.00  get_database
+  0.23      4.21     0.01   651264     0.00     0.00  get_res_tuc
+  0.23      4.22     0.01   184022     0.00     0.00  newDate
+  0.23      4.23     0.01      318     0.03     0.03  create_member
+  0.23      4.24     0.01                             add_builtin_string
+  0.23      4.25     0.01                             buf__printf
+  0.23      4.26     0.01                             is_concatable
+  0.23      4.27     0.01                             min
+  0.23      4.28     0.01                             token_kind_name
+  0.12      4.29     0.01  8466432     0.00     0.00  calc_lump_sum
+  0.12      4.29     0.01    20352     0.00     0.00  update_art24
+  0.00      4.29     0.00   651264     0.00     0.00  calc_res
+  0.00      4.29     0.00   541910     0.00     0.00  gen_sum
+  0.00      4.29     0.00   214272     0.00     0.00  get_art24_act_res
+  0.00      4.29     0.00   214272     0.00     0.00  get_method_amount
+  0.00      4.29     0.00   163134     0.00     0.00  calcA
+  0.00      4.29     0.00   163134     0.00     0.00  calcC
+  0.00      4.29     0.00    71550     0.00     0.00  minDate
+  0.00      4.29     0.00    61056     0.00     0.00  gen_sum_art24
+  0.00      4.29     0.00    31164     0.00     0.00  getDOC
+  0.00      4.29     0.00    21243     0.00     0.00  setdate
+  0.00      4.29     0.00    20670     0.00     0.00  calcDTH
+  0.00      4.29     0.00    20352     0.00     0.00  retx
+  0.00      4.29     0.00    20352     0.00     0.00  salaryscale
+  0.00      4.29     0.00    20352     0.00     0.00  set_assets
+  0.00      4.29     0.00    20352     0.00     0.00  set_dbo_ret
+  0.00      4.29     0.00    20352     0.00     0.00  set_ic_nc_ret
+  0.00      4.29     0.00    20352     0.00     0.00  set_nc_ret
+  0.00      4.29     0.00    20352     0.00     0.00  update_EBP
+  0.00      4.29     0.00    20352     0.00     0.00  update_EBP_ret
+  0.00      4.29     0.00    20352     0.00     0.00  update_death_lump_sums
+  0.00      4.29     0.00    20352     0.00     0.00  update_premiums
+  0.00      4.29     0.00    20352     0.00     0.00  update_res_lump_sums
+  0.00      4.29     0.00    20352     0.00     0.00  wxdef
+  0.00      4.29     0.00    17615     0.00     0.00  print_number
+  0.00      4.29     0.00     9222     0.00     0.00  getDOC_prolongation
+  0.00      4.29     0.00      318     0.00     0.00  set_tariffs
+  0.00      4.29     0.00       48     0.00     0.00  print_gen_kind
+  0.00      4.29     0.00       24     0.00     0.00  print_proj_kind
+  0.00      4.29     0.00        3     0.00     0.00  print_str
+  0.00      4.29     0.00        2     0.00     0.00  set_user_inputs
+  0.00      4.29     0.00        2     0.00     0.00  validate_passed
+  0.00      4.29     0.00        1     0.00    10.10  create_members
+  0.00      4.29     0.00        1     0.00     0.00  dates_arena_free
+  0.00      4.29     0.00        1     0.00    30.00  print_results
+  0.00      4.29     0.00        1     0.00     0.00  print_test_case
+  0.00      4.29     0.00        1     0.00     0.00  read_user_input
+  0.00      4.29     0.00        1     0.00     0.00  reset_database
+  0.00      4.29     0.00        1     0.00     0.00  setassumptions
+  0.00      4.29     0.00        1     0.00     0.00  update_user_interface
+  0.00      4.29     0.00        1     0.00    20.00  validate_UI
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -158,1009 +116,400 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 0.26% of 3.80 seconds
+granularity: each sample hit covers 2 byte(s) for 0.23% of 4.29 seconds
 
 index % time    self  children    called     name
                                                  <spontaneous>
-[1]     45.0    0.00    1.71                 validateUI [1]
-                0.00    1.69     318/318         runmember [2]
-                0.00    0.02       1/1           print_proj_kind [43]
-                0.00    0.00       1/1           printtc [64]
-                0.00    0.00       1/321         cell_content [28]
-                0.00    0.00       1/1909        interpret_code.constprop.0 [73]
-                0.00    0.00       1/184022      retx [58]
-                0.00    0.00       1/319         newDate [82]
-                0.00    0.00       1/11981795     printresults [40]
-                0.00    0.00       1/756183      create_member [72]
-                0.00    0.00       1/323         arena_grow [119]
------------------------------------------------
-                0.00    1.69     318/318         validateUI [1]
-[2]     44.4    0.00    1.69     318         runmember [2]
-                0.05    1.09   20352/20352       calcC [3]
-                0.00    0.47  101760/101760      update_res_lump_sums [11]
-                0.04    0.01   20352/20352       calc_res [34]
-                0.00    0.02   20352/20352       get_art24_act_res [49]
-                0.00    0.00   31164/31164       getDOC [61]
-                0.00    0.00   20352/20352       NRA [63]
-                0.00    0.00   19932/184022      retx [58]
-                0.00    0.00    9222/9222        getDOC_prolongation [66]
-                0.00    0.00   20352/20352       set_tariffs [69]
-                0.00    0.00   20352/59929082     update_EBP_ret <cycle 1> [14]
-                0.00    0.00   20352/20352       update_premiums [71]
-                0.00    0.00  431426/756183      create_member [72]
-                0.00    0.00     318/318         setassumptions [74]
-                0.00    0.00   61692/11776318     calcA [51]
-                0.00    0.00     318/163134      salaryscale [48]
-                0.00    0.00   61056/61056       gen_sum [109]
-                0.00    0.00   20352/20352       setMsgbuf [113]
-                0.00    0.00    9222/71550       setdate [108]
------------------------------------------------
-                0.05    1.09   20352/20352       runmember [2]
-[3]     30.0    0.05    1.09   20352         calcC [3]
-                0.16    0.70 46431112/59929082     update_EBP_ret <cycle 1> [14]
-                0.09    0.02 58023626/59908730     add_builtin_var [22]
-                0.00    0.10 11592514/11981747     run [27]
-                0.03    0.00 11612866/11981795     printresults [40]
------------------------------------------------
-[4]     29.3    0.21    0.90 59929082+23963492 <cycle 1 as a whole> [4]
-                0.06    0.65 11981746             parse_interpreter <cycle 1> [6]
-                0.15    0.25 71910828             update_EBP_ret <cycle 1> [14]
+[1]     35.0    1.50    0.00                 axn [1]
 -----------------------------------------------
                                                  <spontaneous>
-[5]     21.1    0.32    0.48                 resolve_expr_binary_op [5]
-                0.20    0.18 57368790/106976520     resolve_binary_string_op [7]
-                0.07    0.00 38236082/52761302     parse_stmt <cycle 3> [24]
-                0.02    0.00 17894466/21077640     interpret [45]
-                0.01    0.00 3097494/75314595     map_get [21]
-                0.00    0.00 3097494/63332612     map_put_str [25]
------------------------------------------------
-                             11981746             update_EBP_ret <cycle 1> [14]
-[6]     18.7    0.06    0.65 11981746         parse_interpreter <cycle 1> [6]
-                0.00    0.49      12/12          max [10]
-                0.03    0.13      12/48          resolve_stmt [8]
-                0.00    0.00      12/24          print_sym [93]
-                0.00    0.00      19/75314595     map_get [21]
-                0.00    0.00      18/63332612     map_put_str [25]
-                0.00    0.00      12/23053287     arena_alloc [39]
-                0.00    0.00      12/346         isintc [118]
-                0.00    0.00      12/275634      new_stmt_select_case [107]
-                0.00    0.00      12/12          token_str_val [134]
-                             11981746             update_EBP_ret <cycle 1> [14]
------------------------------------------------
-                0.03    0.03 8517852/106976520     resolve_expected_expr [12]
-                0.14    0.13 41089878/106976520     resolve_stmt [8]
-                0.20    0.18 57368790/106976520     resolve_expr_binary_op [5]
-[7]     18.6    0.37    0.34 106976520         resolve_binary_string_op [7]
-                0.08    0.14 18632682/18632682     cast_operand [18]
-                0.03    0.02 2444958/2444958     resolve_binary_arithmetic_op [33]
-                0.04    0.00 39710322/39710322     token_int_val [36]
-                0.02    0.00 37265364/97722936     token_start [32]
-                0.00    0.00 1064484/49379822     parse_stmt_block [17]
------------------------------------------------
-                             3381024             resolve_stmt [8]
-                0.03    0.13      12/48          parse_interpreter <cycle 1> [6]
-                0.10    0.39      36/48          max [10]
-[8]     17.1    0.13    0.52      48+3381024 resolve_stmt [8]
-                0.14    0.13 41089878/106976520     resolve_binary_string_op [7]
-                0.09    0.03 5161824/19753714     resolve_expected_expr [12]
-                0.08    0.01 16927424/49379822     parse_stmt_block [17]
-                0.03    0.00 14525208/52761302     parse_stmt <cycle 3> [24]
-                0.01    0.00 24031728/97722936     token_start [32]
-                0.00    0.00 3183174/21077640     interpret [45]
-                0.00    0.00 1305072/19937754     token_kind [46]
-                0.00    0.00      58/75314595     map_get [21]
-                0.00    0.00      58/63332612     map_put_str [25]
-                0.00    0.00      56/351683      buf__printf [106]
-                0.00    0.00       2/3854517     new_stmt_expr [103]
-                             3381024             resolve_stmt [8]
+[2]     17.8    0.77    0.00                 map_get [2]
 -----------------------------------------------
                                                  <spontaneous>
-[9]     16.1    0.05    0.56                 update_EBP [9]
-                0.00    0.34 11981746/11981746     print_syms [15]
-                0.04    0.18 11981746/59929082     update_EBP_ret <cycle 1> [14]
-                0.00    0.00      12/52761302     parse_stmt <cycle 3> [24]
------------------------------------------------
-                0.00    0.49      12/12          parse_interpreter <cycle 1> [6]
-[10]    12.8    0.00    0.49      12         max [10]
-                0.10    0.39      36/48          resolve_stmt [8]
-                0.00    0.00      12/24          print_sym [93]
-                0.00    0.00      12/346         isintc [118]
------------------------------------------------
-                0.00    0.47  101760/101760      runmember [2]
-[11]    12.4    0.00    0.47  101760         update_res_lump_sums [11]
-                0.45    0.00  651264/651264      calc_lump_sum [13]
-                0.00    0.01  396864/651264      get_redcap_ukms_ukzt [50]
-                0.01    0.00 2096256/8466432     update_art24 [37]
-                0.00    0.00  936192/11776318     calcA [51]
------------------------------------------------
-                0.09    0.03 5161824/19753714     resolve_stmt [8]
-                0.26    0.08 14591890/19753714     print_syms [15]
-[12]    12.1    0.35    0.11 19753714         resolve_expected_expr [12]
-                0.03    0.03 8517852/106976520     resolve_binary_string_op [7]
-                0.04    0.00 7865316/49379822     parse_stmt_block [17]
-                0.01    0.00 2010960/2010960     expect_keyword [53]
-                0.00    0.00 3675132/97722936     token_start [32]
-                0.00    0.00  326268/75314595     map_get [21]
-                0.00    0.00  326268/63332612     map_put_str [25]
-                0.00    0.00  326268/329766      record_boolean [70]
-                0.00    0.00  326268/492582      close_excel [67]
-                0.00    0.00 3685392/3854517     new_stmt_expr [103]
-                0.00    0.00 1674432/1674432     is_token [104]
------------------------------------------------
-                0.45    0.00  651264/651264      update_res_lump_sums [11]
-[13]    11.9    0.45    0.00  651264         calc_lump_sum [13]
-                0.00    0.00 1302528/11776318     calcA [51]
------------------------------------------------
-                             11981746             parse_interpreter <cycle 1> [6]
-                0.00    0.00    7632/59929082     interpret_code.constprop.0 [73]
-                0.00    0.00   20352/59929082     runmember [2]
-                0.00    0.00   20352/59929082     set_tariffs [69]
-                0.00    0.00   20352/59929082     calcDTH [68]
-                0.00    0.00   81408/59929082     NRA [63]
-                0.00    0.01  652536/59929082     calcA [51]
-                0.00    0.01  713592/59929082     salaryscale [48]
-                0.04    0.18 11981746/59929082     update_EBP [9]
-                0.16    0.70 46431112/59929082     calcC [3]
-[14]    10.6    0.15    0.25 71910828         update_EBP_ret <cycle 1> [14]
-                0.13    0.00 59908730/75314595     map_get [21]
-                0.09    0.00 59908730/63332612     map_put_str [25]
-                0.02    0.00 11981746/11986298     next_token [44]
-                0.01    0.00 11981746/11982318     warning [52]
-                0.00    0.00   20352/184022      retx [58]
-                0.00    0.00       5/351683      buf__printf [106]
-                0.00    0.00       1/3854517     new_stmt_expr [103]
-                             11981746             parse_interpreter <cycle 1> [6]
------------------------------------------------
-                0.00    0.34 11981746/11981746     update_EBP [9]
-[15]     8.9    0.00    0.34 11981746         print_syms [15]
-                0.26    0.08 14591890/19753714     resolve_expected_expr [12]
-                0.00    0.00      12/3854517     new_stmt_expr [103]
------------------------------------------------
-                0.09    0.00   57101/160771      record_string [31]
-                0.17    0.00  103670/160771      parse_cells [19]
-[16]     6.8    0.26    0.00  160771         arena_str_dup [16]
------------------------------------------------
-                0.00    0.00 1064484/49379822     resolve_binary_string_op [7]
-                0.02    0.00 4889916/49379822     resolve_binary_arithmetic_op [33]
-                0.04    0.00 7865316/49379822     resolve_expected_expr [12]
-                0.08    0.01 16927424/49379822     resolve_stmt [8]
-                0.08    0.01 18632682/49379822     cast_operand [18]
-[17]     6.3    0.22    0.02 49379822         parse_stmt_block [17]
-                0.02    0.00 32750712/97722936     token_start [32]
------------------------------------------------
-                0.08    0.14 18632682/18632682     resolve_binary_string_op [7]
-[18]     5.8    0.08    0.14 18632682         cast_operand [18]
-                0.08    0.01 18632682/49379822     parse_stmt_block [17]
-                0.03    0.00 18632682/18632682     token_name [38]
-                0.02    0.00 18632682/19937754     token_kind [46]
------------------------------------------------
-                0.01    0.09       1/2           run [27]
-                0.01    0.09       1/2           cell_content [28]
-[19]     5.2    0.02    0.18       2         parse_cells [19]
-                0.17    0.00  103670/160771      arena_str_dup [16]
-                0.01    0.00       1/1           extract_excel [54]
-                0.00    0.00  103670/275634      new_stmt_select_case [107]
-                0.00    0.00    3203/3854517     new_stmt_expr [103]
-                0.00    0.00    3202/351683      buf__printf [106]
-                0.00    0.00    2841/2842        replace [115]
-                0.00    0.00       6/6           nextcol [138]
-                0.00    0.00       3/346         isintc [118]
-                0.00    0.00       1/1           cast_content [143]
-                0.00    0.00       1/323         arena_grow [119]
+[3]     14.6    0.63    0.00                 resolve_expected_expr [3]
 -----------------------------------------------
                                                  <spontaneous>
-[20]     5.0    0.19    0.00                 map_put [20]
------------------------------------------------
-                0.00    0.00       1/75314595     add_builtin_int [101]
-                0.00    0.00       1/75314595     add_builtin_double [100]
-                0.00    0.00       4/75314595     add_builtin_string [97]
-                0.00    0.00       5/75314595     add_builtin_boolean [96]
-                0.00    0.00      10/75314595     interpret [45]
-                0.00    0.00      19/75314595     parse_interpreter <cycle 1> [6]
-                0.00    0.00      24/75314595     print_sym [93]
-                0.00    0.00      58/75314595     resolve_stmt [8]
-                0.00    0.00  326268/75314595     resolve_expected_expr [12]
-                0.01    0.00 3097494/75314595     resolve_expr_binary_op [5]
-                0.03    0.00 11981981/75314595     error [30]
-                0.13    0.00 59908730/75314595     update_EBP_ret <cycle 1> [14]
-[21]     4.2    0.16    0.00 75314595         map_get [21]
------------------------------------------------
-                0.00    0.00     954/59908730     setassumptions [74]
-                0.00    0.00    7632/59908730     interpret_code.constprop.0 [73]
-                0.00    0.00   20352/59908730     calcDTH [68]
-                0.00    0.00   21306/59908730     set_tariffs [69]
-                0.00    0.00  122112/59908730     NRA [63]
-                0.00    0.00  815670/59908730     calcA [51]
-                0.00    0.00  897078/59908730     salaryscale [48]
-                0.09    0.02 58023626/59908730     calcC [3]
-[22]     2.8    0.09    0.02 59908730         add_builtin_var [22]
-                0.02    0.00 11981746/23053287     arena_alloc [39]
------------------------------------------------
-[23]     2.6    0.10    0.00 52761302+58      <cycle 3 as a whole> [23]
-                0.10    0.00 52761304+2           parse_stmt <cycle 3> [24]
-                0.00    0.00      56             parse_select_case_pattern <cycle 3> [86]
------------------------------------------------
-                                   2             parse_stmt <cycle 3> [24]
-                                   2             parse_select_case_pattern <cycle 3> [86]
-                0.00    0.00      12/52761302     update_EBP [9]
-                0.03    0.00 14525208/52761302     resolve_stmt [8]
-                0.07    0.00 38236082/52761302     resolve_expr_binary_op [5]
-[24]     2.6    0.10    0.00 52761304+2       parse_stmt <cycle 3> [24]
-                0.00    0.00      69/108         parse_expr_unary <cycle 2> [84]
-                0.00    0.00     559/11986298     next_token [44]
-                0.00    0.00      15/108         is_integer_type <cycle 2> [123]
-                0.00    0.00      75/3854517     new_stmt_expr [103]
-                0.00    0.00      39/39          new_stmt_do_while_loop [129]
-                0.00    0.00      32/40          sym_push_type [128]
-                0.00    0.00       8/8           new_stmt_do_until_loop [136]
-                0.00    0.00       7/7           new_stmt_do_while [137]
-                0.00    0.00       2/2           new_expr_str [140]
-                                  56             parse_select_case_pattern <cycle 3> [86]
-                                   2             parse_stmt <cycle 3> [24]
------------------------------------------------
-                0.00    0.00       1/63332612     add_builtin_int [101]
-                0.00    0.00       1/63332612     add_builtin_double [100]
-                0.00    0.00       4/63332612     add_builtin_string [97]
-                0.00    0.00       5/63332612     add_builtin_boolean [96]
-                0.00    0.00       9/63332612     interpret [45]
-                0.00    0.00      18/63332612     parse_interpreter <cycle 1> [6]
-                0.00    0.00      24/63332612     print_sym [93]
-                0.00    0.00      58/63332612     resolve_stmt [8]
-                0.00    0.00  326268/63332612     resolve_expected_expr [12]
-                0.00    0.00 3097494/63332612     resolve_expr_binary_op [5]
-                0.09    0.00 59908730/63332612     update_EBP_ret <cycle 1> [14]
-[25]     2.6    0.10    0.00 63332612         map_put_str [25]
+[4]      4.9    0.21    0.00                 map_get_uint64_from_uint64 [4]
 -----------------------------------------------
                                                  <spontaneous>
-[26]     2.6    0.10    0.00                 map_get_str [26]
-                0.00    0.00      52/275634      new_stmt_select_case [107]
-                0.00    0.00       1/1           fatal [144]
+[5]      4.7    0.00    0.20                 run [5]
+                0.10    0.06     318/318         runmember <cycle 1> [13]
+                0.00    0.03       1/1           print_results [23]
+                0.00    0.01       1/1           create_members [33]
+                0.00    0.00       1/1           setassumptions [54]
+                0.00    0.00       1/1           print_test_case [80]
+                0.00    0.00       1/1           dates_arena_free [79]
 -----------------------------------------------
-                0.00    0.00       1/11981747     set_interpreter_text [98]
-                0.00    0.00    1908/11981747     interpret_code.constprop.0 [73]
-                0.00    0.00   20352/11981747     calcDTH [68]
-                0.00    0.00   20352/11981747     NRA [63]
-                0.00    0.00  163134/11981747     calcA [51]
-                0.00    0.00  183486/11981747     salaryscale [48]
-                0.00    0.10 11592514/11981747     calcC [3]
-[27]     2.6    0.00    0.10 11981747         run [27]
-                0.01    0.09       1/2           parse_cells [19]
-                0.00    0.00       1/321         cell_content [28]
------------------------------------------------
-                0.00    0.00       1/321         validateUI [1]
-                0.00    0.00       1/321         run [27]
-                0.00    0.10     319/321         open_database [29]
-[28]     2.6    0.00    0.10     321         cell_content [28]
-                0.01    0.09       1/2           parse_cells [19]
-                0.00    0.00       1/23053287     arena_alloc [39]
-                0.00    0.00     318/323         arena_grow [119]
-                0.00    0.00       1/57281       record_int [110]
------------------------------------------------
-                                                 <spontaneous>
-[29]     2.6    0.00    0.10                 open_database [29]
-                0.00    0.10     319/321         cell_content [28]
-                0.00    0.00     319/319         record_double [120]
-                0.00    0.00       6/3854517     new_stmt_expr [103]
-                0.00    0.00       1/351683      buf__printf [106]
+[6]      3.7    0.10    0.06     318+25366508 <cycle 1 as a whole> [6]
+                0.04    0.02 11982700             runmember <cycle 1> [13]
+                0.02    0.03 11592514             NRA <cycle 1> [17]
+                0.03    0.00  651264             get_redcap_ukms_ukzt <cycle 1> [21]
+                0.01    0.00  651264             get_res_tuc <cycle 1> [31]
+                0.00    0.00   31164             getDOC <cycle 1> [43]
+                0.00    0.00   20352             update_EBP_ret <cycle 1> [44]
+                0.00    0.00   20352             update_res_lump_sums <cycle 1> [45]
+                0.00    0.00    9222             getDOC_prolongation <cycle 1> [47]
+                0.00    0.00  163134             calcC <cycle 1> [49]
+                0.00    0.00  163134             calcA <cycle 1> [48]
+                0.00    0.00   20352             retx <cycle 1> [50]
+                0.00    0.00   20352             wxdef <cycle 1> [52]
+                0.00    0.00   20352             salaryscale <cycle 1> [51]
+                0.00    0.00     318             set_tariffs <cycle 1> [53]
+                0.00    0.00   20352             update_premiums <cycle 1> [72]
 -----------------------------------------------
                                                  <spontaneous>
-[30]     2.5    0.07    0.03                 error [30]
-                0.03    0.00 11981981/75314595     map_get [21]
+[7]      2.8    0.12    0.00                 resolve_expr_binary_op [7]
 -----------------------------------------------
                                                  <spontaneous>
-[31]     2.4    0.00    0.09                 record_string [31]
-                0.09    0.00   57101/160771      arena_str_dup [16]
-                0.00    0.00   57101/23053287     arena_alloc [39]
-                0.00    0.00   57101/57281       record_int [110]
-                0.00    0.00   57101/57280       jalloc [111]
-                0.00    0.00   41340/275634      new_stmt_select_case [107]
-                0.00    0.00     318/351683      buf__printf [106]
-                0.00    0.00       1/323         arena_grow [119]
------------------------------------------------
-                0.00    0.00 3675132/97722936     resolve_expected_expr [12]
-                0.01    0.00 24031728/97722936     resolve_stmt [8]
-                0.02    0.00 32750712/97722936     parse_stmt_block [17]
-                0.02    0.00 37265364/97722936     resolve_binary_string_op [7]
-[32]     1.4    0.06    0.00 97722936         token_start [32]
------------------------------------------------
-                0.03    0.02 2444958/2444958     resolve_binary_string_op [7]
-[33]     1.4    0.03    0.02 2444958         resolve_binary_arithmetic_op [33]
-                0.02    0.00 4889916/49379822     parse_stmt_block [17]
-                0.00    0.00 4889916/4889916     token_float_val [102]
------------------------------------------------
-                0.04    0.01   20352/20352       runmember [2]
-[34]     1.4    0.04    0.01   20352         calc_res [34]
-                0.00    0.01  254400/651264      get_redcap_ukms_ukzt [50]
-                0.00    0.00  651264/651264      get_res_tuc [60]
-                0.00    0.00  508800/8466432     update_art24 [37]
------------------------------------------------
-                0.00    0.00       1/28          printtc [64]
-                0.01    0.01      13/28          print_proj_kind [43]
-                0.02    0.01      14/28          print_test_case [42]
-[35]     1.1    0.03    0.01      28         print_gen_kind [35]
-                0.01    0.00 10189038/23053287     arena_alloc [39]
-                0.00    0.00    9360/17615       validateInput [114]
-                0.00    0.00     144/3854517     new_stmt_expr [103]
-                0.00    0.00       8/48          makeLifeTable [127]
------------------------------------------------
-                0.04    0.00 39710322/39710322     resolve_binary_string_op [7]
-[36]     1.1    0.04    0.00 39710322         token_int_val [36]
------------------------------------------------
-                0.00    0.00  508800/8466432     calc_res [34]
-                0.00    0.00  651264/8466432     get_res_tuc [60]
-                0.01    0.00 2096256/8466432     update_res_lump_sums [11]
-                0.01    0.00 2605056/8466432     get_redcap_mixed_ukmt [41]
-                0.01    0.00 2605056/8466432     get_redcap_ukms_ukzt [50]
-[37]     0.8    0.03    0.00 8466432         update_art24 [37]
-                0.00    0.00    2232/756183      create_member [72]
-                0.00    0.00    1116/214272      updateValidation [75]
------------------------------------------------
-                0.03    0.00 18632682/18632682     cast_operand [18]
-[38]     0.8    0.03    0.00 18632682         token_name [38]
------------------------------------------------
-                0.00    0.00       1/23053287     cell_content [28]
-                0.00    0.00      12/23053287     parse_interpreter <cycle 1> [6]
-                0.00    0.00     179/23053287     parse_record [89]
-                0.00    0.00    2862/23053287     open_excel [81]
-                0.00    0.00   57101/23053287     record_string [31]
-                0.00    0.00  329766/23053287     record_boolean [70]
-                0.00    0.00  492582/23053287     close_excel [67]
-                0.01    0.00 10189038/23053287     print_gen_kind [35]
-                0.02    0.00 11981746/23053287     add_builtin_var [22]
-[39]     0.8    0.03    0.00 23053287         arena_alloc [39]
------------------------------------------------
-                0.00    0.00       1/11981795     interpret_code.constprop.0 [73]
-                0.00    0.00       1/11981795     validateUI [1]
-                0.00    0.00       1/11981795     read_user_input [94]
-                0.00    0.00      29/11981795     on_startstopbutton_clicked [95]
-                0.00    0.00     971/11981795     setassumptions [74]
-                0.00    0.00   20352/11981795     NRA [63]
-                0.00    0.00   21306/11981795     set_tariffs [69]
-                0.00    0.00  163134/11981795     salaryscale [48]
-                0.00    0.00  163134/11981795     calcA [51]
-                0.03    0.00 11612866/11981795     calcC [3]
-[40]     0.8    0.03    0.00 11981795         printresults [40]
-                0.00    0.00       6/351683      buf__printf [106]
+[8]      2.8    0.12    0.00                 sym_get [8]
 -----------------------------------------------
                                                  <spontaneous>
-[41]     0.6    0.01    0.01                 get_redcap_mixed_ukmt [41]
-                0.01    0.00 2605056/8466432     update_art24 [37]
-                0.00    0.00 2605056/11776318     calcA [51]
+[9]      2.6    0.11    0.00                 add_builtin_var [9]
 -----------------------------------------------
                                                  <spontaneous>
-[42]     0.6    0.00    0.02                 print_test_case [42]
-                0.02    0.01      14/28          print_gen_kind [35]
------------------------------------------------
-                0.00    0.02       1/1           validateUI [1]
-[43]     0.5    0.00    0.02       1         print_proj_kind [43]
-                0.01    0.01      13/28          print_gen_kind [35]
-                0.00    0.00    4940/17615       validateInput [114]
-                0.00    0.00      14/3854517     new_stmt_expr [103]
------------------------------------------------
-                0.00    0.00       2/11986298     min <cycle 2> [99]
-                0.00    0.00      16/11986298     parse_expr_mul [88]
-                0.00    0.00      18/11986298     type_name [83]
-                0.00    0.00     116/11986298     parse_select_case_pattern <cycle 3> [86]
-                0.00    0.00     133/11986298     is_string_type [92]
-                0.00    0.00     133/11986298     is_arithmetic_type [91]
-                0.00    0.00     133/11986298     init_builtin_funcs [90]
-                0.00    0.00     162/11986298     parse_simple_stmt [87]
-                0.00    0.00     310/11986298     parse_expr_unary <cycle 2> [84]
-                0.00    0.00     559/11986298     parse_stmt <cycle 3> [24]
-                0.00    0.00    2970/11986298     parse_expr_or <cycle 2> [80]
-                0.02    0.00 11981746/11986298     update_EBP_ret <cycle 1> [14]
-[44]     0.5    0.02    0.00 11986298         next_token [44]
-                0.00    0.00     180/11982318     warning [52]
-                0.00    0.00      58/58          is_keyword_name [125]
-                0.00    0.00      21/3854517     new_stmt_expr [103]
------------------------------------------------
-                0.00    0.00 3183174/21077640     resolve_stmt [8]
-                0.02    0.00 17894466/21077640     resolve_expr_binary_op [5]
-[45]     0.5    0.02    0.00 21077640         interpret [45]
-                0.00    0.00      10/75314595     map_get [21]
-                0.00    0.00       9/63332612     map_put_str [25]
------------------------------------------------
-                0.00    0.00 1305072/19937754     resolve_stmt [8]
-                0.02    0.00 18632682/19937754     cast_operand [18]
-[46]     0.5    0.02    0.00 19937754         token_kind [46]
+[10]     2.1    0.09    0.00                 resolve_binary_arithmetic_op [10]
 -----------------------------------------------
                                                  <spontaneous>
-[47]     0.5    0.02    0.00                 init_keywords [47]
------------------------------------------------
-                0.00    0.00     318/163134      runmember [2]
-                0.00    0.02  162816/163134      get_art24_act_res [49]
-[48]     0.4    0.00    0.02  163134         salaryscale [48]
-                0.00    0.01  713592/59929082     update_EBP_ret <cycle 1> [14]
-                0.00    0.00  897078/59908730     add_builtin_var [22]
-                0.00    0.00  183486/11981747     run [27]
-                0.00    0.00  163134/11981795     printresults [40]
------------------------------------------------
-                0.00    0.02   20352/20352       runmember [2]
-[49]     0.4    0.00    0.02   20352         get_art24_act_res [49]
-                0.00    0.02  162816/163134      salaryscale [48]
------------------------------------------------
-                0.00    0.01  254400/651264      calc_res [34]
-                0.00    0.01  396864/651264      update_res_lump_sums [11]
-[50]     0.4    0.00    0.02  651264         get_redcap_ukms_ukzt [50]
-                0.01    0.00 2605056/8466432     update_art24 [37]
-                0.00    0.01 5554176/11776318     calcA [51]
------------------------------------------------
-                0.00    0.00    9222/11776318     getDOC_prolongation [66]
-                0.00    0.00   20352/11776318     set_dbo_ret [62]
-                0.00    0.00   31164/11776318     getDOC [61]
-                0.00    0.00   61692/11776318     runmember [2]
-                0.00    0.00  162816/11776318     update_premiums [71]
-                0.00    0.00  936192/11776318     update_res_lump_sums [11]
-                0.00    0.00 1093120/11776318     get_res_tuc [60]
-                0.00    0.00 1302528/11776318     calc_lump_sum [13]
-                0.00    0.00 2605056/11776318     get_redcap_mixed_ukmt [41]
-                0.00    0.01 5554176/11776318     get_redcap_ukms_ukzt [50]
-[51]     0.4    0.00    0.02 11776318         calcA [51]
-                0.00    0.01  652536/59929082     update_EBP_ret <cycle 1> [14]
-                0.00    0.00  815670/59908730     add_builtin_var [22]
-                0.00    0.00  163134/11981747     run [27]
-                0.00    0.00  163134/11981795     printresults [40]
------------------------------------------------
-                0.00    0.00       2/11982318     min <cycle 2> [99]
-                0.00    0.00       8/11982318     parse_expr_mul [88]
-                0.00    0.00      18/11982318     type_name [83]
-                0.00    0.00      28/11982318     parse_expr_or <cycle 2> [80]
-                0.00    0.00     180/11982318     next_token [44]
-                0.00    0.00     336/11982318     parse_expr_unary <cycle 2> [84]
-                0.01    0.00 11981746/11982318     update_EBP_ret <cycle 1> [14]
-[52]     0.3    0.01    0.00 11982318         warning [52]
------------------------------------------------
-                0.01    0.00 2010960/2010960     resolve_expected_expr [12]
-[53]     0.3    0.01    0.00 2010960         expect_keyword [53]
------------------------------------------------
-                0.01    0.00       1/1           parse_cells [19]
-[54]     0.3    0.01    0.00       1         extract_excel [54]
-                0.00    0.00  103670/351683      buf__printf [106]
-                0.00    0.00       1/2842        replace [115]
+[11]     1.9    0.08    0.00                 map_get_str [11]
 -----------------------------------------------
                                                  <spontaneous>
-[55]     0.3    0.01    0.00                 is_token_eof [55]
+[12]     1.4    0.06    0.00                 buf__grow [12]
+-----------------------------------------------
+                                2544             set_tariffs <cycle 1> [53]
+                               20352             salaryscale <cycle 1> [51]
+                               20352             wxdef <cycle 1> [52]
+                               20352             retx <cycle 1> [50]
+                              163134             calcA <cycle 1> [48]
+                              163134             calcC <cycle 1> [49]
+                             11592514             NRA <cycle 1> [17]
+                0.10    0.06     318/318         run [5]
+[13]     1.3    0.04    0.02 11982700         runmember <cycle 1> [13]
+                0.01    0.00 11982382/11982398     get_database [34]
+                0.01    0.00   20352/20352       update_art24 [42]
+                0.00    0.00   20352/20352       update_EBP [46]
+                0.00    0.00   19932/184022      newDate [40]
+                0.00    0.00  431426/541910      gen_sum [60]
+                0.00    0.00   61056/61056       gen_sum_art24 [64]
+                0.00    0.00   20670/20670       calcDTH [66]
+                0.00    0.00   20352/20352       update_death_lump_sums [71]
+                0.00    0.00   20352/20352       set_dbo_ret [68]
+                0.00    0.00   20352/20352       set_nc_ret [70]
+                0.00    0.00   20352/20352       set_ic_nc_ret [69]
+                0.00    0.00   20352/20352       set_assets [67]
+                0.00    0.00    9222/71550       minDate [63]
+                               40704             NRA <cycle 1> [17]
+                               31164             getDOC <cycle 1> [43]
+                               20352             salaryscale <cycle 1> [51]
+                               20352             update_res_lump_sums <cycle 1> [45]
+                               20352             update_premiums <cycle 1> [72]
+                               20352             wxdef <cycle 1> [52]
+                               20352             retx <cycle 1> [50]
+                               20352             update_EBP_ret <cycle 1> [44]
+                                9222             getDOC_prolongation <cycle 1> [47]
+                                 318             calcA <cycle 1> [48]
+                                 318             set_tariffs <cycle 1> [53]
+                                 318             calcC <cycle 1> [49]
 -----------------------------------------------
                                                  <spontaneous>
-[56]     0.3    0.01    0.00                 set_ic_nc_ret [56]
+[14]     1.2    0.05    0.00                 interpret [14]
 -----------------------------------------------
                                                  <spontaneous>
-[57]     0.3    0.01    0.00                 sym_get [57]
------------------------------------------------
-                0.00    0.00       1/184022      setassumptions [74]
-                0.00    0.00       1/184022      validateUI [1]
-                0.00    0.00     318/184022      printDate [78]
-                0.00    0.00     636/184022      minDate [77]
-                0.00    0.00     954/184022      Datedup [76]
-                0.00    0.00   18444/184022      getDOC_prolongation [66]
-                0.00    0.00   19932/184022      runmember [2]
-                0.00    0.00   20352/184022      set_nc_ret [65]
-                0.00    0.00   20352/184022      update_EBP_ret <cycle 1> [14]
-                0.00    0.00   40704/184022      set_dbo_ret [62]
-                0.00    0.00   62328/184022      getDOC [61]
-[58]     0.3    0.01    0.00  184022         retx [58]
-                0.00    0.00  184022/351683      buf__printf [106]
+[15]     1.2    0.05    0.00                 nEx [15]
 -----------------------------------------------
                                                  <spontaneous>
-[59]     0.1    0.01    0.00                 token_pos [59]
+[16]     1.2    0.05    0.00                 resolve_stmt [16]
 -----------------------------------------------
-                0.00    0.00  651264/651264      calc_res [34]
-[60]     0.1    0.00    0.00  651264         get_res_tuc [60]
-                0.00    0.00  651264/8466432     update_art24 [37]
-                0.00    0.00 1093120/11776318     calcA [51]
------------------------------------------------
-                0.00    0.00   31164/31164       runmember [2]
-[61]     0.1    0.00    0.00   31164         getDOC [61]
-                0.00    0.00   62328/184022      retx [58]
-                0.00    0.00   31164/11776318     calcA [51]
-                0.00    0.00   62328/71550       setdate [108]
------------------------------------------------
-                                                 <spontaneous>
-[62]     0.1    0.00    0.00                 set_dbo_ret [62]
-                0.00    0.00   40704/184022      retx [58]
-                0.00    0.00   20352/11776318     calcA [51]
------------------------------------------------
-                0.00    0.00   20352/20352       runmember [2]
-[63]     0.1    0.00    0.00   20352         NRA [63]
-                0.00    0.00   81408/59929082     update_EBP_ret <cycle 1> [14]
-                0.00    0.00  122112/59908730     add_builtin_var [22]
-                0.00    0.00   20352/11981747     run [27]
-                0.00    0.00   20352/11981795     printresults [40]
------------------------------------------------
-                0.00    0.00       1/1           validateUI [1]
-[64]     0.0    0.00    0.00       1         printtc [64]
-                0.00    0.00       1/28          print_gen_kind [35]
-                0.00    0.00       2/3854517     new_stmt_expr [103]
+                                9222             getDOC_prolongation <cycle 1> [47]
+                               20352             update_EBP_ret <cycle 1> [44]
+                               31164             getDOC <cycle 1> [43]
+                               40704             runmember <cycle 1> [13]
+                              936192             update_res_lump_sums <cycle 1> [45]
+                             1744384             get_res_tuc <cycle 1> [31]
+                             8810496             get_redcap_ukms_ukzt <cycle 1> [21]
+[17]     1.1    0.02    0.03 11592514         NRA <cycle 1> [17]
+                0.03    0.00 34777542/35947195     get_user_input [25]
+                             11592514             runmember <cycle 1> [13]
 -----------------------------------------------
                                                  <spontaneous>
-[65]     0.0    0.00    0.00                 set_nc_ret [65]
-                0.00    0.00   20352/184022      retx [58]
------------------------------------------------
-                0.00    0.00    9222/9222        runmember [2]
-[66]     0.0    0.00    0.00    9222         getDOC_prolongation [66]
-                0.00    0.00   18444/184022      retx [58]
-                0.00    0.00    9222/11776318     calcA [51]
------------------------------------------------
-                0.00    0.00     318/492582      printDate [78]
-                0.00    0.00     318/492582      dates_arena_free [85]
-                0.00    0.00  165678/492582      create_member [72]
-                0.00    0.00  326268/492582      resolve_expected_expr [12]
-[67]     0.0    0.00    0.00  492582         close_excel [67]
-                0.00    0.00  492582/23053287     arena_alloc [39]
+[18]     1.0    0.05    0.00                 resolve_binary_string_op [18]
 -----------------------------------------------
                                                  <spontaneous>
-[68]     0.0    0.00    0.00                 calcDTH [68]
-                0.00    0.00   20352/59929082     update_EBP_ret <cycle 1> [14]
-                0.00    0.00   20352/11981747     run [27]
-                0.00    0.00   20352/59908730     add_builtin_var [22]
------------------------------------------------
-                0.00    0.00   20352/20352       runmember [2]
-[69]     0.0    0.00    0.00   20352         set_tariffs [69]
-                0.00    0.00   20352/59929082     update_EBP_ret <cycle 1> [14]
-                0.00    0.00     954/1909        interpret_code.constprop.0 [73]
-                0.00    0.00   21306/11981795     printresults [40]
-                0.00    0.00   21306/59908730     add_builtin_var [22]
------------------------------------------------
-                0.00    0.00     318/329766      printDate [78]
-                0.00    0.00     636/329766      Datedup [76]
-                0.00    0.00    1272/329766      newDate [82]
-                0.00    0.00    1272/329766      create_member [72]
-                0.00    0.00  326268/329766      resolve_expected_expr [12]
-[70]     0.0    0.00    0.00  329766         record_boolean [70]
-                0.00    0.00  329766/23053287     arena_alloc [39]
-                0.00    0.00  329766/825210      open_xml_from_excel [105]
-                0.00    0.00     318/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00   20352/20352       runmember [2]
-[71]     0.0    0.00    0.00   20352         update_premiums [71]
-                0.00    0.00  162816/11776318     calcA [51]
-                0.00    0.00  213156/214272      updateValidation [75]
-                0.00    0.00  108252/756183      create_member [72]
------------------------------------------------
-                0.00    0.00       1/756183      validateUI [1]
-                0.00    0.00    2232/756183      update_art24 [37]
-                0.00    0.00  108252/756183      update_premiums [71]
-                0.00    0.00  214272/756183      updateValidation [75]
-                0.00    0.00  431426/756183      runmember [2]
-[72]     0.0    0.00    0.00  756183         create_member [72]
-                0.00    0.00  165678/492582      close_excel [67]
-                0.00    0.00    1272/329766      record_boolean [70]
-                0.00    0.00     318/319         newDate [82]
-                0.00    0.00     318/2862        open_excel [81]
-                0.00    0.00  164730/3854517     new_stmt_expr [103]
------------------------------------------------
-                0.00    0.00       1/1909        validateUI [1]
-                0.00    0.00     954/1909        setassumptions [74]
-                0.00    0.00     954/1909        set_tariffs [69]
-[73]     0.0    0.00    0.00    1909         interpret_code.constprop.0 [73]
-                0.00    0.00    7632/59929082     update_EBP_ret <cycle 1> [14]
-                0.00    0.00    1908/11981747     run [27]
-                0.00    0.00    7632/59908730     add_builtin_var [22]
-                0.00    0.00       1/11981795     printresults [40]
-                0.00    0.00       1/3854517     new_stmt_expr [103]
------------------------------------------------
-                0.00    0.00     318/318         runmember [2]
-[74]     0.0    0.00    0.00     318         setassumptions [74]
-                0.00    0.00     954/1909        interpret_code.constprop.0 [73]
-                0.00    0.00     971/11981795     printresults [40]
-                0.00    0.00     954/59908730     add_builtin_var [22]
-                0.00    0.00       1/184022      retx [58]
------------------------------------------------
-                0.00    0.00    1116/214272      update_art24 [37]
-                0.00    0.00  213156/214272      update_premiums [71]
-[75]     0.0    0.00    0.00  214272         updateValidation [75]
-                0.00    0.00  214272/756183      create_member [72]
+[19]     0.9    0.04    0.00                 is_integer_type [19]
 -----------------------------------------------
                                                  <spontaneous>
-[76]     0.0    0.00    0.00                 Datedup [76]
-                0.00    0.00     954/184022      retx [58]
-                0.00    0.00    1590/2862        open_excel [81]
-                0.00    0.00     636/329766      record_boolean [70]
+[20]     0.8    0.04    0.00                 map_free [20]
+-----------------------------------------------
+                              651264             update_res_lump_sums <cycle 1> [45]
+[21]     0.8    0.03    0.00  651264         get_redcap_ukms_ukzt <cycle 1> [21]
+                0.00    0.00 5210112/8466432     calc_lump_sum [41]
+                             8810496             NRA <cycle 1> [17]
+-----------------------------------------------
+                0.03    0.00       1/1           print_results [23]
+[22]     0.7    0.03    0.00       1         print_database [22]
+-----------------------------------------------
+                0.00    0.03       1/1           run [5]
+[23]     0.7    0.00    0.03       1         print_results [23]
+                0.03    0.00       1/1           print_database [22]
 -----------------------------------------------
                                                  <spontaneous>
-[77]     0.0    0.00    0.00                 minDate [77]
-                0.00    0.00     636/184022      retx [58]
-                0.00    0.00     636/2862        open_excel [81]
+[24]     0.7    0.03    0.00                 str_intern_range [24]
+-----------------------------------------------
+                0.00    0.00       1/35947195     on_import_data_clicked [58]
+                0.00    0.00       1/35947195     on_close_button_press_event [57]
+                0.00    0.00      18/35947195     setassumptions [54]
+                0.00    0.00      29/35947195     read_user_input [55]
+                0.00    0.00    7632/35947195     set_tariffs <cycle 1> [53]
+                0.00    0.00   61056/35947195     salaryscale <cycle 1> [51]
+                0.00    0.00   61056/35947195     wxdef <cycle 1> [52]
+                0.00    0.00   61056/35947195     retx <cycle 1> [50]
+                0.00    0.00  489402/35947195     calcA <cycle 1> [48]
+                0.00    0.00  489402/35947195     calcC <cycle 1> [49]
+                0.03    0.00 34777542/35947195     NRA <cycle 1> [17]
+[25]     0.7    0.03    0.00 35947195         get_user_input [25]
+-----------------------------------------------
+                0.00    0.02       1/1           on_startstopbutton_clicked [27]
+[26]     0.5    0.00    0.02       1         validate_UI [26]
+                0.02    0.00       1/1           reset_error [28]
+                0.00    0.00       1/184022      newDate [40]
+                0.00    0.00      16/11982398     get_database [34]
+                0.00    0.00       1/2           validate_passed [78]
 -----------------------------------------------
                                                  <spontaneous>
-[78]     0.0    0.00    0.00                 printDate [78]
-                0.00    0.00     318/184022      retx [58]
-                0.00    0.00     318/329766      record_boolean [70]
-                0.00    0.00     318/2862        open_excel [81]
-                0.00    0.00     318/492582      close_excel [67]
+[27]     0.5    0.00    0.02                 on_startstopbutton_clicked [27]
+                0.00    0.02       1/1           validate_UI [26]
+                0.00    0.00       1/2           set_user_inputs [77]
+                0.00    0.00       1/2           validate_passed [78]
 -----------------------------------------------
-[79]     0.0    0.00    0.00     108+639     <cycle 2 as a whole> [79]
-                0.00    0.00     259             parse_expr_or <cycle 2> [80]
-                0.00    0.00     222             parse_expr_unary <cycle 2> [84]
-                0.00    0.00     133             min <cycle 2> [99]
-                0.00    0.00     133             is_integer_type <cycle 2> [123]
------------------------------------------------
-                                 259             parse_expr_unary <cycle 2> [84]
-[80]     0.0    0.00    0.00     259         parse_expr_or <cycle 2> [80]
-                0.00    0.00    2970/11986298     next_token [44]
-                0.00    0.00      28/11982318     warning [52]
-                0.00    0.00      28/1163        init_stream [116]
-                0.00    0.00      28/28          resolve_stmts [131]
-                0.00    0.00      18/3854517     new_stmt_expr [103]
-                0.00    0.00      18/18          new_expr [133]
-                0.00    0.00      10/10          sym_push_func [135]
-                                  51             is_integer_type <cycle 2> [123]
------------------------------------------------
-                0.00    0.00     318/2862        printDate [78]
-                0.00    0.00     318/2862        create_member [72]
-                0.00    0.00     636/2862        minDate [77]
-                0.00    0.00    1590/2862        Datedup [76]
-[81]     0.0    0.00    0.00    2862         open_excel [81]
-                0.00    0.00    2862/23053287     arena_alloc [39]
-                0.00    0.00    2862/825210      open_xml_from_excel [105]
-                0.00    0.00       1/323         arena_grow [119]
------------------------------------------------
-                0.00    0.00       1/319         validateUI [1]
-                0.00    0.00     318/319         create_member [72]
-[82]     0.0    0.00    0.00     319         newDate [82]
-                0.00    0.00    1272/329766      record_boolean [70]
+                0.02    0.00       1/1           validate_UI [26]
+[28]     0.5    0.02    0.00       1         reset_error [28]
 -----------------------------------------------
                                                  <spontaneous>
-[83]     0.0    0.00    0.00                 type_name [83]
-                0.00    0.00      18/108         parse_expr_unary <cycle 2> [84]
-                0.00    0.00      18/11986298     next_token [44]
-                0.00    0.00      18/11982318     warning [52]
-                0.00    0.00      38/1163        init_stream [116]
------------------------------------------------
-                                 135             min <cycle 2> [99]
-                0.00    0.00      18/108         type_name [83]
-                0.00    0.00      69/108         parse_stmt <cycle 3> [24]
-[84]     0.0    0.00    0.00     222         parse_expr_unary <cycle 2> [84]
-                0.00    0.00     310/11986298     next_token [44]
-                0.00    0.00     336/11982318     warning [52]
-                0.00    0.00     662/1163        init_stream [116]
-                0.00    0.00     193/193         clear_stream [121]
-                0.00    0.00     144/144         new_typespec_project [122]
-                0.00    0.00      67/87          new_expr_float [124]
-                0.00    0.00      58/58          new_StmtBlock [126]
-                0.00    0.00      19/19          new_typespec_name [132]
-                0.00    0.00       4/4           new_expr_boolean [139]
-                                 259             parse_expr_or <cycle 2> [80]
-                                  61             is_integer_type <cycle 2> [123]
+[29]     0.5    0.02    0.00                 is_arithmetic_type [29]
 -----------------------------------------------
                                                  <spontaneous>
-[85]     0.0    0.00    0.00                 dates_arena_free [85]
-                0.00    0.00     318/492582      close_excel [67]
+[30]     0.5    0.02    0.00                 is_string_type [30]
 -----------------------------------------------
-                                  56             parse_stmt <cycle 3> [24]
-[86]     0.0    0.00    0.00      56         parse_select_case_pattern <cycle 3> [86]
-                0.00    0.00     116/11986298     next_token [44]
-                0.00    0.00       2/108         is_integer_type <cycle 2> [123]
-                                   2             parse_stmt <cycle 3> [24]
+                              651264             update_res_lump_sums <cycle 1> [45]
+[31]     0.2    0.01    0.00  651264         get_res_tuc <cycle 1> [31]
+                0.00    0.00  651264/8466432     calc_lump_sum [41]
+                             1744384             NRA <cycle 1> [17]
 -----------------------------------------------
-                                                 <spontaneous>
-[87]     0.0    0.00    0.00                 parse_simple_stmt [87]
-                0.00    0.00     162/11986298     next_token [44]
+                0.01    0.00     318/318         create_members [33]
+[32]     0.2    0.01    0.00     318         create_member [32]
+                0.00    0.00    1908/184022      newDate [40]
 -----------------------------------------------
-                                                 <spontaneous>
-[88]     0.0    0.00    0.00                 parse_expr_mul [88]
-                0.00    0.00       4/108         is_integer_type <cycle 2> [123]
-                0.00    0.00      16/11986298     next_token [44]
-                0.00    0.00       8/11982318     warning [52]
-                0.00    0.00       8/1163        init_stream [116]
-                0.00    0.00       8/40          sym_push_type [128]
+                0.00    0.01       1/1           run [5]
+[33]     0.2    0.00    0.01       1         create_members [33]
+                0.01    0.00     318/318         create_member [32]
+-----------------------------------------------
+                0.00    0.00      16/11982398     validate_UI [26]
+                0.01    0.00 11982382/11982398     runmember <cycle 1> [13]
+[34]     0.2    0.01    0.00 11982398         get_database [34]
 -----------------------------------------------
                                                  <spontaneous>
-[89]     0.0    0.00    0.00                 parse_record [89]
-                0.00    0.00     179/23053287     arena_alloc [39]
-                0.00    0.00     179/57280       jalloc [111]
-                0.00    0.00     179/57281       record_int [110]
+[35]     0.2    0.01    0.00                 add_builtin_string [35]
 -----------------------------------------------
                                                  <spontaneous>
-[90]     0.0    0.00    0.00                 init_builtin_funcs [90]
-                0.00    0.00     133/11986298     next_token [44]
+[36]     0.2    0.01    0.00                 buf__printf [36]
 -----------------------------------------------
                                                  <spontaneous>
-[91]     0.0    0.00    0.00                 is_arithmetic_type [91]
-                0.00    0.00     133/11986298     next_token [44]
+[37]     0.2    0.01    0.00                 is_concatable [37]
 -----------------------------------------------
                                                  <spontaneous>
-[92]     0.0    0.00    0.00                 is_string_type [92]
-                0.00    0.00     133/11986298     next_token [44]
------------------------------------------------
-                0.00    0.00      12/24          parse_interpreter <cycle 1> [6]
-                0.00    0.00      12/24          max [10]
-[93]     0.0    0.00    0.00      24         print_sym [93]
-                0.00    0.00      24/75314595     map_get [21]
-                0.00    0.00      24/63332612     map_put_str [25]
-                0.00    0.00      24/351683      buf__printf [106]
-                0.00    0.00      12/3854517     new_stmt_expr [103]
+[38]     0.2    0.01    0.00                 min [38]
 -----------------------------------------------
                                                  <spontaneous>
-[94]     0.0    0.00    0.00                 read_user_input [94]
-                0.00    0.00       1/1           on_startstopbutton_clicked [95]
-                0.00    0.00       1/11981795     printresults [40]
-                0.00    0.00       1/1           arena_free [142]
-                0.00    0.00       1/2           userinterface [141]
+[39]     0.2    0.01    0.00                 token_kind_name [39]
 -----------------------------------------------
-                0.00    0.00       1/1           read_user_input [94]
-[95]     0.0    0.00    0.00       1         on_startstopbutton_clicked [95]
-                0.00    0.00      29/11981795     printresults [40]
-                0.00    0.00     167/3854517     new_stmt_expr [103]
-                0.00    0.00      29/29          isfloatc [130]
+                0.00    0.00       1/184022      setassumptions [54]
+                0.00    0.00       1/184022      validate_UI [26]
+                0.00    0.00    1908/184022      create_member [32]
+                0.00    0.00   18444/184022      getDOC_prolongation <cycle 1> [47]
+                0.00    0.00   19932/184022      runmember <cycle 1> [13]
+                0.00    0.00   20352/184022      update_EBP [46]
+                0.00    0.00   61056/184022      update_EBP_ret <cycle 1> [44]
+                0.00    0.00   62328/184022      getDOC <cycle 1> [43]
+[40]     0.2    0.01    0.00  184022         newDate [40]
+                0.00    0.00   21243/21243       setdate [65]
+-----------------------------------------------
+                0.00    0.00  651264/8466432     get_res_tuc <cycle 1> [31]
+                0.00    0.00 2605056/8466432     update_res_lump_sums <cycle 1> [45]
+                0.00    0.00 5210112/8466432     get_redcap_ukms_ukzt <cycle 1> [21]
+[41]     0.1    0.01    0.00 8466432         calc_lump_sum [41]
+-----------------------------------------------
+                0.01    0.00   20352/20352       runmember <cycle 1> [13]
+[42]     0.1    0.01    0.00   20352         update_art24 [42]
+                0.00    0.00  214272/214272      get_art24_act_res [61]
+                0.00    0.00  110484/541910      gen_sum [60]
+-----------------------------------------------
+                               31164             runmember <cycle 1> [13]
+[43]     0.1    0.00    0.00   31164         getDOC <cycle 1> [43]
+                0.00    0.00   62328/184022      newDate [40]
+                0.00    0.00   62328/71550       minDate [63]
+                               31164             NRA <cycle 1> [17]
+-----------------------------------------------
+                               20352             runmember <cycle 1> [13]
+[44]     0.1    0.00    0.00   20352         update_EBP_ret <cycle 1> [44]
+                0.00    0.00   61056/184022      newDate [40]
+                               20352             NRA <cycle 1> [17]
+-----------------------------------------------
+                               20352             runmember <cycle 1> [13]
+[45]     0.0    0.00    0.00   20352         update_res_lump_sums <cycle 1> [45]
+                0.00    0.00 2605056/8466432     calc_lump_sum [41]
+                0.00    0.00  651264/651264      calc_res [59]
+                              936192             NRA <cycle 1> [17]
+                              651264             get_redcap_ukms_ukzt <cycle 1> [21]
+                              651264             get_res_tuc <cycle 1> [31]
+-----------------------------------------------
+                0.00    0.00   20352/20352       runmember <cycle 1> [13]
+[46]     0.0    0.00    0.00   20352         update_EBP [46]
+                0.00    0.00   20352/184022      newDate [40]
+-----------------------------------------------
+                                9222             runmember <cycle 1> [13]
+[47]     0.0    0.00    0.00    9222         getDOC_prolongation <cycle 1> [47]
+                0.00    0.00   18444/184022      newDate [40]
+                                9222             NRA <cycle 1> [17]
+-----------------------------------------------
+                                 318             runmember <cycle 1> [13]
+                              162816             update_premiums <cycle 1> [72]
+[48]     0.0    0.00    0.00  163134         calcA <cycle 1> [48]
+                0.00    0.00  489402/35947195     get_user_input [25]
+                              163134             runmember <cycle 1> [13]
+-----------------------------------------------
+                                 318             runmember <cycle 1> [13]
+                              162816             update_premiums <cycle 1> [72]
+[49]     0.0    0.00    0.00  163134         calcC <cycle 1> [49]
+                0.00    0.00  489402/35947195     get_user_input [25]
+                              163134             runmember <cycle 1> [13]
+-----------------------------------------------
+                               20352             runmember <cycle 1> [13]
+[50]     0.0    0.00    0.00   20352         retx <cycle 1> [50]
+                0.00    0.00   61056/35947195     get_user_input [25]
+                               20352             runmember <cycle 1> [13]
+-----------------------------------------------
+                               20352             runmember <cycle 1> [13]
+[51]     0.0    0.00    0.00   20352         salaryscale <cycle 1> [51]
+                0.00    0.00   61056/35947195     get_user_input [25]
+                               20352             runmember <cycle 1> [13]
+-----------------------------------------------
+                               20352             runmember <cycle 1> [13]
+[52]     0.0    0.00    0.00   20352         wxdef <cycle 1> [52]
+                0.00    0.00   61056/35947195     get_user_input [25]
+                               20352             runmember <cycle 1> [13]
+-----------------------------------------------
+                                 318             runmember <cycle 1> [13]
+[53]     0.0    0.00    0.00     318         set_tariffs <cycle 1> [53]
+                0.00    0.00    7632/35947195     get_user_input [25]
+                                2544             runmember <cycle 1> [13]
+-----------------------------------------------
+                0.00    0.00       1/1           run [5]
+[54]     0.0    0.00    0.00       1         setassumptions [54]
+                0.00    0.00       1/184022      newDate [40]
+                0.00    0.00      18/35947195     get_user_input [25]
+-----------------------------------------------
+                0.00    0.00       1/1           on_openDC_activate [56]
+[55]     0.0    0.00    0.00       1         read_user_input [55]
+                0.00    0.00      29/35947195     get_user_input [25]
 -----------------------------------------------
                                                  <spontaneous>
-[96]     0.0    0.00    0.00                 add_builtin_boolean [96]
-                0.00    0.00       5/75314595     map_get [21]
-                0.00    0.00       5/63332612     map_put_str [25]
+[56]     0.0    0.00    0.00                 on_openDC_activate [56]
+                0.00    0.00       1/1           read_user_input [55]
+                0.00    0.00       1/1           update_user_interface [82]
 -----------------------------------------------
                                                  <spontaneous>
-[97]     0.0    0.00    0.00                 add_builtin_string [97]
-                0.00    0.00       4/75314595     map_get [21]
-                0.00    0.00       4/63332612     map_put_str [25]
+[57]     0.0    0.00    0.00                 on_close_button_press_event [57]
+                0.00    0.00       1/35947195     get_user_input [25]
+                0.00    0.00       1/1           reset_database [81]
 -----------------------------------------------
                                                  <spontaneous>
-[98]     0.0    0.00    0.00                 set_interpreter_text [98]
-                0.00    0.00       1/11981747     run [27]
-                0.00    0.00       1/323         arena_grow [119]
+[58]     0.0    0.00    0.00                 on_import_data_clicked [58]
+                0.00    0.00       1/35947195     get_user_input [25]
+                0.00    0.00       1/2           set_user_inputs [77]
 -----------------------------------------------
-                                 133             is_integer_type <cycle 2> [123]
-[99]     0.0    0.00    0.00     133         min <cycle 2> [99]
-                0.00    0.00       2/11986298     next_token [44]
-                0.00    0.00       2/11982318     warning [52]
-                0.00    0.00     427/1163        init_stream [116]
-                0.00    0.00       2/87          new_expr_float [124]
-                                 135             parse_expr_unary <cycle 2> [84]
+                0.00    0.00  651264/651264      update_res_lump_sums <cycle 1> [45]
+[59]     0.0    0.00    0.00  651264         calc_res [59]
 -----------------------------------------------
-                                                 <spontaneous>
-[100]    0.0    0.00    0.00                 add_builtin_double [100]
-                0.00    0.00       1/75314595     map_get [21]
-                0.00    0.00       1/63332612     map_put_str [25]
+                0.00    0.00  110484/541910      update_art24 [42]
+                0.00    0.00  431426/541910      runmember <cycle 1> [13]
+[60]     0.0    0.00    0.00  541910         gen_sum [60]
 -----------------------------------------------
-                                                 <spontaneous>
-[101]    0.0    0.00    0.00                 add_builtin_int [101]
-                0.00    0.00       1/75314595     map_get [21]
-                0.00    0.00       1/63332612     map_put_str [25]
+                0.00    0.00  214272/214272      update_art24 [42]
+[61]     0.0    0.00    0.00  214272         get_art24_act_res [61]
+                0.00    0.00  214272/214272      get_method_amount [62]
 -----------------------------------------------
-                0.00    0.00 4889916/4889916     resolve_binary_arithmetic_op [33]
-[102]    0.0    0.00    0.00 4889916         token_float_val [102]
+                0.00    0.00  214272/214272      get_art24_act_res [61]
+[62]     0.0    0.00    0.00  214272         get_method_amount [62]
 -----------------------------------------------
-                0.00    0.00       1/3854517     interpret_code.constprop.0 [73]
-                0.00    0.00       1/3854517     update_EBP_ret <cycle 1> [14]
-                0.00    0.00       2/3854517     printtc [64]
-                0.00    0.00       2/3854517     resolve_stmt [8]
-                0.00    0.00       5/3854517     close_database [160]
-                0.00    0.00       6/3854517     validateInput [114]
-                0.00    0.00       6/3854517     open_database [29]
-                0.00    0.00       8/3854517     makeLifeTables [188]
-                0.00    0.00      10/3854517     userinterface [141]
-                0.00    0.00      12/3854517     print_sym [93]
-                0.00    0.00      12/3854517     print_syms [15]
-                0.00    0.00      12/3854517     nextrow [206]
-                0.00    0.00      14/3854517     print_proj_kind [43]
-                0.00    0.00      16/3854517     print_number [236]
-                0.00    0.00      18/3854517     parse_expr_or <cycle 2> [80]
-                0.00    0.00      21/3854517     next_token [44]
-                0.00    0.00      24/3854517     makeLifeTable [127]
-                0.00    0.00      75/3854517     parse_stmt <cycle 3> [24]
-                0.00    0.00     144/3854517     print_gen_kind [35]
-                0.00    0.00     167/3854517     on_startstopbutton_clicked [95]
-                0.00    0.00     636/3854517     sum [248]
-                0.00    0.00    3203/3854517     parse_cells [19]
-                0.00    0.00  164730/3854517     create_member [72]
-                0.00    0.00 3685392/3854517     resolve_expected_expr [12]
-[103]    0.0    0.00    0.00 3854517         new_stmt_expr [103]
+                0.00    0.00    9222/71550       runmember <cycle 1> [13]
+                0.00    0.00   62328/71550       getDOC <cycle 1> [43]
+[63]     0.0    0.00    0.00   71550         minDate [63]
 -----------------------------------------------
-                0.00    0.00 1674432/1674432     resolve_expected_expr [12]
-[104]    0.0    0.00    0.00 1674432         is_token [104]
+                0.00    0.00   61056/61056       runmember <cycle 1> [13]
+[64]     0.0    0.00    0.00   61056         gen_sum_art24 [64]
 -----------------------------------------------
-                0.00    0.00    2862/825210      open_excel [81]
-                0.00    0.00  329766/825210      record_boolean [70]
-                0.00    0.00  492582/825210      print_excel [235]
-[105]    0.0    0.00    0.00  825210         open_xml_from_excel [105]
+                0.00    0.00   21243/21243       newDate [40]
+[65]     0.0    0.00    0.00   21243         setdate [65]
 -----------------------------------------------
-                0.00    0.00       1/351683      open_database [29]
-                0.00    0.00       2/351683      new_expr_str [140]
-                0.00    0.00       4/351683      new_expr_boolean [139]
-                0.00    0.00       5/351683      update_EBP_ret <cycle 1> [14]
-                0.00    0.00       6/351683      printresults [40]
-                0.00    0.00       7/351683      new_stmt_do_while [137]
-                0.00    0.00       8/351683      new_stmt_do_until_loop [136]
-                0.00    0.00       8/351683      new_stmt_for [203]
-                0.00    0.00      10/351683      sym_push_func [135]
-                0.00    0.00      12/351683      nextrow [206]
-                0.00    0.00      18/351683      new_expr [133]
-                0.00    0.00      18/351683      new_expr_paren [198]
-                0.00    0.00      19/351683      new_typespec_name [132]
-                0.00    0.00      24/351683      print_sym [93]
-                0.00    0.00      27/351683      new_stmt_do_until [202]
-                0.00    0.00      28/351683      ast_free [153]
-                0.00    0.00      29/351683      update_gui [254]
-                0.00    0.00      37/351683      userinterface [141]
-                0.00    0.00      39/351683      new_stmt_do_while_loop [129]
-                0.00    0.00      40/351683      sym_push_type [128]
-                0.00    0.00      56/351683      resolve_stmt [8]
-                0.00    0.00      58/351683      new_StmtBlock [126]
-                0.00    0.00      87/351683      new_expr_float [124]
-                0.00    0.00     144/351683      new_typespec_project [122]
-                0.00    0.00     318/351683      record_boolean [70]
-                0.00    0.00     318/351683      record_string [31]
-                0.00    0.00     636/351683      sum [248]
-                0.00    0.00    3202/351683      parse_cells [19]
-                0.00    0.00    4452/351683      cast_to_string [158]
-                0.00    0.00   54378/351683      print_excel [235]
-                0.00    0.00  103670/351683      extract_excel [54]
-                0.00    0.00  184022/351683      retx [58]
-[106]    0.0    0.00    0.00  351683         buf__printf [106]
+                0.00    0.00   20670/20670       runmember <cycle 1> [13]
+[66]     0.0    0.00    0.00   20670         calcDTH [66]
 -----------------------------------------------
-                0.00    0.00      12/275634      parse_interpreter <cycle 1> [6]
-                0.00    0.00      52/275634      map_get_str [26]
-                0.00    0.00   41340/275634      record_string [31]
-                0.00    0.00  103670/275634      parse_cells [19]
-                0.00    0.00  130560/275634      new_stmt_assign [200]
-[107]    0.0    0.00    0.00  275634         new_stmt_select_case [107]
+                0.00    0.00   20352/20352       runmember <cycle 1> [13]
+[67]     0.0    0.00    0.00   20352         set_assets [67]
 -----------------------------------------------
-                0.00    0.00    9222/71550       runmember [2]
-                0.00    0.00   62328/71550       getDOC [61]
-[108]    0.0    0.00    0.00   71550         setdate [108]
+                0.00    0.00   20352/20352       runmember <cycle 1> [13]
+[68]     0.0    0.00    0.00   20352         set_dbo_ret [68]
 -----------------------------------------------
-                0.00    0.00   61056/61056       runmember [2]
-[109]    0.0    0.00    0.00   61056         gen_sum [109]
+                0.00    0.00   20352/20352       runmember <cycle 1> [13]
+[69]     0.0    0.00    0.00   20352         set_ic_nc_ret [69]
 -----------------------------------------------
-                0.00    0.00       1/57281       cell_content [28]
-                0.00    0.00     179/57281       parse_record [89]
-                0.00    0.00   57101/57281       record_string [31]
-[110]    0.0    0.00    0.00   57281         record_int [110]
+                0.00    0.00   20352/20352       runmember <cycle 1> [13]
+[70]     0.0    0.00    0.00   20352         set_nc_ret [70]
 -----------------------------------------------
-                0.00    0.00     179/57280       parse_record [89]
-                0.00    0.00   57101/57280       record_string [31]
-[111]    0.0    0.00    0.00   57280         jalloc [111]
+                0.00    0.00   20352/20352       runmember <cycle 1> [13]
+[71]     0.0    0.00    0.00   20352         update_death_lump_sums [71]
 -----------------------------------------------
-                0.00    0.00   21243/21243       calcyears [157]
-[112]    0.0    0.00    0.00   21243         wxdef [112]
+                               20352             runmember <cycle 1> [13]
+[72]     0.0    0.00    0.00   20352         update_premiums <cycle 1> [72]
+                              162816             calcA <cycle 1> [48]
+                              162816             calcC <cycle 1> [49]
 -----------------------------------------------
-                0.00    0.00   20352/20352       runmember [2]
-[113]    0.0    0.00    0.00   20352         setMsgbuf [113]
+                0.00    0.00    5135/17615       print_proj_kind [75]
+                0.00    0.00   12480/17615       print_gen_kind [74]
+[73]     0.0    0.00    0.00   17615         print_number [73]
 -----------------------------------------------
-                                   6             validateInput [114]
-                0.00    0.00     195/17615       print_database [234]
-                0.00    0.00     520/17615       makeLifeTables [188]
-                0.00    0.00    1040/17615       print_number [236]
-                0.00    0.00    1560/17615       makeLifeTable [127]
-                0.00    0.00    4940/17615       print_proj_kind [43]
-                0.00    0.00    9360/17615       print_gen_kind [35]
-[114]    0.0    0.00    0.00   17615+6       validateInput [114]
-                0.00    0.00       6/3854517     new_stmt_expr [103]
-                                   6             validateInput [114]
+                0.00    0.00      48/48          print_proj_kind [75]
+[74]     0.0    0.00    0.00      48         print_gen_kind [74]
+                0.00    0.00   12480/17615       print_number [73]
 -----------------------------------------------
-                0.00    0.00       1/2842        extract_excel [54]
-                0.00    0.00    2841/2842        parse_cells [19]
-[115]    0.0    0.00    0.00    2842         replace [115]
+                0.00    0.00      24/24          print_test_case [80]
+[75]     0.0    0.00    0.00      24         print_proj_kind [75]
+                0.00    0.00    5135/17615       print_number [73]
+                0.00    0.00      48/48          print_gen_kind [74]
 -----------------------------------------------
-                0.00    0.00       8/1163        parse_expr_mul [88]
-                0.00    0.00      28/1163        parse_expr_or <cycle 2> [80]
-                0.00    0.00      38/1163        type_name [83]
-                0.00    0.00     427/1163        min <cycle 2> [99]
-                0.00    0.00     662/1163        parse_expr_unary <cycle 2> [84]
-[116]    0.0    0.00    0.00    1163         init_stream [116]
+                0.00    0.00       3/3           print_test_case [80]
+[76]     0.0    0.00    0.00       3         print_str [76]
 -----------------------------------------------
-                0.00    0.00     636/636         nextcol [138]
-[117]    0.0    0.00    0.00     636         strinside [117]
+                0.00    0.00       1/2           on_import_data_clicked [58]
+                0.00    0.00       1/2           on_startstopbutton_clicked [27]
+[77]     0.0    0.00    0.00       2         set_user_inputs [77]
 -----------------------------------------------
-                0.00    0.00       3/346         parse_cells [19]
-                0.00    0.00      12/346         parse_interpreter <cycle 1> [6]
-                0.00    0.00      12/346         max [10]
-                0.00    0.00     319/346         record_double [120]
-[118]    0.0    0.00    0.00     346         isintc [118]
+                0.00    0.00       1/2           validate_UI [26]
+                0.00    0.00       1/2           on_startstopbutton_clicked [27]
+[78]     0.0    0.00    0.00       2         validate_passed [78]
 -----------------------------------------------
-                0.00    0.00       1/323         validateUI [1]
-                0.00    0.00       1/323         set_interpreter_text [98]
-                0.00    0.00       1/323         parse_cells [19]
-                0.00    0.00       1/323         open_excel [81]
-                0.00    0.00       1/323         record_string [31]
-                0.00    0.00     318/323         cell_content [28]
-[119]    0.0    0.00    0.00     323         arena_grow [119]
+                0.00    0.00       1/1           run [5]
+[79]     0.0    0.00    0.00       1         dates_arena_free [79]
 -----------------------------------------------
-                0.00    0.00     319/319         open_database [29]
-[120]    0.0    0.00    0.00     319         record_double [120]
-                0.00    0.00     319/346         isintc [118]
+                0.00    0.00       1/1           run [5]
+[80]     0.0    0.00    0.00       1         print_test_case [80]
+                0.00    0.00      24/24          print_proj_kind [75]
+                0.00    0.00       3/3           print_str [76]
 -----------------------------------------------
-                0.00    0.00     193/193         parse_expr_unary <cycle 2> [84]
-[121]    0.0    0.00    0.00     193         clear_stream [121]
+                0.00    0.00       1/1           on_close_button_press_event [57]
+[81]     0.0    0.00    0.00       1         reset_database [81]
 -----------------------------------------------
-                0.00    0.00     144/144         parse_expr_unary <cycle 2> [84]
-[122]    0.0    0.00    0.00     144         new_typespec_project [122]
-                0.00    0.00     144/351683      buf__printf [106]
------------------------------------------------
-                                  51             parse_expr_or <cycle 2> [80]
-                                  61             parse_expr_unary <cycle 2> [84]
-                0.00    0.00       2/108         parse_select_case_pattern <cycle 3> [86]
-                0.00    0.00       4/108         parse_expr_mul [88]
-                0.00    0.00      15/108         parse_stmt <cycle 3> [24]
-[123]    0.0    0.00    0.00     133         is_integer_type <cycle 2> [123]
-                                 133             min <cycle 2> [99]
------------------------------------------------
-                0.00    0.00       2/87          min <cycle 2> [99]
-                0.00    0.00      18/87          is_boolean_type [179]
-                0.00    0.00      67/87          parse_expr_unary <cycle 2> [84]
-[124]    0.0    0.00    0.00      87         new_expr_float [124]
-                0.00    0.00      87/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00      58/58          next_token [44]
-[125]    0.0    0.00    0.00      58         is_keyword_name [125]
------------------------------------------------
-                0.00    0.00      58/58          parse_expr_unary <cycle 2> [84]
-[126]    0.0    0.00    0.00      58         new_StmtBlock [126]
-                0.00    0.00      58/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00       8/48          print_gen_kind [35]
-                0.00    0.00      40/48          print_str [238]
-[127]    0.0    0.00    0.00      48         makeLifeTable [127]
-                0.00    0.00    1560/17615       validateInput [114]
-                0.00    0.00      24/3854517     new_stmt_expr [103]
------------------------------------------------
-                0.00    0.00       8/40          parse_expr_mul [88]
-                0.00    0.00      32/40          parse_stmt <cycle 3> [24]
-[128]    0.0    0.00    0.00      40         sym_push_type [128]
-                0.00    0.00      40/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00      39/39          parse_stmt <cycle 3> [24]
-[129]    0.0    0.00    0.00      39         new_stmt_do_while_loop [129]
-                0.00    0.00      39/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00      29/29          on_startstopbutton_clicked [95]
-[130]    0.0    0.00    0.00      29         isfloatc [130]
------------------------------------------------
-                0.00    0.00      28/28          parse_expr_or <cycle 2> [80]
-[131]    0.0    0.00    0.00      28         resolve_stmts [131]
------------------------------------------------
-                0.00    0.00      19/19          parse_expr_unary <cycle 2> [84]
-[132]    0.0    0.00    0.00      19         new_typespec_name [132]
-                0.00    0.00      19/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00      18/18          parse_expr_or <cycle 2> [80]
-[133]    0.0    0.00    0.00      18         new_expr [133]
-                0.00    0.00      18/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00      12/12          parse_interpreter <cycle 1> [6]
-[134]    0.0    0.00    0.00      12         token_str_val [134]
------------------------------------------------
-                0.00    0.00      10/10          parse_expr_or <cycle 2> [80]
-[135]    0.0    0.00    0.00      10         sym_push_func [135]
-                0.00    0.00      10/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00       8/8           parse_stmt <cycle 3> [24]
-[136]    0.0    0.00    0.00       8         new_stmt_do_until_loop [136]
-                0.00    0.00       8/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00       7/7           parse_stmt <cycle 3> [24]
-[137]    0.0    0.00    0.00       7         new_stmt_do_while [137]
-                0.00    0.00       7/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00       6/6           parse_cells [19]
-[138]    0.0    0.00    0.00       6         nextcol [138]
-                0.00    0.00     636/636         strinside [117]
------------------------------------------------
-                0.00    0.00       4/4           parse_expr_unary <cycle 2> [84]
-[139]    0.0    0.00    0.00       4         new_expr_boolean [139]
-                0.00    0.00       4/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00       2/2           parse_stmt <cycle 3> [24]
-[140]    0.0    0.00    0.00       2         new_expr_str [140]
-                0.00    0.00       2/351683      buf__printf [106]
------------------------------------------------
-                0.00    0.00       1/2           runtc [242]
-                0.00    0.00       1/2           read_user_input [94]
-[141]    0.0    0.00    0.00       2         userinterface [141]
-                0.00    0.00      37/351683      buf__printf [106]
-                0.00    0.00      10/3854517     new_stmt_expr [103]
------------------------------------------------
-                0.00    0.00       1/1           read_user_input [94]
-[142]    0.0    0.00    0.00       1         arena_free [142]
------------------------------------------------
-                0.00    0.00       1/1           parse_cells [19]
-[143]    0.0    0.00    0.00       1         cast_content [143]
------------------------------------------------
-                0.00    0.00       1/1           map_get_str [26]
-[144]    0.0    0.00    0.00       1         fatal [144]
------------------------------------------------
-                0.00    0.00       1/1           runtc [242]
-[145]    0.0    0.00    0.00       1         set_user_inputs [145]
+                0.00    0.00       1/1           on_openDC_activate [56]
+[82]     0.0    0.00    0.00       1         update_user_interface [82]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -1253,44 +602,29 @@ notice and this notice are preserved.
 
 Index by function name
 
-  [63] NRA                    [26] map_get_str             [7] resolve_binary_string_op
-  [22] add_builtin_var        [20] map_put                [12] resolve_expected_expr
-  [39] arena_alloc            [25] map_put_str             [5] resolve_expr_binary_op
- [142] arena_free             [10] max                     [8] resolve_stmt
- [119] arena_grow             [99] min                   [131] resolve_stmts
-  [16] arena_str_dup          [82] newDate                [58] retx
- [106] buf__printf           [126] new_StmtBlock          [27] run
-  [51] calcA                 [133] new_expr                [2] runmember
-   [3] calcC                 [139] new_expr_boolean       [48] salaryscale
-  [13] calc_lump_sum         [124] new_expr_float        [113] setMsgbuf
-  [34] calc_res              [140] new_expr_str           [56] set_ic_nc_ret
- [143] cast_content          [136] new_stmt_do_until_loop [69] set_tariffs
-  [18] cast_operand          [137] new_stmt_do_while     [145] set_user_inputs
-  [28] cell_content          [129] new_stmt_do_while_loop [74] setassumptions
- [121] clear_stream          [103] new_stmt_expr         [108] setdate
-  [67] close_excel           [107] new_stmt_select_case  [117] strinside
-  [72] create_member         [132] new_typespec_name      [57] sym_get
-  [30] error                 [122] new_typespec_project  [135] sym_push_func
-  [53] expect_keyword         [44] next_token            [128] sym_push_type
-  [54] extract_excel         [138] nextcol               [102] token_float_val
- [144] fatal                  [95] on_startstopbutton_clicked [36] token_int_val
- [109] gen_sum                [81] open_excel             [46] token_kind
-  [61] getDOC                [105] open_xml_from_excel    [38] token_name
-  [66] getDOC_prolongation    [19] parse_cells            [59] token_pos
-  [49] get_art24_act_res      [80] parse_expr_or          [32] token_start
-  [41] get_redcap_mixed_ukmt  [84] parse_expr_unary      [134] token_str_val
-  [50] get_redcap_ukms_ukzt    [6] parse_interpreter      [75] updateValidation
-  [60] get_res_tuc            [86] parse_select_case_pattern [9] update_EBP
-  [47] init_keywords          [24] parse_stmt             [14] update_EBP_ret
- [116] init_stream            [17] parse_stmt_block       [37] update_art24
-  [45] interpret              [35] print_gen_kind         [71] update_premiums
-  [73] interpret_code.constprop.0 [43] print_proj_kind    [11] update_res_lump_sums
- [123] is_integer_type        [93] print_sym             [141] userinterface
- [125] is_keyword_name        [15] print_syms            [114] validateInput
- [104] is_token               [40] printresults           [52] warning
-  [55] is_token_eof           [64] printtc               [112] wxdef
- [130] isfloatc               [70] record_boolean          [4] <cycle 1>
- [118] isintc                [120] record_double          [79] <cycle 2>
- [111] jalloc                [110] record_int             [23] <cycle 3>
- [127] makeLifeTable         [115] replace
-  [21] map_get                [33] resolve_binary_arithmetic_op
+  [17] NRA                    [37] is_concatable          [50] retx
+  [35] add_builtin_string     [19] is_integer_type        [13] runmember
+   [9] add_builtin_var (interpret.c) [30] is_string_type  [51] salaryscale
+   [1] axn                    [20] map_free               [67] set_assets
+  [12] buf__grow               [2] map_get                [68] set_dbo_ret
+  [36] buf__printf            [11] map_get_str            [69] set_ic_nc_ret
+  [48] calcA                   [4] map_get_uint64_from_uint64 (common.c) [70] set_nc_ret
+  [49] calcC                  [38] min (type.c)           [53] set_tariffs
+  [66] calcDTH                [63] minDate                [77] set_user_inputs
+  [41] calc_lump_sum          [15] nEx                    [54] setassumptions
+  [59] calc_res               [40] newDate                [65] setdate
+  [32] create_member (DCProgram.c) [22] print_database (printresults.c) [24] str_intern_range
+  [33] create_members         [74] print_gen_kind (printresults.c) [8] sym_get (resolve.c)
+  [79] dates_arena_free       [73] print_number (printresults.c) [39] token_kind_name
+  [60] gen_sum                [75] print_proj_kind (printresults.c) [46] update_EBP
+  [64] gen_sum_art24          [23] print_results          [44] update_EBP_ret
+  [43] getDOC (main.c)        [76] print_str (printresults.c) [42] update_art24
+  [47] getDOC_prolongation (main.c) [80] print_test_case  [71] update_death_lump_sums
+  [61] get_art24_act_res (calculate.c) [55] read_user_input (usersignalhandlers.c) [72] update_premiums
+  [34] get_database           [81] reset_database         [45] update_res_lump_sums
+  [62] get_method_amount      [28] reset_error            [82] update_user_interface
+  [21] get_redcap_ukms_ukzt (calculate.c) [10] resolve_binary_arithmetic_op (resolve.c) [26] validate_UI
+  [31] get_res_tuc (calculate.c) [18] resolve_binary_string_op (resolve.c) [78] validate_passed
+  [25] get_user_input          [3] resolve_expected_expr (resolve.c) [52] wxdef
+  [14] interpret               [7] resolve_expr_binary_op (resolve.c) [6] <cycle 1>
+  [29] is_arithmetic_type     [16] resolve_stmt (resolve.c)

@@ -4,13 +4,15 @@ SRC = ../../src
 LIB = ../../lib
 EXE = test
 
+GPROF = #-pg
+
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -pg -g -Wall -Wextra -Werror -pedantic
+CFLAGS = $(GPROF) -g -Wall -Wextra -Werror -pedantic
 INCLUDES = -I $(INCLUDE)
 LIBS = -lgeneral -lm
 LDLIBS = $(LIBS)
-LDFLAGS = -pg -L$(LIB)
+LDFLAGS = $(GPROF) -L$(LIB)
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
@@ -28,7 +30,7 @@ CP = cp
 # ---targets---
 all: $(EXE)
 
-fast: CFLAGS = -g -Wextra -Werror -pedantic -Ofast
+fast: CFLAGS += -Ofast
 fast: all
 
 $(EXE): $(EXE).o libactuarial.a

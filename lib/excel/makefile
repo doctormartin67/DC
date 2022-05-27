@@ -5,9 +5,11 @@ LIB = ../../lib
 EXE = test
 PACKAGE = libxml2-dev
 
+GPROF = #-pg
+
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -pg -g -Wall -Wextra -Werror -pedantic
+CFLAGS = $(GPROF) -g -Wall -Wextra -Werror -pedantic
 INCLUDES = -I $(INCLUDE) `pkg-config --cflags libxml-2.0`
 LIBS = -lgeneral
 LDLIBS = $(LIBS) `xml2-config --libs`
@@ -29,7 +31,7 @@ CP = cp
 # ---targets---
 all: $(PACKAGE) $(EXE)
 
-fast: CFLAGS = -g -Wextra -Werror -pedantic -Ofast
+fast: CFLAGS += -Ofast
 fast: all
 
 $(PACKAGE):

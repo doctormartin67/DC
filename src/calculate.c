@@ -1,7 +1,8 @@
+#include <math.h>
 #include "calculate.h"
 #include "dates.h"
 #include "assumptions.h"
-#include "actuarialfunctions.h"
+#include "actfuncs.h"
 
 double calc_lump_sum(unsigned tariff, double X10,
 		double res, double prem, double deltacap, double capdth,
@@ -77,7 +78,7 @@ static double get_res_tuc(const CurrentMember *cm, size_t EREE, size_t gen,
 	LifeTable *lt = &tff.ltINS[EREE][gen];
 	double i = cm->TAUX[EREE][gen];
 	double RA = MIN3(NRA(cm, k + 1), cm->NRA, cm->proj[k+1].age);
-	double Ex = nEx(tff.ltINS[EREE][gen].lt, i, tff.costRES, RA,
+	double Ex = nEx(tff.ltINS[EREE][gen].table, i, tff.costRES, RA,
 			MIN(NRA(cm, k), cm->NRA), 0);
 	double capdth = cm->proj[index].gens[gen].lump_sums.death_lump_sum[EREE];
 	double res = cm->proj[index].gens[gen].reserves.res[EREE].puc;
@@ -295,7 +296,7 @@ static double get_risk_premium(const CurrentMember *cm,
 		return 0.0;
 	} 
 
-	unsigned lt = tff.ltINS[EREE][gen].lt;
+	const char *lt = tff.ltINS[EREE][gen].table;
 	double cR = tff.costRES;
 	double cK = tff.costKO;
 	double ir = cm->TAUX[EREE][gen];
@@ -455,8 +456,8 @@ double calc_lump_sum(unsigned tariff, double X10,
 	double value = 0.0;
 
 	i = lt->i;
-	Ex = nEx(lt->lt, i, tff.costRES, age, RA, 0);
-	ax = axn(lt->lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
+	Ex = nEx(lt->table, i, tff.costRES, age, RA, 0);
+	ax = axn(lt->table, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
 
 	switch(tariff) {
 		case UKMS:
@@ -465,18 +466,18 @@ double calc_lump_sum(unsigned tariff, double X10,
 					tff.admincost, Ex, ax);
 			break;
 		case UKMT:
-			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
-			Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
-			IAx1 = IAx1n(lt->lt, i, tff.costRES, age, RA, 0);
-			Iax = Iaxn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+			axcost = axn(lt->table, i, tff.costRES, 0, 1, age, RA, 0);
+			Ax1 = Ax1n(lt->table, i, tff.costRES, age, RA, 0);
+			IAx1 = IAx1n(lt->table, i, tff.costRES, age, RA, 0);
+			Iax = Iaxn(lt->table, i, tff.costRES, 0, 1, age, RA, 0);
 
 			value = CAP_UKMT(res, prem, capdth, tff.admincost, Ex,
 					ax, axcost, Ax1, IAx1, Iax,
 					tff.costKO);
 			break;
 		case MIXED:
-			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
-			Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
+			axcost = axn(lt->table, i, tff.costRES, 0, 1, age, RA, 0);
+			Ax1 = Ax1n(lt->table, i, tff.costRES, age, RA, 0);
 
 			value = CAP_MIXED(res, prem, tff.admincost, Ex, ax,
 					axcost, Ax1, X10, tff.MIXEDPS,
@@ -512,8 +513,8 @@ double calc_res(unsigned tariff, double X10, double cap, double prem,
 	double value = 0.0;
 
 	i = lt->i;
-	Ex = nEx(lt->lt, i, tff.costRES, age, RA, 0);
-	ax = axn(lt->lt, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
+	Ex = nEx(lt->table, i, tff.costRES, age, RA, 0);
+	ax = axn(lt->table, i, tff.costRES, tff.prepost, tff.term, age, RA, 0);
 
 	switch(tariff) {
 		case UKMS:
@@ -522,10 +523,10 @@ double calc_res(unsigned tariff, double X10, double cap, double prem,
 				- prem * (1 - tff.admincost) * ax;
 			break;
 		case UKMT:
-			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
-			Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
-			IAx1 = IAx1n(lt->lt, i, tff.costRES, age, RA, 0);
-			Iax = Iaxn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
+			axcost = axn(lt->table, i, tff.costRES, 0, 1, age, RA, 0);
+			Ax1 = Ax1n(lt->table, i, tff.costRES, age, RA, 0);
+			IAx1 = IAx1n(lt->table, i, tff.costRES, age, RA, 0);
+			Iax = Iaxn(lt->table, i, tff.costRES, 0, 1, age, RA, 0);
 
 			value = cap * Ex - prem * (1 - tff.admincost) * ax
 				+ capdth * (Ax1 + tff.costKO * axcost)
@@ -533,8 +534,8 @@ double calc_res(unsigned tariff, double X10, double cap, double prem,
 				* (IAx1 + tff.costKO * Iax);
 			break;
 		case MIXED:
-			axcost = axn(lt->lt, i, tff.costRES, 0, 1, age, RA, 0);
-			Ax1 = Ax1n(lt->lt, i, tff.costRES, age, RA, 0);
+			axcost = axn(lt->table, i, tff.costRES, 0, 1, age, RA, 0);
+			Ax1 = Ax1n(lt->table, i, tff.costRES, age, RA, 0);
 
 			value = cap * (Ex + 1.0/X10 * tff.MIXEDPS
 					* (Ax1 + tff.costKO * axcost))

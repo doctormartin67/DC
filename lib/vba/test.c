@@ -455,6 +455,7 @@ void test_error(void)
 	const char *result_str = 0;
 	result_str = interpret(0, code, 0, 0, 0, TYPE_STRING).s;
 	if (error.is_error) {
+		printf("'%s'\n", result_str);
 		die("error in interpreter unresolved");
 	}
 }

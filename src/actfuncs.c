@@ -2,11 +2,10 @@
 #include <string.h> // strchr()
 #include <assert.h> // assert()
 #include <math.h> // floor()
+#include "actfuncs.h"
 #include "common.h" // Map
 #include "errorexit.h" // die()
 #include "helperfunctions.h" // jalloc()
-
-#define EPS 0.0000001
 
 static Map life_tables;
 
@@ -230,3 +229,27 @@ double Iaxn(const char *table, double i, double charge, unsigned prepost,
 		return value;
 	}
 }
+
+double CAP_UKMS_UKZT(double res, double prem, double deltacap,
+		double age, double RA, double ac, double Ex, double ax)
+{
+	return (res + prem * (1 - ac) * ax) / Ex + deltacap * (RA - age) * 12;
+}
+
+double CAP_UKMT(double res, double prem, double capdth, double ac,
+		double Ex, double ax, double axcost, double Ax1, double IAx1,
+		double Iax, double cKO)
+{
+	prem *= (1 - ac);
+	return (res + prem * ax - capdth * (Ax1 + cKO * axcost)
+			- prem * (IAx1 + cKO * Iax)) / Ex;
+}
+
+double CAP_MIXED(double res, double prem, double ac, double Ex,
+		double ax, double axcost, double Ax1, double x10,
+		double MIXEDPS, double cKO)
+{
+	return (res + prem * (1 - ac) * ax)
+		/ (Ex + 1.0/x10 * MIXEDPS * (Ax1 + cKO * axcost));
+}
+

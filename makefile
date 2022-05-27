@@ -10,20 +10,20 @@ ZLIB = zlib1g-dev
 
 # ---Rule Structure---
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror -pedantic
+CFLAGS = -pg -g -Wall -Wextra -Werror -pedantic
 # THIS BELOW INCLUDRES AND LDLIBS ON XML CAN BE REMOVED
 INCLUDES = -I $(INCLUDE) `pkg-config --cflags gtk+-3.0` \
 	`pkg-config --cflags libxml-2.0`
-LIBS = -lvba -lgeneral -lexcel -lxlsxwriter -lm#lm is needed for actuarial
+LIBS = -lvba -lgeneral -lexcel -lactuarial -lxlsxwriter -lm
 LDLIBS = $(LIBS) `pkg-config --libs gtk+-3.0` `xml2-config --libs` -rdynamic
-LDFLAGS = -L$(LIB)
+LDFLAGS = -L$(LIB) -pg
 
 COMPILE.c = $(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 # ---Object files---
-OBJS = actuarialfunctions.o assumptions.o dates.o DCProgram.o \
-	lifetables.o printresults.o userinterface.o userrunhandlers.o \
-	usersignalhandlers.o validation.o calculate.o errorjump.o
+OBJS = assumptions.o dates.o DCProgram.o printresults.o userinterface.o  \
+	userrunhandlers.o usersignalhandlers.o validation.o calculate.o  \
+	errorjump.o
 .DELETE_ON_ERROR: $(OBJS)
 
 # ---vpath---
@@ -37,7 +37,7 @@ CP = cp
 # ---targets---
 all: DEPENDENCIES $(EXE)
 
-fast: CFLAGS = -g -Wextra -Werror -pedantic -Ofast
+fast: CFLAGS = -pg -g -Wextra -Werror -pedantic -Ofast
 fast: all
 
 DEPENDENCIES:

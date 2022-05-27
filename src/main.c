@@ -1,5 +1,5 @@
 #include <math.h>
-#include "actuarialfunctions.h"
+#include "actfuncs.h"
 #include "lifetables.h"
 #include "helperfunctions.h"
 #include "calculate.h"
@@ -8,6 +8,12 @@
 
 extern void userinterface();
 extern void runmember(CurrentMember cm[static 1]);
+
+/*
+ * these tables need updating to be more general !!! TODO
+ */
+const char *lxmr = "/home/doctormartin67/Coding/tables/tables/LXMR";
+const char *lxfr = "/home/doctormartin67/Coding/tables/tables/LXFR";
 
 static void init_cm(CurrentMember cm[static 1])
 {
@@ -129,6 +135,8 @@ void runmember(CurrentMember cm[static 1])
 	double ART24TOT[METHOD_AMOUNT] = {0};
 	double RESTOT[METHOD_AMOUNT] = {0};
 	double REDCAPTOT[METHOD_AMOUNT] = {0};
+	
+	const char *table = 0;
 
 	init_cm(cm);
 
@@ -198,13 +206,19 @@ void runmember(CurrentMember cm[static 1])
 		cm->proj[k].factor.wxdef = wx * TRMDef;
 		cm->proj[k].factor.wximm = wx * TRMImm;
 
+		if (cm->status & MALE) {
+			table = lxmr;
+		} else {
+			table = lxfr;
+		}
+
 		cm->proj[k].factor.qx
-			= 1 - npx((cm->status & MALE ? LXMR : LXFR),
-					cm->proj[k].age, cm->proj[k+1].age, ass.agecorr);
+			= 1 - npx(table, cm->proj[k].age, cm->proj[k+1].age,
+					ass.agecorr);
 		cm->proj[k].factor.retx = retx(cm, k) 
 			* (k > 1 && cm->proj[k].age == cm->proj[k-1].age ? 0 : 1);
-		cm->proj[k].factor.nPk = npx((cm->status & MALE ? LXMR : LXFR),
-				cm->proj[k].age, NRA(cm, k), ass.agecorr);
+		cm->proj[k].factor.nPk = npx(table, cm->proj[k].age, NRA(cm, k),
+				ass.agecorr);
 
 		periodk = cm->proj[k].age - cm->proj[1].age;
 		periodNRA = NRA(cm, k) - cm->proj[1].age;
@@ -256,7 +270,6 @@ void runmember(CurrentMember cm[static 1])
 
 int main(void)
 {
-	makeLifeTables();
 	init_builtin_vars();
 	userinterface();
 	return 0;

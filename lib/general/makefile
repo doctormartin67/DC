@@ -25,7 +25,7 @@ CP = cp
 # ---targets---
 all: $(EXE)
 
-fast: CFLAGS = -g -Wextra -Werror -pedantic -Ofast
+fast: CFLAGS += -Ofast
 fast: all
 
 $(EXE): $(EXE).o libgeneral.a

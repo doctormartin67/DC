@@ -4,7 +4,6 @@
 #include "common.h"
 #include "actfuncs.h"
 
-#define EPS 0.00000001
 #define ABS(x) (x) < 0 ? -(x) : (x)
 
 enum {N = 1024 * 1024};

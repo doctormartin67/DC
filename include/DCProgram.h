@@ -254,9 +254,7 @@ double gen_sum_art24(const struct art24 *a24, size_t method);
 
 //---Tariff Structure---
 typedef struct {
-	unsigned lt; /* there is an array of strings containing the names of lifetables. 
-			I reference the array elements by using the index defined with an 
-			enum lifetables. */
+	const char *table;
 	double i; // Insurance rate (This changes for prolongation table for example)
 } LifeTable;
 
