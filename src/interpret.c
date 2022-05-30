@@ -188,7 +188,7 @@ Val interpret(const char *name, const char *code, const Database *db,
 	} else {
 		interpreter = i;
 		i->properties.is_init = 0;
-		if (i->properties.has_project) {
+		if (i->properties.has_builtin || i->properties.has_project) {
 			update_interpreter(db, project_years, num_record,
 					return_type);
 			parse_interpreter();

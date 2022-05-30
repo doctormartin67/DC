@@ -460,6 +460,29 @@ void test_error(void)
 	}
 }
 
+void test_builtin(void)
+{
+	const char *code = 
+		"select case age\n"
+		"	case is < 65\n"
+				"result = 0\n"
+		"	case is >= 65\n"
+		"		result = 1\n"
+		"end select";
+	double result_double = 0.0;
+	enum {N = 128};
+	for (unsigned i = 0; i < N; i++) { 
+		add_builtin_double(str_intern("age"), (double)i);
+		result_double = interpret(0, code, 0, 0, 0, TYPE_DOUBLE).d;
+		if (i < 65) {
+			assert(0 == result_double);
+		} else {
+			assert(1 == result_double);
+		}
+	}
+
+}
+
 int main(void)
 {
 	test_lex();
@@ -473,6 +496,8 @@ int main(void)
 	test_builtin_funcs();
 	test_select_case();
 	test_error();
+	test_builtin();
+
 	intern_free();
 	return 0;
 }

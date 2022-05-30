@@ -21,6 +21,7 @@ typedef struct Interpreter {
 	Val result;
 	struct {
 		unsigned is_init;
+		unsigned has_builtin;
 		unsigned has_project;
 	} properties;
 } Interpreter;
