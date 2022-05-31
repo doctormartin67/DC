@@ -251,6 +251,8 @@ double get_method_amount(struct methods m, size_t method);
 double gen_sum(const struct generations *, size_t EREE, DataColumn,
 		size_t method);
 double gen_sum_art24(const struct art24 *a24, size_t method);
+double proj_sum(ProjectionKind , const struct projection *, size_t method,
+		size_t asset_kind);
 
 //---Tariff Structure---
 typedef struct {

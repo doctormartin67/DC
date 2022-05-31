@@ -317,6 +317,55 @@ double gen_sum_art24(const struct art24 *a24, size_t method)
 	return sum;
 }
 
+#define PROJ_RET(kind) \
+	for (size_t i = 0; i < MAXPROJ; i++) { \
+		if (TUC == method) { \
+			sum += proj[i].kind.tuc[asset_kind]; \
+		} else { \
+			assert(PUC == method); \
+			sum += proj[i].kind.puc[asset_kind]; \
+		} \
+	}
+
+
+static double proj_sum_kind(ProjectionKind kind, const struct projection *proj,
+		size_t method, size_t asset_kind)
+{
+	double sum = 0.0;
+	assert(ASSET_AMOUNT > asset_kind);
+	assert(PUC == method || TUC == method);
+	switch (kind) {
+		case PROJ_DBO_RET:
+			PROJ_RET(dbo_ret);
+			break;
+		case PROJ_NC_RET:
+			PROJ_RET(nc_ret);
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	return sum;
+}
+
+#undef PROJ_RET
+
+double proj_sum(ProjectionKind kind, const struct projection *proj,
+		size_t method, size_t asset_kind)
+{
+	double sum = 0.0;
+	switch (kind) {
+		case PROJ_DBO_RET: 
+		case PROJ_NC_RET:
+			sum = proj_sum_kind(kind, proj, method, asset_kind);
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	return sum;
+}
+
 #define ERROR(str, col) \
 	if (colmissing[col]) { \
 		validate_emit_error("Column [%s] missing, %s", \

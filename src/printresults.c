@@ -4,63 +4,6 @@
 #include "assumptions.h"
 #include "common.h"
 
-struct variable {
-	char *name;
-	unsigned is_number;
-	Val v;
-};
-
-static struct variable tc_print[TC_AMOUNT] = {
-	[TC_KEY] = {"KEY", 0, .v.s = ""},
-	[TC_DOC] = {"DOC", 0, .v.s = ""},
-	[TC_AGE] = {"Age", 1, .v.d = 0.0},
-	[TC_SAL] = {"Salary", 1, .v.d = 0.0},
-	[TC_NDOA] = {"Service DoA", 1, .v.d = 0.0},
-	[TC_NDOE] = {"Service DoE", 1, .v.d = 0.0},
-	[TC_CONTRA] = {"Contr A", 1, .v.d = 0.0},
-	[TC_DTHRISK] = {"DTH Risk Part", 1, .v.d = 0.0},
-	[TC_DTHRES] = {"DTH RES Part", 1, .v.d = 0.0},
-	[TC_CONTRC] = {"Contr C", 1, .v.d = 0.0},
-
-	[TC_TOTRESA] = {"Total Reserves A", 1, .v.d = 0.0},
-	[TC_TOTRESC] = {"Total Reserves C", 1, .v.d = 0.0},
-
-	[TC_REDCAPPUC] = {"RED CAP - PUC", 1, .v.d = 0.0},
-	[TC_REDCAPTUC] = {"RED CAP - TUC", 1, .v.d = 0.0},
-	[TC_REDCAPTUCPS1] = {"RED CAP - TUC PS+1", 1, .v.d = 0.0},
-
-	[TC_RESPUC] = {"RES - PUC", 1, .v.d = 0.0},
-	[TC_RESTUC] = {"RES - TUC", 1, .v.d = 0.0},
-	[TC_RESTUCPS1] = {"RES - TUC PS+1", 1, .v.d = 0.0},
-
-	[TC_FF] = {"FF", 1, .v.d = 0.0},
-	[TC_QX] = {"qx", 1, .v.d = 0.0},
-	[TC_WXDEF] = {"wx (Deferred)", 1, .v.d = 0.0},
-	[TC_WXIMM] = {"wx (Immediate)", 1, .v.d = 0.0},
-	[TC_RETX] = {"retx", 1, .v.d = 0.0},
-	[TC_KPX] = {"kPx", 1, .v.d = 0.0},
-	[TC_NPK] = {"nPk", 1, .v.d = 0.0},
-	[TC_VK] = {"v^k", 1, .v.d = 0.0},
-	[TC_VN] = {"v^n", 1, .v.d = 0.0},
-
-	[TC_ASSETS115] = {"ASSETS PAR 115", 1, .v.d = 0.0},
-	[TC_ASSETS113] = {"ASSETS PAR 113", 1, .v.d = 0.0},
-	[TC_DBODTHRISK] = {"DBO DTH Risk Part", 1, .v.d = 0.0},
-	[TC_DBODTHRES] = {"DBO DTH RES Part", 1, .v.d = 0.0},
-	[TC_NCDTHRISK] = {"NC DTH Risk Part", 1, .v.d = 0.0},
-	[TC_NCDTHRES] = {"NC DTH RES Part", 1, .v.d = 0.0},
-
-	[TC_EBPDTHTBO] = {"EBP DTH TBO", 1, .v.d = 0.0},
-	[TC_EBPDTHPBO] = {"EBP DTH PBO", 1, .v.d = 0.0},
-	[TC_PBODTHNCCF] = {"PBO DTH NC CF", 1, .v.d = 0.0},
-};
-
-static unsigned to_free[TC_AMOUNT];
-
-static void set_generational_column_names(void);
-static void set_row_values(CurrentMember *cm, int row);
-static void free_print_names(void);
-
 static unsigned column;
 
 static void print_str(lxw_worksheet *ws, const char *title, const char *str)
@@ -199,6 +142,7 @@ static void print_gen_kind(lxw_workbook *wb, lxw_worksheet *ws,
 	}
 }
 
+#undef PRINT_RES
 #undef PRINT_LS
 #undef PRINT_NUMBER
 
@@ -458,7 +402,14 @@ static void print_status(lxw_worksheet *ws, unsigned status)
 	}
 }
 
-static void print_member(lxw_workbook *wb, lxw_worksheet *ws,
+#define PRINT_NUMBER(title, EREE, dc) \
+	for (unsigned row = 0; row < MAXPROJ; row++) { \
+		double amount = gen_sum(cm->proj[row].gens, EREE, dc, PUC); \
+		print_number(wb, ws, row+1, title, amount); \
+	} \
+	column++;
+
+static void print_test_case_results(lxw_workbook *wb, lxw_worksheet *ws,
 		const CurrentMember *cm)
 {
 	assert(ws);
@@ -469,13 +420,17 @@ static void print_member(lxw_workbook *wb, lxw_worksheet *ws,
 	print_str(ws, "NAME", cm->name);
 	print_status(ws, cm->status);
 	print_dates(wb, ws, "DOB", cm->DOB);
+	PRINT_NUMBER("Contr A", ER, PREMIUM);
+	PRINT_NUMBER("Contr C", EE, PREMIUM);
 	print_proj(wb, ws, cm->proj);
 }
 
+#undef PRINT_NUMBER
+
 void print_test_case(const CurrentMember *cm)
 {
-	column = 0;
 	assert(cm);
+	column = 0;
 	char *results = 0;
 	char *tmp = 0;
 
@@ -496,294 +451,16 @@ void print_test_case(const CurrentMember *cm)
 	worksheet_set_column(ws, 0, 512, 20, 0);
 	buf_free(tmp);
 	buf_free(results);
-	print_member(wb, ws, cm);
+	print_test_case_results(wb, ws, cm);
 	workbook_close(wb);
 }
 
-unsigned printtc(CurrentMember *cm, unsigned tc)
-{
-	char results[BUFSIZ];
-	char temp[64];
-	int row = 0;
-
-	lxw_workbook *wb = 0;
-	lxw_worksheet *ws = 0;
-	lxw_datetime DOC = (lxw_datetime){0};
-	lxw_format *DOCformat = 0;
-	lxw_format *nformat = 0;
-
-	snprintf(temp, sizeof(temp), "TestCase%d", tc + 1);
-	snprintf(results, sizeof(results), "%s.xlsx", temp);
-
-	if (strlen(results) > PATH_MAX) return NAME_PRERR;
-
-	wb = workbook_new(results);
-	ws = workbook_add_worksheet(wb, temp);
-	DOCformat = workbook_add_format(wb);
-	nformat = workbook_add_format(wb);
-	format_set_num_format(DOCformat, "dd/mm/yyyy");
-	format_set_num_format(nformat, "#,##0.00");
-	worksheet_set_column(ws, 0, 200, 25, 0);
-
-	printf("Printing Testcase...\n");
-
-	set_generational_column_names();
-	for (unsigned i = 0; i < TC_AMOUNT; i++) {
-		if (0 == tc_print[i].name) continue;
-		worksheet_write_string(ws, row, i, tc_print[i].name, 0);
-	}
-
-	while (row < MAXPROJ) {
-		set_row_values(cm, row);
-		DOC.year = cm->proj[row].DOC->year;
-		DOC.month = cm->proj[row].DOC->month;
-		DOC.day = cm->proj[row].DOC->day;
-		DOC.hour = DOC.min = DOC.sec = 0;
-		for (unsigned i = 0; i < TC_FF; i++) {
-			if (0 == tc_print[i].name) continue;
-			if (TC_DOC == i) {
-				worksheet_write_datetime(ws, row + 1,
-						i, &DOC, DOCformat);
-				continue;	
-			}
-			if (tc_print[i].is_number)
-				worksheet_write_number(ws, row + 1, i,
-						tc_print[i].v.d, nformat);
-			else
-				worksheet_write_string(ws, row + 1, i,
-						tc_print[i].v.s, 0);
-		}
-
-		if (row+1 < MAXPROJ) {
-			for (unsigned i = TC_FF; i < TC_AMOUNT; i++) {
-				if (0 == tc_print[i].name) continue;
-				worksheet_write_number(ws, row + 2, i,
-						tc_print[i].v.d, nformat);
-
-			}
-		}
-
-		row++;
-	}
-	printf("Printing test case complete.\n");
-
-	workbook_close(wb);
-	free_print_names();
-	return NO_PRERR;
-}
-
 /*
- * sets the names of the columns that don't all have an enum defined for them
- * because we use a for loop to loop over multiple columns, for example in the
- * case of generations
+ * ***************************************************************************
+ * the section below is used to print all the results of the entire population
+ * whereas above is used for a single test case
+ * ***************************************************************************
  */
-static void set_generational_column_names(void)
-{
-	unsigned a = 4;
-	unsigned gen = 0;
-	size_t len = 0;
-	char c = 0;
-	char tmp[64];
-	char *m[METHOD_AMOUNT] = {
-		[PUC] = "PUC",
-		[TUC] = "TUC",
-		[TUCPS_1] = "TUC PS+1"
-	};
-	char *assets[ASSET_AMOUNT] = {
-		[PAR115] = "PAR115",
-		[MATHRES] = "RES",
-		[PAR113] = "PAR113"
-	};
-	char *cf[CF_AMOUNT] = {
-		[TBO] = "TBO",
-		[PBO] = "PBO",
-	};
-	len = sizeof(tmp);
-
-	for (unsigned i = 0; i < MAXGEN; i++) {
-		for (unsigned j = 0; j < EREE_AMOUNT; j++) {
-			c = (j == ER ? 'A' : 'C');
-			gen = a * i + a * MAXGEN * j;
-			snprintf(tmp, len, "CAP GEN %d %c", i + 1, c);
-			tc_print[TC_CAP + gen].name = strdup(tmp);
-			to_free[TC_CAP + gen] = 1;
-			snprintf(tmp, len, "PREMIUM GEN %d %c", i + 1, c);
-			tc_print[TC_PREM + gen].name = strdup(tmp);
-			to_free[TC_PREM + gen] = 1;
-			snprintf(tmp, len, "RESERVES PS GEN %d %c", i + 1, c);
-			tc_print[TC_RESPS + gen].name = strdup(tmp);
-			to_free[TC_RESPS + gen] = 1;
-			snprintf(tmp, len, "RESERVES GEN %d %c", i + 1, c);
-			tc_print[TC_RES + gen].name = strdup(tmp);
-			to_free[TC_RES + gen] = 1;
-		}
-	}
-
-	for (unsigned j = 0; j < METHOD_AMOUNT; j++) {
-		for (unsigned i = 0; i < ART24GEN_AMOUNT; i++) {
-			for (unsigned k = 0; k < EREE_AMOUNT; k++) {
-				c = (k == ER ? 'A' : 'C');
-				gen = i+ART24GEN_AMOUNT*(METHOD_AMOUNT*k + j);
-				snprintf(tmp, len, "ART24 GEN %d %c %s",
-						i + 1, c, m[j]);
-				tc_print[TC_ART24 + gen].name = strdup(tmp);
-				to_free[TC_ART24 + gen] = 1;
-			}
-		}
-	}
-
-	a = 2;
-	for (unsigned i = 0; i < METHOD_AMOUNT - 1; i++) {
-		for (unsigned j = 0; j < ASSET_AMOUNT; j++) {
-			gen = a * j + a * ASSET_AMOUNT * i;
-			snprintf(tmp, len, "DBO RET %s %s", m[i], assets[j]);
-			tc_print[TC_DBO + gen].name = strdup(tmp);
-			to_free[TC_DBO + gen] = 1;
-			snprintf(tmp, len, "NC RET %s %s", m[i], assets[j]);
-			tc_print[TC_NC + gen].name = strdup(tmp);
-			to_free[TC_NC + gen] = 1;
-		}
-	}
-
-	for (unsigned i = 0; i < METHOD_AMOUNT - 1; i++) {
-		for (unsigned j = 0; j < ASSET_AMOUNT; j++) {
-			gen = j + ASSET_AMOUNT * i;
-			snprintf(tmp, len, "PBO NC CF %s %s", m[i], assets[j]);
-			tc_print[TC_PBONCCF + gen].name = strdup(tmp);
-			to_free[TC_PBONCCF + gen] = 1;
-			for (unsigned k = 0; k < CF_AMOUNT; k++) {
-				gen = j + ASSET_AMOUNT * i
-					+ ASSET_AMOUNT
-					* (METHOD_AMOUNT - 1)
-					* (1 + k) - 1;
-				snprintf(tmp, len, "EBP %s %s %s",
-						cf[k], m[i], assets[j]);
-				tc_print[TC_EBP + gen].name = strdup(tmp);
-				to_free[TC_EBP + gen] = 1;
-			}
-		}
-	}
-}
-
-/*
- * sets the values of all the columns for 1 row
- */
-static void set_row_values(CurrentMember *cm, int row)
-{
-	unsigned a = 4;
-	unsigned gen = 0;
-	size_t size = strlen(tc_print[TC_KEY].v.s) + 1;
-	char s[size];
-
-	snprintf(s, size, "%s", cm->key);
-
-	tc_print[TC_AGE].v.d = cm->proj[row].age;
-	tc_print[TC_SAL].v.d = cm->proj[row].sal;
-	tc_print[TC_NDOA].v.d = cm->proj[row].nDOA;
-	tc_print[TC_NDOE].v.d = cm->proj[row].nDOE;
-	tc_print[TC_CONTRA].v.d = gen_sum(cm->proj[row].gens, ER, PREMIUM,
-			PUC);
-	tc_print[TC_DTHRISK].v.d = cm->proj[row].death_risk;
-	tc_print[TC_DTHRES].v.d = cm->proj[row].death_res;
-	tc_print[TC_CONTRC].v.d = gen_sum(cm->proj[row].gens, EE, PREMIUM,
-			PUC);
-
-	for (unsigned i = 0; i < MAXGEN; i++) {
-		for (unsigned j = 0; j < EREE_AMOUNT; j++) {
-			gen = a * i + a * MAXGEN * j;
-			tc_print[TC_CAP + gen].v.d =
-				cm->proj[row].gens[i].lump_sums.lump_sum[j];
-			tc_print[TC_PREM + gen].v.d =
-				cm->proj[row].gens[i].premium[j];
-			tc_print[TC_RESPS + gen].v.d =
-				cm->proj[row].gens[i].reserves.ps[j];
-			tc_print[TC_RES + gen].v.d =
-				cm->proj[row].gens[i].reserves.res[j].puc;
-			tc_print[TC_CAP + gen].is_number = 1;
-			tc_print[TC_PREM + gen].is_number = 1;
-			tc_print[TC_RESPS + gen].is_number = 1;
-			tc_print[TC_RES + gen].is_number = 1;
-		}
-	}
-	tc_print[TC_TOTRESA].v.d
-		= gen_sum(cm->proj[row].gens, ER, RES, PUC)
-		+ gen_sum(cm->proj[row].gens, ER, RESPS, 0);
-	tc_print[TC_TOTRESC].v.d
-		= gen_sum(cm->proj[row].gens, EE, RES, PUC)
-		+ gen_sum(cm->proj[row].gens, EE, RESPS, 0);
-
-	tc_print[TC_REDCAPPUC].v.d
-		= gen_sum(cm->proj[row].gens, ER, CAPRED, PUC)
-		+ gen_sum(cm->proj[row].gens, EE, CAPRED, PUC);
-	tc_print[TC_REDCAPTUC].v.d
-		= gen_sum(cm->proj[row].gens, ER, CAPRED, TUC)
-		+ gen_sum(cm->proj[row].gens, EE, CAPRED, TUC);
-	tc_print[TC_REDCAPTUCPS1].v.d
-		= gen_sum(cm->proj[row].gens, ER, CAPRED, TUCPS_1)
-		+ gen_sum(cm->proj[row].gens, EE, CAPRED, TUCPS_1);
-
-	tc_print[TC_RESPUC].v.d
-		= gen_sum(cm->proj[row].gens, ER, RES, PUC)
-		+ gen_sum(cm->proj[row].gens, EE, RES, PUC)
-		+ gen_sum(cm->proj[row].gens, ER, RESPS, 0)
-		+ gen_sum(cm->proj[row].gens, EE, RESPS, 0);
-	tc_print[TC_RESTUC].v.d
-		= gen_sum(cm->proj[row].gens, ER, RES, TUC)
-		+ gen_sum(cm->proj[row].gens, EE, RES, TUC)
-		+ gen_sum(cm->proj[row].gens, ER, RESPS, 0)
-		+ gen_sum(cm->proj[row].gens, EE, RESPS, 0);
-	tc_print[TC_RESTUCPS1].v.d
-		= gen_sum(cm->proj[row].gens, ER, RES, TUCPS_1)
-		+ gen_sum(cm->proj[row].gens, EE, RES, TUCPS_1)
-		+ gen_sum(cm->proj[row].gens, ER, RESPS, 0)
-		+ gen_sum(cm->proj[row].gens, EE, RESPS, 0);
-
-	for (unsigned i = 0; i < ART24GEN_AMOUNT; i++) {
-		for (unsigned k = 0; k < EREE_AMOUNT; k++) {
-			gen = i+ART24GEN_AMOUNT*(3*k + PUC);
-			tc_print[TC_ART24 + gen].v.d =
-				cm->proj[row].art24[i].res[k].puc;
-			tc_print[TC_ART24 + gen].is_number = 1;
-			gen = i+ART24GEN_AMOUNT*(3*k + TUC);
-			tc_print[TC_ART24 + gen].v.d =
-				cm->proj[row].art24[i].res[k].tuc;
-			tc_print[TC_ART24 + gen].is_number = 1;
-			gen = i+ART24GEN_AMOUNT*(3*k + TUCPS_1);
-			tc_print[TC_ART24 + gen].v.d =
-				cm->proj[row].art24[i].res[k].tucps_1;
-			tc_print[TC_ART24 + gen].is_number = 1;
-		}
-	}
-
-	if (row + 1 < MAXPROJ) {
-		tc_print[TC_FF].v.d = cm->proj[row + 1].factor.ff;
-		tc_print[TC_QX].v.d = cm->proj[row + 1].factor.qx;
-		tc_print[TC_WXDEF].v.d = cm->proj[row + 1].factor.wxdef;
-		tc_print[TC_WXIMM].v.d = cm->proj[row + 1].factor.wximm;
-		tc_print[TC_RETX].v.d = cm->proj[row + 1].factor.retx;
-		tc_print[TC_KPX].v.d = cm->proj[row + 1].factor.kPx;
-		tc_print[TC_NPK].v.d = cm->proj[row + 1].factor.nPk;
-		tc_print[TC_VK].v.d = cm->proj[row + 1].factor.vk;
-		tc_print[TC_VN].v.d = cm->proj[row + 1].factor.vn;
-
-		a = 2;
-
-		tc_print[TC_ASSETS115].v.d = cm->proj[row + 1].assets.par115;
-		tc_print[TC_ASSETS113].v.d = cm->proj[row + 1].assets.par113;
-		tc_print[TC_DBODTHRISK].v.d = cm->proj[row + 1].dbo_death.death_risk;
-		tc_print[TC_DBODTHRES].v.d = cm->proj[row + 1].dbo_death.death_res;
-		tc_print[TC_NCDTHRISK].v.d = cm->proj[row + 1].nc_death.death_risk;
-		tc_print[TC_NCDTHRES].v.d = cm->proj[row + 1].nc_death.death_res;
-
-	}
-}
-
-static void free_print_names(void)
-{
-	for (unsigned i = 0; i < TC_AMOUNT; i++) {
-		if (to_free[i]) free(tc_print[i].name);
-	}
-}
 
 static void print_content(lxw_worksheet *ws, Content *content,
 		size_t num_member, int col)
@@ -812,11 +489,8 @@ static void print_content(lxw_worksheet *ws, Content *content,
 	}
 }
 
-static void print_record(lxw_worksheet *ws, Record *record, size_t num_member)
+static void print_contents(lxw_worksheet *ws, Record *record, size_t num_member)
 {
-	assert(ws);
-	assert(record);
-
 	Content *content = 0;
 	for (size_t i = 0; i < record->num_titles; i++) {
 		content = map_get_str(record->data, record->titles[i]);
@@ -825,6 +499,14 @@ static void print_record(lxw_worksheet *ws, Record *record, size_t num_member)
 		}
 		print_content(ws, content, num_member, i);
 	}
+}
+
+static void print_record(lxw_worksheet *ws, Record *record, size_t num_member)
+{
+	assert(ws);
+	assert(record);
+
+	print_contents(ws, record, num_member);
 }
 
 static void print_records(lxw_worksheet *ws, const Database *db)
@@ -840,25 +522,89 @@ static void print_database(lxw_worksheet *ws, const Database *db)
 {
 	assert(ws);
 	assert(db);
+	printf("Printing Data...\n");
 	for (size_t col = 0; col < db->num_titles; col++) {
 		worksheet_write_string(ws, 0, col, db->titles[col], 0);
 		print_records(ws, db);
+		column++;
 	}
+	printf("Printing Data complete.\n");
 }
 
-void print_results(const Database db[static 1], const CurrentMember *cm)
+#define PRINT_RES(k, j, title) \
+	for (size_t i = 0; i < buf_len(cm); i++) { \
+		double amount = gen_sum(cm[i].proj[k].gens, j, RES, PUC) \
+		+ gen_sum(cm[i].proj[k].gens, j, RESPS, PUC); \
+		print_number(wb, ws, i + 1, title, amount); \
+	} \
+	column++;
+
+#define PRINT_ART24(k, title) \
+	for (size_t i = 0; i < buf_len(cm); i++) { \
+		double amount = gen_sum_art24(cm[i].proj[k].art24, PUC); \
+		print_number(wb, ws, i + 1, title, amount); \
+	} \
+	column++;
+
+static void print_reserves(lxw_workbook *wb, lxw_worksheet *ws,
+		const CurrentMember *cm)
+{
+	PRINT_RES(0, ER, "Res A 0");
+	PRINT_RES(1, ER, "Res A 1");
+	PRINT_RES(0, EE, "Res C 0");
+	PRINT_RES(1, EE, "Res C 1");
+	PRINT_ART24(0, "Art24 0");
+	PRINT_ART24(1, "Art24 1");
+}
+
+#undef PRINT_RES
+#undef PRINT_ART24
+
+#define PRINT_RET(kind, m, ass, title) \
+	for (size_t i = 0; i < buf_len(cm); i++) { \
+		double amount = proj_sum(kind, cm[i].proj, m, ass); \
+		print_number(wb, ws, i + 1, title, amount); \
+	} \
+	column++;
+
+#define PRINT_RET_METHOD(m) \
+	PRINT_RET(PROJ_DBO_RET, m, PAR115, "LIAB RET "#m" PAR115"); \
+	PRINT_RET(PROJ_DBO_RET, m, PAR113, "LIAB RET "#m" PAR113"); \
+	PRINT_RET(PROJ_DBO_RET, m, MATHRES, "LIAB RET "#m" MATH RES"); \
+	PRINT_RET(PROJ_NC_RET, m, PAR115, "NC "#m);
+	
+
+static void print_retirement(lxw_workbook *wb, lxw_worksheet *ws,
+		const CurrentMember *cm)
+{
+	PRINT_RET_METHOD(PUC);
+	PRINT_RET_METHOD(TUC);
+}
+
+static void print_members(lxw_workbook *wb, lxw_worksheet *ws,
+		const CurrentMember *cm)
+{
+	assert(ws);
+	assert(cm);
+	printf("Printing results...\n");
+	print_reserves(wb, ws, cm);
+	print_retirement(wb, ws, cm);
+	printf("Printing results completed.\n");
+}
+
+void print_results(const Database *db, const CurrentMember *cm)
 {
 	column = 0;
 	assert(db);
 	assert(cm);
 	char *results = 0;
-	char *tmp = 0;
+	char *ws_name = 0;
 
 	lxw_workbook *wb = 0;
 	lxw_worksheet *ws = 0;
 
-	buf_printf(tmp, "data");
-	buf_printf(results, "results.xlsx");
+	buf_printf(ws_name, "data");
+	buf_printf(results, "%s - results.xlsx", db->excel->name);
 
 	if (strlen(results) > PATH_MAX) {
 		die("file name [%s] too large.\n [%d] is maximum while file "
@@ -867,248 +613,13 @@ void print_results(const Database db[static 1], const CurrentMember *cm)
 	}
 
 	wb = workbook_new(results);
-	ws = workbook_add_worksheet(wb, tmp);
+	ws = workbook_add_worksheet(wb, ws_name);
 	worksheet_set_column(ws, 0, 512, 20, 0);
-	buf_free(tmp);
+	buf_free(ws_name);
 	buf_free(results);
 
-	printf("Printing Data...\n");
 	print_database(ws, db);
-	printf("Printing Data complete.\n");
-	printf("Printing results...\n");
+	column++;
+	print_members(wb, ws, cm);
 	workbook_close(wb);
-}
-
-unsigned printresults(const Database db[static 1], CurrentMember cm[static 1])
-{
-	assert(db);
-	assert(cm);
-	char results[BUFSIZ];
-	unsigned row = 0;
-	unsigned col = 0;  
-	unsigned index = 0;
-	double DBORETPUCPAR = 0.0;
-	double DBORETPUCRES = 0.0;
-	double DBORETTUCPAR = 0.0;
-	double DBORETTUCRES = 0.0;
-
-	double NCRETPUCPAR = 0.0;
-	double NCRETPUCRES = 0.0;
-	double NCRETTUCPAR = 0.0;
-	double NCRETTUCRES = 0.0;
-
-	double ICNCRETPUCPAR = 0.0;
-	double ICNCRETPUCRES = 0.0;
-	double ICNCRETTUCPAR = 0.0;
-	double ICNCRETTUCRES = 0.0;
-
-	double ExpERContr = 0.0;
-	double ExpEEContr = 0.0;
-	double er = 0.0;
-
-	double DBODTHRESPART = 0.0;
-	double DBODTHRiskPART = 0.0;
-	double NCDTHRESPART = 0.0;
-	double NCDTHRiskPART = 0.0;
-
-	double assetsPAR115 = 0.0;
-	double assetsPAR113 = 0.0;
-	double fassets = 0.0;
-	double assetsRES = 0.0;
-
-	double ART24TOT = 0.0;
-
-	double ICNCDTHRESPART = 0.0;
-	double ICNCDTHRiskPART = 0.0;
-
-	lxw_workbook *wb = 0;
-	lxw_worksheet *ws = 0;
-
-	snprintf(results, sizeof(results), "%s", "results.xlsx");
-
-	if (strlen(results) > PATH_MAX) return NAME_PRERR;
-
-	wb = workbook_new(results);
-	ws = workbook_add_worksheet(wb, "dataTY");
-	worksheet_set_column(ws, 0, 512, 20, 0);
-
-	printf("Printing Data...\n");
-	print_database(ws, db);
-	printf("Printing Data complete.\n");
-	printf("Printing results...\n");
-
-	col = db->num_titles + 1;
-	worksheet_write_string(ws, row, col+index++, "DR", 0);
-	worksheet_write_string(ws, row, col+index++, "DC NC", 0);
-	worksheet_write_string(ws, row, col+index++, "Method Standard", 0);
-	worksheet_write_string(ws, row, col+index++, "Method DBO", 0);
-	worksheet_write_string(ws, row, col+index++, "Method Assets", 0);
-	worksheet_write_string(ws, row, col+index++, "Method Death", 0);
-	worksheet_write_string(ws, row, col+index++, "Admin Cost", 0);
-	worksheet_write_string(ws, row, col+index++, "Age", 0);
-	worksheet_write_string(ws, row, col+index++, "Salary Scale", 0);
-
-	index++;
-	worksheet_write_string(ws, row, col+index++, "LIAB_RET_PUC_PAR", 0);
-	worksheet_write_string(ws, row, col+index++, "LIAB_RET_PUC_RES", 0);
-	worksheet_write_string(ws, row, col+index++, "LIAB_RET_TUC_PAR", 0);
-	worksheet_write_string(ws, row, col+index++, "LIAB_RET_TUC_RES", 0);
-	worksheet_write_string(ws, row, col+index++, "NC_RET_PUC_PAR", 0);
-	worksheet_write_string(ws, row, col+index++, "NC_RET_PUC_RES", 0);
-	worksheet_write_string(ws, row, col+index++, "NC_RET_TUC_PAR", 0);
-	worksheet_write_string(ws, row, col+index++, "NC_RET_TUC_RES", 0);
-	worksheet_write_string(ws, row, col+index++, "ExpERContr", 0);
-	worksheet_write_string(ws, row, col+index++, "ExpEEContr", 0);
-	worksheet_write_string(ws, row, col+index++, "LIAB_DTH_RESPART", 0);
-	worksheet_write_string(ws, row, col+index++, "LIAB_DTH_RISKPART", 0);
-	worksheet_write_string(ws, row, col+index++, "NC_DTH_RESPART", 0);
-	worksheet_write_string(ws, row, col+index++, "NC_DTH_RISKPART", 0);
-	index++;
-	worksheet_write_string(ws, row, col+index++, "Assets_PAR115", 0);
-	worksheet_write_string(ws, row, col+index++, "Assets_PAR113", 0);
-	worksheet_write_string(ws, row, col+index++, "Assets_RES", 0);
-	worksheet_write_string(ws, row, col+index++, "DBO_PUC_PAR", 0);
-	worksheet_write_string(ws, row, col+index++, "SC_ER_PUC_PAR", 0);
-	worksheet_write_string(ws, row, col+index++, "DBO_TUC_PAR", 0);
-	worksheet_write_string(ws, row, col+index++, "SC_ER_TUC_PAR", 0);
-	worksheet_write_string(ws, row, col+index++, "DBO_PUC_RES", 0);
-	worksheet_write_string(ws, row, col+index++, "SC_ER_PUC_RES", 0);
-	worksheet_write_string(ws, row, col+index++, "DBO_TUC_RES", 0);
-	worksheet_write_string(ws, row, col+index++, "SC_ER_TUC_RES", 0);
-
-	while (row < db->num_records) {
-		index = 0;
-		worksheet_write_number(ws, row+1, col+index++, ass.DR, 0);
-		worksheet_write_number(ws, row+1, col+index++, ass.DR, 0);
-		worksheet_write_string(ws, row+1, col+index++, 
-				(ass.method & mIAS ? "IAS" : "FAS"), 0);
-		worksheet_write_string(ws, row+1, col+index++, 
-				(ass.method & mTUC ? "TUC" : "PUC"), 0);
-		worksheet_write_string(ws, row+1, col+index++, 
-				(ass.method & mRES ? "RES" : 
-				 (ass.method & mPAR115 ? "PAR115" :
-				  "PAR113")), 0);
-		worksheet_write_number(ws, row+1, col+index++, 
-				(ass.method & mDTH ? 1 : 0), 0);
-		worksheet_write_number(ws, row+1, col+index++, tff.admincost,
-				0);
-		worksheet_write_number(ws, row+1, col+index++, cm->proj[0].age, 0);
-		worksheet_write_number(ws, row+1, col+index++,
-				salaryscale(cm, 1), 0);
-		index++;
-
-		ExpERContr = MAX(0.0, MIN(1.0, NRA(cm, 1) - cm->proj[1].age))
-			* gen_sum(cm->proj[1].gens, ER, PREMIUM, PUC);
-		ExpEEContr = MAX(0.0, MIN(1.0, NRA(cm, 1) - cm->proj[1].age))
-			* gen_sum(cm->proj[1].gens, EE, PREMIUM, PUC);
-
-		for (size_t i = 0; i < MAXPROJ; i++) {
-			DBODTHRESPART += cm->proj[i].dbo_death.death_res;
-			DBODTHRiskPART += cm->proj[i].dbo_death.death_risk;
-			NCDTHRESPART += cm->proj[i].nc_death.death_res;
-			NCDTHRiskPART += cm->proj[i].nc_death.death_risk;
-			ICNCDTHRESPART += cm->proj[i].nc_death.ic_death_res;
-			ICNCDTHRiskPART += cm->proj[i].nc_death.ic_death_risk;
-			assetsPAR115 += cm->proj[i].assets.par115;
-			assetsPAR113 += cm->proj[i].assets.par113;
-			assetsRES += cm->proj[i].assets.math_res;
-		}
-
-
-		for (size_t i = 0; i < ART24GEN_AMOUNT; i++) {
-			for (size_t j = 0; j < EREE_AMOUNT; j++) {
-				ART24TOT += cm->proj[1].art24[i].res[j].puc;
-			}
-		}
-
-		/* Liability */
-		worksheet_write_number(ws, row+1, col+index++, DBORETPUCPAR,
-				0);
-		worksheet_write_number(ws, row+1, col+index++, DBORETPUCRES,
-				0);
-		worksheet_write_number(ws, row+1, col+index++, DBORETTUCPAR,
-				0);
-		worksheet_write_number(ws, row+1, col+index++, DBORETTUCRES,
-				0);
-
-		/* Normal Cost */
-		worksheet_write_number(ws, row+1, col+index++, NCRETPUCPAR, 0);
-		worksheet_write_number(ws, row+1, col+index++, NCRETPUCRES, 0);
-		worksheet_write_number(ws, row+1, col+index++, NCRETTUCPAR, 0);
-		worksheet_write_number(ws, row+1, col+index++, NCRETTUCRES, 0);
-
-		/* Expected contributions */
-		worksheet_write_number(ws, row+1, col+index++, ExpERContr, 0);
-		worksheet_write_number(ws, row+1, col+index++, ExpEEContr, 0);
-
-		/* Death */
-		worksheet_write_number(ws, row+1, col+index++, DBODTHRESPART,
-				0);
-		worksheet_write_number(ws, row+1, col+index++, DBODTHRiskPART,
-				0);
-		worksheet_write_number(ws, row+1, col+index++, NCDTHRESPART,
-				0);
-		worksheet_write_number(ws, row+1, col+index++, NCDTHRiskPART,
-				0);
-
-		index++;
-		/* Assets */
-		worksheet_write_number(ws, row+1, col+index++, assetsPAR115,
-				0);
-		worksheet_write_number(ws, row+1, col+index++, assetsPAR113,
-				0);
-		worksheet_write_number(ws, row+1, col+index++, assetsRES, 0);
-
-		/* DBO + SC */
-		/* DBO RET PUC PAR */
-		fassets = (ass.method & PAR113 ? assetsPAR113 : assetsPAR115);
-		worksheet_write_number(ws, row+1, col+index++, 
-				MAX(DBORETPUCPAR, fassets), 0);
-		/* SC ER PUC PAR */
-		worksheet_write_number(ws, row+1, col+index++, 
-				MAX(0.0, NCRETPUCPAR + ICNCRETPUCPAR
-					- ExpEEContr), 0);
-		/* DBO RET TUC PAR */
-		worksheet_write_number(ws, row+1, col+index++, 
-				MAX(DBORETTUCPAR, fassets), 0);
-		/* SC ER TUC PAR */
-		er = (ass.method & mmaxERContr ?
-				ExpERContr * (1 - tff.admincost)
-				/ (1 + ass.taxes) : 0.0);
-		worksheet_write_number(ws, row+1, col+index++, 
-				MAX(er, NCRETTUCPAR + ICNCRETTUCPAR
-					- ExpEEContr), 0);
-		/* DBO RET PUC RES */
-
-		if (!(ass.method & mDTH)) {
-			DBODTHRESPART = 0.0;
-			DBODTHRiskPART = 0.0;
-			NCDTHRESPART = 0.0;
-			NCDTHRiskPART = 0.0;
-			ICNCDTHRESPART = 0.0;
-			ICNCDTHRiskPART = 0.0;
-		}
-		worksheet_write_number(ws, row+1, col+index++, 
-				MAX3(DBORETPUCRES + DBODTHRESPART, assetsRES, 
-					ART24TOT) + DBODTHRiskPART, 0);
-		/* SC ER PUC RES */
-		worksheet_write_number(ws, row+1, col+index++, 
-				MAX(0.0, NCRETPUCRES + ICNCRETPUCRES
-					+ NCDTHRESPART + ICNCDTHRESPART)
-				- ExpEEContr + NCDTHRiskPART + ICNCDTHRiskPART
-				, 0);
-		/* DBO RET TUC RES */
-		worksheet_write_number(ws, row+1, col+index++, 
-				MAX3(DBORETTUCRES + DBODTHRESPART, assetsRES, 
-					ART24TOT) + DBODTHRiskPART, 0);
-		/* SC ER TUC RES */
-		worksheet_write_number(ws, row+1, col+index++, 
-				MAX(er, NCRETTUCRES + ICNCRETTUCRES
-					+ NCDTHRESPART + ICNCDTHRESPART - ExpEEContr)
-				+ NCDTHRiskPART + ICNCDTHRiskPART, 0);
-		row++;
-		cm++;
-	}
-	printf("Printing results complete.\n");
-	return workbook_close(wb);
 }
