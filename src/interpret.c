@@ -197,3 +197,8 @@ Val interpret(const char *name, const char *code, const Database *db,
 	}
 	return interpreter->result;
 }
+
+void reset_interpreters(void)
+{
+	map_free(&interpreters);
+}

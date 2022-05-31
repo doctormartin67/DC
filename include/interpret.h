@@ -35,5 +35,6 @@ void add_builtin_boolean(const char *name, bool b);
 void add_builtin_double(const char *name, double d);
 void add_builtin_string(const char *name, const char *s);
 void print_syms(const Interpreter *ipr);
+void reset_interpreters(void);
 
 #endif

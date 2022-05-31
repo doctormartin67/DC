@@ -410,6 +410,9 @@ void test_resolve(void)
 		"dim x as double project 0.01 + 0.01\n"
 			"x = 100\n"
 			"result = x",
+		"dim x as double project infl\n"
+			"x = 100\n"
+			"result = x",
 	}
 	;
 
@@ -431,6 +434,9 @@ void test_resolve(void)
 		result_bool = interpret(0, code[3], 0, 0, 0, TYPE_BOOLEAN).b;
 		assert(true == result_bool);
 		result_double = interpret(0, code[4], 0, i, 0, TYPE_DOUBLE).d;
+		assert(fabs(result_double - 100 * pow(1.02, i)) < EPS);
+		add_builtin_double(str_intern("infl"), 0.02);
+		result_double = interpret(0, code[5], 0, i, 0, TYPE_DOUBLE).d;
 		assert(fabs(result_double - 100 * pow(1.02, i)) < EPS);
 	}
 	assert(1 == interpret(0, "result = 1\n", 0, 0, 0, TYPE_INT).i);
@@ -491,6 +497,7 @@ int main(void)
 	enum {N = 32};
 	for (int i = 0; i < N; i++) {
 		test_resolve();
+		reset_interpreters();
 	}
 	test_code();
 	test_builtin_funcs();

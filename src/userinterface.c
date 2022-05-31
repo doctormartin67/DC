@@ -369,6 +369,7 @@ static void validate_interpreters(void)
 		validate_emit_error("%s", error.str);
 	}
 	reset_error();
+	reset_interpreters();
 	assert(!error.is_error);
 }
 

@@ -21,7 +21,7 @@ void init_builtin_vars(void)
 	ndoe = str_intern("ndoe");
 	age = str_intern("age");
 	sal = str_intern("sal");
-	add_builtin_double(infl, 0.0);
+	add_builtin_double(infl, ass.infl);
 	add_builtin_double(ndoe, 0.0);
 	add_builtin_double(age, 0.0);
 	add_builtin_double(sal, 0.0);
@@ -29,7 +29,6 @@ void init_builtin_vars(void)
 
 static void add_builtin_vars(const CurrentMember *cm, int k)
 {
-	add_builtin_double(infl, ass.infl);
 	add_builtin_double(ndoe, cm->proj[k].nDOE);
 	add_builtin_double(age, cm->proj[k].age);
 	add_builtin_double(sal, cm->proj[k].sal);
@@ -122,6 +121,7 @@ void setassumptions(void)
 	ass.TRM_PercDef = atof(get_input(INPUT_TRM_PERCDEF));
 
 	set_methodology();
+	init_builtin_vars();
 	buf_free(temp);
 }
 
