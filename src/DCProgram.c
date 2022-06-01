@@ -327,6 +327,24 @@ double gen_sum_art24(const struct art24 *a24, size_t method)
 		} \
 	}
 
+#define PROJ_ASS \
+	for (size_t i = 0; i < MAXPROJ; i++) { \
+		switch (asset_kind) { \
+			case MATHRES: \
+				sum += proj[i].assets.math_res; \
+				break; \
+			case PAR115: \
+				sum += proj[i].assets.par115; \
+				break; \
+			case PAR113: \
+				sum += proj[i].assets.par113; \
+				break; \
+			default: \
+				assert(0); \
+				break; \
+		} \
+	}
+
 
 static double proj_sum_kind(ProjectionKind kind, const struct projection *proj,
 		size_t method, size_t asset_kind)
@@ -340,6 +358,9 @@ static double proj_sum_kind(ProjectionKind kind, const struct projection *proj,
 			break;
 		case PROJ_NC_RET:
 			PROJ_RET(nc_ret);
+			break;
+		case PROJ_ASSETS:
+			PROJ_ASS;
 			break;
 		default:
 			assert(0);
@@ -357,6 +378,7 @@ double proj_sum(ProjectionKind kind, const struct projection *proj,
 	switch (kind) {
 		case PROJ_DBO_RET: 
 		case PROJ_NC_RET:
+		case PROJ_ASSETS:
 			sum = proj_sum_kind(kind, proj, method, asset_kind);
 			break;
 		default:

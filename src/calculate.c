@@ -717,7 +717,11 @@ void set_assets(struct assets *assets, double res, double red_cap,
 
 	ASSETS(par115, PAR115);
 	ASSETS(par113, PAR113);
-	ASSETS(math_res, MATHRES);
+	//ASSETS(math_res, MATHRES);
+	/* 
+	 * set after this function is called as these values are not projected
+	 */
+
 }
 
 #undef DBO

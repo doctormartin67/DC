@@ -233,6 +233,15 @@ void runmember(CurrentMember cm[static 1])
 		set_ic_nc_ret(&cm->proj[k].ic_nc_ret, ART24TOT, cm->proj[k].factor);
 		set_assets(&cm->proj[k].assets, RESTOT[TUC], REDCAPTOT[TUC],
 				cm->proj[k].factor);
+		if (1 == k) {
+			cm->proj[k].assets.math_res
+				= gen_sum(cm->proj[k].gens, ER, RES, PUC)
+				+ gen_sum(cm->proj[k].gens, ER, RESPS, PUC)
+				+ gen_sum(cm->proj[k].gens, EE, RES, PUC)
+				+ gen_sum(cm->proj[k].gens, EE, RESPS, PUC);
+		} else {
+			cm->proj[k].assets.math_res = 0.0;
+		}
 
 		cm->proj[k].afsl = cm->proj[k-1].afsl
 			* (cm->proj[k].factor.wxdef + cm->proj[k].factor.wximm

@@ -431,26 +431,26 @@ void print_test_case(const CurrentMember *cm)
 {
 	assert(cm);
 	column = 0;
-	char *results = 0;
-	char *tmp = 0;
+	char *wb_name = 0;
+	char *ws_name = 0;
 
 	lxw_workbook *wb = 0;
 	lxw_worksheet *ws = 0;
 
-	buf_printf(tmp, "TestCase");
-	buf_printf(results, "%s.xlsx", tmp);
+	buf_printf(ws_name, "Test Case");
+	buf_printf(wb_name, "%s - %s.xlsx", ws_name, cm->key);
 
-	if (strlen(results) > PATH_MAX) {
+	if (strlen(wb_name) > PATH_MAX) {
 		die("file name [%s] too large.\n [%d] is maximum while file "
 				"name is [%lu]",
-				results, PATH_MAX, strlen(results));
+				wb_name, PATH_MAX, strlen(wb_name));
 	}
 
-	wb = workbook_new(results);
-	ws = workbook_add_worksheet(wb, tmp);
+	wb = workbook_new(wb_name);
+	ws = workbook_add_worksheet(wb, ws_name);
 	worksheet_set_column(ws, 0, 512, 20, 0);
-	buf_free(tmp);
-	buf_free(results);
+	buf_free(ws_name);
+	buf_free(wb_name);
 	print_test_case_results(wb, ws, cm);
 	workbook_close(wb);
 }
@@ -560,7 +560,7 @@ static void print_reserves(lxw_workbook *wb, lxw_worksheet *ws,
 #undef PRINT_RES
 #undef PRINT_ART24
 
-#define PRINT_RET(kind, m, ass, title) \
+#define PRINT(kind, m, ass, title) \
 	for (size_t i = 0; i < buf_len(cm); i++) { \
 		double amount = proj_sum(kind, cm[i].proj, m, ass); \
 		print_number(wb, ws, i + 1, title, amount); \
@@ -568,10 +568,10 @@ static void print_reserves(lxw_workbook *wb, lxw_worksheet *ws,
 	column++;
 
 #define PRINT_RET_METHOD(m) \
-	PRINT_RET(PROJ_DBO_RET, m, PAR115, "LIAB RET "#m" PAR115"); \
-	PRINT_RET(PROJ_DBO_RET, m, PAR113, "LIAB RET "#m" PAR113"); \
-	PRINT_RET(PROJ_DBO_RET, m, MATHRES, "LIAB RET "#m" MATH RES"); \
-	PRINT_RET(PROJ_NC_RET, m, PAR115, "NC "#m);
+	PRINT(PROJ_DBO_RET, m, PAR115, "LIAB RET "#m" PAR115"); \
+	PRINT(PROJ_DBO_RET, m, PAR113, "LIAB RET "#m" PAR113"); \
+	PRINT(PROJ_DBO_RET, m, MATHRES, "LIAB RET "#m" MATH RES"); \
+	PRINT(PROJ_NC_RET, m, PAR115, "NC "#m);
 	
 
 static void print_retirement(lxw_workbook *wb, lxw_worksheet *ws,
@@ -581,6 +581,17 @@ static void print_retirement(lxw_workbook *wb, lxw_worksheet *ws,
 	PRINT_RET_METHOD(TUC);
 }
 
+static void print_assets(lxw_workbook *wb, lxw_worksheet *ws,
+		const CurrentMember *cm)
+{
+	PRINT(PROJ_ASSETS, TUC, PAR115, "ASSETS PAR115");
+	PRINT(PROJ_ASSETS, TUC, PAR113, "ASSETS PAR113");
+	PRINT(PROJ_ASSETS, TUC, MATHRES, "ASSETS MATH RES");
+}
+
+#undef PRINT
+#undef PRINT_RET_METHOD
+
 static void print_members(lxw_workbook *wb, lxw_worksheet *ws,
 		const CurrentMember *cm)
 {
@@ -589,6 +600,7 @@ static void print_members(lxw_workbook *wb, lxw_worksheet *ws,
 	printf("Printing results...\n");
 	print_reserves(wb, ws, cm);
 	print_retirement(wb, ws, cm);
+	print_assets(wb, ws, cm);
 	printf("Printing results completed.\n");
 }
 

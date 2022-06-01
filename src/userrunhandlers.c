@@ -1,6 +1,7 @@
 #include "userinterface.h"
 #include "assumptions.h"
 #include "printresults.h"
+#include "interpret.h"
 
 #define NOT_RUNNING 01
 #define RUNNING 02
@@ -23,6 +24,7 @@ gboolean update_gui(gpointer data);
 static void free_run_garbage(void)
 {
 	dates_arena_free();
+	reset_interpreters();
 }
 
 const Database *get_database(void)
