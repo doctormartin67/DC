@@ -52,15 +52,13 @@ static Val interpret_code(const CurrentMember *cm, int k, const char *code,
 static const char *get_input(InputKind kind)
 {
 	UserInput *const *user_input = get_user_input();
-	const char *s = user_input[kind]->input;
-	return s;
+	return user_input[kind]->input;
 }
 
 static const char *get_name(InputKind kind)
 {
 	UserInput *const *user_input = get_user_input();
-	const char *s = user_input[kind]->name;
-	return s;
+	return user_input[kind]->name;
 }
 
 static TypeKind get_return_type(InputKind kind)
@@ -107,13 +105,6 @@ void setassumptions(void)
 	ass.DR113 = atof(get_input(INPUT_DR113));
 	ass.agecorr = atoi(get_input(INPUT_AGECORR));
 	ass.infl = atof(get_input(INPUT_INFL));
-	ass.ss = get_input(INPUT_SS);
-	ass.nra = get_input(INPUT_NRA);
-	ass.wxdef = get_input(INPUT_TURNOVER);
-	ass.retx = get_input(INPUT_RETX);
-	ass.calc_a = get_input(INPUT_CONTRA);
-	ass.calc_c = 0;
-	ass.calc_dth = 0;
 
 	// Assumptions that usually won't change from year to year
 	ass.incrSalk0 = 0; // determine whether sal gets increased at k = 0
@@ -125,27 +116,27 @@ void setassumptions(void)
 	buf_free(temp);
 }
 
-static Val get_tariff(const CurrentMember *cm, InputKind kind)
+static Val get_interpreter_val(const CurrentMember *cm, InputKind kind, int k)
 {
 	const char *code = get_input(kind);
 	const char *name = get_name(kind);
 	TypeKind return_type = get_return_type(kind);
-	return interpret_code(cm, 0, code, name, return_type);
+	return interpret_code(cm, k, code, name, return_type);
 }
 
 void set_tariffs(const CurrentMember cm[static 1])
 {
 	const char *ltins = 0;
 	const char *ltterm = 0;
-	tff.admincost = get_tariff(cm, INPUT_ADMINCOST).d;
-	tff.costRES = get_tariff(cm, INPUT_COSTRES).d;
-	tff.costKO = get_tariff(cm, INPUT_COSTKO).d;
-	tff.WDDTH = get_tariff(cm, INPUT_WD).d;
+	tff.admincost = get_interpreter_val(cm, INPUT_ADMINCOST, 0).d;
+	tff.costRES = get_interpreter_val(cm, INPUT_COSTRES, 0).d;
+	tff.costKO = get_interpreter_val(cm, INPUT_COSTKO, 0).d;
+	tff.WDDTH = get_interpreter_val(cm, INPUT_WD, 0).d;
 	tff.MIXEDPS = 1;
-	tff.prepost = get_tariff(cm, INPUT_PREPOST).d;
-	tff.term = get_tariff(cm, INPUT_TERM).d;
-	ltins = get_tariff(cm, INPUT_LTINS).s;
-	ltterm = get_tariff(cm, INPUT_LTTERM).s;
+	tff.prepost = get_interpreter_val(cm, INPUT_PREPOST, 0).d;
+	tff.term = get_interpreter_val(cm, INPUT_TERM, 0).d;
+	ltins = get_interpreter_val(cm, INPUT_LTINS, 0).s;
+	ltterm = get_interpreter_val(cm, INPUT_LTTERM, 0).s;
 	for (int l = 0; l < EREE_AMOUNT; l++) {
 		for (int j = 0; j < MAXGEN; j++) {
 			tff.ltINS[l][j].table = ltins;
@@ -162,26 +153,18 @@ void set_tariffs(const CurrentMember cm[static 1])
 
 double salaryscale(const CurrentMember cm[static 1], int k)
 {
-	const char *code = get_input(INPUT_SS);
-	const char *name = get_name(INPUT_SS);
-	TypeKind return_type = get_return_type(INPUT_SS);
-	return ass.infl + interpret_code(cm, k, code, name, return_type).d;
+	double d = get_interpreter_val(cm, INPUT_SS, k).d;
+	return ass.infl + d;
 }
 
 double calcA(const CurrentMember cm[static 1], int k)
 {
-	const char *code = get_input(INPUT_CONTRA);
-	const char *name = get_name(INPUT_CONTRA);
-	TypeKind return_type = get_return_type(INPUT_CONTRA);
-	return interpret_code(cm, k, code, name, return_type).d;
+	return get_interpreter_val(cm, INPUT_CONTRA, k).d;
 }
 
 double calcC(const CurrentMember cm[static 1], int k)
 {
-	const char *code = get_input(INPUT_CONTRC);
-	const char *name = get_name(INPUT_CONTRC);
-	TypeKind return_type = get_return_type(INPUT_CONTRC);
-	return interpret_code(cm, k, code, name, return_type).d;
+	return get_interpreter_val(cm, INPUT_CONTRC, k).d;
 }
 
 double calcDTH(const CurrentMember cm[static 1], int k)
@@ -191,24 +174,15 @@ double calcDTH(const CurrentMember cm[static 1], int k)
 
 double NRA(const CurrentMember cm[static 1], int k)
 {
-	const char *code = get_input(INPUT_NRA);
-	const char *name = get_name(INPUT_NRA);
-	TypeKind return_type = get_return_type(INPUT_NRA);
-	return interpret_code(cm, k, code, name, return_type).d;
+	return get_interpreter_val(cm, INPUT_NRA, k).d;
 }
 
 double wxdef(const CurrentMember cm[static 1], int k)
 {
-	const char *code = get_input(INPUT_TURNOVER);
-	const char *name = get_name(INPUT_TURNOVER);
-	TypeKind return_type = get_return_type(INPUT_TURNOVER);
-	return interpret_code(cm, k, code, name, return_type).d;
+	return get_interpreter_val(cm, INPUT_TURNOVER, k).d;
 }
 
 double retx(const CurrentMember cm[static 1], int k)
 {
-	const char *code = get_input(INPUT_RETX);
-	const char *name = get_name(INPUT_RETX);
-	TypeKind return_type = get_return_type(INPUT_RETX);
-	return interpret_code(cm, k, code, name, return_type).d;
+	return get_interpreter_val(cm, INPUT_RETX, k).d;
 }

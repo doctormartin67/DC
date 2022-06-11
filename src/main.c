@@ -175,7 +175,7 @@ void runmember(CurrentMember cm[static 1])
 		update_premiums(cm, k - 1);
 		update_art24(cm, k - 1);
 
-		for (int j = 0; j < METHOD_AMOUNT; j++) {
+		for (size_t j = 0; j < METHOD_AMOUNT; j++) {
 			ART24TOT[j] = gen_sum_art24(cm->proj[k].art24, j);
 			RESTOT[j] = gen_sum(cm->proj[k].gens, ER, RES, j)
 				+ gen_sum(cm->proj[k].gens, EE, RES, j)

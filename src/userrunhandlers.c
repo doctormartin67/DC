@@ -32,10 +32,6 @@ const Database *get_database(void)
 	return db;
 }
 
-/*
- * TODO: this function needs to make checks before proceeding with the
- * import. currently it just aborts if an error occurs
- */
 static void import_data(gpointer pl)
 {
 	(void)pl;

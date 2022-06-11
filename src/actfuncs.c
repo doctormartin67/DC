@@ -123,6 +123,8 @@ double axn(const char *table, double i, double charge, unsigned prepost,
 		value = 0;
 	} else if (12 % term) {
 		return -1.0;
+	} else if (!term) {
+		return -1.0;
 	} else {
 		termfrac = 1.0 / term;
 		ageXk = ageX + (double)prepost/term;
@@ -133,7 +135,7 @@ double axn(const char *table, double i, double charge, unsigned prepost,
 		}
 	}
 
-	return value;
+	return value / term;
 }
 
 /* 

@@ -112,7 +112,7 @@ static void test_axn(void)
 		ageX = i%110;
 		ageXn = i%110 + 1;
 		ax = axn(table, 0.0, 0.0, 1, 12, ageX, ageXn, 0);
-		assert(12 == ax);
+		assert(1 == ax);
 		ageX = i%110;
 		ageXn = ageX + 1.0/12;
 		ax = axn(table, 0.01, 0.001, 1, 12, ageX, ageXn, 0);
