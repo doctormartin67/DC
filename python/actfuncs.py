@@ -47,11 +47,12 @@ def npx(table, ageX, ageXn, corr):
 def nEx(table, i, charge, ageX, ageXn, corr):
 	if (ageX == ageXn):
 		return 1
-	im = (1 + i)/(1 + charge) - 1
-	n = ageXn - ageX
-	vn = 1 / (1 + im) ** n
-	nPx = npx(table, ageX, ageXn, corr)
-	return vn * nPx
+	key = table + str(i) + str(charge) + str(ageX) + str(ageXn) + str(corr)
+	if not key in nEx.values:
+		nEx.values[key] = (1 + charge)/(1 + i) ** (ageXn - ageX) \
+			* npx(table, ageX, ageXn, corr)
+	return nEx.values[key]
+nEx.values = {}
 	
 def axn(table, i, charge, prepost, term, ageX, ageXn, corr):
 	if ageX > ageXn + EPS:
@@ -68,7 +69,7 @@ def axn(table, i, charge, prepost, term, ageX, ageXn, corr):
 			ageXk += termfrac
 			payments -= 1
 
-	return value
+	return value / term
 
 def Ax1n(table, i, charge, ageX, ageXn, corr):
 	if ageX > ageXn + EPS:
@@ -132,12 +133,15 @@ def Iaxn(table, i, charge, prepost, term, ageX, ageXn, corr):
 def lump_sum(combination, res, prem, pre_post, term, age, NRA, table,
 	i, charge, admin_cost, delta_cap, dth_cap, ps_is_mixed, X10, b2):
 	if age == NRA:
-		return 0.0
+		return res
 	
 	if 0 == res and 0 == prem:
 		return 0.0
 
-	ax = axn(table, i, charge, pre_post, term, age, NRA, 0)
+	if 0 == prem:
+		ax = 0
+	else:
+		ax = axn(table, i, charge, pre_post, term, age, NRA, 0)
 	Ex = nEx(table, i, charge, age, NRA, 0)
 
 	if "UKMS" == combination or "UKZT" == combination:
@@ -166,12 +170,15 @@ def lump_sum(combination, res, prem, pre_post, term, age, NRA, table,
 def reserves(combination, cap, prem, pre_post, term, age, NRA, table,
 	i, charge, admin_cost, delta_cap, dth_cap, ps_is_mixed, X10, b2):
 	if age == NRA:
-		return 0.0
+		return cap
 	
 	if 0 == cap and 0 == prem:
 		return 0.0
 
-	ax = axn(table, i, charge, pre_post, term, age, NRA, 0)
+	if 0 == prem:
+		ax = 0
+	else:
+		ax = axn(table, i, charge, pre_post, term, age, NRA, 0)
 	Ex = nEx(table, i, charge, age, NRA, 0)
 
 	if "UKMS" == combination or "UKZT" == combination:

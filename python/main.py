@@ -35,7 +35,7 @@ class Member:
 			if 1 == self.sex:
 				return "LXMK"
 			else:
-				assert(2 == self.status)
+				assert(2 == self.sex)
 				return "LXFK'"
 
 # Plan rules
@@ -128,16 +128,28 @@ class Member:
 			for i in range(1, MAXGEN + 1)] 
 	
 	def res(self, cap, prem, age, table, i, dth_cap):
-		return af.reserves(self.combination, cap, prem, self.pre_post,
+		key = str(cap) + str(prem) + str(age) + table + str(i) + \
+			str(dth_cap)
+		if not key in self.res.values:
+			self.res.values[key] = \
+			af.reserves(self.combination, cap, prem, self.pre_post,
 			self.term, age, self.NRA, table, i, self.cost_res, 
 			self.admin_cost, self.delta_cap, dth_cap,
 			self.ps_is_mixed, self.X10, self.b2)
+		return self.res.values[key]
+	res.values = {}
 
 	def ls(self, res, prem, age, table, i, dth_cap):
-		return af.lump_sum(self.combination, res, prem, self.pre_post,
+		key = str(res) + str(prem) + str(age) + table + str(i) + \
+			str(dth_cap)
+		if not key in self.ls.values:
+			self.ls.values[key] = \
+			af.lump_sum(self.combination, res, prem, self.pre_post,
 			self.term, age, self.NRA, table, i, self.cost_res,
 			self.admin_cost, self.delta_cap, dth_cap,
 			self.ps_is_mixed, self.X10, self.b2)
+		return self.ls.values[key]
+	ls.values = {}
 			
 	def project_DoC(self):
 		proj = [0 for i in range(0, MAXPROJ)]	
