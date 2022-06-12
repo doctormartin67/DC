@@ -34,7 +34,7 @@
 //---Define constants---
 // 65 years to calculate of one affiliate
 // 50 years up to NRA, afterwards we prolongate to RA assumption
-enum {MAXPROJ = 65, MAXPROJBEFOREPROL = 50};
+enum {MAXPROJ = 65};
 enum {MAXGEN = 8}; // amount of generations of insurer
 enum {ER, EE, EREE_AMOUNT};// Employer index, Employer index
 // article 24 index (3,75% for employee contributions and 3,25% for employee)

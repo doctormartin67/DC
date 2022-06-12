@@ -5,7 +5,7 @@
 
 #define EPS 0.00000001
 
-unsigned lx(const char *name, size_t age)
+int lx(const char *name, size_t age)
 	__attribute__ ((pure));
 double npx(const char *table, double ageX, double ageXn, int corr) 
 	__attribute__ ((const));

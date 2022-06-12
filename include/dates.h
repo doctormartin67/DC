@@ -27,6 +27,8 @@ struct date *newDate(unsigned XLday,
 		unsigned year, unsigned month, unsigned day);
 struct date *minDate(struct date *, struct date *);
 void printDate(const struct date *restrict d);
+int datecmp(struct date *d1, struct date *d2);
+
 void dates_arena_free(void);
 
 /*

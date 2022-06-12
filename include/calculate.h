@@ -21,4 +21,6 @@ void set_assets(struct assets *assets, double res, double red_cap,
 void update_EBP(CurrentMember *cm, int k,
 		const double art24[const static METHOD_AMOUNT],
 		double res, double red_cap);
+unsigned in_prolongation(const CurrentMember *cm, int k);
+
 #endif

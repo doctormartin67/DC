@@ -5,6 +5,7 @@
 #include "errorjump.h"
 #include "type.h"
 #include "interpret.h"
+#include "actfuncs.h"
 
 const Database *get_database(void);
 
@@ -373,6 +374,29 @@ static void validate_interpreters(void)
 	assert(!error.is_error);
 }
 
+static void validate_lifetable(InputKind kind)
+{
+	const char *name = user_input[kind]->name;
+	const char *code = user_input[kind]->input;
+	const Database *db = get_database();
+	assert(name);
+	assert(code);
+	assert(db);
+	unsigned years = 0;
+	TypeKind return_type = user_input[kind]->return_type;
+	assert(TYPE_STRING == return_type);
+	const char *table = interpret(name, code, db, years, 1, return_type).s;
+	if (-1 == lx(table, 40)) {
+		validate_emit_error("Unable to find table '%s'", table);
+	}
+}
+
+static void validate_lifetables(void)
+{
+	validate_lifetable(INPUT_LTINS);
+	validate_lifetable(INPUT_LTTERM);
+}
+
 void validate_UI(void)
 {
 	if (!validate_input_set()) {
@@ -393,6 +417,7 @@ void validate_UI(void)
 	validate_date("DOC", INPUT_DOC);
 	validate_test_case();
 	validate_interpreters();
+	validate_lifetables();
 
 	const char *value = 0;
 	VALIDATE(INPUT_DR, float, "DR");

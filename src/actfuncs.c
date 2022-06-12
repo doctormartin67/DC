@@ -24,7 +24,7 @@ static const struct life_table *make_life_table(const char *name)
 	size_t age = 0;
 
 	if (0 == (lt = fopen(name, "r"))) {
-		die("can't open %s", name);
+		return 0;
 	}
 
 	struct life_table *life_table = jalloc(1, sizeof(*life_table));
@@ -46,13 +46,15 @@ static const struct life_table *make_life_table(const char *name)
 }
 
 
-unsigned lx(const char *name, size_t age)
+int lx(const char *name, size_t age)
 {
 	assert(name);
 	const struct life_table *life_table = map_get(&life_tables, name);
 	if (!life_table) {
 		life_table = make_life_table(name);
-		assert(life_table);
+		if (!life_table) {
+			return -1;
+		}
 		printf("life table '%s' created\n", name);
 	}
 

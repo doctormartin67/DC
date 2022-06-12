@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h> /* malloc and free */
 #include <stdarg.h>
+#include <assert.h>
 #include "dates.h"
 #include "errorexit.h"
 #include "common.h"
@@ -169,6 +170,20 @@ void printDate(const struct date *restrict d)
 		printf("%d/%d/%d\n", d->day, d->month, d->year);
 	else
 		printf("(null)\n");
+}
+
+int datecmp(struct date *d1, struct date *d2)
+{
+	if (d1->year == d2->year
+		&& d1->month == d2->month
+		&& d1->day == d2->day) {
+		return 0;
+	} else if (d2 == minDate(d1, d2)) {
+		return 1;
+	} else {
+		assert(d1 == minDate(d1, d2));
+		return -1;
+	}
 }
 
 void dates_arena_free(void)
