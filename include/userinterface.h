@@ -1,5 +1,5 @@
-#ifndef USERINTERFACE
-#define USERINTERFACE
+#ifndef USERINTERFACE_H
+#define USERINTERFACE_H
 
 #include "type.h"
 #include "DCProgram.h"
@@ -91,6 +91,7 @@ typedef struct UserInput {
 
 extern GtkWidget **widgets;
 
+void userinterface(void);
 UserInput **get_user_input(void);
 void set_user_inputs(void);
 void update_user_interface(void);

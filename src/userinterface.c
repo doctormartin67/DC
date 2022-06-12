@@ -389,6 +389,11 @@ static void validate_lifetable(InputKind kind)
 	if (-1 == lx(table, 40)) {
 		validate_emit_error("Unable to find table '%s'", table);
 	}
+	if (error.is_error) {
+		reset_error();
+		reset_interpreters();
+		assert(!error.is_error);
+	}
 }
 
 static void validate_lifetables(void)

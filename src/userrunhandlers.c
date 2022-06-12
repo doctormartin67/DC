@@ -2,6 +2,7 @@
 #include "assumptions.h"
 #include "printresults.h"
 #include "interpret.h"
+#include "run.h"
 
 #define NOT_RUNNING 01
 #define RUNNING 02
@@ -15,7 +16,6 @@ struct gui_data {
 	gpointer pl;
 };
 
-extern void runmember(CurrentMember cm[static 1]);
 static gpointer run(gpointer pl);
 static gpointer runtc(gpointer pl);
 static gpointer stoprun(gpointer data);
@@ -153,7 +153,7 @@ static gpointer run(gpointer pl)
 		if (run_state & INTERRUPTED) {
 			return stoprun(&gd);
 		}
-		runmember(cm + i);
+		run_member(cm + i);
 		snprintf(text, sizeof(text), "Progress: member %lu out of %lu "
 				"members complete", i + 1, db->num_records);
 #if 0
@@ -197,7 +197,7 @@ static gpointer runtc(gpointer pl)
 	}
 	setassumptions();
 	assert(cm);
-	runmember(cm);
+	run_member(cm);
 	snprintf(text, sizeof(text), "%s [%u] has been run", cm->key, tc + 1);
 #if 0
 	gd.s = text;

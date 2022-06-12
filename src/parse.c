@@ -365,9 +365,12 @@ static Stmt *parse_simple_stmt(void)
 	} else {
 		stmt = new_stmt_expr(pos, expr);
 		if (EXPR_NAME == expr->kind) {
-			error_here("Unknown name '%s'", expr->name);
+			syntax_error(pos, "Unknown name '%s'", expr->name);
 		}
-		assert(EXPR_CALL == expr->kind);
+		if (EXPR_CALL != expr->kind) {
+			syntax_error(pos, "function call expected if "
+					"statement is not an assigment");
+		}
 	}
 	return stmt;
 }

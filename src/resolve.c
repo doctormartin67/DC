@@ -920,6 +920,10 @@ static void resolve_stmt_assign(Stmt *stmt, unsigned eval_stmt)
 
 	}
 	if (eval_stmt) {
+		if (EXPR_NAME != left_expr->kind) {
+			syntax_error(stmt->pos, "Assignment needs a name as "
+					"expression for the left operand");
+		}
 		Sym *sym = sym_get(left_expr->name);
 		if (sym->is_project) {
 			assert(is_floating_type(sym->type));
