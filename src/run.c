@@ -253,7 +253,6 @@ void run_member(CurrentMember *cm)
 	init_cm(cm);
 
 	for (size_t k = 1; k < MAXPROJ; k++) {
-
 		if (NRA(cm, k-1) == cm->proj[k-1].age) {
 			break;
 		}

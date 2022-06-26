@@ -1,6 +1,7 @@
 path = "/home/doctormartin67/Coding/tables/tables/"
 
 EPS = 0.0000000001
+AGE_ROUNDING = 100
 
 def calc_years(d1, d2, extra_month):
 	return d1.year - d2.year + (d1.month - d2.month - extra_month)/12
@@ -23,31 +24,40 @@ def lx(table, age):
 lx.tables = {}
 
 def npx(table, ageX, ageXn, corr):
-	ageX += corr
-	ageXn += corr
-	if ageX >= ageXn:
-		return 1.0
-	elif ageX < 0 or ageXn < 0:
-		return 0.0
+	key = table + str(int(ageX * AGE_ROUNDING)) + \
+		str(int(ageXn * AGE_ROUNDING)) + str(corr)
+	if not key in npx.values:
+		ageX += corr
+		ageXn += corr
+		if ageX < 0 or ageXn < 0:
+			npx.values[key] = 0.0
+			return npx.values[key]
+		elif ageX >= ageXn:
+			npx.values[key] = 1.0
+			return npx.values[key]
 
-	lxX = lx(table, int(ageX))
-	lxX1 = lx(table, int(ageX + 1))
-	lxXn = lx(table, int(ageXn))
-	lxXn1 = lx(table, int(ageXn + 1))
+		lxX = lx(table, int(ageX))
+		lxX1 = lx(table, int(ageX + 1))
+		lxXn = lx(table, int(ageXn))
+		lxXn1 = lx(table, int(ageXn + 1))
 
-	ip1 = lxX - (ageX - int(ageX)) * (lxX - lxX1)
-	ip2 = lxXn - (ageXn - int(ageXn)) * (lxXn - lxXn1)
+		ip1 = lxX - (ageX - int(ageX)) * (lxX - lxX1)
+		ip2 = lxXn - (ageXn - int(ageXn)) * (lxXn - lxXn1)
 
-	if 0 == ip1:
-		assert(0 == ip2)
-		return 0.0
-	else:
-		return ip2/ip1
+		if 0 == ip1:
+			assert(0 == ip2)
+			npx.values[key] = 0.0
+		else:
+			npx.values[key] = ip2/ip1
+	return npx.values[key]
+
+npx.values = {}
 
 def nEx(table, i, charge, ageX, ageXn, corr):
 	if (ageX == ageXn):
 		return 1
-	key = table + str(i) + str(charge) + str(ageX) + str(ageXn) + str(corr)
+	key = table + str(i) + str(charge) + str(int(ageX * AGE_ROUNDING)) + \
+		str(int(ageXn * AGE_ROUNDING)) + str(corr)
 	if not key in nEx.values:
 		nEx.values[key] = (1 + charge)/(1 + i) ** (ageXn - ageX) \
 			* npx(table, ageX, ageXn, corr)
@@ -61,12 +71,11 @@ def axn(table, i, charge, prepost, term, ageX, ageXn, corr):
 		return -1.0
 	else:
 		value = 0.0
-		termfrac = 1.0 / term
 		ageXk = ageX + prepost/term
 		payments = int((ageXn - ageX) * term + EPS)
 		while (payments):
 			value += nEx(table, i, charge, ageX, ageXk, corr)
-			ageXk += termfrac
+			ageXk += 1.0 / term
 			payments -= 1
 
 	return value / term
@@ -240,7 +249,8 @@ def test_nEx(i):
 		ageX = i%110
 		ageXn = (i+1)%110
 		nex = nEx(table, 0.0, 0.0, ageX, ageXn, -3)
-		assert(abs(nex - npx(table, ageX, ageXn, -3)) < EPS)
+		nPx = npx(table, ageX, ageXn, -3)
+		assert(abs(nex - nPx) < EPS)
 		nex = nEx(table, 0.01, 0.0, ageX, ageXn, -3)
 		assert(abs(nex - npx(table, ageX, ageXn, -3)
 					* (1 + 0.01) ** (ageX - ageXn)) < EPS)
@@ -260,7 +270,7 @@ def test_axn(i):
 		assert(abs(nex - ax) < EPS)
 
 def test_all():
-	N = 1024 
+	N = 1024 * 16
 	for i in range(0, N):
 		test_lx()
 		test_npx(i)

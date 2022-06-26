@@ -5,7 +5,7 @@ import actfuncs as af
 
 MAXGEN = 8
 MAXPROJ = 128
-titles = ("CAP", "CAPPS", "CAPRED", "TAUX", "PREMIUM", "RES", "RESPS")
+titles = ("CAP", "CAPPS", "CAPRED", "TAUX", "PREMIUM", "RES", "RESPS", "CAPDTH")
 
 class Member:
 #########################
@@ -128,8 +128,8 @@ class Member:
 			for i in range(1, MAXGEN + 1)] 
 	
 	def res(self, cap, prem, age, table, i, dth_cap):
-		key = str(cap) + str(prem) + str(age) + table + str(i) + \
-			str(dth_cap)
+		key = str(cap) + str(prem) + str(int(age * 100)) + table + \
+			str(i) + str(dth_cap)
 		if not key in self.res.values:
 			self.res.values[key] = \
 			af.reserves(self.combination, cap, prem, self.pre_post,
@@ -140,8 +140,8 @@ class Member:
 	res.values = {}
 
 	def ls(self, res, prem, age, table, i, dth_cap):
-		key = str(res) + str(prem) + str(age) + table + str(i) + \
-			str(dth_cap)
+		key = str(res) + str(prem) + str(int(age * 100)) + table + \
+			str(i) + str(dth_cap)
 		if not key in self.ls.values:
 			self.ls.values[key] = \
 			af.lump_sum(self.combination, res, prem, self.pre_post,
@@ -150,6 +150,9 @@ class Member:
 			self.ps_is_mixed, self.X10, self.b2)
 		return self.ls.values[key]
 	ls.values = {}
+
+	def in_prolongation(self, i):
+		return self.projections["DoC"][i] >= self.DoR
 			
 	def project_DoC(self):
 		proj = [0 for i in range(0, MAXPROJ)]	
@@ -165,22 +168,20 @@ class Member:
 			i += 1
 
 # prolongate
+		i += 1
 		while i < MAXPROJ:
 			if proj[i-1].month >= self.DoC.month:
 				extra_year = 1
 			else:
 				extra_year = 0
-			d = dt.datetime(proj[i-1].year + 1 + extra_year,
-				proj[i-1].month, 1)
+			d = dt.datetime(proj[i-1].year + extra_year,
+				self.DoC.month, 1)
 			proj[i] = min(self.date_RA_DEF, d)
 			if proj[i] >= self.date_RA_DEF:
 				break
 			i += 1
 
 		assert(MAXPROJ != i)
-
-#TODO prolongation
-
 		return proj
 	
 	def project_age(self):
@@ -201,7 +202,7 @@ class Member:
 		i = 2
 		date = self.projections["DoC"][i]
 		while date:
-			year1 = self.projections["DoC"][i].year
+			year1 = date.year
 			year2 = self.projections["DoC"][i-1].year
 			proj[i] = proj[i-1] * (1 + self.ss())**(year1 - year2)
 			i += 1
@@ -220,7 +221,7 @@ class Member:
 		i = 2
 		date = self.projections["DoC"][i]
 		while date:
-			year1 = self.projections["DoC"][i].year
+			year1 = date.year
 			year2 = self.projections["DoC"][i-1].year
 			proj[i] = proj[i-1] * (1 + self.infl)**(year1 - year2)
 			i += 1
@@ -234,7 +235,7 @@ class Member:
 		i = 1
 		date = self.projections["DoC"][i]
 		while date:
-			year1 = self.projections["DoC"][i].year
+			year1 = date.year
 			year2 = self.projections["DoC"][i-1].year
 			proj[i] = proj[i-1] * (1 + self.infl)**(year1 - year2)
 			i += 1
@@ -258,52 +259,27 @@ class Member:
 		return proj
 	
 	def project_contr(self, AorC):
-		proj = np.zeros(100)
+		proj = np.zeros(MAXPROJ)
 		i = 0
-		date = self.projections["DoC"][i]
-		while date:
+		while self.projections["DoC"][i]:
 			if "A" == AorC:
 				proj[i] = self.contrA(i)
 			else:
 				assert("C" == AorC)
 				proj[i] = self.contrC(i)
 			i += 1
-			date = self.projections["DoC"][i]
 
 		return proj
 	
-	def project_resps_gen(self, AorC, gen):
-		proj = [0 for i in range(0, MAXPROJ)]	
-		if "A" == AorC:
-			proj[0] = self.generationsA["RESPS"][gen]
-			interest = self.generationsA["TAUX"][gen]
-		else:
-			assert("C" == AorC)
-			proj[0] = self.generationsC["RESPS"][gen]
-			interest = self.generationsC["TAUX"][gen]
-		i = 1
-		date = self.projections["DoC"][i]
-		while date:
-			p = proj[i-1]
-			age1 = self.projections["age"][i-1]
-			age2 = self.projections["age"][i]
-			t = self.table_ins()
-			proj[i] = self.res(self.ls(p, 0, age1, t, interest, 0),
-				0, age2, t, interest, 0)
-			i += 1
-			date = self.projections["DoC"][i]
-
-		return proj
-
 	def project_contr_gen(self, AorC, gen):
-		proj = np.zeros(100)
+		proj = np.zeros(MAXPROJ)
 		if "A" == AorC:
 			minimum = self.generationsA["PREMIUM"][gen]
 		else:
 			assert("C" == AorC)
 			minimum = self.generationsC["PREMIUM"][gen]
 
-		min_array = np.zeros(100) + minimum
+		min_array = np.zeros(MAXPROJ) + minimum
 
 		for j in range(0, gen):
 			proj -= -self.projections["CONTR " + AorC + " "
@@ -313,12 +289,64 @@ class Member:
 
 		return proj
 
+	def project_capdth_gen(self, AorC, gen):
+		proj = [0 for i in range(0, MAXPROJ)]	
+		if "UKMT" != self.combination:
+			return proj
+		if "A" == AorC:
+			proj[0] = self.generationsA["CAPDTH"][gen]
+		else:
+			assert("C" == AorC)
+			proj[0] = self.generationsC["CAPDTH"][gen]
+		i = 1
+		while self.projections["DoC"][i]:
+			prem = self.projections["CONTR " + AorC + " "
+				+ str(gen + 1)][i-1] * (1 - self.admin_cost)
+			age1 = self.projections["age"][i-1]
+			age2 = self.projections["age"][i]
+			proj[i] = proj[i-1] + prem * (age2 - age1)
+			i += 1
+
+		return proj
+		
+	def project_res_gen(self, res_type, AorC, gen):
+		proj = [0 for i in range(0, MAXPROJ)]	
+		if "A" == AorC:
+			proj[0] = self.generationsA[res_type][gen]
+			interest = self.generationsA["TAUX"][gen]
+		else:
+			assert("C" == AorC)
+			proj[0] = self.generationsC[res_type][gen]
+			interest = self.generationsC["TAUX"][gen]
+		i = 1
+		while self.projections["DoC"][i]:
+			if "RES" == res_type:
+				prem = self.projections["CONTR " + AorC + " "
+					+ str(gen + 1)][i-1]
+				capdth = self.projections["CAPDTH " + AorC
+					+ " " + str(gen + 1)][i-1]
+			else:
+				assert("RESPS" == res_type)
+				prem = 0
+				capdth = 0
+			age1 = self.projections["age"][i-1]
+			age2 = self.projections["age"][i]
+			t = self.table_ins()
+			proj[i] = self.res(self.ls(proj[i-1], prem, age1, t,
+				interest, capdth), prem, age2, t, interest,
+				capdth)
+			i += 1
+
+		return proj
+
 	def set_RA_DEF(self):
 		year = self.DoB.year
 		month = self.DoB.month
 		if 12 == month:
 			month = 1
 			year += 1
+		else:
+			month += 1
 		self.date_RA_DEF = dt.datetime(year + self.RA_DEF, month, 1)
 	
 	def set_projections(self):
@@ -331,16 +359,18 @@ class Member:
 		self.projections["SDoE"] = self.project_service(self.DoE)
 		self.projections["contrA"] = self.project_contr("A")
 		self.projections["contrC"] = self.project_contr("C")
+		res = ("RES", "RESPS")
+		contract = ("A", "C")
 		for i in range(0, MAXGEN):
 			gen = str(i + 1)
-			self.projections["RESPS A " + gen] \
-				= self.project_resps_gen("A", i)
-			self.projections["RESPS C " + gen] \
-				= self.project_resps_gen("C", i)
-			self.projections["CONTR A " + gen] \
-				= self.project_contr_gen("A", i)
-			self.projections["CONTR C " + gen] \
-				= self.project_contr_gen("C", i)
+			for c in contract:
+				self.projections["CONTR " + c + " " + gen] \
+					= self.project_contr_gen(c, i)
+				self.projections["CAPDTH " + c + " " + gen] \
+					= self.project_capdth_gen(c, i)
+				for r in res:
+					self.projections[r + " " + c + " " + gen] \
+						= self.project_res_gen(r, c, i)
 
 	def __init__(self, df, i):
 		print("initing member " + str(i))
@@ -372,7 +402,25 @@ class Member:
 
 		self.projections = {}
 		self.set_projections()
+
+class Data:
+	def __init__(self, file_name, sheet_name):
+		self.file_name = file_name
+		self.sheet_name = sheet_name
+		print("opening: " + file_name)
+		print("sheet: " + sheet_name)
+		self.df = pd.read_excel(io=file_name, sheet_name=sheet_name,
+			skiprows = 10)
+		self.df.fillna(0, inplace = True)
+		print("opening complete.")
+		assert("KEY" in self.df.keys())
+		self.num_members = len(self.df["KEY"])
 		
+		
+#########################
+# testing
+#########################
+
 def test_member(df):
 	member = Member(df, 0)
 	date = dt.datetime(2016, 12, 1)
@@ -392,12 +440,7 @@ if __name__ == "__main__":
 	file_name = "2019-03-06 Standard DC UKMS-UKZT.xlsm"
 	sheet = "Data"
 
-	print("opening: " + path + file_name)
-	print("sheet: " + sheet)
-	df = pd.read_excel(io = path + file_name, sheet_name = sheet,
-		skiprows = 10)
-	print("opening complete.")
+	data = Data(path + file_name, sheet)
+	test_member(data.df)
 
-	test_member(df)
-
-	members = [Member(df, i) for i in range(0, len(df["KEY"]))]
+	members = [Member(data.df, i) for i in range(0, data.num_members)]

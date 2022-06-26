@@ -159,6 +159,7 @@ static double get_redcap_puc(CurrentMember *cm, size_t EREE, size_t gen,
 			age, RA, lt);
 	return cap + capps;
 }
+
 static double get_redcap_mixed_ukmt(const CurrentMember *cm, size_t EREE, size_t gen,
 		size_t k, size_t index)
 {
