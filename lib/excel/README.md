@@ -19,18 +19,17 @@ After this if you would then want the value 4, you could run:
 
 If you really just want a value from a cell without creating a `Database`, you could use the following functions:
 
-`Excel *open_excel(const char *file_name, const char *sheet_name);`
-
-`void close_excel(Excel *excel);`
-
-`Content *cell_content(Excel *excel, const char *sheet_name, const char *cell);`
+```
+Excel *open_excel(const char *file_name, const char *sheet_name);
+void close_excel(Excel *excel);
+Content *cell_content(Excel *excel, const char *sheet_name, const char *cell);
+```
 
 Using these functions are rather straightforward:
 
-`Excel *e = open_excel("example.xlsx", "Sheet1");`
-
-`Content *c = cell_content(e, "Sheet1", "C5");`
-
-`assert(CONTENT_INT == c->kind);`
-
-`int four = c->val.i; // Val is defined in "common.h"`
+```
+Excel *e = open_excel("example.xlsx", "Sheet1");
+Content *c = cell_content(e, "Sheet1", "C5");
+assert(CONTENT_INT == c->kind);
+int four = c->val.i; // Val is defined in "common.h"
+```
